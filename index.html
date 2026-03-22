@@ -1,25 +1,406 @@
-<!DOCTYPE html>
-<html lang="vi">
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Test Web</title>
-  <style>
-    body { font-family: Arial; text-align: center; margin-top: 50px; }
-    button { padding: 10px 20px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio UI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+:root {
+    --content-max: 1024px;
+    --content-pad: 24px;
+    --header-h: 56px;
+}
+
+body {
+    background: #fff;
+    color: #222;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.container::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.content-wrap {
+    width: min(var(--content-max), calc(100% - (var(--content-pad) * 2)));
+    margin: 0 auto;
+}
+
+.header-shell {
+    position: sticky;
+    top: 0;
+    z-index: 1200;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.45) 55%, rgba(0, 0, 0, 0) 100%);
+}
+
+.header {
+    height: var(--header-h);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-weight: 700;
+    color: #fff;
+}
+
+.menu-wrap {
+    position: relative;
+}
+
+.menu-btn {
+    border: none;
+    background: #111;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.menu-list {
+    list-style: none;
+    margin-top: 8px;
+    background-color: rgba(0, 0, 0, 0.9);
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.96) 0%, rgba(0, 0, 0, 0.82) 55%, rgba(0, 0, 0, 0.65) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    overflow: hidden;
+    min-width: 180px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 1300;
+    backdrop-filter: blur(3px);
+}
+
+.menu-list li {
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #f3f3f3;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    background: transparent;
+}
+
+.menu-list li:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.menu-list li:last-child {
+    border-bottom: none;
+}
+
+.menu-list.hidden {
+    display: none;
+}
+
+.page {
+    min-height: calc(100dvh - var(--header-h));
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+
+.hero-page {
+    display: flex;
+    align-items: stretch;
+    height: calc(100dvh - var(--header-h));
+    overflow: hidden;
+}
+
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.hero img {
+    width: 100vw;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+}
+
+.hero-text-left {
+    text-align: left;
+}
+
+.hero-text-right {
+    text-align: right;
+}
+
+.content-page {
+    display: flex;
+    align-items: center;
+}
+
+.content-page-inner {
+    width: 100%;
+}
+
+.stats {
+    display: flex;
+    gap: 30px;
+    margin: 30px 0;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat h3 {
+    font-size: 20px;
+}
+
+.services {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin: 40px 0;
+}
+
+.service {
+    border: 1px solid #eee;
+    padding: 15px;
+    font-size: 13px;
+}
+
+.about {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin: 40px 0;
+}
+
+.about h2 {
+    font-size: 24px;
+}
+
+.portfolio img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.footer {
+    margin: 40px auto 20px;
+    font-size: 12px;
+    text-align: center;
+    color: #888;
+}
+
+.snap-indicator {
+    position: fixed;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1300;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.snap-dot {
+    width: 20px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(120, 120, 120, 0.45);
+    transition: all 0.25s ease;
+}
+
+.snap-dot.active {
+    width: 34px;
+    height: 6px;
+    background: rgba(95, 95, 95, 0.95);
+    box-shadow: 0 0 10px rgba(80, 80, 80, 0.2);
+}
+
+@media (max-width: 768px) {
+    :root {
+        --content-pad: 16px;
+    }
+
+    .hero-overlay {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        padding: 20px 0;
+    }
+
+    .hero-text-left,
+    .hero-text-right {
+        text-align: center;
+    }
+
+    .services {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
 </head>
 <body>
+<div class="container">
+    <div class="snap-indicator" aria-hidden="true">
+        <span class="snap-dot active"></span>
+        <span class="snap-dot"></span>
+    </div>
 
-  <h1>Hello mày 😎</h1>
-  <button onclick="clickMe()">Click tao đi</button>
+    <div class="header-shell">
+        <div class="header content-wrap">
+            <div class="logo">NAME</div>
+            <div class="menu-wrap">
+                <button class="menu-btn" id="menuButton" type="button">Menu</button>
+                <ul class="menu-list hidden" id="menuList">
+                    <li>Diễn Viên</li>
+                    <li>Họa Sĩ</li>
+                    <li>Photographer</li>
+                    <li>Tool Photoshop</li>
+                    <li>Tool Maya</li>
+                    <li>Tool Cheat Engine</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-  <p id="text"></p>
+    <section class="page hero-page">
+        <div class="hero">
+            <img src="assets/images/MAX90376.jpg" alt="Hero image">
+            <div class="hero-overlay content-wrap">
+                <div class="hero-text-left">
+                    <p>Chào, mình tên là</p>
+                    <h1>Trần Thắng Minh</h1>
+                    <h3>+8436 321 9989<br>175cm - 70kg<br>90-73-92</h3>
+                </div>
+                <div class="hero-text-right">
+                    <p>hiện là</p>
+                    <h3>Diễn viên</h3>
+                    <h3>Họa sĩ 2D/3D</h3>
+                    <h3>Photographer</h3>
+                    <p>và cũng là</p>
+                    <h3>Founder - Director - CEO của Harry Perfume</h3>
+                </div>
+            </div>
+        </div>
+    </section>
 
-  <script>
-    function clickMe() {
-      document.getElementById("text").innerText = "Đã click 😏";
+    <section class="page content-page">
+        <div class="content-page-inner content-wrap">
+            <div class="stats">
+                <div class="stat">
+                    <h3>1+</h3>
+                    <p>Years</p>
+                </div>
+                <div class="stat">
+                    <h3>10+</h3>
+                    <p>Projects</p>
+                </div>
+                <div class="stat">
+                    <h3>98%</h3>
+                    <p>Happy Clients</p>
+                </div>
+            </div>
+
+            <div class="services">
+                <div class="service">Brand Identity</div>
+                <div class="service">UI Design</div>
+                <div class="service">UX Research</div>
+                <div class="service">Web Design</div>
+            </div>
+
+            <div class="about">
+                <div>
+                    <h2>Crafting meaningful brands & experiences</h2>
+                </div>
+                <div>
+                    <p>
+                        Hey I'm John, UI/UX and brand designer passionate about crafting digital experiences.
+                    </p>
+                </div>
+            </div>
+
+            <div class="portfolio">
+                <h3>PORTFOLIO</h3>
+                <img src="https://picsum.photos/800/400" alt="Portfolio">
+            </div>
+
+            <div class="footer">© 2026 Your Name</div>
+        </div>
+    </section>
+</div>
+
+<script>
+const menuButton = document.getElementById('menuButton');
+const menuList = document.getElementById('menuList');
+const container = document.querySelector('.container');
+const pages = Array.from(document.querySelectorAll('.page'));
+const dots = Array.from(document.querySelectorAll('.snap-dot'));
+
+menuButton.addEventListener('click', function () {
+    menuList.classList.toggle('hidden');
+});
+
+document.addEventListener('click', function (event) {
+    if (!event.target.closest('.menu-wrap')) {
+        menuList.classList.add('hidden');
     }
-  </script>
+});
 
+function updateSnapIndicator() {
+    const containerTop = container.getBoundingClientRect().top;
+    let activeIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    pages.forEach(function (page, index) {
+        const distance = Math.abs(page.getBoundingClientRect().top - containerTop - 56);
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            activeIndex = index;
+        }
+    });
+
+    dots.forEach(function (dot, index) {
+        dot.classList.toggle('active', index === activeIndex);
+    });
+}
+
+container.addEventListener('scroll', updateSnapIndicator);
+updateSnapIndicator();
+</script>
 </body>
 </html>
