@@ -4,30 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portfolio UI</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Montserrat', sans-serif;
 }
 
 :root {
     --content-max: 1024px;
     --content-pad: 24px;
     --header-h: 56px;
+    --text-black: #333333;
+    --text-soft-white: #f2efe8;
 }
 
 body {
     background: #fff;
-    color: #222;
+    color: var(--text-black);
     height: 100vh;
     overflow: hidden;
 }
 
 .container {
-    width: 100%;
     height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
@@ -52,19 +53,42 @@ body {
     position: sticky;
     top: 0;
     z-index: 1200;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.45) 55%, rgba(0, 0, 0, 0) 100%);
+    background: transparent;
+    transition: background 0.35s ease;
+}
+
+.header-shell.scrolled {
+    background: #000;
 }
 
 .header {
     height: var(--header-h);
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
+}
+
+.header-left {
+    justify-self: start;
+}
+
+.header-center {
+    justify-self: center;
+}
+
+.header-right {
+    justify-self: end;
 }
 
 .logo {
     font-weight: 700;
-    color: #fff;
+    color: var(--text-soft-white);
+}
+
+.header-signature {
+    display: block;
+    height: 36px;
+    width: auto;
 }
 
 .menu-wrap {
@@ -74,7 +98,7 @@ body {
 .menu-btn {
     border: none;
     background: #111;
-    color: #fff;
+    color: var(--text-soft-white);
     padding: 10px 16px;
     border-radius: 10px;
     font-size: 14px;
@@ -101,9 +125,8 @@ body {
 .menu-list li {
     padding: 10px 12px;
     font-size: 14px;
-    color: #f3f3f3;
+    color: var(--text-soft-white);
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    background: transparent;
 }
 
 .menu-list li:hover {
@@ -119,23 +142,29 @@ body {
 }
 
 .page {
-    min-height: calc(100dvh - var(--header-h));
+    min-height: 100dvh;
     scroll-snap-align: start;
     scroll-snap-stop: always;
 }
 
+.page:not(.hero-page) {
+    padding-top: calc(var(--header-h) + 16px);
+}
+
 .hero-page {
-    display: flex;
-    align-items: stretch;
-    height: calc(100dvh - var(--header-h));
+    height: 100dvh;
     overflow: hidden;
 }
 
 .hero {
     position: relative;
-    width: 100%;
     height: 100%;
     background: #000;
+}
+
+.hero picture {
+    display: block;
+    height: 100%;
 }
 
 .hero img {
@@ -143,9 +172,7 @@ body {
     height: 100%;
     display: block;
     object-fit: cover;
-    object-position: center;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
+    margin: 0 calc(50% - 50vw);
 }
 
 .hero-overlay {
@@ -156,73 +183,175 @@ body {
     justify-content: flex-start;
     align-items: center;
     gap: 24px;
-    color: #fff;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+    color: var(--text-soft-white);
 }
 
-.hero-text-left {
-    text-align: left;
+.text-black {
+    color: var(--text-black);
 }
 
-.content-page {
-    display: flex;
-    align-items: center;
+.actor-page {
+    height: 100dvh;
+    overflow: hidden;
+    padding: 18px 0 16px;
 }
 
-.content-page-inner {
+.actor-title {
+    margin-bottom: 10px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.actor-page-wrap {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 18px;
+    min-height: 0;
+    --outer-bleed: calc((100vw - min(var(--content-max), calc(100vw - (var(--content-pad) * 2)))) / 2);
+}
+
+.actor-panel {
+    min-height: 0;
+    border: 1px solid rgba(51, 51, 51, 0.14);
+    border-radius: 12px;
+    padding: 18px 16px;
+    background: rgba(255, 255, 255, 0.75);
+    overflow: auto;
+}
+
+.actor-summary {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-black);
+}
+
+.actor-grid {
+    min-height: 0;
+    height: 100%;
     width: 100%;
-}
-
-.stats {
-    display: flex;
-    gap: 30px;
-    margin: 30px 0;
-}
-
-.stat {
-    text-align: center;
-}
-
-.stat h3 {
-    font-size: 20px;
-}
-
-.services {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin: 40px 0;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-auto-columns: clamp(180px, 16vw, 260px);
+    gap: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-items: stretch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+    user-select: none;
+    touch-action: pan-y;
+    justify-self: stretch;
+    margin: 0;
 }
 
-.service {
-    border: 1px solid #eee;
-    padding: 15px;
-    font-size: 13px;
+.actor-item {
+    height: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: zoom-in;
 }
 
-.about {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin: 40px 0;
-}
-
-.about h2 {
-    font-size: 24px;
-}
-
-.portfolio img {
+.actor-item img {
     width: 100%;
     height: 100%;
+    display: block;
     object-fit: cover;
-    border-radius: 10px;
 }
 
-.footer {
-    margin: 40px auto 20px;
-    font-size: 12px;
-    text-align: center;
-    color: #888;
+.actor-grid::-webkit-scrollbar {
+    display: none;
+}
+
+.actor-grid.dragging {
+    cursor: grabbing;
+}
+
+.photographer-page .actor-page-wrap {
+    grid-template-columns: 2fr 1fr;
+}
+
+.actor-page:not(.photographer-page) .actor-grid {
+    width: calc(100% + var(--outer-bleed));
+    margin-left: 0;
+    margin-right: calc(-1 * var(--outer-bleed));
+}
+
+.photographer-page .actor-grid {
+    width: calc(100% + var(--outer-bleed));
+    margin-left: calc(-1 * var(--outer-bleed));
+    margin-right: 0;
+}
+
+.reveal-up {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+    will-change: opacity, transform;
+}
+
+.page.page-active .reveal-up {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.page.page-before .reveal-up {
+    opacity: 0;
+    transform: translateY(-28px);
+}
+
+.page.page-after .reveal-up {
+    opacity: 0;
+    transform: translateY(28px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal-up {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+.lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.82);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    padding: 20px;
+}
+
+.lightbox.open {
+    display: flex;
+}
+
+.lightbox img {
+    max-width: min(92vw, 1400px);
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 12px;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
 }
 
 .snap-indicator {
@@ -234,6 +363,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    align-items: flex-end;
 }
 
 .snap-dot {
@@ -242,6 +372,9 @@ body {
     border-radius: 999px;
     background: rgba(120, 120, 120, 0.45);
     transition: all 0.25s ease;
+    border: none;
+    padding: 0;
+    cursor: pointer;
 }
 
 .snap-dot.active {
@@ -263,107 +396,193 @@ body {
         padding: 20px 0;
     }
 
-    .hero-text-left,
-    .services {
-        grid-template-columns: repeat(2, 1fr);
+    .hero-text-left {
+        text-align: center;
+    }
+}
+
+@media (max-width: 1024px) {
+    .actor-page-wrap {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
+        gap: 12px;
+    }
+
+    .photographer-page .actor-page-wrap {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
+    }
+
+    .actor-panel {
+        height: 100%;
+        max-height: none;
+    }
+
+    .actor-grid {
+        width: calc(100% + (var(--outer-bleed) * 2));
+        margin-left: calc(-1 * var(--outer-bleed));
+        margin-right: calc(-1 * var(--outer-bleed));
+        height: 100%;
+        grid-auto-columns: clamp(150px, 34vw, 220px);
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .actor-page:not(.photographer-page) .actor-grid,
+    .photographer-page .actor-grid {
+        width: calc(100% + (var(--outer-bleed) * 2));
+        margin-left: calc(-1 * var(--outer-bleed));
+        margin-right: calc(-1 * var(--outer-bleed));
+    }
+
+    .actor-page-wrap > .actor-panel {
+        order: 1;
+    }
+
+    .actor-page-wrap > .actor-grid {
+        order: 2;
     }
 }
 </style>
 </head>
 <body>
 <div class="container">
-    <div class="snap-indicator" aria-hidden="true">
-        <span class="snap-dot active"></span>
-        <span class="snap-dot"></span>
+    <div class="snap-indicator" aria-label="Section navigation">
+        <button class="snap-dot active" type="button" aria-label="Go to section 1"></button>
+        <button class="snap-dot" type="button" aria-label="Go to section 2"></button>
+        <button class="snap-dot" type="button" aria-label="Go to section 3"></button>
     </div>
 
     <div class="header-shell">
         <div class="header content-wrap">
-            <div class="logo">NAME</div>
-            <div class="menu-wrap">
-                <button class="menu-btn" id="menuButton" type="button">Menu</button>
-                <ul class="menu-list hidden" id="menuList">
-                    <li>Diễn Viên</li>
-                    <li>Họa Sĩ</li>
-                    <li>Photographer</li>
-                    <li>Tool Photoshop</li>
-                    <li>Tool Maya</li>
-                    <li>Tool Cheat Engine</li>
-                </ul>
+            <div class="header-left">
+                <div class="logo">NAME</div>
+            </div>
+            <div class="header-center">
+                <img class="header-signature" src="assets/images/Signature.png" alt="Signature">
+            </div>
+            <div class="header-right">
+                <div class="menu-wrap">
+                    <button class="menu-btn" id="menuButton" type="button">Menu</button>
+                    <ul class="menu-list hidden" id="menuList">
+                        <li>Diễn Viên</li>
+                        <li>Họa Sĩ</li>
+                        <li>Photographer</li>
+                        <li>Tool Photoshop</li>
+                        <li>Tool Maya</li>
+                        <li>Tool Cheat Engine</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
     <section class="page hero-page">
         <div class="hero">
-            <img src="assets/images/MAX90376.jpg" alt="Hero image">
+            <picture>
+                <source media="(orientation: portrait)" srcset="assets/images/MAX90376-mobile.jpg">
+                <img src="assets/images/MAX90376.jpg" alt="Hero image">
+            </picture>
             <div class="hero-overlay content-wrap">
-                <div class="hero-text-left">
-                    <p>Chào, mình tên là</p>
+                <div class="hero-text-left reveal-up">
+                    <p>Hi, My name is</p>
                     <h1>Trần Thắng Minh</h1>
-                    <h3>+8436 321 9989<br>175cm - 70kg<br>90-73-92</h3>
-                    <p>hiện là</p>
-                    <h3>Diễn viên</h3>
-                    <h3>Họa sĩ 2D/3D</h3>
-                    <h3>Photographer</h3>
-                    <p>và cũng là</p>
-                    <h3>Founder - Director - CEO của Harry Perfume</h3>
+                    <h4 class="text-black">ACTOR · 2D/3D ARTIST · PHOTOGRAPHER</h4>
+                    <p><br>also as</p>
+                    <h4 class="text-black">FOUNDER - DIRECTOR - CEO</h4>
+					<h2>Harry Perfume</h2>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="page content-page">
-        <div class="content-page-inner content-wrap">
-            <div class="stats">
-                <div class="stat">
-                    <h3>1+</h3>
-                    <p>Years</p>
-                </div>
-                <div class="stat">
-                    <h3>10+</h3>
-                    <p>Projects</p>
-                </div>
-                <div class="stat">
-                    <h3>98%</h3>
-                    <p>Happy Clients</p>
-                </div>
+    <section class="page actor-page">
+        <div class="content-wrap actor-page-wrap">
+            <aside class="actor-panel reveal-up">
+                <h2 class="actor-title reveal-up">ABOUT ACTOR</h2>
+                <p class="actor-summary reveal-up">
+                    I work as an actor focused on expressive character work, emotional range, and visual storytelling.
+                    Over time I have built experience in both studio and outdoor concepts, from cinematic portraits to
+                    performance-driven fashion shots.
+                    <br><br>
+                    My direction is simple: stay natural, stay precise, and let each frame carry a clear mood.
+                </p>
+            </aside>
+            <div class="actor-grid">
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90153.jpg" alt="Actor photo MAX90153"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90217.jpg" alt="Actor photo MAX90217"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90349.jpg" alt="Actor photo MAX90349"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90352.jpg" alt="Actor photo MAX90352"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90356.jpg" alt="Actor photo MAX90356"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90357.jpg" alt="Actor photo MAX90357"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90358.jpg" alt="Actor photo MAX90358"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90373.jpg" alt="Actor photo MAX90373"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90376.jpg" alt="Actor photo MAX90376"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90377.jpg" alt="Actor photo MAX90377"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90379.jpg" alt="Actor photo MAX90379"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90576.jpg" alt="Actor photo MAX90576"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90777.jpg" alt="Actor photo MAX90777"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90782.jpg" alt="Actor photo MAX90782"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90791.jpg" alt="Actor photo MAX90791"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90796.jpg" alt="Actor photo MAX90796"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90814.jpg" alt="Actor photo MAX90814"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90816.jpg" alt="Actor photo MAX90816"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90819.jpg" alt="Actor photo MAX90819"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90820.jpg" alt="Actor photo MAX90820"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Actor/MAX90965.jpg" alt="Actor photo MAX90965"></figure>
             </div>
-
-            <div class="services">
-                <div class="service">Brand Identity</div>
-                <div class="service">UI Design</div>
-                <div class="service">UX Research</div>
-                <div class="service">Web Design</div>
-            </div>
-
-            <div class="about">
-                <div>
-                    <h2>Crafting meaningful brands & experiences</h2>
-                </div>
-                <div>
-                    <p>
-                        Hey I'm John, UI/UX and brand designer passionate about crafting digital experiences.
-                    </p>
-                </div>
-            </div>
-
-            <div class="portfolio">
-                <h3>PORTFOLIO</h3>
-                <img src="https://picsum.photos/800/400" alt="Portfolio">
-            </div>
-
-            <div class="footer">© 2026 Your Name</div>
         </div>
     </section>
+
+    <section class="page actor-page photographer-page">
+        <div class="content-wrap actor-page-wrap">
+            <div class="actor-grid">
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/492882309_9629082393805507_1623897313072216052_n.jpg" alt="Photographer photo 492882309"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/493035186_9629082260472187_7506881416910455410_n.jpg" alt="Photographer photo 493035186"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/634639525_1592246438580986_314220355362350662_n.jpg" alt="Photographer photo 634639525"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/634831512_1592246461914317_2306135710163945031_n.jpg" alt="Photographer photo 634831512"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/641223531_1599406594531637_830826064098492680_n.jpg" alt="Photographer photo 641223531"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/641540841_1599406521198311_4462437764122936934_n.jpg" alt="Photographer photo 641540841"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/MAX92387.jpg" alt="Photographer photo MAX92387"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/MAX92410.jpg" alt="Photographer photo MAX92410"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/MAX92429.jpg" alt="Photographer photo MAX92429"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/MAX92880.jpg" alt="Photographer photo MAX92880"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/MAX94541.jpg" alt="Photographer photo MAX94541"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/MAX94862.jpg" alt="Photographer photo MAX94862"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/MAX94875.jpg" alt="Photographer photo MAX94875"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/MAX95265.jpg" alt="Photographer photo MAX95265"></figure>
+                <figure class="actor-item reveal-up"><img src="assets/images/Photographer/MAX95266.jpg" alt="Photographer photo MAX95266"></figure>
+            </div>
+            <aside class="actor-panel reveal-up">
+                <h2 class="actor-title reveal-up">ABOUT PHOTOGRAPHER</h2>
+                <p class="actor-summary reveal-up">
+                    As a photographer, I focus on atmosphere, composition, and emotional timing in each frame.
+                    I enjoy building visual narratives that feel cinematic while still keeping natural details alive.
+                    <br><br>
+                    My process blends direction and spontaneity, so every set can stay structured but still feel real.
+                </p>
+            </aside>
+        </div>
+    </section>
+</div>
+
+<div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image">×</button>
+    <img id="lightboxImage" src="" alt="Expanded actor photo">
 </div>
 
 <script>
 const menuButton = document.getElementById('menuButton');
 const menuList = document.getElementById('menuList');
 const container = document.querySelector('.container');
+const headerShell = document.querySelector('.header-shell');
 const pages = Array.from(document.querySelectorAll('.page'));
 const dots = Array.from(document.querySelectorAll('.snap-dot'));
+const mediaGrids = Array.from(document.querySelectorAll('.actor-grid'));
+const mediaImages = Array.from(document.querySelectorAll('.actor-item img'));
+const lightbox = document.getElementById('lightbox');
+const lightboxImage = document.getElementById('lightboxImage');
+const lightboxClose = document.getElementById('lightboxClose');
+let isPageAnimating = false;
 
 menuButton.addEventListener('click', function () {
     menuList.classList.toggle('hidden');
@@ -381,7 +600,7 @@ function updateSnapIndicator() {
     let closestDistance = Number.POSITIVE_INFINITY;
 
     pages.forEach(function (page, index) {
-        const distance = Math.abs(page.getBoundingClientRect().top - containerTop - 56);
+        const distance = Math.abs(page.getBoundingClientRect().top - containerTop);
         if (distance < closestDistance) {
             closestDistance = distance;
             activeIndex = index;
@@ -390,6 +609,279 @@ function updateSnapIndicator() {
 
     dots.forEach(function (dot, index) {
         dot.classList.toggle('active', index === activeIndex);
+    });
+
+    applyPageRevealStates(activeIndex);
+
+    if (headerShell) {
+        headerShell.classList.toggle('scrolled', activeIndex > 0);
+    }
+}
+
+function getActivePageIndex() {
+    const containerTop = container.getBoundingClientRect().top;
+    let activeIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    pages.forEach(function (page, index) {
+        const distance = Math.abs(page.getBoundingClientRect().top - containerTop);
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            activeIndex = index;
+        }
+    });
+
+    return activeIndex;
+}
+
+function animateToPage(targetIndex, duration) {
+    const startY = container.scrollTop;
+    const targetY = Math.max(0, pages[targetIndex].offsetTop);
+    const distance = targetY - startY;
+    const startTime = performance.now();
+
+    if (Math.abs(distance) < 1) {
+        updateSnapIndicator();
+        return;
+    }
+
+    isPageAnimating = true;
+
+    function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function frame(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeInOutCubic(progress);
+
+        container.scrollTop = startY + distance * eased;
+        updateSnapIndicator();
+
+        if (progress < 1) {
+            requestAnimationFrame(frame);
+            return;
+        }
+
+        isPageAnimating = false;
+    }
+
+    requestAnimationFrame(frame);
+}
+
+container.addEventListener('wheel', function (event) {
+    if (Math.abs(event.deltaY) < 1) {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (isPageAnimating) {
+        return;
+    }
+
+    const currentIndex = getActivePageIndex();
+    const direction = event.deltaY > 0 ? 1 : -1;
+    const targetIndex = Math.max(0, Math.min(pages.length - 1, currentIndex + direction));
+
+    if (targetIndex === currentIndex) {
+        return;
+    }
+
+    animateToPage(targetIndex, 850);
+}, { passive: false });
+
+dots.forEach(function (dot, index) {
+    dot.addEventListener('click', function () {
+        if (isPageAnimating) {
+            return;
+        }
+        animateToPage(index, 850);
+    });
+});
+
+mediaGrids.forEach(function (grid) {
+    let isDragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let velocityX = 0;
+    let momentumFrame = null;
+    let didDrag = false;
+
+    function stopMomentum() {
+        if (momentumFrame) {
+            cancelAnimationFrame(momentumFrame);
+            momentumFrame = null;
+        }
+    }
+
+    function runMomentum() {
+        stopMomentum();
+
+        function step() {
+            if (Math.abs(velocityX) < 0.02) {
+                stopMomentum();
+                return;
+            }
+
+            grid.scrollLeft -= velocityX * 16;
+            velocityX *= 0.94;
+            momentumFrame = requestAnimationFrame(step);
+        }
+
+        momentumFrame = requestAnimationFrame(step);
+    }
+
+    function beginDrag(clientX) {
+        stopMomentum();
+        isDragging = true;
+        didDrag = false;
+        startX = clientX;
+        startScrollLeft = grid.scrollLeft;
+        lastX = clientX;
+        lastTime = performance.now();
+        velocityX = 0;
+        grid.classList.add('dragging');
+    }
+
+    function moveDrag(clientX) {
+        if (!isDragging) {
+            return;
+        }
+        const deltaX = clientX - startX;
+        grid.scrollLeft = startScrollLeft - deltaX;
+
+        if (Math.abs(deltaX) > 4) {
+            didDrag = true;
+        }
+
+        const now = performance.now();
+        const dt = now - lastTime;
+        if (dt > 0) {
+            velocityX = (clientX - lastX) / dt;
+        }
+        lastX = clientX;
+        lastTime = now;
+    }
+
+    function endDrag() {
+        if (!isDragging) {
+            return;
+        }
+        isDragging = false;
+        grid.classList.remove('dragging');
+        if (didDrag) {
+            runMomentum();
+        }
+    }
+
+    grid.addEventListener('mouseleave', endDrag);
+    grid.addEventListener('mouseup', endDrag);
+
+    grid.addEventListener('mousedown', function (event) {
+        beginDrag(event.pageX);
+    });
+
+    grid.addEventListener('mousemove', function (event) {
+        if (!isDragging) {
+            return;
+        }
+        event.preventDefault();
+        moveDrag(event.pageX);
+    });
+
+    grid.addEventListener('touchstart', function (event) {
+        const touch = event.touches[0];
+        if (!touch) {
+            return;
+        }
+        beginDrag(touch.clientX);
+    }, { passive: true });
+
+    grid.addEventListener('touchmove', function (event) {
+        if (!isDragging) {
+            return;
+        }
+        const touch = event.touches[0];
+        if (!touch) {
+            return;
+        }
+        moveDrag(touch.clientX);
+    }, { passive: true });
+
+    grid.addEventListener('touchend', endDrag);
+    grid.addEventListener('touchcancel', endDrag);
+
+    grid.addEventListener('dragstart', function (event) {
+        event.preventDefault();
+    });
+
+    grid.addEventListener('click', function (event) {
+        if (didDrag) {
+            event.preventDefault();
+            event.stopPropagation();
+            didDrag = false;
+        }
+    }, true);
+});
+
+if (lightbox && lightboxImage && lightboxClose) {
+    mediaImages.forEach(function (img) {
+        img.addEventListener('click', function () {
+            lightboxImage.src = img.src;
+            lightboxImage.alt = img.alt || 'Expanded actor photo';
+            lightbox.classList.add('open');
+            lightbox.setAttribute('aria-hidden', 'false');
+        });
+    });
+
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden', 'true');
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', function (event) {
+        if (event.target === lightbox) {
+            closeLightbox();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeLightbox();
+        }
+    });
+}
+
+const revealElements = Array.from(document.querySelectorAll('.reveal-up'));
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function applyPageRevealStates(activeIndex) {
+    pages.forEach(function (page, index) {
+        page.classList.remove('page-before', 'page-active', 'page-after');
+        if (index < activeIndex) {
+            page.classList.add('page-before');
+            return;
+        }
+        if (index > activeIndex) {
+            page.classList.add('page-after');
+            return;
+        }
+        page.classList.add('page-active');
+    });
+}
+
+if (!prefersReducedMotion && revealElements.length) {
+    revealElements.forEach(function (el) {
+        const page = el.closest('.page');
+        const siblings = page ? Array.from(page.querySelectorAll('.reveal-up')) : [];
+        const indexInPage = Math.max(0, siblings.indexOf(el));
+        const delay = Math.min((indexInPage % 8) * 35, 245);
+        el.style.transitionDelay = delay + 'ms';
     });
 }
 
