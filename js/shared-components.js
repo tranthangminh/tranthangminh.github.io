@@ -15,36 +15,13 @@
             return;
         }
 
-        var pageSlug = avatarImage.getAttribute('data-fb-avatar-slug');
         var fallbackSrc = avatarImage.getAttribute('data-fb-avatar-fallback') || avatarImage.getAttribute('src') || '';
-        var cacheStamp = Date.now();
-        var avatarSources = [
-            'https://graph.facebook.com/' + encodeURIComponent(pageSlug) + '/picture?type=large&width=240&height=240&cb=' + cacheStamp,
-            'https://graph.facebook.com/' + encodeURIComponent(pageSlug) + '/picture?type=large&cb=' + cacheStamp
-        ];
-
         avatarImage.referrerPolicy = 'no-referrer';
         avatarImage.decoding = 'async';
 
-        function loadAvatar(index) {
-            if (index >= avatarSources.length) {
-                avatarImage.src = fallbackSrc;
-                return;
-            }
-
-            var probe = new Image();
-            var candidateSrc = avatarSources[index];
-            probe.referrerPolicy = 'no-referrer';
-            probe.onload = function () {
-                avatarImage.src = candidateSrc;
-            };
-            probe.onerror = function () {
-                loadAvatar(index + 1);
-            };
-            probe.src = candidateSrc;
+        if (fallbackSrc && avatarImage.getAttribute('src') !== fallbackSrc) {
+            avatarImage.src = fallbackSrc;
         }
-
-        loadAvatar(0);
     }
 
     window.hydrateFacebookAvatar = hydrateFacebookAvatar;

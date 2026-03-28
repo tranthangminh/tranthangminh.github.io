@@ -1530,15 +1530,7 @@ if (bookNowButton) {
     });
 }
 
-function hydrateFacebookCard() {
-    if (!fbAvatar) {
-        return;
-    }
 
-    if (typeof window.hydrateFacebookAvatar === 'function') {
-        window.hydrateFacebookAvatar(document.getElementById('sharedContactRoot') || document);
-    }
-}
 
 function updateSnapIndicator() {
     const containerTop = container.getBoundingClientRect().top;
@@ -1854,7 +1846,6 @@ if (!prefersReducedMotion && revealElements.length) {
 
 container.addEventListener('scroll', updateSnapIndicator);
 updateSnapIndicator();
-hydrateFacebookCard();
 </script>
 </body>
 </html>
