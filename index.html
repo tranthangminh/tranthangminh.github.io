@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="css/shared-header.css">
 <link rel="stylesheet" href="css/shared-footer.css">
 <link rel="stylesheet" href="css/shared-book-now.css">
+<link rel="stylesheet" href="css/shared-lightbox.css">
+<link rel="stylesheet" href="css/shared-mobile-type-scale.css">
 <style>
 * {
     margin: 0;
@@ -84,7 +86,6 @@ body {
     align-items: start;
 }
 
-.contact-main,
 .contact-side {
     min-height: auto;
     height: auto;
@@ -394,7 +395,9 @@ body {
 }
 
 .artist-page {
-    height: 100dvh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
     overflow: hidden;
     padding: 18px 0 16px;
     background:
@@ -417,11 +420,15 @@ body {
     height: 100%;
     min-height: 0;
     display: grid;
-    grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-columns: minmax(0, 0.35fr) minmax(0, 0.65fr);
+    grid-template-rows: minmax(0, 1fr);
     gap: 14px;
 }
 
 .design-info {
+    grid-column: 1;
+    grid-row: 1;
+    height: 100%;
     min-height: 0;
     border: 1px solid rgba(51, 51, 51, 0.1);
     border-radius: 18px;
@@ -429,13 +436,20 @@ body {
     background: rgba(255, 255, 255, 0.74);
     backdrop-filter: blur(6px);
     box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .design-showcase {
+    grid-column: 2;
+    grid-row: 1;
+    height: 100%;
     min-height: 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: 14px;
 }
 
@@ -465,14 +479,12 @@ body {
 }
 
 .artist-wrap {
-    height: 100%;
+    height: auto;
     min-height: 0;
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
-    gap: 14px;
 }
 
 .artist-info {
+    height: auto;
     min-height: 0;
     border: 1px solid rgba(51, 51, 51, 0.1);
     border-radius: 18px;
@@ -480,38 +492,22 @@ body {
     background: rgba(255, 255, 255, 0.74);
     backdrop-filter: blur(6px);
     box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-    overflow: auto;
-}
-
-.artist-tools {
-    min-height: 0;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.artist-tool {
-    min-height: 0;
-    border: 1px solid rgba(51, 51, 51, 0.1);
-    border-radius: 18px;
-    padding: 16px 14px;
-    background: rgba(255, 255, 255, 0.76);
-    backdrop-filter: blur(6px);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 18px;
 }
 
-.artist-tool h3 {
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: rgba(51, 51, 51, 0.86);
+.artist-tool-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 0;
 }
 
-.artist-tool p {
-    color: rgba(51, 51, 51, 0.84);
-    line-height: 1.6;
+.artist-tool-list .intro-years {
+    line-height: 1.55;
 }
 
 .actor-title {
@@ -718,7 +714,16 @@ body {
     background: rgba(255, 255, 255, 0.74);
     backdrop-filter: blur(6px);
     box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.design-info::-webkit-scrollbar,
+.artist-info::-webkit-scrollbar,
+.actor-panel::-webkit-scrollbar {
+    display: none;
 }
 
 .actor-summary {
@@ -816,44 +821,6 @@ body {
     }
 }
 
-.lightbox {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.82);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 3000;
-    padding: 20px;
-}
-
-.lightbox.open {
-    display: flex;
-}
-
-.lightbox img {
-    max-width: min(92vw, 1400px);
-    max-height: 90vh;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 12px;
-}
-
-.lightbox-close {
-    position: absolute;
-    top: 16px;
-    right: 18px;
-    border: none;
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
-    line-height: 1;
-    cursor: pointer;
-}
-
 .snap-indicator {
     position: fixed;
     right: 16px;
@@ -898,8 +865,15 @@ body {
     }
 
     .contact-wrap {
-        max-height: calc(100dvh - (var(--header-h) + 40px));
-        overflow: auto;
+        max-height: calc(100dvh - (var(--header-h) + 28px));
+        overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .contact-wrap::-webkit-scrollbar {
+        display: none;
     }
 
     .hero-overlay {
@@ -916,7 +890,7 @@ body {
 
 
     .intro-list {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .about-actor-video-title {
@@ -964,11 +938,19 @@ body {
     }
 
     .design-wrap {
+        grid-template-columns: 1fr;
         grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
         gap: 10px;
     }
 
+    .design-info {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
     .design-showcase {
+        grid-column: 1;
+        grid-row: 2;
         grid-template-columns: 1fr;
         gap: 10px;
         overflow: auto;
@@ -977,12 +959,6 @@ body {
     .artist-wrap {
         grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
         gap: 10px;
-    }
-
-    .artist-tools {
-        grid-template-columns: 1fr;
-        gap: 10px;
-        overflow: auto;
     }
 
 }
@@ -1028,11 +1004,19 @@ body {
     }
 
     .design-wrap {
+        grid-template-columns: 1fr;
         grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
         gap: 12px;
     }
 
+    .design-info {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
     .design-showcase {
+        grid-column: 1;
+        grid-row: 2;
         grid-template-columns: 1fr;
         gap: 12px;
         overflow: auto;
@@ -1043,31 +1027,15 @@ body {
         gap: 12px;
     }
 
-    .artist-tools {
-        grid-template-columns: 1fr;
-        gap: 12px;
-        overflow: auto;
-    }
-
     .actor-panel {
         height: 100%;
         max-height: none;
     }
 
     .actor-grid {
-        width: calc(100% + (var(--outer-bleed) * 2));
-        margin-left: calc(-1 * var(--outer-bleed));
-        margin-right: calc(-1 * var(--outer-bleed));
         height: 100%;
         grid-auto-columns: clamp(150px, 34vw, 220px);
         -webkit-overflow-scrolling: touch;
-    }
-
-    .actor-page:not(.photographer-page) .actor-grid,
-    .photographer-page .actor-grid {
-        width: calc(100% + (var(--outer-bleed) * 2));
-        margin-left: calc(-1 * var(--outer-bleed));
-        margin-right: calc(-1 * var(--outer-bleed));
     }
 
     .actor-page-wrap > .actor-panel {
@@ -1079,17 +1047,44 @@ body {
     }
 }
 
-@media (min-width: 1025px) {
-    .actor-page:not(.photographer-page) .actor-grid {
-        width: calc(100% + var(--outer-bleed));
-        margin-left: 0;
-        margin-right: calc(-1 * var(--outer-bleed));
+@media (max-width: 768px) {
+    .photographer-page .actor-page-wrap,
+    .actor-page-wrap,
+    .about-actor-wrap,
+    .design-wrap,
+    .artist-wrap {
+        grid-template-rows: minmax(0, 1fr) minmax(0, 3fr);
     }
 
-    .photographer-page .actor-grid {
-        width: calc(100% + var(--outer-bleed));
-        margin-left: calc(-1 * var(--outer-bleed));
-        margin-right: 0;
+    .actor-panel,
+    .design-info,
+    .artist-info {
+        height: 100%;
+        max-height: none;
+    }
+
+    .artist-info {
+        height: auto;
+    }
+
+    .design-showcase {
+        height: 100%;
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        overflow: hidden;
+    }
+
+    .design-column {
+        height: 100%;
+    }
+}
+
+@media (min-width: 1025px) {
+    .design-info,
+    .actor-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 }
 </style>
@@ -1183,7 +1178,7 @@ body {
                     </li>
                     <li class="reveal-up">
                         <span class="intro-role"><span class="intro-icon">💼</span>Người Sáng Lập - Giám Đốc Điều Hành</span>
-                        <span class="intro-years">Harry Perfume - Tiệm nước hoa mang dấu ấn thương hiệu riêng</span>
+                        <span class="intro-years">Tiệm nước hoa Harry Perfume</span>
                     </li>
                 </ul>
                 <p class="intro-note reveal-up">
@@ -1192,9 +1187,9 @@ body {
                 <div class="intro-tools reveal-up">
                     <div class="intro-tools-title">CÔNG CỤ & NỀN TẢNG</div>
                     <div class="intro-tags">
-                        <span class="intro-tag">Công Cụ Photoshop</span>
-                        <span class="intro-tag">Công Cụ Maya</span>
-                        <span class="intro-tag">Công Cụ Cheat Engine</span>
+                        <span class="intro-tag">Photoshop</span>
+                        <span class="intro-tag">Maya</span>
+                        <span class="intro-tag">Cheat Engine</span>
                     </div>
                 </div>
             </div>
@@ -1327,24 +1322,26 @@ body {
                 <p class="actor-summary reveal-up">
                     Mình từng học Đại học chuyên ngành Công nghệ thông tin trong 2 năm, nên có thể lập trình và phát triển công cụ phục vụ công việc thực tế.
                     Các công cụ này giúp tối ưu thời gian thao tác, tự động hóa những bước lặp và làm quy trình làm việc ổn định hơn.
-                    <br><br>
-                    Dưới đây là 3 nhóm công cụ chính mình đang sử dụng.
                 </p>
+                <ul class="intro-list artist-tool-list">
+                    <li class="reveal-up">
+                        <span class="intro-role"><span class="intro-icon">🎨</span>Photoshop</span>
+                        <span class="intro-years">Tạo script chỉnh sửa ảnh và tự động hóa quy trình làm việc.</span>
+                    </li>
+                    <li class="reveal-up">
+                        <span class="intro-role"><span class="intro-icon">🧊</span>Maya</span>
+                        <span class="intro-years">Viết công cụ dựng hình và tối ưu thao tác cho dự án 3D.</span>
+                    </li>
+                    <li class="reveal-up">
+                        <span class="intro-role"><span class="intro-icon">⚙️</span>Cheat Engine</span>
+                        <span class="intro-years">Hỗ trợ gỡ lỗi, kiểm tra logic và truy vết dữ liệu nhanh.</span>
+                    </li>
+                    <li class="reveal-up">
+                        <span class="intro-role"><span class="intro-icon">💻</span>Windows</span>
+                        <span class="intro-years">Viết lệnh batch để tự động hóa thao tác và xử lý file nhanh hơn.</span>
+                    </li>
+                </ul>
             </aside>
-            <div class="artist-tools">
-                <article class="artist-tool reveal-up">
-                    <h3>Công Cụ Photoshop</h3>
-                    <p>Tạo script hỗ trợ chỉnh sửa ảnh, xử lý hàng loạt và tự động hóa quy trình dựng hình ảnh chủ đạo để làm việc nhanh và đồng nhất hơn.</p>
-                </article>
-                <article class="artist-tool reveal-up">
-                    <h3>Công Cụ Maya</h3>
-                    <p>Viết công cụ cho dựng hình, thiết lập cảnh và quy trình thao tác lặp, giúp giảm thời gian kỹ thuật khi thực hiện dự án 3D.</p>
-                </article>
-                <article class="artist-tool reveal-up">
-                    <h3>Công Cụ Cheat Engine</h3>
-                    <p>Phát triển công cụ hỗ trợ gỡ lỗi, kiểm tra logic và truy vết dữ liệu nhanh trong các bài toán cần xử lý trực tiếp.</p>
-                </article>
-            </div>
         </div>
     </section>
 
@@ -1359,11 +1356,12 @@ if (typeof renderSharedBookNow === 'function') {
     renderSharedBookNow('sharedBookNowRoot', { id: 'bookNowButton' });
 }
 </script>
-
-<div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Đóng ảnh">×</button>
-    <img id="lightboxImage" src="" alt="Ảnh phóng to">
-</div>
+<div id="sharedLightboxRoot"></div>
+<script>
+if (typeof renderSharedLightbox === 'function') {
+    renderSharedLightbox('sharedLightboxRoot');
+}
+</script>
 
 <script>
 const container = document.querySelector('.container');
@@ -1371,15 +1369,6 @@ const headerShell = document.querySelector('.header-shell');
 const pages = Array.from(document.querySelectorAll('.page'));
 const dots = Array.from(document.querySelectorAll('.snap-dot'));
 const mediaGrids = Array.from(document.querySelectorAll('.actor-grid'));
-const mediaImages = Array.from(document.querySelectorAll('.actor-item img'));
-const lightbox = document.getElementById('lightbox');
-const lightboxImage = document.getElementById('lightboxImage');
-const lightboxClose = document.getElementById('lightboxClose');
-const fbCover = document.getElementById('fbCover');
-const fbAvatar = document.getElementById('fbAvatar');
-const fbName = document.getElementById('fbName');
-const fbHandle = document.getElementById('fbHandle');
-const fbMeta = document.getElementById('fbMeta');
 const welcomePopup = document.getElementById('welcomePopup');
 const bookNowButton = document.getElementById('bookNowButton');
 const aboutActorVideoLink = document.getElementById('aboutActorVideoLink');
@@ -1518,6 +1507,13 @@ if (typeof initSharedHeaderMenus === 'function') {
             event.preventDefault();
             animateToPage(0, 560);
         }
+    });
+}
+
+if (typeof initSharedLightbox === 'function') {
+    initSharedLightbox({
+        triggerSelector: '.actor-item img',
+        fallbackAlt: 'Ảnh phóng to'
     });
 }
 
@@ -1786,35 +1782,6 @@ mediaGrids.forEach(function (grid) {
         }
     }, true);
 });
-
-if (lightbox && lightboxImage && lightboxClose) {
-    mediaImages.forEach(function (img) {
-        img.addEventListener('click', function () {
-            lightboxImage.src = img.src;
-            lightboxImage.alt = img.alt || 'Ảnh phóng to';
-            lightbox.classList.add('open');
-            lightbox.setAttribute('aria-hidden', 'false');
-        });
-    });
-
-    function closeLightbox() {
-        lightbox.classList.remove('open');
-        lightbox.setAttribute('aria-hidden', 'true');
-    }
-
-    lightboxClose.addEventListener('click', closeLightbox);
-    lightbox.addEventListener('click', function (event) {
-        if (event.target === lightbox) {
-            closeLightbox();
-        }
-    });
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-            closeLightbox();
-        }
-    });
-}
 
 const revealElements = Array.from(document.querySelectorAll('.reveal-up'));
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="../css/shared-header.css">
 <link rel="stylesheet" href="../css/shared-footer.css">
 <link rel="stylesheet" href="../css/shared-book-now.css">
+<link rel="stylesheet" href="../css/shared-lightbox.css">
+<link rel="stylesheet" href="../css/shared-mobile-type-scale.css">
 <style>
 * {
     margin: 0;
@@ -574,55 +576,6 @@ body {
 
 
 
-.lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 5000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(4, 4, 7, 0.88);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.22s ease, visibility 0.22s ease;
-}
-
-.lightbox.open {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
-
-.lightbox img {
-    max-width: min(96vw, 1500px);
-    max-height: 92vh;
-    width: auto;
-    height: auto;
-    border-radius: 12px;
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
-}
-
-.lightbox-close {
-    position: absolute;
-    right: 18px;
-    top: 18px;
-    width: 42px;
-    height: 42px;
-    border: none;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.18);
-    color: #fff;
-    line-height: 1;
-    cursor: pointer;
-}
-
-.lightbox-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-
 
 @media (max-width: 1024px) {
     .actor-hero-gallery {
@@ -658,6 +611,14 @@ body {
         left: -16px;
     }
 
+    .timeline-media-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .timeline-media-item {
+        width: 100%;
+    }
 
 }
 </style>
@@ -1038,20 +999,18 @@ if (typeof renderSharedBookNow === 'function') {
 }
 </script>
 
-<div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Đóng ảnh">×</button>
-    <img id="lightboxImage" src="" alt="Ảnh diễn viên phóng to">
-</div>
+<div id="sharedLightboxRoot"></div>
+<script>
+if (typeof renderSharedLightbox === 'function') {
+    renderSharedLightbox('sharedLightboxRoot', { initialAlt: 'Ảnh diễn viên phóng to' });
+}
+</script>
 
 <script>
 const welcomePopup = document.getElementById('welcomePopup');
 const bookNowButton = document.getElementById('bookNowButton');
 const contactSection = document.getElementById('contactSection');
 const actorHeroGallery = document.querySelector('.actor-hero-gallery');
-const previewImages = Array.from(document.querySelectorAll('.actor-hero-gallery .actor-item img, .timeline-media-item img'));
-const lightbox = document.getElementById('lightbox');
-const lightboxImage = document.getElementById('lightboxImage');
-const lightboxClose = document.getElementById('lightboxClose');
 
 if (welcomePopup) {
     requestAnimationFrame(function () {
@@ -1069,6 +1028,13 @@ if (welcomePopup) {
 
 if (typeof initSharedHeaderMenus === 'function') {
     initSharedHeaderMenus();
+}
+
+if (typeof initSharedLightbox === 'function') {
+    initSharedLightbox({
+        triggerSelector: '.actor-hero-gallery .actor-item img, .timeline-media-item img',
+        fallbackAlt: 'Ảnh diễn viên phóng to'
+    });
 }
 
 if (bookNowButton) {
@@ -1167,37 +1133,10 @@ if (actorHeroGallery) {
     }, true);
 }
 
-if (lightbox && lightboxImage && lightboxClose && previewImages.length) {
-    function closeLightbox() {
-        lightbox.classList.remove('open');
-        lightbox.setAttribute('aria-hidden', 'true');
-        lightboxImage.src = '';
-    }
 
-    previewImages.forEach(function (img) {
-        img.addEventListener('click', function () {
-            lightboxImage.src = img.src;
-            lightboxImage.alt = img.alt || 'Ảnh diễn viên phóng to';
-            lightbox.classList.add('open');
-            lightbox.setAttribute('aria-hidden', 'false');
-        });
-    });
-
-    lightboxClose.addEventListener('click', closeLightbox);
-    lightbox.addEventListener('click', function (event) {
-        if (event.target === lightbox) {
-            closeLightbox();
-        }
-    });
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-            closeLightbox();
-        }
-    });
-}
 </script>
 </body>
 </html>
+
 
 

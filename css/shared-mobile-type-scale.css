@@ -1,0 +1,24 @@
+:root {
+    --mobile-type-scale: 0.75;
+}
+
+@media (max-width: 768px) {
+    html {
+        font-size: calc(16px * var(--mobile-type-scale));
+    }
+
+    body {
+        font-size: 1rem;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        font-size: inherit;
+    }
+
+    .menu-btn {
+        font-size: calc(16px * var(--mobile-type-scale));
+    }
+}

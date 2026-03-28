@@ -1,8 +1,19 @@
+:root {
+    --book-now-bottom-gap: 14px;
+    --book-now-lift: 56px;
+    --book-now-hidden-shift: 20px;
+    --book-now-mobile-bottom-gap: 12px;
+    --book-now-mobile-lift: 30px;
+    --book-now-mobile-hidden-shift: 18px;
+}
+
 .book-now-btn {
     position: fixed;
+    --book-now-shift-y: 0px;
     left: 50%;
-    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-    transform: translateX(-50%);
+    bottom: calc(var(--book-now-bottom-gap) + var(--book-now-lift) + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%) translateY(var(--book-now-shift-y));
+    opacity: 1;
     z-index: 1400;
     overflow: hidden;
     border: none;
@@ -13,12 +24,17 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     cursor: pointer;
+    will-change: transform, opacity;
     box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    transition:
+        transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.24s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .book-now-btn:hover {
-    transform: translateX(-50%) translateY(-1px);
+    --book-now-shift-y: -1px;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.34);
 }
 
@@ -36,9 +52,9 @@
 }
 
 .book-now-btn.hidden {
+    --book-now-shift-y: var(--book-now-hidden-shift);
     opacity: 0;
     pointer-events: none;
-    transform: translateX(-50%) translateY(12px);
 }
 
 @keyframes book-now-shine {
@@ -61,7 +77,11 @@
 
 @media (max-width: 768px) {
     .book-now-btn {
-        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        bottom: calc(var(--book-now-mobile-bottom-gap) + var(--book-now-mobile-lift) + env(safe-area-inset-bottom, 0px));
         padding: 12px 21px;
+    }
+
+    .book-now-btn.hidden {
+        --book-now-shift-y: var(--book-now-mobile-hidden-shift);
     }
 }
