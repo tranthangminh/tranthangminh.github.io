@@ -136,7 +136,7 @@ body {
 }
 
 .actor-story-page {
-    padding: 18px 0 0;
+    padding: calc(var(--header-h) + 18px) 0 0;
     display: flex;
     flex-direction: column;
 }
@@ -620,6 +620,9 @@ body {
         width: 100%;
     }
 
+    .actor-hero-gallery {
+        height: 400px;
+    }
 }
 </style>
 <script src="../js/shared-components.js"></script>
@@ -645,9 +648,6 @@ if (typeof renderSharedHeader === 'function') {
     <div class="content-wrap actor-hero">
         <h2 class="actor-title actor-hero-title"><a class="actor-title-link" href="../index.html">Trang Chủ</a><span class="actor-title-sep">&gt;</span><span>Diễn Viên</span></h2>
         <div class="actor-profile actor-hero-summary">
-            <p class="actor-summary">
-                Em tên là Trần Thắng Minh. Em từng có kinh nghiệm học diễn xuất tại Sân khấu kịch Hồng Vân từ năm 2020 đến nay.
-            </p>
             <div class="actor-info-grid">
                 <section class="actor-info-group">
                     <h3>Thông tin cơ bản</h3>
@@ -695,6 +695,11 @@ if (typeof renderSharedHeader === 'function') {
             <figure class="actor-item"><img src="../assets/images/Actor/main-01.jpg" alt="Actor photo main-01"></figure>
             <figure class="actor-item"><img src="../assets/images/Actor/main-02.jpg" alt="Actor photo main-02"></figure>
             <figure class="actor-item"><img src="../assets/images/Actor/main-03.jpg" alt="Actor photo main-03"></figure>
+            <figure class="actor-item"><img src="../assets/images/Actor/main-04.jpg" alt="Actor photo main-04"></figure>
+            <figure class="actor-item"><img src="../assets/images/Actor/main-05.jpg" alt="Actor photo main-05"></figure>
+            <figure class="actor-item"><img src="../assets/images/Actor/main-06.jpg" alt="Actor photo main-06"></figure>
+            <figure class="actor-item"><img src="../assets/images/Actor/main-07.jpg" alt="Actor photo main-07"></figure>
+            <figure class="actor-item"><img src="../assets/images/Actor/main-08.jpg" alt="Actor photo main-08"></figure>
         </section>
     </div>
 
@@ -1010,7 +1015,6 @@ if (typeof renderSharedLightbox === 'function') {
 const welcomePopup = document.getElementById('welcomePopup');
 const bookNowButton = document.getElementById('bookNowButton');
 const contactSection = document.getElementById('contactSection');
-const actorHeroGallery = document.querySelector('.actor-hero-gallery');
 
 if (welcomePopup) {
     requestAnimationFrame(function () {
@@ -1037,6 +1041,12 @@ if (typeof initSharedLightbox === 'function') {
     });
 }
 
+if (typeof initSharedMomentumScroller === 'function') {
+    initSharedMomentumScroller({
+        selector: '.actor-hero-gallery'
+    });
+}
+
 if (bookNowButton) {
     bookNowButton.addEventListener('click', function () {
         const pageBottom = Math.max(
@@ -1056,83 +1066,6 @@ if (bookNowButton && contactSection) {
 
     observer.observe(contactSection);
 }
-
-if (actorHeroGallery) {
-    let isDragging = false;
-    let startX = 0;
-    let startScrollLeft = 0;
-    let didDrag = false;
-
-    function beginDrag(clientX) {
-        isDragging = true;
-        didDrag = false;
-        startX = clientX;
-        startScrollLeft = actorHeroGallery.scrollLeft;
-        actorHeroGallery.classList.add('dragging');
-    }
-
-    function moveDrag(clientX) {
-        if (!isDragging) {
-            return;
-        }
-        const deltaX = clientX - startX;
-        actorHeroGallery.scrollLeft = startScrollLeft - deltaX;
-        if (Math.abs(deltaX) > 4) {
-            didDrag = true;
-        }
-    }
-
-    function endDrag() {
-        isDragging = false;
-        actorHeroGallery.classList.remove('dragging');
-    }
-
-    actorHeroGallery.addEventListener('mousedown', function (event) {
-        beginDrag(event.pageX);
-    });
-
-    actorHeroGallery.addEventListener('mousemove', function (event) {
-        if (!isDragging) {
-            return;
-        }
-        event.preventDefault();
-        moveDrag(event.pageX);
-    });
-
-    actorHeroGallery.addEventListener('mouseleave', endDrag);
-    actorHeroGallery.addEventListener('mouseup', endDrag);
-
-    actorHeroGallery.addEventListener('touchstart', function (event) {
-        const touch = event.touches[0];
-        if (!touch) {
-            return;
-        }
-        beginDrag(touch.clientX);
-    }, { passive: true });
-
-    actorHeroGallery.addEventListener('touchmove', function (event) {
-        if (!isDragging) {
-            return;
-        }
-        const touch = event.touches[0];
-        if (!touch) {
-            return;
-        }
-        moveDrag(touch.clientX);
-    }, { passive: true });
-
-    actorHeroGallery.addEventListener('touchend', endDrag);
-    actorHeroGallery.addEventListener('touchcancel', endDrag);
-
-    actorHeroGallery.addEventListener('click', function (event) {
-        if (didDrag) {
-            event.preventDefault();
-            event.stopPropagation();
-            didDrag = false;
-        }
-    }, true);
-}
-
 
 </script>
 </body>

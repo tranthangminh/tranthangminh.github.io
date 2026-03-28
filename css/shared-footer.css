@@ -20,7 +20,7 @@
     --contact-grid-columns: minmax(0, 1fr);
     --contact-grid-flex: 0;
     --contact-side-min-height: 0;
-    --contact-signature-display: flex;
+    --contact-signature-display: none;
     --contact-signature-justify: center;
     --contact-signature-mobile-display: var(--contact-signature-display);
     --contact-signature-mobile-justify: var(--contact-signature-justify);

@@ -865,15 +865,8 @@ body {
     }
 
     .contact-wrap {
-        max-height: calc(100dvh - (var(--header-h) + 28px));
-        overflow-x: hidden;
-        overflow-y: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .contact-wrap::-webkit-scrollbar {
-        display: none;
+        max-height: none;
+        overflow: visible;
     }
 
     .hero-overlay {
@@ -1368,7 +1361,6 @@ const container = document.querySelector('.container');
 const headerShell = document.querySelector('.header-shell');
 const pages = Array.from(document.querySelectorAll('.page'));
 const dots = Array.from(document.querySelectorAll('.snap-dot'));
-const mediaGrids = Array.from(document.querySelectorAll('.actor-grid'));
 const welcomePopup = document.getElementById('welcomePopup');
 const bookNowButton = document.getElementById('bookNowButton');
 const aboutActorVideoLink = document.getElementById('aboutActorVideoLink');
@@ -1517,6 +1509,12 @@ if (typeof initSharedLightbox === 'function') {
     });
 }
 
+if (typeof initSharedMomentumScroller === 'function') {
+    initSharedMomentumScroller({
+        selector: '.actor-grid'
+    });
+}
+
 if (bookNowButton) {
     bookNowButton.addEventListener('click', function () {
         container.scrollTo({
@@ -1654,133 +1652,6 @@ dots.forEach(function (dot, index) {
     dot.addEventListener('click', function () {
         animateToPage(index, 850);
     });
-});
-
-mediaGrids.forEach(function (grid) {
-    let isDragging = false;
-    let startX = 0;
-    let startScrollLeft = 0;
-    let lastX = 0;
-    let lastTime = 0;
-    let velocityX = 0;
-    let momentumFrame = null;
-    let didDrag = false;
-
-    function stopMomentum() {
-        if (momentumFrame) {
-            cancelAnimationFrame(momentumFrame);
-            momentumFrame = null;
-        }
-    }
-
-    function runMomentum() {
-        stopMomentum();
-
-        function step() {
-            if (Math.abs(velocityX) < 0.02) {
-                stopMomentum();
-                return;
-            }
-
-            grid.scrollLeft -= velocityX * 16;
-            velocityX *= 0.94;
-            momentumFrame = requestAnimationFrame(step);
-        }
-
-        momentumFrame = requestAnimationFrame(step);
-    }
-
-    function beginDrag(clientX) {
-        stopMomentum();
-        isDragging = true;
-        didDrag = false;
-        startX = clientX;
-        startScrollLeft = grid.scrollLeft;
-        lastX = clientX;
-        lastTime = performance.now();
-        velocityX = 0;
-        grid.classList.add('dragging');
-    }
-
-    function moveDrag(clientX) {
-        if (!isDragging) {
-            return;
-        }
-        const deltaX = clientX - startX;
-        grid.scrollLeft = startScrollLeft - deltaX;
-
-        if (Math.abs(deltaX) > 4) {
-            didDrag = true;
-        }
-
-        const now = performance.now();
-        const dt = now - lastTime;
-        if (dt > 0) {
-            velocityX = (clientX - lastX) / dt;
-        }
-        lastX = clientX;
-        lastTime = now;
-    }
-
-    function endDrag() {
-        if (!isDragging) {
-            return;
-        }
-        isDragging = false;
-        grid.classList.remove('dragging');
-        if (didDrag) {
-            runMomentum();
-        }
-    }
-
-    grid.addEventListener('mouseleave', endDrag);
-    grid.addEventListener('mouseup', endDrag);
-
-    grid.addEventListener('mousedown', function (event) {
-        beginDrag(event.pageX);
-    });
-
-    grid.addEventListener('mousemove', function (event) {
-        if (!isDragging) {
-            return;
-        }
-        event.preventDefault();
-        moveDrag(event.pageX);
-    });
-
-    grid.addEventListener('touchstart', function (event) {
-        const touch = event.touches[0];
-        if (!touch) {
-            return;
-        }
-        beginDrag(touch.clientX);
-    }, { passive: true });
-
-    grid.addEventListener('touchmove', function (event) {
-        if (!isDragging) {
-            return;
-        }
-        const touch = event.touches[0];
-        if (!touch) {
-            return;
-        }
-        moveDrag(touch.clientX);
-    }, { passive: true });
-
-    grid.addEventListener('touchend', endDrag);
-    grid.addEventListener('touchcancel', endDrag);
-
-    grid.addEventListener('dragstart', function (event) {
-        event.preventDefault();
-    });
-
-    grid.addEventListener('click', function (event) {
-        if (didDrag) {
-            event.preventDefault();
-            event.stopPropagation();
-            didDrag = false;
-        }
-    }, true);
 });
 
 const revealElements = Array.from(document.querySelectorAll('.reveal-up'));

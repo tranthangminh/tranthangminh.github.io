@@ -134,6 +134,239 @@
             '<button class="book-now-btn" id="' + buttonId + '" type="button" aria-label="' + ariaLabel + '">' + buttonLabel + '</button>';
     };
 
+    window.initSharedMomentumScroller = function (options) {
+        var opts = options || {};
+        var selector = typeof opts.selector === 'string' ? opts.selector : null;
+        var inputElements = opts.elements || opts.element || null;
+        var dragThreshold = typeof opts.dragThreshold === 'number' ? opts.dragThreshold : 4;
+        var friction = typeof opts.friction === 'number' ? opts.friction : 0.94;
+        var minVelocity = typeof opts.minVelocity === 'number' ? opts.minVelocity : 0.02;
+        var frameDistance = typeof opts.frameDistance === 'number' ? opts.frameDistance : 16;
+        var momentum = opts.momentum !== false;
+        var draggingClass = opts.draggingClass || 'dragging';
+        var useNativeTouch = opts.nativeTouch !== false;
+
+        function toArray(value) {
+            if (!value) {
+                return [];
+            }
+
+            if (typeof value.length === 'number' && typeof value !== 'string' && !value.nodeType) {
+                return Array.prototype.slice.call(value);
+            }
+
+            return [value];
+        }
+
+        function initElement(element) {
+            if (!element) {
+                return null;
+            }
+
+            if (typeof element.__sharedMomentumScrollerCleanup === 'function') {
+                element.__sharedMomentumScrollerCleanup();
+            }
+
+            var isDragging = false;
+            var startX = 0;
+            var startScrollLeft = 0;
+            var lastX = 0;
+            var lastTime = 0;
+            var velocityX = 0;
+            var momentumFrame = null;
+            var didDrag = false;
+            var originalTouchAction = element.style.touchAction;
+            var originalWebkitOverflowScrolling = element.style.webkitOverflowScrolling;
+            var originalOverscrollBehaviorX = element.style.overscrollBehaviorX;
+
+            if (useNativeTouch) {
+                element.style.touchAction = 'auto';
+                element.style.webkitOverflowScrolling = 'touch';
+                element.style.overscrollBehaviorX = 'contain';
+            }
+
+            function stopMomentum() {
+                if (momentumFrame) {
+                    cancelAnimationFrame(momentumFrame);
+                    momentumFrame = null;
+                }
+            }
+
+            function runMomentum() {
+                if (!momentum) {
+                    return;
+                }
+
+                stopMomentum();
+
+                function step() {
+                    if (Math.abs(velocityX) < minVelocity) {
+                        stopMomentum();
+                        return;
+                    }
+
+                    element.scrollLeft -= velocityX * frameDistance;
+                    velocityX *= friction;
+                    momentumFrame = requestAnimationFrame(step);
+                }
+
+                momentumFrame = requestAnimationFrame(step);
+            }
+
+            function beginDrag(clientX) {
+                stopMomentum();
+                isDragging = true;
+                didDrag = false;
+                startX = clientX;
+                startScrollLeft = element.scrollLeft;
+                lastX = clientX;
+                lastTime = performance.now();
+                velocityX = 0;
+                element.classList.add(draggingClass);
+            }
+
+            function moveDrag(clientX) {
+                if (!isDragging) {
+                    return;
+                }
+
+                var deltaX = clientX - startX;
+                element.scrollLeft = startScrollLeft - deltaX;
+
+                if (Math.abs(deltaX) > dragThreshold) {
+                    didDrag = true;
+                }
+
+                var now = performance.now();
+                var dt = now - lastTime;
+                if (dt > 0) {
+                    velocityX = (clientX - lastX) / dt;
+                }
+
+                lastX = clientX;
+                lastTime = now;
+            }
+
+            function endDrag() {
+                if (!isDragging) {
+                    return;
+                }
+
+                isDragging = false;
+                element.classList.remove(draggingClass);
+
+                if (didDrag) {
+                    runMomentum();
+                }
+            }
+
+            function onMouseDown(event) {
+                beginDrag(event.pageX);
+            }
+
+            function onMouseMove(event) {
+                if (!isDragging) {
+                    return;
+                }
+
+                event.preventDefault();
+                moveDrag(event.pageX);
+            }
+
+            function onTouchStart(event) {
+                var touch = event.touches[0];
+                if (!touch) {
+                    return;
+                }
+
+                beginDrag(touch.clientX);
+            }
+
+            function onTouchMove(event) {
+                if (!isDragging) {
+                    return;
+                }
+
+                var touch = event.touches[0];
+                if (!touch) {
+                    return;
+                }
+
+                moveDrag(touch.clientX);
+            }
+
+            function onDragStart(event) {
+                event.preventDefault();
+            }
+
+            function onClick(event) {
+                if (!didDrag) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+                didDrag = false;
+            }
+
+            element.addEventListener('mouseleave', endDrag);
+            element.addEventListener('mouseup', endDrag);
+            element.addEventListener('mousedown', onMouseDown);
+            element.addEventListener('mousemove', onMouseMove);
+            if (!useNativeTouch) {
+                element.addEventListener('touchstart', onTouchStart, { passive: true });
+                element.addEventListener('touchmove', onTouchMove, { passive: true });
+                element.addEventListener('touchend', endDrag);
+                element.addEventListener('touchcancel', endDrag);
+            }
+            element.addEventListener('dragstart', onDragStart);
+            element.addEventListener('click', onClick, true);
+
+            function destroy() {
+                stopMomentum();
+                isDragging = false;
+                element.classList.remove(draggingClass);
+                element.removeEventListener('mouseleave', endDrag);
+                element.removeEventListener('mouseup', endDrag);
+                element.removeEventListener('mousedown', onMouseDown);
+                element.removeEventListener('mousemove', onMouseMove);
+                if (!useNativeTouch) {
+                    element.removeEventListener('touchstart', onTouchStart, { passive: true });
+                    element.removeEventListener('touchmove', onTouchMove, { passive: true });
+                    element.removeEventListener('touchend', endDrag);
+                    element.removeEventListener('touchcancel', endDrag);
+                }
+                element.removeEventListener('dragstart', onDragStart);
+                element.removeEventListener('click', onClick, true);
+                element.style.touchAction = originalTouchAction;
+                element.style.webkitOverflowScrolling = originalWebkitOverflowScrolling;
+                element.style.overscrollBehaviorX = originalOverscrollBehaviorX;
+                delete element.__sharedMomentumScrollerCleanup;
+            }
+
+            element.__sharedMomentumScrollerCleanup = destroy;
+
+            return {
+                element: element,
+                destroy: destroy,
+                stopMomentum: stopMomentum
+            };
+        }
+
+        var elements = selector ? Array.prototype.slice.call(document.querySelectorAll(selector)) : toArray(inputElements);
+        var instances = elements.map(initElement).filter(Boolean);
+
+        return {
+            elements: elements,
+            instances: instances,
+            destroy: function () {
+                instances.forEach(function (instance) {
+                    instance.destroy();
+                });
+            }
+        };
+    };
+
     window.renderSharedLightbox = function (rootId, options) {
         var opts = options || {};
         var root = document.getElementById(rootId);
@@ -144,14 +377,35 @@
         var overlayId = escapeHtml(opts.overlayId || 'sharedLightbox');
         var imageId = escapeHtml(opts.imageId || 'sharedLightboxImage');
         var closeId = escapeHtml(opts.closeId || 'sharedLightboxClose');
+        var prevId = escapeHtml(opts.prevId || 'sharedLightboxPrev');
+        var nextId = escapeHtml(opts.nextId || 'sharedLightboxNext');
+        var counterId = escapeHtml(opts.counterId || 'sharedLightboxCounter');
+        var thumbsId = escapeHtml(opts.thumbsId || 'sharedLightboxThumbs');
         var closeLabel = escapeHtml(opts.closeLabel || '\u0110\u00f3ng \u1ea3nh');
+        var prevLabel = escapeHtml(opts.prevLabel || '\u1ea2nh tr\u01b0\u1edbc');
+        var nextLabel = escapeHtml(opts.nextLabel || '\u1ea2nh ti\u1ebfp theo');
+        var thumbsLabel = escapeHtml(opts.thumbsLabel || 'Danh s\u00e1ch \u1ea3nh');
         var initialAlt = escapeHtml(opts.initialAlt || '\u1ea2nh ph\u00f3ng to');
         var closeText = escapeHtml(opts.closeText || '\u00d7');
+        var prevText = escapeHtml(opts.prevText || '\u2039');
+        var nextText = escapeHtml(opts.nextText || '\u203a');
 
         root.innerHTML = '' +
             '<div class="lightbox" id="' + overlayId + '" aria-hidden="true">' +
-            '    <button class="lightbox-close" id="' + closeId + '" type="button" aria-label="' + closeLabel + '">' + closeText + '</button>' +
-            '    <img id="' + imageId + '" src="" alt="' + initialAlt + '" draggable="false">' +
+            '    <div class="lightbox-panel">' +
+            '        <button class="lightbox-close" id="' + closeId + '" type="button" aria-label="' + closeLabel + '">' + closeText + '</button>' +
+            '        <div class="lightbox-stage-wrap">' +
+            '            <button class="lightbox-nav lightbox-nav-prev" id="' + prevId + '" type="button" aria-label="' + prevLabel + '">' + prevText + '</button>' +
+            '            <div class="lightbox-stage">' +
+            '                <img id="' + imageId + '" src="" alt="' + initialAlt + '" draggable="false">' +
+            '            </div>' +
+            '            <button class="lightbox-nav lightbox-nav-next" id="' + nextId + '" type="button" aria-label="' + nextLabel + '">' + nextText + '</button>' +
+            '        </div>' +
+            '        <div class="lightbox-meta">' +
+            '            <div class="lightbox-counter" id="' + counterId + '" aria-live="polite"></div>' +
+            '            <div class="lightbox-thumbs" id="' + thumbsId + '" aria-label="' + thumbsLabel + '"></div>' +
+            '        </div>' +
+            '    </div>' +
             '</div>';
     };
 
@@ -160,12 +414,20 @@
         var overlay = document.getElementById(opts.overlayId || 'sharedLightbox');
         var image = document.getElementById(opts.imageId || 'sharedLightboxImage');
         var closeButton = document.getElementById(opts.closeId || 'sharedLightboxClose');
+        var prevButton = document.getElementById(opts.prevId || 'sharedLightboxPrev');
+        var nextButton = document.getElementById(opts.nextId || 'sharedLightboxNext');
+        var counter = document.getElementById(opts.counterId || 'sharedLightboxCounter');
+        var thumbs = document.getElementById(opts.thumbsId || 'sharedLightboxThumbs');
         var triggerSelector = opts.triggerSelector || '.actor-item img';
+        var groupSelector = typeof opts.groupSelector === 'string'
+            ? opts.groupSelector
+            : '[data-lightbox-group], .actor-grid, .actor-hero-gallery, .timeline-media-grid';
         var fallbackAlt = opts.fallbackAlt || '\u1ea2nh ph\u00f3ng to';
         var minScale = typeof opts.minScale === 'number' ? opts.minScale : 1;
         var maxScale = typeof opts.maxScale === 'number' ? opts.maxScale : 4;
         var zoomStep = typeof opts.zoomStep === 'number' ? opts.zoomStep : 0.24;
         var zoomToggleScale = typeof opts.zoomToggleScale === 'number' ? opts.zoomToggleScale : 2;
+        var panThreshold = typeof opts.panThreshold === 'number' ? opts.panThreshold : 6;
         var scale = minScale;
         var translateX = 0;
         var translateY = 0;
@@ -175,13 +437,145 @@
         var startPointerY = 0;
         var startTranslateX = 0;
         var startTranslateY = 0;
+        var activePointers = {};
+        var pointerStarts = {};
+        var pinchStartDistance = 0;
+        var pinchStartScale = minScale;
+        var pinchStartTranslateX = 0;
+        var pinchStartTranslateY = 0;
+        var pinchStartCenterX = 0;
+        var pinchStartCenterY = 0;
+        var lastTapTime = 0;
+        var lastTapX = 0;
+        var lastTapY = 0;
+        var doubleTapDelay = typeof opts.doubleTapDelay === 'number' ? opts.doubleTapDelay : 280;
+        var doubleTapDistance = typeof opts.doubleTapDistance === 'number' ? opts.doubleTapDistance : 24;
+        var currentItems = [];
+        var currentIndex = -1;
 
-        if (!overlay || !image || !closeButton || !triggerSelector) {
+        if (!overlay || !image || !closeButton || !prevButton || !nextButton || !counter || !thumbs || !triggerSelector) {
             return null;
         }
 
         function clamp(value, min, max) {
             return Math.min(max, Math.max(min, value));
+        }
+
+        function toArray(list) {
+            return Array.prototype.slice.call(list || []);
+        }
+
+        function getImageSource(target) {
+            if (!target) {
+                return '';
+            }
+
+            if (target.dataset && target.dataset.lightboxSrc) {
+                return target.dataset.lightboxSrc;
+            }
+
+            return target.currentSrc || target.src || '';
+        }
+
+        function getItemAlt(target) {
+            if (!target) {
+                return fallbackAlt;
+            }
+
+            if (target.dataset && target.dataset.lightboxAlt) {
+                return target.dataset.lightboxAlt;
+            }
+
+            return target.alt || fallbackAlt;
+        }
+
+        function getGroupRoot(target) {
+            if (!target || !groupSelector || typeof target.closest !== 'function') {
+                return null;
+            }
+
+            return target.closest(groupSelector);
+        }
+
+        function collectGalleryItems(target) {
+            var groupRoot = getGroupRoot(target);
+            var items = toArray(document.querySelectorAll(triggerSelector))
+                .filter(function (node) {
+                    return (!groupRoot || groupRoot.contains(node)) && !!getImageSource(node);
+                })
+                .map(function (node) {
+                    return {
+                        element: node,
+                        src: getImageSource(node),
+                        thumbSrc: node.currentSrc || node.src || getImageSource(node),
+                        alt: getItemAlt(node)
+                    };
+                });
+            var index = items.findIndex(function (item) {
+                return item.element === target;
+            });
+
+            if (index === -1 && target && getImageSource(target)) {
+                items.unshift({
+                    element: target,
+                    src: getImageSource(target),
+                    thumbSrc: target.currentSrc || target.src || getImageSource(target),
+                    alt: getItemAlt(target)
+                });
+                index = 0;
+            }
+
+            return {
+                items: items,
+                index: index
+            };
+        }
+
+        function getPointerIds() {
+            return Object.keys(activePointers);
+        }
+
+        function getPointerCount() {
+            return getPointerIds().length;
+        }
+
+        function getPointerList() {
+            return getPointerIds().map(function (pointerId) {
+                return activePointers[pointerId];
+            });
+        }
+
+        function getDistance(pointA, pointB) {
+            var dx = pointA.x - pointB.x;
+            var dy = pointA.y - pointB.y;
+            return Math.sqrt((dx * dx) + (dy * dy));
+        }
+
+        function getMidpoint(pointA, pointB) {
+            return {
+                x: (pointA.x + pointB.x) / 2,
+                y: (pointA.y + pointB.y) / 2
+            };
+        }
+
+        function beginPinch() {
+            var pointers = getPointerList();
+            if (pointers.length < 2) {
+                pinchStartDistance = 0;
+                return;
+            }
+
+            var center = getMidpoint(pointers[0], pointers[1]);
+            pinchStartDistance = Math.max(getDistance(pointers[0], pointers[1]), 1);
+            pinchStartScale = scale;
+            pinchStartTranslateX = translateX;
+            pinchStartTranslateY = translateY;
+            pinchStartCenterX = center.x;
+            pinchStartCenterY = center.y;
+        }
+
+        function clearPinch() {
+            pinchStartDistance = 0;
         }
 
         function clampTranslation() {
@@ -211,6 +605,9 @@
             translateY = 0;
             isPanning = false;
             activePointerId = null;
+            activePointers = {};
+            pointerStarts = {};
+            clearPinch();
             applyTransform();
         }
 
@@ -230,14 +627,88 @@
             setScale(scale + delta);
         }
 
-        function openLightbox(target) {
-            if (!target || !target.src) {
+        function updateNavState() {
+            var hasGallery = currentItems.length > 1;
+            overlay.classList.toggle('has-gallery', hasGallery);
+            prevButton.disabled = !hasGallery;
+            nextButton.disabled = !hasGallery;
+            counter.textContent = hasGallery && currentIndex >= 0
+                ? String(currentIndex + 1) + ' / ' + String(currentItems.length)
+                : '';
+        }
+
+        function renderThumbs() {
+            thumbs.innerHTML = '';
+
+            if (currentItems.length <= 1) {
                 return;
             }
 
-            image.src = target.src;
-            image.alt = target.alt || fallbackAlt;
+            currentItems.forEach(function (item, index) {
+                var button = document.createElement('button');
+                var thumbImage = document.createElement('img');
+
+                button.type = 'button';
+                button.className = 'lightbox-thumb' + (index === currentIndex ? ' active' : '');
+                button.setAttribute('aria-label', 'M\u1edf \u1ea3nh ' + String(index + 1));
+                button.dataset.lightboxIndex = String(index);
+
+                thumbImage.src = item.thumbSrc || item.src;
+                thumbImage.alt = item.alt || fallbackAlt;
+                thumbImage.loading = 'lazy';
+                thumbImage.decoding = 'async';
+
+                button.appendChild(thumbImage);
+                thumbs.appendChild(button);
+            });
+
+            var activeThumb = thumbs.querySelector('.lightbox-thumb.active');
+            if (activeThumb && typeof activeThumb.scrollIntoView === 'function') {
+                activeThumb.scrollIntoView({
+                    block: 'nearest',
+                    inline: 'center',
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function showItem(index) {
+            if (!currentItems.length) {
+                return;
+            }
+
+            currentIndex = ((index % currentItems.length) + currentItems.length) % currentItems.length;
+            image.src = currentItems[currentIndex].src;
+            image.alt = currentItems[currentIndex].alt || fallbackAlt;
             resetZoom();
+            updateNavState();
+            renderThumbs();
+        }
+
+        function goToNext() {
+            if (currentItems.length <= 1) {
+                return;
+            }
+
+            showItem(currentIndex + 1);
+        }
+
+        function goToPrev() {
+            if (currentItems.length <= 1) {
+                return;
+            }
+
+            showItem(currentIndex - 1);
+        }
+
+        function openLightbox(target) {
+            var gallery = collectGalleryItems(target);
+            if (!gallery.items.length) {
+                return;
+            }
+
+            currentItems = gallery.items;
+            showItem(gallery.index >= 0 ? gallery.index : 0);
             overlay.classList.add('open');
             overlay.setAttribute('aria-hidden', 'false');
         }
@@ -247,7 +718,12 @@
             overlay.classList.remove('open');
             overlay.classList.remove('zoomed');
             overlay.classList.remove('is-panning');
+            overlay.classList.remove('has-gallery');
             overlay.setAttribute('aria-hidden', 'true');
+            currentItems = [];
+            currentIndex = -1;
+            counter.textContent = '';
+            thumbs.innerHTML = '';
             image.src = '';
             image.alt = fallbackAlt;
         }
@@ -280,6 +756,35 @@
         });
 
         image.addEventListener('pointerdown', function (event) {
+            activePointers[event.pointerId] = {
+                x: event.clientX,
+                y: event.clientY,
+                type: event.pointerType || ''
+            };
+            pointerStarts[event.pointerId] = {
+                x: event.clientX,
+                y: event.clientY,
+                moved: false,
+                type: event.pointerType || ''
+            };
+
+            if (typeof image.setPointerCapture === 'function') {
+                try {
+                    image.setPointerCapture(event.pointerId);
+                } catch (error) {
+                    /* Ignore pointer capture issues on unsupported browsers */
+                }
+            }
+
+            if (getPointerCount() >= 2) {
+                isPanning = false;
+                activePointerId = null;
+                beginPinch();
+                applyTransform();
+                event.preventDefault();
+                return;
+            }
+
             if (scale <= minScale + 0.001) {
                 return;
             }
@@ -290,12 +795,47 @@
             startPointerY = event.clientY;
             startTranslateX = translateX;
             startTranslateY = translateY;
-            image.setPointerCapture(event.pointerId);
             applyTransform();
             event.preventDefault();
         });
 
         image.addEventListener('pointermove', function (event) {
+            if (activePointers[event.pointerId]) {
+                activePointers[event.pointerId].x = event.clientX;
+                activePointers[event.pointerId].y = event.clientY;
+            }
+
+            if (pointerStarts[event.pointerId]) {
+                var pointerDeltaX = event.clientX - pointerStarts[event.pointerId].x;
+                var pointerDeltaY = event.clientY - pointerStarts[event.pointerId].y;
+                if (Math.sqrt((pointerDeltaX * pointerDeltaX) + (pointerDeltaY * pointerDeltaY)) > panThreshold) {
+                    pointerStarts[event.pointerId].moved = true;
+                }
+            }
+
+            if (getPointerCount() >= 2 && pinchStartDistance > 0) {
+                var pointers = getPointerList();
+                var currentDistance = Math.max(getDistance(pointers[0], pointers[1]), 1);
+                var currentCenter = getMidpoint(pointers[0], pointers[1]);
+
+                scale = clamp(pinchStartScale * (currentDistance / pinchStartDistance), minScale, maxScale);
+
+                if (scale <= minScale + 0.001) {
+                    scale = minScale;
+                    translateX = 0;
+                    translateY = 0;
+                } else {
+                    translateX = pinchStartTranslateX + (currentCenter.x - pinchStartCenterX);
+                    translateY = pinchStartTranslateY + (currentCenter.y - pinchStartCenterY);
+                }
+
+                isPanning = false;
+                activePointerId = null;
+                applyTransform();
+                event.preventDefault();
+                return;
+            }
+
             if (!isPanning || event.pointerId !== activePointerId) {
                 return;
             }
@@ -307,13 +847,57 @@
         });
 
         function endPan(event) {
-            if (event && activePointerId !== null && event.pointerId !== activePointerId) {
+            var pointerId = event && typeof event.pointerId !== 'undefined' ? event.pointerId : null;
+            var pointerInfo = pointerId !== null && activePointers[pointerId] ? activePointers[pointerId] : {
+                x: event && typeof event.clientX === 'number' ? event.clientX : 0,
+                y: event && typeof event.clientY === 'number' ? event.clientY : 0
+            };
+            var pointerStart = pointerId !== null ? pointerStarts[pointerId] : null;
+
+            if (pointerId !== null) {
+                delete activePointers[pointerId];
+                delete pointerStarts[pointerId];
+            }
+
+            if (pointerId !== null && activePointerId === pointerId) {
+                isPanning = false;
+                activePointerId = null;
+            }
+
+            if (getPointerCount() < 2) {
+                clearPinch();
+            }
+
+            applyTransform();
+
+            if (!pointerStart || pointerStart.type !== 'touch' || pointerStart.moved || getPointerCount() !== 0) {
                 return;
             }
 
-            isPanning = false;
-            activePointerId = null;
-            applyTransform();
+            var now = performance.now();
+            var distanceFromLastTap = Math.sqrt(
+                Math.pow(pointerInfo.x - lastTapX, 2) +
+                Math.pow(pointerInfo.y - lastTapY, 2)
+            );
+
+            if ((now - lastTapTime) <= doubleTapDelay && distanceFromLastTap <= doubleTapDistance) {
+                if (scale > minScale + 0.001) {
+                    resetZoom();
+                } else {
+                    setScale(Math.min(maxScale, zoomToggleScale));
+                }
+                lastTapTime = 0;
+                lastTapX = 0;
+                lastTapY = 0;
+                if (event) {
+                    event.preventDefault();
+                }
+                return;
+            }
+
+            lastTapTime = now;
+            lastTapX = pointerInfo.x;
+            lastTapY = pointerInfo.y;
         }
 
         image.addEventListener('pointerup', endPan);
@@ -330,10 +914,31 @@
         }, { passive: false });
 
         closeButton.addEventListener('click', closeLightbox);
-        overlay.addEventListener('click', function (event) {
-            if (event.target === overlay) {
-                closeLightbox();
+        prevButton.addEventListener('click', function (event) {
+            event.stopPropagation();
+            goToPrev();
+        });
+        nextButton.addEventListener('click', function (event) {
+            event.stopPropagation();
+            goToNext();
+        });
+        thumbs.addEventListener('click', function (event) {
+            var thumbButton = event.target.closest('.lightbox-thumb');
+            if (!thumbButton || !thumbs.contains(thumbButton)) {
+                return;
             }
+
+            var nextIndex = Number(thumbButton.dataset.lightboxIndex);
+            if (!Number.isNaN(nextIndex)) {
+                showItem(nextIndex);
+            }
+        });
+        overlay.addEventListener('click', function (event) {
+            if (event.target === image || event.target.closest('button')) {
+                return;
+            }
+
+            closeLightbox();
         });
 
         document.addEventListener('keydown', function (event) {
@@ -343,6 +948,16 @@
 
             if (event.key === 'Escape') {
                 closeLightbox();
+                return;
+            }
+
+            if (event.key === 'ArrowLeft') {
+                goToPrev();
+                return;
+            }
+
+            if (event.key === 'ArrowRight') {
+                goToNext();
                 return;
             }
 
@@ -364,6 +979,8 @@
         return {
             openLightbox: openLightbox,
             closeLightbox: closeLightbox,
+            goToNext: goToNext,
+            goToPrev: goToPrev,
             zoomBy: zoomBy,
             resetZoom: resetZoom,
             overlay: overlay,
