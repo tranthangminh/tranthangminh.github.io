@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diễn Viên - Trần Thắng Minh</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/shared-header.css">
+<link rel="stylesheet" href="../css/shared-footer.css">
+<link rel="stylesheet" href="../css/shared-book-now.css">
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+:root {
+    --content-max: 1060px;
+    --content-pad: 24px;
+    --header-h: 56px;
+    --text-black: #333333;
+    --text-soft-white: #f2efe8;
+}
+
+body {
+    background:
+        radial-gradient(circle at 12% 10%, rgba(30, 64, 175, 0.12), transparent 38%),
+        radial-gradient(circle at 88% 16%, rgba(180, 83, 9, 0.11), transparent 40%),
+        radial-gradient(circle at 16% 84%, rgba(14, 116, 144, 0.1), transparent 42%),
+        radial-gradient(circle at 86% 88%, rgba(120, 53, 15, 0.08), transparent 36%),
+        linear-gradient(145deg, #f8fbfc 0%, #f4efe7 54%, #f5f8fb 100%);
+    color: var(--text-black);
+    min-height: 100vh;
+}
+
+.welcome-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 4200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+        radial-gradient(circle at center, rgba(96, 165, 250, 0.18), transparent 36%),
+        linear-gradient(145deg, #09111a 0%, #0e1825 52%, #132032 100%);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.85s ease, visibility 0s linear 0.85s;
+}
+
+.welcome-popup::before,
+.welcome-popup::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: url("../assets/images/Actor/main-01.jpg") center / contain no-repeat;
+}
+
+.welcome-popup::before {
+    transform: scale(1.08);
+    filter: blur(34px) saturate(1.02);
+    opacity: 0;
+    transition: opacity 0.85s ease;
+}
+
+.welcome-popup::after {
+    filter:
+        drop-shadow(0 0 18px rgba(125, 185, 255, 0.5))
+        drop-shadow(0 0 42px rgba(56, 119, 255, 0.34));
+    opacity: 0;
+    transition: opacity 0.85s ease;
+}
+
+.welcome-popup.show {
+    transition: opacity 0.85s ease, visibility 0s linear 0s;
+}
+
+.welcome-note {
+    position: relative;
+    z-index: 2;
+    width: min(620px, calc(100% - 36px));
+    padding: 0;
+    color: #f8fafc;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(16px) scale(0.988);
+    transition: opacity 0.85s ease 0.08s, transform 0.85s ease 0.08s;
+}
+
+.welcome-popup.show::before {
+    opacity: 0.42;
+}
+
+.welcome-popup.show::after {
+    opacity: 0.5;
+}
+
+.welcome-popup.show .welcome-note {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.welcome-popup.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.welcome-note-kicker {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(226, 232, 240, 0.78);
+}
+
+.welcome-note-title {
+    margin: 10px 0 0;
+    font-weight: 700;
+    line-height: 1.08;
+    color: #fff;
+    text-shadow: 0 8px 24px rgba(4, 8, 15, 0.4);
+}
+
+.content-wrap {
+    width: min(var(--content-max), calc(100% - (var(--content-pad) * 2)));
+    margin: 0 auto;
+}
+
+.actor-story-page {
+    padding: 18px 0 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.actor-hero {
+    min-height: calc(100dvh - (var(--header-h) + 24px));
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 14px;
+    align-content: start;
+}
+
+.actor-hero-title {
+    margin-bottom: 0;
+}
+
+.actor-hero-summary {
+    margin-bottom: 0;
+}
+
+.actor-title {
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.actor-title-link {
+    color: inherit;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.actor-title-link:hover {
+    opacity: 0.7;
+}
+
+.actor-title-sep {
+    opacity: 0.5;
+    margin: 0 6px;
+}
+
+.actor-summary {
+    line-height: 1.65;
+}
+
+.actor-profile {
+    display: grid;
+    gap: 16px;
+}
+
+.actor-info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+.actor-info-group {
+    border: 1px solid rgba(51, 51, 51, 0.1);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 14px 16px;
+}
+
+.actor-info-group--training {
+    border-color: rgba(83, 96, 108, 0.28);
+    background: linear-gradient(165deg, #53606c, #2d343c);
+    box-shadow: 0 14px 30px rgba(45, 52, 60, 0.22);
+}
+
+.actor-info-group.actor-info-group--training h3 {
+    color: #fff;
+}
+
+.actor-info-group--training .actor-info-list li {
+    color: rgba(255, 255, 255, 0.86);
+}
+
+.actor-info-group--training .actor-info-list li::before {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.actor-info-group--training strong {
+    color: #fff;
+}
+
+.actor-info-group h3 {
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: rgba(51, 51, 51, 0.86);
+}
+
+.actor-info-list {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+}
+
+.actor-info-list li {
+    position: relative;
+    padding-left: 16px;
+    line-height: 1.6;
+    color: rgba(51, 51, 51, 0.9);
+}
+
+.actor-info-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.68em;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(51, 51, 51, 0.58);
+}
+
+.actor-field-label {
+    font-weight: 400;
+    color: rgba(51, 51, 51, 0.96);
+    display: inline-block;
+}
+
+.basic-info-list .actor-field-label {
+    font-weight: 400;
+}
+
+.basic-info-list .actor-field-value {
+    font-weight: 600;
+}
+
+.actor-field-label::after {
+    content: ":";
+    margin-left: 1px;
+}
+
+.basic-info-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding-left: 0;
+}
+
+.basic-info-list li::before {
+    content: none;
+}
+
+.actor-field-icon {
+    width: 22px;
+    flex: 0 0 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    line-height: 1;
+}
+
+.actor-field-text {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: clamp(88px, 22vw, 132px) minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: 8px;
+}
+
+.actor-field-value {
+    color: rgba(51, 51, 51, 0.92);
+}
+
+.actor-phone-link {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.actor-phone-link:hover {
+    text-decoration: underline;
+}
+
+.study-info-list li {
+    position: relative;
+    padding-left: 16px;
+    display: grid;
+    grid-template-columns: clamp(126px, 28vw, 210px) minmax(0, 1fr);
+    column-gap: 10px;
+    align-items: baseline;
+}
+
+.study-info-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.68em;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(51, 51, 51, 0.58);
+}
+
+.study-field-label {
+    font-weight: 400;
+    color: rgba(51, 51, 51, 0.96);
+}
+
+.study-field-label::after {
+    content: ":";
+    margin-left: 1px;
+}
+
+.study-field-value {
+    color: rgba(51, 51, 51, 0.9);
+}
+
+.actor-hero-gallery {
+    min-height: 0;
+    height: 75dvh;
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: minmax(0, 1fr);
+    grid-auto-columns: clamp(220px, 24vw, 320px);
+    gap: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-items: stretch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+    user-select: none;
+    touch-action: pan-y;
+    justify-self: stretch;
+    margin: 0;
+    padding: 10px;
+    border-radius: 18px;
+    border: 1px solid rgba(51, 51, 51, 0.1);
+    background: rgba(255, 255, 255, 0.58);
+    backdrop-filter: blur(6px);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.actor-item {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
+    height: 100%;
+    cursor: zoom-in;
+}
+
+.actor-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.actor-hero-gallery::-webkit-scrollbar {
+    display: none;
+}
+
+.actor-hero-gallery.dragging {
+    cursor: grabbing;
+}
+
+.actor-timeline {
+    padding: 22px 20px;
+    border: 1px solid rgba(51, 51, 51, 0.1);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    margin-top: 14px;
+}
+
+.actor-timeline--training {
+    order: 1;
+    border-color: rgba(83, 96, 108, 0.28);
+    background: linear-gradient(165deg, #53606c, #2d343c);
+    box-shadow: 0 18px 38px rgba(45, 52, 60, 0.28);
+}
+
+.actor-timeline--training .timeline-title {
+    color: #fff;
+}
+
+.actor-timeline--training .timeline-list::before {
+    background: rgba(255, 255, 255, 0.26);
+}
+
+.actor-timeline--training .timeline-item {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.actor-timeline--training .timeline-item::before {
+    background: #fff;
+}
+
+.actor-timeline--training .timeline-year {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.actor-timeline--training .timeline-text {
+    color: rgba(255, 255, 255, 0.84);
+}
+
+.actor-timeline--study {
+    order: 2;
+}
+
+.timeline-title {
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(51, 51, 51, 0.72);
+}
+
+.timeline-list {
+    list-style: none;
+    position: relative;
+    padding-left: 20px;
+    display: grid;
+    gap: 12px;
+}
+
+.timeline-list::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: rgba(17, 17, 17, 0.2);
+}
+
+.timeline-item {
+    position: relative;
+    border: 1px solid rgba(51, 51, 51, 0.1);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.82);
+}
+
+.timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -20px;
+    top: 18px;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #111;
+}
+
+.timeline-year {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.timeline-text {
+    line-height: 1.55;
+    color: rgba(51, 51, 51, 0.88);
+}
+
+.timeline-media-grid {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.timeline-media-item {
+    flex: 0 0 auto;
+    width: min(25vh, 160px);
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    cursor: zoom-in;
+}
+
+.timeline-media-item img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+}
+
+.timeline-video-grid {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+}
+
+.timeline-video-item {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 16 / 9;
+}
+
+.timeline-video-link {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative;
+}
+
+.timeline-video-link img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.timeline-video-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 54px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.68);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+}
+
+.timeline-video-play::before {
+    content: "";
+    position: absolute;
+    left: 22px;
+    top: 11px;
+    border-left: 13px solid #fff;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+}
+
+
+
+.lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(4, 4, 7, 0.88);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.lightbox.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.lightbox img {
+    max-width: min(96vw, 1500px);
+    max-height: 92vh;
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+}
+
+.lightbox-close {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+
+
+@media (max-width: 1024px) {
+    .actor-hero-gallery {
+        height: 75dvh;
+        grid-auto-columns: clamp(180px, 58vw, 300px);
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --content-pad: 16px;
+    }
+
+    .welcome-popup::before,
+    .welcome-popup::after {
+        background-size: cover;
+    }
+
+    .actor-hero {
+        gap: 10px;
+    }
+
+    .study-info-list li {
+        grid-template-columns: 1fr;
+        row-gap: 3px;
+    }
+
+    .timeline-list {
+        padding-left: 16px;
+    }
+
+    .timeline-item::before {
+        left: -16px;
+    }
+
+
+}
+</style>
+<script src="../js/shared-components.js"></script>
+</head>
+<body class="actor-page-view">
+<div class="welcome-popup" id="welcomePopup" aria-live="polite">
+    <article class="welcome-note">
+        <p class="welcome-note-kicker">Diễn viên</p>
+        <h1 class="welcome-note-title">Trần Thắng Minh</h1>
+    </article>
+</div>
+<div id="sharedHeaderRoot"></div>
+<script>
+if (typeof renderSharedHeader === 'function') {
+    renderSharedHeader('sharedHeaderRoot', { homeHref: '../index.html', scrolled: true, professionItems: [{ label: 'Diễn Viên', href: './' }, { label: 'Họa Sĩ' }, { label: 'Nhiếp Ảnh' }] });
+} else {
+    document.getElementById('sharedHeaderRoot').innerHTML =
+        '<div class="header-shell scrolled"><div class="header content-wrap"><div class="header-left"><div class="menu-wrap"><button class="menu-btn" type="button">Nghề Nghiệp</button><ul class="menu-list hidden"><li><a href="./">Diễn Viên</a></li><li>Họa Sĩ</li><li>Nhiếp Ảnh</li></ul></div></div><a class="header-home" id="headerHomeLink" href="../index.html" aria-label="Quay về trang chủ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5L12 3Z"/></svg></a><div class="header-right"><div class="menu-wrap"><button class="menu-btn" type="button">Công Cụ</button><ul class="menu-list hidden"><li>Tool Photoshop</li><li>Tool Maya</li><li>Tool Cheat Engine</li></ul></div></div></div></div>';
+}
+</script>
+
+<main class="actor-story-page">
+    <div class="content-wrap actor-hero">
+        <h2 class="actor-title actor-hero-title"><a class="actor-title-link" href="../index.html">Trang Chủ</a><span class="actor-title-sep">&gt;</span><span>Diễn Viên</span></h2>
+        <div class="actor-profile actor-hero-summary">
+            <p class="actor-summary">
+                Em tên là Trần Thắng Minh. Em từng có kinh nghiệm học diễn xuất tại Sân khấu kịch Hồng Vân từ năm 2020 đến nay.
+            </p>
+            <div class="actor-info-grid">
+                <section class="actor-info-group">
+                    <h3>Thông tin cơ bản</h3>
+                    <ul class="actor-info-list basic-info-list">
+                        <li><span class="actor-field-icon" aria-hidden="true">👤</span><span class="actor-field-text"><span class="actor-field-label">Tên</span><span class="actor-field-value">Trần Thắng Minh</span></span></li>
+                        <li><span class="actor-field-icon" aria-hidden="true">🎂</span><span class="actor-field-text"><span class="actor-field-label">Ngày sinh</span><span class="actor-field-value">20/09/1996</span></span></li>
+                        <li><span class="actor-field-icon" aria-hidden="true">📏</span><span class="actor-field-text"><span class="actor-field-label">Chiều cao</span><span class="actor-field-value">175cm</span></span></li>
+                        <li><span class="actor-field-icon" aria-hidden="true">⚖️</span><span class="actor-field-text"><span class="actor-field-label">Cân nặng</span><span class="actor-field-value">72kg</span></span></li>
+                        <li><span class="actor-field-icon" aria-hidden="true">📐</span><span class="actor-field-text"><span class="actor-field-label">Số đo 3 vòng</span><span class="actor-field-value">90-73-92</span></span></li>
+                        <li><span class="actor-field-icon" aria-hidden="true">📞</span><span class="actor-field-text"><span class="actor-field-label">SDT</span><span class="actor-field-value"><a class="actor-phone-link" href="tel:0363219989">0363219989</a></span></span></li>
+                    </ul>
+                </section>
+                <section class="actor-info-group actor-info-group--training">
+                    <h3>Quá trình Rèn luyện</h3>
+                    <ul class="actor-info-list">
+                        <li>Tham gia trong <strong>MV Trộm Vía</strong> của ca sĩ Vũ Thùy Linh.</li>
+                        <li>Tham gia dự án <strong>NPC game logic</strong> của công ty Chấn Hải Media.</li>
+                        <li>Các vở đang diễn ở Sân khấu: <strong>Cô Năm Cậu Mười</strong>, <strong>Ai Kế Tiếp</strong>, <strong>Thương Thì Thương Thế Thôi</strong>, <strong>Bỉ Vỏ</strong>.</li>
+                        <li><strong>Độc thoại Trần Ích Tắc</strong> (lịch sử Việt Nam).</li>
+                        <li>Adhya trong vở <strong>Quyền Lực và Tình Yêu</strong> (Sử thi Ramayana).</li>
+                        <li>Willy trong vở <strong>Cái Chết Của Một Người Bán Hàng</strong> (tác giả Arthur Miller).</li>
+                        <li>Nguyệt Đình trong vở <strong>Nhật Xuất</strong> (tác giả Tào Ngu).</li>
+                    </ul>
+                </section>
+                <section class="actor-info-group">
+                    <h3>Quá trình học tập</h3>
+                    <ul class="actor-info-list study-info-list">
+                        <li>
+                            <span class="study-field-label">Lớp Cơ bản (K16)</span>
+                            <span class="study-field-value"><strong>NSND Hồng Vân</strong>, cô <strong>Trần Bảo Châu</strong>, thầy <strong>Lê Nguyễn Tuấn Anh</strong> giảng dạy.</span>
+                        </li>
+                        <li>
+                            <span class="study-field-label">Lớp Nâng Cao (NC4.2)</span>
+                            <span class="study-field-value"><strong>Thầy Vũ Xuân Trang</strong> &amp; <strong>Cô Nguyễn Lê Hoàng Thy</strong> giảng dạy.</span>
+                        </li>
+                        <li>
+                            <span class="study-field-label">Lớp Nâng Cao Chuyên Sâu (NCCS1)</span>
+                            <span class="study-field-value"><strong>Thầy Nguyễn Hữu Châu</strong> giảng dạy.</span>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+        <section class="actor-hero-gallery">
+            <figure class="actor-item"><img src="../assets/images/Actor/main-01.jpg" alt="Actor photo main-01"></figure>
+            <figure class="actor-item"><img src="../assets/images/Actor/main-02.jpg" alt="Actor photo main-02"></figure>
+            <figure class="actor-item"><img src="../assets/images/Actor/main-03.jpg" alt="Actor photo main-03"></figure>
+        </section>
+    </div>
+
+    <div class="content-wrap actor-timeline actor-timeline--study">
+        <h3 class="timeline-title">Quá Trình Học Tập</h3>
+        <ul class="timeline-list">
+            <li class="timeline-item">
+                <div class="timeline-year">2024-04</div>
+                <p class="timeline-text">
+                    Tốt nghiệp lớp Nâng Cao Chuyên Sâu.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2403-1.JPEG" alt="Timeline 2403 - Tốt nghiệp Nâng Cao Chuyên Sâu ảnh 1">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2023-03</div>
+                <p class="timeline-text">
+                    Bắt đầu học lớp Nâng Cao Chuyên Sâu (NCCS1) tại Sân Khấu kịch Hồng Vân.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2303-1.JPG" alt="Timeline 2303 - Bắt đầu lớp NCCS1 ảnh 1">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2022-11</div>
+                <p class="timeline-text">
+                    Tốt nghiệp lớp Nâng Cao (NC4.2).
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2211-1.jpg" alt="Timeline 2211 - Tốt nghiệp Nâng Cao ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2211-2.jpg" alt="Timeline 2211 - Tốt nghiệp Nâng Cao ảnh 2">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2211-3.jpg" alt="Timeline 2211 - Tốt nghiệp Nâng Cao ảnh 3">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2211-4.jpg" alt="Timeline 2211 - Tốt nghiệp Nâng Cao ảnh 4">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2022-06</div>
+                <p class="timeline-text">
+                    Bắt đầu học lớp Nâng Cao (NC4.2) tại Sân Khấu kịch Hồng Vân.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2206-1.jpg" alt="Timeline 2206 - Bắt đầu lớp Nâng Cao ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2206-2.jpg" alt="Timeline 2206 - Bắt đầu lớp Nâng Cao ảnh 2">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2206-3.jpg" alt="Timeline 2206 - Bắt đầu lớp Nâng Cao ảnh 3">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2022/04</div>
+                <p class="timeline-text">
+                    Hoàn thành HK3, tốt nghiệp lớp K16 Cơ bản.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-1.jpg" alt="Timeline 2204 - Tốt nghiệp ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-2.jpg" alt="Timeline 2204 - Tốt nghiệp ảnh 2">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-3.jpg" alt="Timeline 2204 - Tốt nghiệp ảnh 3">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-4.jpg" alt="Timeline 2204 - Tốt nghiệp ảnh 4">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-5.jpg" alt="Timeline 2204 - Tốt nghiệp ảnh 5">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2020/09</div>
+                <p class="timeline-text">
+                    Hoàn thành HK1 lớp K16 Cơ bản.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2009-1.jpg" alt="Timeline 2009 - HK1 ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2009-2.jpg" alt="Timeline 2009 - HK1 ảnh 2">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2020/06</div>
+                <p class="timeline-text">
+                    Tham diễn webdrama Đại Kê Chạy Đi 2.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2006.jpg" alt="Timeline 2006 - Đại Kê Chạy Đi 2">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2020/05</div>
+                <p class="timeline-text">
+                    Khai giảng lớp K16 Cơ bản, vào học tại Sân khấu kịch Hồng Vân.
+                </p>
+            </li>
+        </ul>
+    </div>
+
+    <div class="content-wrap actor-timeline actor-timeline--training">
+        <h3 class="timeline-title">Quá Trình Rèn Luyện</h3>
+        <ul class="timeline-list">
+            <li class="timeline-item">
+                <div class="timeline-year">2026-01</div>
+                <p class="timeline-text">
+                    Tham gia trong MV Trộm Vía của ca sĩ Vũ Thùy Linh.
+                </p>
+                <div class="timeline-video-grid">
+                    <figure class="timeline-video-item">
+                        <a class="timeline-video-link" href="https://www.youtube.com/watch?v=S-YVjeYC4T8" target="_blank" rel="noopener noreferrer" aria-label="Xem MV Trộm Vía trên YouTube">
+                            <img src="https://i.ytimg.com/vi/S-YVjeYC4T8/hqdefault.jpg" alt="Preview YouTube - MV Trộm Vía">
+                            <span class="timeline-video-play" aria-hidden="true"></span>
+                        </a>
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2024-08</div>
+                <p class="timeline-text">
+                    Tham gia dự án NPC game logic của công ty Chấn Hải Media.
+                </p>
+                <div class="timeline-video-grid">
+                    <figure class="timeline-video-item">
+                        <a class="timeline-video-link" href="https://www.youtube.com/watch?v=9WZ0-d3x1QU" target="_blank" rel="noopener noreferrer" aria-label="Xem video NPC game logic clip 1 trên YouTube">
+                            <img src="https://i.ytimg.com/vi/9WZ0-d3x1QU/hqdefault.jpg" alt="Preview YouTube - NPC game logic clip 1">
+                            <span class="timeline-video-play" aria-hidden="true"></span>
+                        </a>
+                    </figure>
+                    <figure class="timeline-video-item">
+                        <a class="timeline-video-link" href="https://www.youtube.com/watch?v=r7RW-Ppiqv8" target="_blank" rel="noopener noreferrer" aria-label="Xem video NPC game logic clip 2 trên YouTube">
+                            <img src="https://i.ytimg.com/vi/r7RW-Ppiqv8/hqdefault.jpg" alt="Preview YouTube - NPC game logic clip 2">
+                            <span class="timeline-video-play" aria-hidden="true"></span>
+                        </a>
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2024-03</div>
+                <p class="timeline-text">
+                    Độc thoại vai Trần Ích Tắc - Giảng viên Thầy Nguyễn Hữu Châu.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2403-1.JPEG" alt="Timeline 2403 - Độc thoại Trần Ích Tắc ảnh 1">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2024-01</div>
+                <p class="timeline-text">
+                    Vai cảnh sát Thắng vở Ai Kế Tiếp - Đạo diễn N.I.B.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2401-1.jpg" alt="Timeline 2401 - Vai cảnh sát Thắng ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2401-2.jpg" alt="Timeline 2401 - Vai cảnh sát Thắng ảnh 2">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2023-10</div>
+                <p class="timeline-text">
+                    Vai Thám Tử vở Bỉ Vỏ - Đạo diễn Cố NSND Doãn Hoàng Giang và NSND Hồng Vân.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2310-1.JPG" alt="Timeline 2310 - Vai Thám Tử ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2310-2.JPG" alt="Timeline 2310 - Vai Thám Tử ảnh 2">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2023-09</div>
+                <p class="timeline-text">
+                    Vai Willy vở Cái Chết Người Chào Hàng - Đạo diễn NSƯT Vũ Xuân Trang.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2309-1.jpg" alt="Timeline 2309 - Vai Willy ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2309-2.jpg" alt="Timeline 2309 - Vai Willy ảnh 2">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2309-3.jpg" alt="Timeline 2309 - Vai Willy ảnh 3">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2309-4.jpg" alt="Timeline 2309 - Vai Willy ảnh 4">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2023-08</div>
+                <p class="timeline-text">
+                    Vai Chiến sĩ vở thi ở Hà Nội - Đạo diễn NSƯT Vũ Xuân Trang.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2308-1.JPG" alt="Timeline 2308 - Vai Chiến sĩ ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2308-2.JPG" alt="Timeline 2308 - Vai Chiến sĩ ảnh 2">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2308-3.JPG" alt="Timeline 2308 - Vai Chiến sĩ ảnh 3">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2022-10</div>
+                <p class="timeline-text">
+                    Vai Nguyệt Đình vở Nhật Xuất - Đạo diễn NSƯT Vũ Xuân Trang.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2210-1.jpg" alt="Timeline 2210 - Vai Nguyệt Đình ảnh 1">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2022-05</div>
+                <p class="timeline-text">
+                    Vai Búp Bê vở kịch Xóm Lầy - Đạo diễn Lê Nguyễn Tuấn Anh.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2205-1.jpg" alt="Timeline 2205 - Vai Búp Bê ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2205-2.jpg" alt="Timeline 2205 - Vai Búp Bê ảnh 2">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2205-3.jpg" alt="Timeline 2205 - Vai Búp Bê ảnh 3">
+                    </figure>
+                </div>
+            </li>
+            <li class="timeline-item">
+                <div class="timeline-year">2022-04</div>
+                <p class="timeline-text">
+                    Vai Phạm Công vở Nỗi Lòng Tào Thị, vai ông Dương vở Tía Ơi - Đạo diễn Lê Nguyễn Tuấn Anh.
+                </p>
+                <div class="timeline-media-grid">
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-1.jpg" alt="Timeline 2204 - Vai Phạm Công ảnh 1">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-2.jpg" alt="Timeline 2204 - Vai Phạm Công ảnh 2">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-3.jpg" alt="Timeline 2204 - Vai Phạm Công ảnh 3">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-4.jpg" alt="Timeline 2204 - Vai Phạm Công ảnh 4">
+                    </figure>
+                    <figure class="timeline-media-item">
+                        <img src="../assets/images/Actor/2204-5.jpg" alt="Timeline 2204 - Vai Phạm Công ảnh 5">
+                    </figure>
+                </div>
+            </li>
+        </ul>
+    </div>
+</main>
+
+<div id="sharedContactRoot"></div>
+<script>
+if (typeof renderSharedContact === 'function') {
+    renderSharedContact('sharedContactRoot', { pageClass: 'contact-page', id: 'contactSection', includeReveal: false, assetBase: '../' });
+}
+</script>
+
+<div id="sharedBookNowRoot"></div>
+<script>
+if (typeof renderSharedBookNow === 'function') {
+    renderSharedBookNow('sharedBookNowRoot', { id: 'bookNowButton' });
+}
+</script>
+
+<div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Đóng ảnh">×</button>
+    <img id="lightboxImage" src="" alt="Ảnh diễn viên phóng to">
+</div>
+
+<script>
+const welcomePopup = document.getElementById('welcomePopup');
+const bookNowButton = document.getElementById('bookNowButton');
+const contactSection = document.getElementById('contactSection');
+const actorHeroGallery = document.querySelector('.actor-hero-gallery');
+const previewImages = Array.from(document.querySelectorAll('.actor-hero-gallery .actor-item img, .timeline-media-item img'));
+const lightbox = document.getElementById('lightbox');
+const lightboxImage = document.getElementById('lightboxImage');
+const lightboxClose = document.getElementById('lightboxClose');
+
+if (welcomePopup) {
+    requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+            welcomePopup.classList.add('show');
+        });
+    });
+
+    setTimeout(function () {
+        welcomePopup.classList.remove('show');
+        welcomePopup.classList.add('hidden');
+    }, 1500);
+}
+
+
+if (typeof initSharedHeaderMenus === 'function') {
+    initSharedHeaderMenus();
+}
+
+if (bookNowButton) {
+    bookNowButton.addEventListener('click', function () {
+        const pageBottom = Math.max(
+            document.body.scrollHeight,
+            document.documentElement.scrollHeight
+        );
+        window.scrollTo({ top: pageBottom, behavior: 'smooth' });
+    });
+}
+
+if (bookNowButton && contactSection) {
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            bookNowButton.classList.toggle('hidden', entry.isIntersecting && entry.intersectionRatio > 0.45);
+        });
+    }, { threshold: [0.45, 0.75] });
+
+    observer.observe(contactSection);
+}
+
+if (actorHeroGallery) {
+    let isDragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let didDrag = false;
+
+    function beginDrag(clientX) {
+        isDragging = true;
+        didDrag = false;
+        startX = clientX;
+        startScrollLeft = actorHeroGallery.scrollLeft;
+        actorHeroGallery.classList.add('dragging');
+    }
+
+    function moveDrag(clientX) {
+        if (!isDragging) {
+            return;
+        }
+        const deltaX = clientX - startX;
+        actorHeroGallery.scrollLeft = startScrollLeft - deltaX;
+        if (Math.abs(deltaX) > 4) {
+            didDrag = true;
+        }
+    }
+
+    function endDrag() {
+        isDragging = false;
+        actorHeroGallery.classList.remove('dragging');
+    }
+
+    actorHeroGallery.addEventListener('mousedown', function (event) {
+        beginDrag(event.pageX);
+    });
+
+    actorHeroGallery.addEventListener('mousemove', function (event) {
+        if (!isDragging) {
+            return;
+        }
+        event.preventDefault();
+        moveDrag(event.pageX);
+    });
+
+    actorHeroGallery.addEventListener('mouseleave', endDrag);
+    actorHeroGallery.addEventListener('mouseup', endDrag);
+
+    actorHeroGallery.addEventListener('touchstart', function (event) {
+        const touch = event.touches[0];
+        if (!touch) {
+            return;
+        }
+        beginDrag(touch.clientX);
+    }, { passive: true });
+
+    actorHeroGallery.addEventListener('touchmove', function (event) {
+        if (!isDragging) {
+            return;
+        }
+        const touch = event.touches[0];
+        if (!touch) {
+            return;
+        }
+        moveDrag(touch.clientX);
+    }, { passive: true });
+
+    actorHeroGallery.addEventListener('touchend', endDrag);
+    actorHeroGallery.addEventListener('touchcancel', endDrag);
+
+    actorHeroGallery.addEventListener('click', function (event) {
+        if (didDrag) {
+            event.preventDefault();
+            event.stopPropagation();
+            didDrag = false;
+        }
+    }, true);
+}
+
+if (lightbox && lightboxImage && lightboxClose && previewImages.length) {
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        lightboxImage.src = '';
+    }
+
+    previewImages.forEach(function (img) {
+        img.addEventListener('click', function () {
+            lightboxImage.src = img.src;
+            lightboxImage.alt = img.alt || 'Ảnh diễn viên phóng to';
+            lightbox.classList.add('open');
+            lightbox.setAttribute('aria-hidden', 'false');
+        });
+    });
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', function (event) {
+        if (event.target === lightbox) {
+            closeLightbox();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeLightbox();
+        }
+    });
+}
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,546 @@
+:root {
+    --contact-page-display: flex;
+    --contact-page-height: auto;
+    --contact-page-min-height: 0;
+    --contact-page-padding: 0;
+    --contact-page-background: transparent;
+    --contact-page-align-items: stretch;
+    --contact-page-justify: flex-start;
+    --contact-wrap-height: auto;
+    --contact-wrap-min-height: 0;
+    --contact-wrap-justify: flex-start;
+    --contact-wrap-gap: 14px;
+    --contact-wrap-backdrop-filter: none;
+    --contact-wrap-overflow: visible;
+    --contact-top-align: stretch;
+    --contact-top-margin-bottom: 0;
+    --contact-top-text-align: left;
+    --contact-title-letter-spacing: normal;
+    --contact-grid-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
+    --contact-grid-flex: 0;
+    --contact-main-height: 100%;
+    --contact-main-min-height: 0;
+    --contact-side-min-height: 0;
+    --facebook-embed-width: 100%;
+    --facebook-embed-min-height: 0;
+    --facebook-embed-height: auto;
+    --facebook-embed-flex: 0 0 auto;
+    --facebook-embed-display: block;
+    --facebook-embed-box-shadow: none;
+    --facebook-embed-padding: 0;
+    --facebook-embed-desktop-width: var(--facebook-embed-width);
+    --facebook-embed-desktop-margin-left: 0;
+    --facebook-embed-desktop-margin-right: 0;
+    --contact-signature-display: flex;
+    --contact-signature-justify: center;
+    --contact-signature-mobile-display: var(--contact-signature-display);
+    --contact-signature-mobile-justify: var(--contact-signature-justify);
+    --contact-action-button-box-shadow: 0 8px 16px rgba(17, 17, 17, 0.2);
+    --contact-action-button-transition: transform 0.2s ease, background-color 0.2s ease;
+    --contact-action-button-hover-transform: translateY(-1px);
+    --contact-action-button-hover-bg: #333;
+    --contact-page-mobile-height: var(--contact-page-height);
+    --contact-page-mobile-min-height: var(--contact-page-min-height);
+    --contact-page-mobile-padding: var(--contact-page-padding);
+    --contact-page-mobile-align-items: var(--contact-page-align-items);
+    --contact-page-mobile-justify: var(--contact-page-justify);
+    --contact-wrap-mobile-height: var(--contact-wrap-height);
+    --contact-wrap-mobile-min-height: var(--contact-wrap-min-height);
+    --contact-wrap-mobile-justify: var(--contact-wrap-justify);
+    --contact-wrap-mobile-padding: clamp(16px, 2.2vw, 26px);
+    --contact-wrap-mobile-gap: var(--contact-wrap-gap);
+    --contact-social-mobile-justify: flex-start;
+    --contact-top-mobile-justify: flex-start;
+    --contact-top-mobile-align: var(--contact-top-align);
+    --contact-top-mobile-text-align: var(--contact-top-text-align);
+    --contact-meta-mobile-direction: column;
+    --contact-meta-mobile-align: flex-start;
+    --contact-meta-mobile-text-align: left;
+    --contact-links-mobile-justify: flex-start;
+    --contact-links-mobile-wrap: wrap;
+    --contact-links-mobile-gap: 12px 16px;
+    --contact-card-mobile-padding: 12px;
+    --contact-card-title-mobile-margin-bottom: 10px;
+    --contact-intro-mobile-line-height: 1.6;
+    --facebook-embed-mobile-min-height: var(--facebook-embed-min-height);
+    --fb-cover-mobile-height: 132px;
+    --fb-body-mobile-padding: 16px;
+    --fb-body-mobile-gap: 12px;
+    --fb-head-mobile-gap: 14px;
+    --fb-avatar-mobile-size: 72px;
+    --fb-avatar-mobile-margin-top: -32px;
+    --fb-meta-mobile-margin-bottom: 8px;
+    --fb-link-mobile-height: 34px;
+    --fb-link-mobile-padding: 0 14px;
+    --contact-action-button-mobile-justify: flex-start;
+    --contact-action-button-mobile-padding: 11px 14px;
+}
+
+body.actor-page-view {
+    --contact-page-display: block;
+    --contact-page-height: auto;
+    --contact-page-min-height: 0;
+    --contact-page-padding: 10px 0 24px;
+    --contact-page-background: transparent;
+    --contact-page-align-items: stretch;
+    --contact-grid-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
+    --contact-top-margin-bottom: 12px;
+    --facebook-embed-display: block;
+    --facebook-embed-height: auto;
+    --facebook-embed-flex: 0 0 auto;
+    --contact-action-button-box-shadow: none;
+    --contact-page-mobile-height: auto;
+    --contact-page-mobile-min-height: 0;
+    --contact-page-mobile-padding: 10px 0 24px;
+    --contact-page-mobile-align-items: stretch;
+    --contact-wrap-mobile-padding: clamp(16px, 2.2vw, 26px);
+    --contact-wrap-mobile-gap: 14px;
+}
+
+.contact-page {
+    min-height: var(--contact-page-min-height);
+    height: var(--contact-page-height);
+    display: var(--contact-page-display);
+    align-items: var(--contact-page-align-items);
+    justify-content: var(--contact-page-justify);
+    padding: var(--contact-page-padding);
+    background: var(--contact-page-background);
+}
+
+.contact-wrap {
+    width: min(var(--content-max), calc(100% - (var(--content-pad) * 2)));
+    margin: 0 auto;
+    min-height: var(--contact-wrap-min-height);
+    height: var(--contact-wrap-height);
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--contact-wrap-justify);
+    gap: var(--contact-wrap-gap);
+    border: 1px solid rgba(51, 51, 51, 0.1);
+    border-radius: 22px;
+    padding: clamp(16px, 2.2vw, 26px);
+    background: rgba(255, 255, 255, 0.76);
+    backdrop-filter: var(--contact-wrap-backdrop-filter);
+    -webkit-backdrop-filter: var(--contact-wrap-backdrop-filter);
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    overflow: var(--contact-wrap-overflow);
+}
+
+.contact-top {
+    display: flex;
+    flex-direction: column;
+    align-items: var(--contact-top-align);
+    gap: 6px;
+    margin-bottom: var(--contact-top-margin-bottom);
+    text-align: var(--contact-top-text-align);
+}
+
+.contact-kicker {
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: rgba(51, 51, 51, 0.65);
+}
+
+.contact-title {
+    font-weight: 700;
+    letter-spacing: var(--contact-title-letter-spacing);
+}
+
+.contact-intro {
+    line-height: 1.6;
+    color: rgba(51, 51, 51, 0.78);
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: var(--contact-grid-columns);
+    gap: 14px;
+    min-height: 0;
+    flex: var(--contact-grid-flex);
+}
+
+.contact-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: var(--contact-main-min-height);
+    height: var(--contact-main-height);
+}
+
+.contact-side {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: var(--contact-side-min-height);
+}
+
+.contact-card {
+    border: 1px solid rgba(51, 51, 51, 0.1);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 12px;
+}
+
+.contact-card-title {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(51, 51, 51, 0.7);
+    margin-bottom: 10px;
+}
+
+.contact-actions {
+    display: grid;
+    gap: 10px;
+}
+
+.contact-signature {
+    display: var(--contact-signature-display);
+    justify-content: var(--contact-signature-justify);
+    margin-top: 2px;
+    padding-right: 0;
+}
+
+.signature-img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: none;
+}
+
+.call-btn,
+.mail-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 11px 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(145deg, #171717 0%, #2b2b2b 100%);
+    font-weight: 600;
+    transition: var(--contact-action-button-transition);
+    box-shadow: var(--contact-action-button-box-shadow);
+}
+
+.call-btn:hover,
+.mail-btn:hover {
+    transform: var(--contact-action-button-hover-transform);
+    background: var(--contact-action-button-hover-bg);
+}
+
+.facebook-embed {
+    width: var(--facebook-embed-width);
+    min-height: var(--facebook-embed-min-height);
+    height: var(--facebook-embed-height);
+    flex: var(--facebook-embed-flex);
+    border: 1px solid rgba(51, 51, 51, 0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.92);
+    display: var(--facebook-embed-display);
+    box-shadow: var(--facebook-embed-box-shadow);
+    padding: var(--facebook-embed-padding);
+}
+
+.fb-cover {
+    width: 100%;
+    height: 132px;
+    object-fit: cover;
+    display: block;
+}
+
+.fb-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+}
+
+.fb-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.fb-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    object-fit: cover;
+    margin-top: -32px;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    background: #e9e9e9;
+}
+
+.fb-info h3,
+.fb-name {
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.fb-handle {
+    color: #6a6a6a;
+    margin-bottom: 8px;
+}
+
+.fb-meta {
+    color: #4b4b4b;
+    margin-bottom: 10px;
+}
+
+.fb-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 10px;
+    background: #1877f2;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.fb-link:hover {
+    background: #166fe5;
+}
+
+.fb-fallback {
+    display: none;
+}
+
+.contact-social {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+    border-bottom: none;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+}
+
+.social-link {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #111;
+    background: #fff;
+    border: 1px solid rgba(17, 17, 17, 0.16);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    box-shadow: 0 8px 16px rgba(17, 17, 17, 0.16);
+}
+
+.social-link:hover {
+    transform: translateY(-2px);
+    background: #f2f2f2;
+}
+
+.social-link svg {
+    width: 66%;
+    height: 66%;
+    fill: currentColor;
+}
+
+.social-more {
+    position: relative;
+}
+
+.social-more-toggle {
+    list-style: none;
+    width: 58px;
+    height: 42px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #111;
+    background: #fff;
+    border: 1px solid rgba(17, 17, 17, 0.16);
+    box-shadow: 0 8px 16px rgba(17, 17, 17, 0.16);
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.social-more-toggle:hover {
+    transform: translateY(-2px);
+    background: #f2f2f2;
+}
+
+.social-more-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.social-more-toggle::marker {
+    content: "";
+}
+
+.social-more-toggle::before {
+    content: "+";
+    line-height: 1;
+    font-weight: 700;
+}
+
+.social-more[open] .social-more-toggle::before {
+    content: "×";
+}
+
+.social-more-list {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(17, 17, 17, 0.14);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+    z-index: 6;
+}
+
+.contact-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    color: #4e4e4e;
+    margin-top: auto;
+    border-top: 1px solid rgba(51, 51, 51, 0.12);
+    padding-top: 10px;
+}
+
+.contact-links {
+    display: flex;
+    gap: 18px;
+}
+
+.contact-links a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.contact-links a:hover {
+    color: var(--text-black);
+}
+
+@media (max-width: 1024px) {
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-main,
+    .contact-side {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .contact-social {
+        justify-content: var(--contact-social-mobile-justify);
+    }
+
+    .contact-top {
+        justify-content: var(--contact-top-mobile-justify);
+        align-items: var(--contact-top-mobile-align);
+        text-align: var(--contact-top-mobile-text-align);
+    }
+
+    .contact-meta {
+        flex-direction: var(--contact-meta-mobile-direction);
+        text-align: var(--contact-meta-mobile-text-align);
+        align-items: var(--contact-meta-mobile-align);
+    }
+
+    .contact-links {
+        justify-content: var(--contact-links-mobile-justify);
+        flex-wrap: var(--contact-links-mobile-wrap);
+        gap: var(--contact-links-mobile-gap);
+    }
+
+    .contact-signature {
+        display: var(--contact-signature-mobile-display);
+        justify-content: var(--contact-signature-mobile-justify);
+    }
+
+    .contact-wrap {
+        height: var(--contact-wrap-mobile-height);
+        min-height: var(--contact-wrap-mobile-min-height);
+        justify-content: var(--contact-wrap-mobile-justify);
+        padding: var(--contact-wrap-mobile-padding);
+        gap: var(--contact-wrap-mobile-gap);
+    }
+
+    .contact-page {
+        height: var(--contact-page-mobile-height);
+        min-height: var(--contact-page-mobile-min-height);
+        padding: var(--contact-page-mobile-padding);
+        align-items: var(--contact-page-mobile-align-items);
+        justify-content: var(--contact-page-mobile-justify);
+    }
+
+    .contact-intro {
+        line-height: var(--contact-intro-mobile-line-height);
+    }
+
+    .contact-card {
+        padding: var(--contact-card-mobile-padding);
+    }
+
+    .contact-card-title {
+        margin-bottom: var(--contact-card-title-mobile-margin-bottom);
+    }
+
+    .facebook-embed {
+        min-height: var(--facebook-embed-mobile-min-height);
+    }
+
+    .fb-cover {
+        height: var(--fb-cover-mobile-height);
+    }
+
+    .fb-body {
+        padding: var(--fb-body-mobile-padding);
+        gap: var(--fb-body-mobile-gap);
+    }
+
+    .fb-head {
+        gap: var(--fb-head-mobile-gap);
+    }
+
+    .fb-avatar {
+        width: var(--fb-avatar-mobile-size);
+        height: var(--fb-avatar-mobile-size);
+        margin-top: var(--fb-avatar-mobile-margin-top);
+    }
+
+    .fb-handle,
+    .fb-meta {
+        margin-bottom: var(--fb-meta-mobile-margin-bottom);
+    }
+
+    .fb-link {
+        height: var(--fb-link-mobile-height);
+        padding: var(--fb-link-mobile-padding);
+    }
+
+    .call-btn,
+    .mail-btn {
+        justify-content: var(--contact-action-button-mobile-justify);
+        padding: var(--contact-action-button-mobile-padding);
+    }
+}
+
+@media (min-width: 1025px) {
+    .facebook-embed {
+        width: var(--facebook-embed-desktop-width);
+        margin-left: var(--facebook-embed-desktop-margin-left);
+        margin-right: var(--facebook-embed-desktop-margin-right);
+    }
+}
