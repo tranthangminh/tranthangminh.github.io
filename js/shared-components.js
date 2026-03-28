@@ -92,7 +92,7 @@
         var shellClass = 'header-shell' + (opts.scrolled ? ' scrolled' : '');
         var homeHref = escapeHtml(opts.homeHref || 'index.html');
         var professionItems = Array.isArray(opts.professionItems) && opts.professionItems.length ? opts.professionItems : [
-            { label: 'Diễn Viên', href: 'actor' },
+            { label: 'Diễn Viên', href: 'actor/' },
             { label: 'Họa Sĩ' },
             { label: 'Nhiếp Ảnh' }
         ];
