@@ -1,0 +1,68 @@
+.media-strip {
+    --media-strip-item-width: clamp(180px, 16vw, 260px);
+    --media-strip-gap: 14px;
+    --media-strip-padding: 10px;
+    --media-strip-radius: 18px;
+    --media-strip-border: 1px solid rgba(51, 51, 51, 0.1);
+    --media-strip-bg: rgba(255, 255, 255, 0.58);
+    --media-strip-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    --media-strip-backdrop-filter: blur(6px);
+    --media-strip-cursor: grab;
+    --media-strip-item-radius: 12px;
+    --media-strip-item-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: minmax(0, 1fr);
+    grid-auto-columns: var(--media-strip-item-width);
+    gap: var(--media-strip-gap);
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-items: stretch;
+    justify-self: stretch;
+    margin: 0;
+    padding: var(--media-strip-padding);
+    border: var(--media-strip-border);
+    border-radius: var(--media-strip-radius);
+    background: var(--media-strip-bg);
+    box-shadow: var(--media-strip-shadow);
+    backdrop-filter: var(--media-strip-backdrop-filter);
+    -webkit-backdrop-filter: var(--media-strip-backdrop-filter);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: var(--media-strip-cursor);
+    user-select: none;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
+.media-strip::-webkit-scrollbar {
+    display: none;
+}
+
+.media-strip.dragging {
+    cursor: grabbing;
+}
+
+.media-strip > * {
+    height: 100%;
+    border-radius: var(--media-strip-item-radius);
+    overflow: hidden;
+    box-shadow: var(--media-strip-item-shadow);
+    cursor: zoom-in;
+}
+
+.media-strip > * img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.media-strip > *:hover img {
+    transform: scale(1.04);
+    filter: saturate(1.05);
+}

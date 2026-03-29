@@ -1,0 +1,25 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+:root {
+    --content-max: 1024px;
+    --content-pad: 24px;
+    --header-h: 56px;
+    --text-black: #333333;
+    --text-soft-white: #f2efe8;
+}
+
+.content-wrap {
+    width: min(var(--content-max), calc(100% - (var(--content-pad) * 2)));
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    :root {
+        --content-pad: 16px;
+    }
+}

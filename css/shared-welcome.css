@@ -1,0 +1,44 @@
+.welcome-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--welcome-padding, 16px);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity var(--welcome-transition-duration, 0.7s) ease, visibility 0s linear var(--welcome-transition-duration, 0.7s);
+}
+
+.welcome-popup.show {
+    transition: opacity var(--welcome-transition-duration, 0.7s) ease, visibility 0s linear 0s;
+}
+
+.welcome-popup.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.welcome-note {
+    position: relative;
+    z-index: 2;
+    width: min(var(--welcome-note-max-width, 620px), calc(100% - var(--welcome-note-gutter, 36px)));
+    padding: 0;
+    text-align: center;
+}
+
+.welcome-note-kicker {
+    margin: 0;
+}
+
+.welcome-note-title {
+    margin: 0;
+}
+
+.welcome-note-message,
+.welcome-note-sign {
+    margin: 0;
+}

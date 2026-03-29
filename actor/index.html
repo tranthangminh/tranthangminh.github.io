@@ -5,651 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Diễn Viên - Trần Thắng Minh</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/shared-layout.css">
 <link rel="stylesheet" href="../css/shared-header.css">
 <link rel="stylesheet" href="../css/shared-footer.css">
 <link rel="stylesheet" href="../css/shared-book-now.css">
+<link rel="stylesheet" href="../css/shared-surfaces.css">
+<link rel="stylesheet" href="../css/shared-gallery.css">
 <link rel="stylesheet" href="../css/shared-lightbox.css">
+<link rel="stylesheet" href="../css/shared-welcome.css">
 <link rel="stylesheet" href="../css/shared-mobile-type-scale.css">
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Montserrat', sans-serif;
-}
-
-:root {
-    --content-max: 1060px;
-    --content-pad: 24px;
-    --header-h: 56px;
-    --text-black: #333333;
-    --text-soft-white: #f2efe8;
-}
-
-body {
-    background:
-        radial-gradient(circle at 12% 10%, rgba(30, 64, 175, 0.12), transparent 38%),
-        radial-gradient(circle at 88% 16%, rgba(180, 83, 9, 0.11), transparent 40%),
-        radial-gradient(circle at 16% 84%, rgba(14, 116, 144, 0.1), transparent 42%),
-        radial-gradient(circle at 86% 88%, rgba(120, 53, 15, 0.08), transparent 36%),
-        linear-gradient(145deg, #f8fbfc 0%, #f4efe7 54%, #f5f8fb 100%);
-    color: var(--text-black);
-    min-height: 100vh;
-}
-
-.welcome-popup {
-    position: fixed;
-    inset: 0;
-    z-index: 4200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    overflow: hidden;
-    isolation: isolate;
-    background:
-        radial-gradient(circle at center, rgba(96, 165, 250, 0.18), transparent 36%),
-        linear-gradient(145deg, #09111a 0%, #0e1825 52%, #132032 100%);
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transition: opacity 0.85s ease, visibility 0s linear 0.85s;
-}
-
-.welcome-popup::before,
-.welcome-popup::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: url("../assets/images/Actor/main-01.jpg") center / contain no-repeat;
-}
-
-.welcome-popup::before {
-    transform: scale(1.08);
-    filter: blur(34px) saturate(1.02);
-    opacity: 0;
-    transition: opacity 0.85s ease;
-}
-
-.welcome-popup::after {
-    filter:
-        drop-shadow(0 0 18px rgba(125, 185, 255, 0.5))
-        drop-shadow(0 0 42px rgba(56, 119, 255, 0.34));
-    opacity: 0;
-    transition: opacity 0.85s ease;
-}
-
-.welcome-popup.show {
-    transition: opacity 0.85s ease, visibility 0s linear 0s;
-}
-
-.welcome-note {
-    position: relative;
-    z-index: 2;
-    width: min(620px, calc(100% - 36px));
-    padding: 0;
-    color: #f8fafc;
-    text-align: center;
-    opacity: 0;
-    transform: translateY(16px) scale(0.988);
-    transition: opacity 0.85s ease 0.08s, transform 0.85s ease 0.08s;
-}
-
-.welcome-popup.show::before {
-    opacity: 0.42;
-}
-
-.welcome-popup.show::after {
-    opacity: 0.5;
-}
-
-.welcome-popup.show .welcome-note {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-}
-
-.welcome-popup.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-.welcome-note-kicker {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: rgba(226, 232, 240, 0.78);
-}
-
-.welcome-note-title {
-    margin: 10px 0 0;
-    font-weight: 700;
-    line-height: 1.08;
-    color: #fff;
-    text-shadow: 0 8px 24px rgba(4, 8, 15, 0.4);
-}
-
-.content-wrap {
-    width: min(var(--content-max), calc(100% - (var(--content-pad) * 2)));
-    margin: 0 auto;
-}
-
-.actor-story-page {
-    padding: calc(var(--header-h) + 18px) 0 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.actor-hero {
-    min-height: calc(100dvh - (var(--header-h) + 24px));
-    display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr);
-    gap: 14px;
-    align-content: start;
-}
-
-.actor-hero-title {
-    margin-bottom: 0;
-}
-
-.actor-hero-summary {
-    margin-bottom: 0;
-}
-
-.actor-title {
-    margin-bottom: 10px;
-    font-weight: 700;
-}
-
-.actor-title-link {
-    color: inherit;
-    text-decoration: none;
-    transition: opacity 0.2s ease;
-}
-
-.actor-title-link:hover {
-    opacity: 0.7;
-}
-
-.actor-title-sep {
-    opacity: 0.5;
-    margin: 0 6px;
-}
-
-.actor-summary {
-    line-height: 1.65;
-}
-
-.actor-profile {
-    display: grid;
-    gap: 16px;
-}
-
-.actor-info-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-}
-
-.actor-info-group {
-    border: 1px solid rgba(51, 51, 51, 0.1);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.72);
-    padding: 14px 16px;
-}
-
-.actor-info-group--training {
-    border-color: rgba(83, 96, 108, 0.28);
-    background: linear-gradient(165deg, #53606c, #2d343c);
-    box-shadow: 0 14px 30px rgba(45, 52, 60, 0.22);
-}
-
-.actor-info-group.actor-info-group--training h3 {
-    color: #fff;
-}
-
-.actor-info-group--training .actor-info-list li {
-    color: rgba(255, 255, 255, 0.86);
-}
-
-.actor-info-group--training .actor-info-list li::before {
-    background: rgba(255, 255, 255, 0.7);
-}
-
-.actor-info-group--training strong {
-    color: #fff;
-}
-
-.actor-info-group h3 {
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: rgba(51, 51, 51, 0.86);
-}
-
-.actor-info-list {
-    list-style: none;
-    display: grid;
-    gap: 8px;
-}
-
-.actor-info-list li {
-    position: relative;
-    padding-left: 16px;
-    line-height: 1.6;
-    color: rgba(51, 51, 51, 0.9);
-}
-
-.actor-info-list li::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.68em;
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    background: rgba(51, 51, 51, 0.58);
-}
-
-.actor-field-label {
-    font-weight: 400;
-    color: rgba(51, 51, 51, 0.96);
-    display: inline-block;
-}
-
-.basic-info-list .actor-field-label {
-    font-weight: 400;
-}
-
-.basic-info-list .actor-field-value {
-    font-weight: 600;
-}
-
-.actor-field-label::after {
-    content: ":";
-    margin-left: 1px;
-}
-
-.basic-info-list li {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding-left: 0;
-}
-
-.basic-info-list li::before {
-    content: none;
-}
-
-.actor-field-icon {
-    width: 22px;
-    flex: 0 0 22px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 1px;
-    line-height: 1;
-}
-
-.actor-field-text {
-    flex: 1;
-    min-width: 0;
-    display: grid;
-    grid-template-columns: clamp(88px, 22vw, 132px) minmax(0, 1fr);
-    align-items: baseline;
-    column-gap: 8px;
-}
-
-.actor-field-value {
-    color: rgba(51, 51, 51, 0.92);
-}
-
-.actor-phone-link {
-    color: inherit;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.actor-phone-link:hover {
-    text-decoration: underline;
-}
-
-.study-info-list li {
-    position: relative;
-    padding-left: 16px;
-    display: grid;
-    grid-template-columns: clamp(126px, 28vw, 210px) minmax(0, 1fr);
-    column-gap: 10px;
-    align-items: baseline;
-}
-
-.study-info-list li::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.68em;
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    background: rgba(51, 51, 51, 0.58);
-}
-
-.study-field-label {
-    font-weight: 400;
-    color: rgba(51, 51, 51, 0.96);
-}
-
-.study-field-label::after {
-    content: ":";
-    margin-left: 1px;
-}
-
-.study-field-value {
-    color: rgba(51, 51, 51, 0.9);
-}
-
-.actor-hero-gallery {
-    min-height: 0;
-    height: 75dvh;
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-rows: minmax(0, 1fr);
-    grid-auto-columns: clamp(220px, 24vw, 320px);
-    gap: 14px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    align-items: stretch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    cursor: grab;
-    user-select: none;
-    touch-action: pan-y;
-    justify-self: stretch;
-    margin: 0;
-    padding: 10px;
-    border-radius: 18px;
-    border: 1px solid rgba(51, 51, 51, 0.1);
-    background: rgba(255, 255, 255, 0.58);
-    backdrop-filter: blur(6px);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
-}
-
-.actor-item {
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
-    height: 100%;
-    cursor: zoom-in;
-}
-
-.actor-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.actor-hero-gallery::-webkit-scrollbar {
-    display: none;
-}
-
-.actor-hero-gallery.dragging {
-    cursor: grabbing;
-}
-
-.actor-timeline {
-    padding: 22px 20px;
-    border: 1px solid rgba(51, 51, 51, 0.1);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.78);
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-    margin-top: 14px;
-}
-
-.actor-timeline--training {
-    order: 1;
-    border-color: rgba(83, 96, 108, 0.28);
-    background: linear-gradient(165deg, #53606c, #2d343c);
-    box-shadow: 0 18px 38px rgba(45, 52, 60, 0.28);
-}
-
-.actor-timeline--training .timeline-title {
-    color: #fff;
-}
-
-.actor-timeline--training .timeline-list::before {
-    background: rgba(255, 255, 255, 0.26);
-}
-
-.actor-timeline--training .timeline-item {
-    border-color: rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.actor-timeline--training .timeline-item::before {
-    background: #fff;
-}
-
-.actor-timeline--training .timeline-year {
-    color: rgba(255, 255, 255, 0.95);
-}
-
-.actor-timeline--training .timeline-text {
-    color: rgba(255, 255, 255, 0.84);
-}
-
-.actor-timeline--study {
-    order: 2;
-}
-
-.timeline-title {
-    margin-bottom: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: rgba(51, 51, 51, 0.72);
-}
-
-.timeline-list {
-    list-style: none;
-    position: relative;
-    padding-left: 20px;
-    display: grid;
-    gap: 12px;
-}
-
-.timeline-list::before {
-    content: "";
-    position: absolute;
-    left: 4px;
-    top: 6px;
-    bottom: 6px;
-    width: 2px;
-    background: rgba(17, 17, 17, 0.2);
-}
-
-.timeline-item {
-    position: relative;
-    border: 1px solid rgba(51, 51, 51, 0.1);
-    border-radius: 14px;
-    padding: 14px;
-    background: rgba(255, 255, 255, 0.82);
-}
-
-.timeline-item::before {
-    content: "";
-    position: absolute;
-    left: -20px;
-    top: 18px;
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: #111;
-}
-
-.timeline-year {
-    font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.timeline-text {
-    line-height: 1.55;
-    color: rgba(51, 51, 51, 0.88);
-}
-
-.timeline-media-grid {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.timeline-media-item {
-    flex: 0 0 auto;
-    width: min(25vh, 160px);
-    aspect-ratio: 1 / 1;
-    border-radius: 10px;
-    overflow: hidden;
-    border: none;
-    background: transparent;
-    box-shadow: none;
-    cursor: zoom-in;
-}
-
-.timeline-media-item img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    object-position: center;
-}
-
-.timeline-video-grid {
-    margin-top: 10px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 10px;
-}
-
-.timeline-video-item {
-    border-radius: 10px;
-    overflow: hidden;
-    background: #000;
-    aspect-ratio: 16 / 9;
-}
-
-.timeline-video-link {
-    width: 100%;
-    height: 100%;
-    display: block;
-    position: relative;
-}
-
-.timeline-video-link img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-}
-
-.timeline-video-play {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 54px;
-    height: 38px;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.68);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
-}
-
-.timeline-video-play::before {
-    content: "";
-    position: absolute;
-    left: 22px;
-    top: 11px;
-    border-left: 13px solid #fff;
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid transparent;
-}
-
-
-
-
-@media (max-width: 1024px) {
-    .actor-hero-gallery {
-        height: 75dvh;
-        grid-auto-columns: clamp(180px, 58vw, 300px);
-    }
-}
-
-@media (max-width: 768px) {
-    :root {
-        --content-pad: 16px;
-    }
-
-    .welcome-popup::before,
-    .welcome-popup::after {
-        background-size: cover;
-    }
-
-    .actor-hero {
-        gap: 10px;
-    }
-
-    .study-info-list li {
-        grid-template-columns: 1fr;
-        row-gap: 3px;
-    }
-
-    .timeline-list {
-        padding-left: 16px;
-    }
-
-    .timeline-item::before {
-        left: -16px;
-    }
-
-    .timeline-media-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .timeline-media-item {
-        width: 100%;
-    }
-
-    .actor-hero-gallery {
-        height: 400px;
-    }
-}
-</style>
-<script src="../js/shared-components.js"></script>
+<link rel="stylesheet" href="../css/pages/actor.css">
+<script src="../js/shared-utils.js"></script>
+<script src="../js/shared-i18n.js"></script>
+<script src="../js/i18n-vi.js"></script>
+<script src="../js/i18n-en.js"></script>
+<script src="../js/shared-header.js"></script>
+<script src="../js/shared-book-now.js"></script>
+<script src="../js/shared-momentum.js"></script>
+<script src="../js/shared-lightbox.js"></script>
+<script src="../js/shared-contact.js"></script>
+<script src="../js/shared-welcome.js"></script>
+<script src="../js/shared-page.js"></script>
 </head>
 <body class="actor-page-view">
-<div class="welcome-popup" id="welcomePopup" aria-live="polite">
-    <article class="welcome-note">
-        <p class="welcome-note-kicker">Diễn viên</p>
-        <h1 class="welcome-note-title">Trần Thắng Minh</h1>
-    </article>
-</div>
+<div id="sharedWelcomeRoot"></div>
 <div id="sharedHeaderRoot"></div>
-<script>
-if (typeof renderSharedHeader === 'function') {
-    renderSharedHeader('sharedHeaderRoot', { homeHref: '../index.html', scrolled: true, professionItems: [{ label: 'Diễn Viên', href: './' }, { label: 'Họa Sĩ' }, { label: 'Nhiếp Ảnh' }] });
-} else {
-    document.getElementById('sharedHeaderRoot').innerHTML =
-        '<div class="header-shell scrolled"><div class="header content-wrap"><div class="header-left"><div class="menu-wrap"><button class="menu-btn" type="button">Nghề Nghiệp</button><ul class="menu-list hidden"><li><a href="./">Diễn Viên</a></li><li>Họa Sĩ</li><li>Nhiếp Ảnh</li></ul></div></div><a class="header-home" id="headerHomeLink" href="../index.html" aria-label="Quay về trang chủ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5L12 3Z"/></svg></a><div class="header-right"><div class="menu-wrap"><button class="menu-btn" type="button">Công Cụ</button><ul class="menu-list hidden"><li>Tool Photoshop</li><li>Tool Maya</li><li>Tool Cheat Engine</li></ul></div></div></div></div>';
-}
-</script>
 
 <main class="actor-story-page">
     <div class="content-wrap actor-hero">
         <h2 class="actor-title actor-hero-title"><a class="actor-title-link" href="../index.html">Trang Chủ</a><span class="actor-title-sep">&gt;</span><span>Diễn Viên</span></h2>
         <div class="actor-profile actor-hero-summary">
             <div class="actor-info-grid">
-                <section class="actor-info-group">
+                <section class="actor-info-group surface-card">
                     <h3>Thông tin cơ bản</h3>
                     <ul class="actor-info-list basic-info-list">
                         <li><span class="actor-field-icon" aria-hidden="true">👤</span><span class="actor-field-text"><span class="actor-field-label">Tên</span><span class="actor-field-value">Trần Thắng Minh</span></span></li>
@@ -660,7 +47,7 @@ if (typeof renderSharedHeader === 'function') {
                         <li><span class="actor-field-icon" aria-hidden="true">📞</span><span class="actor-field-text"><span class="actor-field-label">SDT</span><span class="actor-field-value"><a class="actor-phone-link" href="tel:0363219989">0363219989</a></span></span></li>
                     </ul>
                 </section>
-                <section class="actor-info-group actor-info-group--training">
+                <section class="actor-info-group actor-info-group--training surface-card surface-card--dark">
                     <h3>Quá trình Rèn luyện</h3>
                     <ul class="actor-info-list">
                         <li>Tham gia trong <strong>MV Trộm Vía</strong> của ca sĩ Vũ Thùy Linh.</li>
@@ -672,7 +59,7 @@ if (typeof renderSharedHeader === 'function') {
                         <li>Nguyệt Đình trong vở <strong>Nhật Xuất</strong> (tác giả Tào Ngu).</li>
                     </ul>
                 </section>
-                <section class="actor-info-group">
+                <section class="actor-info-group surface-card">
                     <h3>Quá trình học tập</h3>
                     <ul class="actor-info-list study-info-list">
                         <li>
@@ -703,7 +90,7 @@ if (typeof renderSharedHeader === 'function') {
         </section>
     </div>
 
-    <div class="content-wrap actor-timeline actor-timeline--study">
+    <div class="content-wrap actor-timeline actor-timeline--study surface-card">
         <h3 class="timeline-title">Quá Trình Học Tập</h3>
         <ul class="timeline-list">
             <li class="timeline-item">
@@ -822,7 +209,7 @@ if (typeof renderSharedHeader === 'function') {
         </ul>
     </div>
 
-    <div class="content-wrap actor-timeline actor-timeline--training">
+    <div class="content-wrap actor-timeline actor-timeline--training surface-card surface-card--dark">
         <h3 class="timeline-title">Quá Trình Rèn Luyện</h3>
         <ul class="timeline-list">
             <li class="timeline-item">
@@ -991,83 +378,9 @@ if (typeof renderSharedHeader === 'function') {
 </main>
 
 <div id="sharedContactRoot"></div>
-<script>
-if (typeof renderSharedContact === 'function') {
-    renderSharedContact('sharedContactRoot', { pageClass: 'contact-page', id: 'contactSection', includeReveal: false, assetBase: '../' });
-}
-</script>
-
 <div id="sharedBookNowRoot"></div>
-<script>
-if (typeof renderSharedBookNow === 'function') {
-    renderSharedBookNow('sharedBookNowRoot', { id: 'bookNowButton' });
-}
-</script>
-
 <div id="sharedLightboxRoot"></div>
-<script>
-if (typeof renderSharedLightbox === 'function') {
-    renderSharedLightbox('sharedLightboxRoot', { initialAlt: 'Ảnh diễn viên phóng to' });
-}
-</script>
-
-<script>
-const welcomePopup = document.getElementById('welcomePopup');
-const bookNowButton = document.getElementById('bookNowButton');
-const contactSection = document.getElementById('contactSection');
-
-if (welcomePopup) {
-    requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-            welcomePopup.classList.add('show');
-        });
-    });
-
-    setTimeout(function () {
-        welcomePopup.classList.remove('show');
-        welcomePopup.classList.add('hidden');
-    }, 1500);
-}
-
-
-if (typeof initSharedHeaderMenus === 'function') {
-    initSharedHeaderMenus();
-}
-
-if (typeof initSharedLightbox === 'function') {
-    initSharedLightbox({
-        triggerSelector: '.actor-hero-gallery .actor-item img, .timeline-media-item img',
-        fallbackAlt: 'Ảnh diễn viên phóng to'
-    });
-}
-
-if (typeof initSharedMomentumScroller === 'function') {
-    initSharedMomentumScroller({
-        selector: '.actor-hero-gallery'
-    });
-}
-
-if (bookNowButton) {
-    bookNowButton.addEventListener('click', function () {
-        const pageBottom = Math.max(
-            document.body.scrollHeight,
-            document.documentElement.scrollHeight
-        );
-        window.scrollTo({ top: pageBottom, behavior: 'smooth' });
-    });
-}
-
-if (bookNowButton && contactSection) {
-    const observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-            bookNowButton.classList.toggle('hidden', entry.isIntersecting && entry.intersectionRatio > 0.45);
-        });
-    }, { threshold: [0.45, 0.75] });
-
-    observer.observe(contactSection);
-}
-
-</script>
+<script src="../js/pages/actor.js"></script>
 </body>
 </html>
 
