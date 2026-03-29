@@ -1,9 +1,23 @@
-.header-shell {
+#sharedHeaderRoot {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1200;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+.header-shell {
+    position: relative;
+    top: 0 !important;
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-height: var(--header-h);
+    margin-top: 0 !important;
+    transform: none !important;
     background: var(--header-shell-scrolled-bg, #000);
 }
 
