@@ -21,7 +21,8 @@ if (typeof initSharedPage === 'function') {
             options: {
                 pageClass: 'page contact-page',
                 id: 'contactSection',
-                includeReveal: true
+                includeReveal: true,
+                showExploreLinks: false
             }
         },
         bookNow: {
@@ -272,6 +273,31 @@ function animateToPage(targetIndex, duration) {
     pageAnimationFrame = requestAnimationFrame(frame);
 }
 
+function jumpToHashPage(useAnimation) {
+    if (!window.location.hash) {
+        return;
+    }
+
+    const target = document.getElementById(window.location.hash.slice(1));
+    if (!target) {
+        return;
+    }
+
+    const targetPage = target.classList.contains('page') ? target : target.closest('.page');
+    const targetIndex = pages.indexOf(targetPage);
+    if (targetIndex === -1) {
+        return;
+    }
+
+    if (useAnimation) {
+        animateToPage(targetIndex, 850);
+        return;
+    }
+
+    container.scrollTop = Math.max(0, targetPage.offsetTop);
+    updateSnapIndicator();
+}
+
 container.addEventListener('wheel', function (event) {
     if (Math.abs(event.deltaY) < 1) {
         return;
@@ -338,3 +364,9 @@ if (!prefersReducedMotion && revealElements.length) {
 
 container.addEventListener('scroll', updateSnapIndicator);
 updateSnapIndicator();
+requestAnimationFrame(function () {
+    jumpToHashPage(false);
+});
+window.addEventListener('hashchange', function () {
+    jumpToHashPage(true);
+});

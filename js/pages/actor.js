@@ -10,7 +10,7 @@ if (typeof initSharedPage === 'function') {
                 professionItems: [
                     { labelKey: 'header.profession.actor', label: 'Diễn Viên', href: './' },
                     { labelKey: 'header.profession.artist', label: 'Họa Sĩ' },
-                    { labelKey: 'header.profession.photographer', label: 'Nhiếp Ảnh' }
+                    { labelKey: 'header.profession.photographer', label: 'Nhiếp Ảnh', href: '../photographer/' }
                 ]
             }
         },
@@ -60,5 +60,25 @@ if (typeof initSharedPage === 'function') {
             hideWhenVisible: 'contactSection',
             visibilityThreshold: 0.45
         }
+    });
+}
+
+var actorPhoneToggle = document.getElementById("actorPhoneToggle");
+
+if (actorPhoneToggle) {
+    actorPhoneToggle.addEventListener("click", function () {
+        var phone = actorPhoneToggle.getAttribute("data-phone") || "";
+        var phoneDisplay = actorPhoneToggle.getAttribute("data-phone-display") || phone;
+        if (!phone) {
+            return;
+        }
+
+        if (actorPhoneToggle.classList.contains("is-revealed")) {
+            window.location.href = "tel:" + phone;
+            return;
+        }
+
+        actorPhoneToggle.classList.add("is-revealed");
+        actorPhoneToggle.textContent = phoneDisplay;
     });
 }

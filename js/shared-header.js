@@ -107,7 +107,7 @@
         var professionItems = Array.isArray(opts.professionItems) && opts.professionItems.length ? opts.professionItems : [
             { labelKey: 'header.profession.actor', label: 'Di\u1ec5n Vi\u00ean', href: 'actor/' },
             { labelKey: 'header.profession.artist', label: 'H\u1ecda S\u0129' },
-            { labelKey: 'header.profession.photographer', label: 'Nhi\u1ebfp \u1ea2nh' }
+            { labelKey: 'header.profession.photographer', label: 'Nhi\u1ebfp \u1ea2nh', href: 'photographer/' }
         ];
         var toolItems = Array.isArray(opts.toolItems) && opts.toolItems.length ? opts.toolItems : [
             { labelKey: 'header.tool.photoshop', label: 'Tool Photoshop' },

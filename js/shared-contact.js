@@ -21,19 +21,62 @@
         var sectionId = opts.id ? ' id="' + escapeHtml(opts.id) + '"' : '';
         var rv = opts.includeReveal === false ? '' : ' reveal-up';
         var assetBase = opts.assetBase ? String(opts.assetBase) : '';
+        var linkBase = opts.linkBase != null ? String(opts.linkBase) : assetBase;
+        var showExploreLinks = opts.showExploreLinks !== false;
         var signatureSrc = escapeHtml(assetBase + 'assets/images/Signature.png');
         var title = escapeHtml(translate('contact.title', 'LI\u00caN H\u1ec6'));
         var intro = escapeHtml(translate('contact.intro', 'S\u1eb5n s\u00e0ng h\u1ee3p t\u00e1c cho c\u00e1c d\u1ef1 \u00e1n di\u1ec5n xu\u1ea5t, thi\u1ebft k\u1ebf 2D/3D, nhi\u1ebfp \u1ea3nh v\u00e0 ph\u00e1t tri\u1ec3n c\u00f4ng c\u1ee5 h\u1ed7 tr\u1ee3 quy tr\u00ecnh l\u00e0m vi\u1ec7c.'));
         var directTitle = escapeHtml(translate('contact.directTitle', 'Li\u00ean H\u1ec7 Tr\u1ef1c Ti\u1ebfp'));
         var socialTitle = escapeHtml(translate('contact.socialTitle', 'M\u1ea1ng X\u00e3 H\u1ed9i'));
-        var callLabel = escapeHtml(translate('contact.call', 'G\u1ecdi: +84 36 321 9989'));
+        var exploreTitle = escapeHtml(translate('contact.exploreTitle', 'L\u0129nh V\u1ef1c Ho\u1ea1t \u0110\u1ed9ng'));
+        var callRevealLabel = escapeHtml(translate('contact.callReveal', 'G\u1ecdi ngay'));
+        var callLabel = escapeHtml(translate('contact.call', 'G\u1ecdi: 036 321 9989'));
         var emailLabel = escapeHtml(translate('contact.email', 'Email: maxiechen96@gmail.com'));
         var moreSocialLabel = escapeHtml(translate('contact.moreSocial', 'Xem th\u00eam m\u1ea1ng x\u00e3 h\u1ed9i'));
         var signatureAlt = escapeHtml(translate('contact.signatureAlt', 'Ch\u1eef k\u00fd'));
         var copyright = escapeHtml(translate('contact.copyright', 'B\u1ea3n quy\u1ec1n 2026 Tr\u1ea7n Th\u1eafng Minh. B\u1ea3o l\u01b0u m\u1ecdi quy\u1ec1n.'));
+        var exploreItems = [
+            {
+                label: escapeHtml(translate('header.profession.actor', 'Di\u1ec5n Vi\u00ean')),
+                href: escapeHtml(linkBase + 'actor/')
+            },
+            {
+                label: escapeHtml(translate('header.profession.photographer', 'Nhi\u1ebfp \u1ea2nh')),
+                href: escapeHtml(linkBase + 'photographer/')
+            },
+            {
+                label: escapeHtml(translate('header.profession.artist', 'H\u1ecda S\u0129')),
+                href: escapeHtml(linkBase + 'index.html#designPage')
+            },
+            {
+                label: escapeHtml(translate('header.tool.photoshop', 'Tool Photoshop')),
+                href: escapeHtml(linkBase + 'index.html#artistPage')
+            },
+            {
+                label: escapeHtml(translate('header.tool.maya', 'Tool Maya')),
+                href: escapeHtml(linkBase + 'index.html#artistPage')
+            },
+            {
+                label: escapeHtml(translate('header.tool.cheatEngine', 'Tool Cheat Engine')),
+                href: escapeHtml(linkBase + 'index.html#artistPage')
+            }
+        ];
+        var exploreLinksHtml = exploreItems.map(function (item) {
+            return '<a class="contact-explore-link" href="' + item.href + '">' + item.label + '</a>';
+        }).join('');
+        var exploreSectionHtml = showExploreLinks
+            ? '' +
+                '<div class="contact-explore-shell content-wrap' + rv + '">' +
+                '    <div class="contact-explore">' +
+                '        <h3 class="contact-explore-title">' + exploreTitle + '</h3>' +
+                '        <div class="contact-explore-links">' + exploreLinksHtml + '</div>' +
+                '    </div>' +
+                '</div>'
+            : '';
 
         root.innerHTML = '' +
             '<section class="' + sectionClass + '"' + sectionId + '>' +
+            exploreSectionHtml +
             '    <div class="contact-wrap">' +
             '        <div class="contact-top' + rv + '">' +
             '            <h2 class="contact-title">' + title + '</h2>' +
@@ -44,7 +87,7 @@
             '                <div class="contact-card">' +
             '                    <h3 class="contact-card-title">' + directTitle + '</h3>' +
             '                    <div class="contact-actions">' +
-            '                        <a class="call-btn" href="tel:+84363219989">' + callLabel + '</a>' +
+            '                        <button class="call-btn call-btn-toggle" id="contactCallToggle" type="button" data-phone="+84363219989" data-phone-display="' + callLabel + '">' + callRevealLabel + '</button>' +
             '                        <a class="mail-btn" href="mailto:maxiechen96@gmail.com">' + emailLabel + '</a>' +
             '                    </div>' +
             '                </div>' +
@@ -73,5 +116,23 @@
             '        </div>' +
             '    </div>' +
             '</section>';
+
+        var callToggle = root.querySelector('#contactCallToggle');
+        if (callToggle) {
+            callToggle.addEventListener('click', function () {
+                var phone = callToggle.getAttribute('data-phone') || '';
+                var phoneDisplay = callToggle.getAttribute('data-phone-display') || '';
+
+                if (!phone) {
+                    return;
+                }
+
+                callToggle.classList.add('is-revealed');
+                callToggle.textContent = phoneDisplay;
+                window.setTimeout(function () {
+                    window.location.href = 'tel:' + phone;
+                }, 0);
+            });
+        }
     };
 })();

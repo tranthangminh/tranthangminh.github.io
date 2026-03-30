@@ -12,6 +12,9 @@
             },
             actor: {
                 title: 'Actor - Tran Thang Minh'
+            },
+            photographer: {
+                title: 'Photography - Tran Thang Minh'
             }
         },
         header: {
@@ -39,14 +42,17 @@
             next: 'Next image',
             thumbs: 'Image list',
             fallbackAlt: 'Zoomed image',
-            actorAlt: 'Zoomed actor image'
+            actorAlt: 'Zoomed actor image',
+            photographerAlt: 'Zoomed photography image'
         },
         contact: {
             title: 'CONTACT',
             intro: 'Open to collaborations in acting, 2D/3D design, photography, and workflow tool development.',
             directTitle: 'Direct Contact',
             socialTitle: 'Social Media',
-            call: 'Call: +84 36 321 9989',
+            exploreTitle: 'Areas of Work',
+            callReveal: 'Call now',
+            call: 'Call: 036 321 9989',
             email: 'Email: maxiechen96@gmail.com',
             moreSocial: 'See more social links',
             copyright: 'Copyright 2026 Tran Thang Minh. All rights reserved.',

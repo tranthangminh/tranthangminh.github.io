@@ -121,6 +121,7 @@
 .lightbox-meta {
     flex: 0 0 auto;
     margin-top: auto;
+    margin-bottom: 48px;
     display: flex;
     flex-direction: column;
     gap: 10px;

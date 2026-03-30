@@ -1,0 +1,138 @@
+﻿body {
+    background:
+        radial-gradient(circle at 12% 14%, rgba(15, 118, 110, 0.12), transparent 38%),
+        radial-gradient(circle at 88% 20%, rgba(157, 23, 77, 0.1), transparent 36%),
+        radial-gradient(circle at 18% 86%, rgba(37, 99, 235, 0.08), transparent 34%),
+        linear-gradient(145deg, #f8fbfc 0%, #f4efe7 55%, #f5f8fb 100%);
+    color: var(--text-black);
+    min-height: 100vh;
+}
+
+.photographer-page-main {
+    padding: calc(var(--header-h) + 18px) 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.photographer-hero {
+    display: grid;
+    gap: 14px;
+}
+
+.actor-title {
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.actor-hero-title {
+    margin-bottom: 0;
+}
+
+.actor-title-link {
+    color: inherit;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.actor-title-link:hover {
+    opacity: 0.7;
+}
+
+.actor-title-sep {
+    opacity: 0.5;
+    margin: 0 6px;
+}
+
+.photographer-intro-card {
+    display: grid;
+    gap: 16px;
+    --surface-padding: 22px 20px;
+    --surface-bg: rgba(255, 255, 255, 0.78);
+    --surface-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    --surface-backdrop-filter: blur(6px);
+}
+
+.photographer-summary {
+    margin: 0;
+    line-height: 1.7;
+    color: rgba(51, 51, 51, 0.86);
+}
+
+.photographer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.photographer-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(17, 17, 17, 0.08);
+    color: rgba(51, 51, 51, 0.82);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.photographer-gallery-wrap {
+    width: calc(100vw - (var(--content-pad) * 2));
+    max-width: none;
+    margin: 0 auto;
+}
+
+.photographer-gallery {
+    column-width: 225px;
+    column-gap: 14px;
+}
+
+.photo-card {
+    break-inside: avoid;
+    margin: 0 0 14px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(51, 51, 51, 0.08);
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+    cursor: zoom-in;
+}
+
+.photo-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.photo-card:hover img {
+    transform: scale(1.02);
+    filter: saturate(1.04);
+}
+
+@media (max-width: 768px) {
+    .photographer-page-main {
+        padding: calc(var(--header-h) + 16px) 0 18px;
+        gap: 12px;
+    }
+
+    .photographer-intro-card {
+        --surface-padding: 18px 16px;
+        gap: 14px;
+    }
+
+    .photographer-gallery-wrap {
+        width: calc(100vw - (var(--content-pad) * 2));
+    }
+
+    .photographer-gallery {
+        column-width: auto;
+        column-count: 2;
+        column-gap: 7px;
+    }
+
+    .photo-card {
+        margin-bottom: 7px;
+    }
+}
