@@ -1,0 +1,85 @@
+{
+  "manifestVersion": 5,
+  "id": "com.max.layerxrs",
+  "name": "Layer Export, Rename & Sort",
+  "version": "0.2.0",
+  "main": "index.html",
+  "host": {
+    "app": "PS",
+    "minVersion": "23.3.0"
+  },
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "saveAsLayerNamePanel",
+      "label": {
+        "default": "Layer Export, Rename & Sort"
+      },
+      "icons": [
+        {
+          "width": 23,
+          "height": 23,
+          "path": "icons/panel-dark.png",
+          "scale": [1, 2],
+          "theme": ["darkest", "dark", "medium"]
+        },
+        {
+          "width": 23,
+          "height": 23,
+          "path": "icons/panel-light.png",
+          "scale": [1, 2],
+          "theme": ["lightest", "light"]
+        }
+      ],
+      "minimumSize": {
+        "width": 280,
+        "height": 360
+      },
+      "maximumSize": {
+        "width": 1000,
+        "height": 1080
+      },
+      "preferredDockedSize": {
+        "width": 280,
+        "height": 360
+      },
+      "preferredFloatingSize": {
+        "width": 320,
+        "height": 420
+      }
+    }
+  ],
+  "icons": [
+    {
+      "width": 23,
+      "height": 23,
+      "path": "icons/plugin-dark.png",
+      "scale": [1, 2],
+      "theme": ["darkest", "dark", "medium"],
+      "species": ["generic"]
+    },
+    {
+      "width": 23,
+      "height": 23,
+      "path": "icons/plugin-light.png",
+      "scale": [1, 2],
+      "theme": ["lightest", "light"],
+      "species": ["generic"]
+    }
+  ],
+  "requiredPermissions": {
+    "localFileSystem": "fullAccess",
+    "launchProcess": {
+      "schemes": [
+        "https"
+      ]
+    }
+  },
+  "permissions": {
+    "launchProcess": {
+      "schemes": [
+        "https"
+      ]
+    }
+  }
+}

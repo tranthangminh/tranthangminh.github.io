@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="shared.js"></script>
+    <script src="index.js"></script>
+  </head>
+  <body>
+    <div class="panel-shell">
+      <!-- Export as Layer Name -->
+      <div class="controls section-collapsible is-collapsed" id="exportMenuSection">
+        <div class="section-header-row">
+          <div id="exportMenuToggleBtn" class="section-toggle section-toggle-primary" role="button" tabindex="0" aria-expanded="true">
+            <div class="section-toggle-text section-toggle-text-main">Export as Layer Name</div>
+            <div class="section-toggle-icon section-toggle-icon-main" id="exportMenuToggleIcon">-</div>
+          </div>
+          <button id="exportMenuInfoBtn" class="section-info-button" type="button" aria-label="About Export as Layer Name" title="About Export as Layer Name">i</button>
+        </div>
+        <div class="controls-body">
+        <div class="section section-block section-collapsible" id="fileTypeSection">
+          <div id="fileTypeToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
+            <div class="section-toggle-text">File Type</div>
+            <div class="section-toggle-icon" id="fileTypeToggleIcon">-</div>
+          </div>
+          <div class="section-body filetype-grid">
+            <div class="format-row" id="jpgRow">
+              <div class="format-toggle">
+                <input id="jpgEnabled" class="format-checkbox" type="checkbox">
+                <label class="format-name" for="jpgEnabled">JPG</label>
+              </div>
+              <div class="format-main">
+                <div class="metric-line">
+                  <div class="metric-label" id="jpgQualityValue">Quality: 10</div>
+                </div>
+                <div id="jpgQualitySlider" class="shared-slider" data-input-id="jpgQuality" role="slider" tabindex="0" aria-label="JPG Quality">
+                  <div class="shared-slider-track">
+                    <div class="shared-slider-fill"></div>
+                    <div class="shared-slider-thumb"></div>
+                  </div>
+                </div>
+                <input id="jpgQuality" class="shared-slider-input" type="range" min="1" max="12" step="1" value="10">
+              </div>
+            </div>
+
+            <div class="format-row" id="pngRow">
+              <div class="format-toggle">
+                <input id="pngEnabled" class="format-checkbox" type="checkbox" checked>
+                <label class="format-name" for="pngEnabled">PNG</label>
+              </div>
+              <div class="format-main">
+                <div class="metric-line">
+                  <div class="metric-label" id="pngCompressionValue">Compression: 9</div>
+                </div>
+                <div id="pngCompressionSlider" class="shared-slider" data-input-id="pngCompression" role="slider" tabindex="0" aria-label="PNG Compression">
+                  <div class="shared-slider-track">
+                    <div class="shared-slider-fill"></div>
+                    <div class="shared-slider-thumb"></div>
+                  </div>
+                </div>
+                <input id="pngCompression" class="shared-slider-input" type="range" min="0" max="9" step="1" value="9">
+              </div>
+            </div>
+
+            <div class="format-row" id="webpRow">
+              <div class="format-toggle">
+                <input id="webpEnabled" class="format-checkbox" type="checkbox">
+                <label class="format-name" for="webpEnabled">WebP</label>
+              </div>
+              <div class="format-main">
+                <div class="mode-line">
+                  <button id="webpMode" class="mode-button" type="button" data-value="lossy">Lossy</button>
+                </div>
+                <div class="metric-line">
+                  <div class="metric-label" id="webpQualityValue">Quality: 80</div>
+                </div>
+                <div id="webpQualitySlider" class="shared-slider" data-input-id="webpQuality" role="slider" tabindex="0" aria-label="WebP Quality">
+                  <div class="shared-slider-track">
+                    <div class="shared-slider-fill"></div>
+                    <div class="shared-slider-thumb"></div>
+                  </div>
+                </div>
+                <input id="webpQuality" class="shared-slider-input" type="range" min="0" max="100" step="5" value="80">
+              </div>
+            </div>
+
+            <div class="format-row" id="psdRow">
+              <div class="format-toggle">
+                <input id="psdEnabled" class="format-checkbox" type="checkbox">
+                <label class="format-name" for="psdEnabled">PSD</label>
+              </div>
+              <div class="format-main">
+                <div class="mode-line">
+                  <button id="psdMode" class="mode-button" type="button" data-value="flattened">Flattened</button>
+                </div>
+                <label class="option-line" for="psdMaxCompatibility">
+                  <input id="psdMaxCompatibility" class="option-checkbox" type="checkbox" checked>
+                  <div class="option-label">Max Compatibility</div>
+                </label>
+              </div>
+            </div>
+
+            <div class="format-row" id="tiffRow">
+              <div class="format-toggle">
+                <input id="tiffEnabled" class="format-checkbox" type="checkbox">
+                <label class="format-name" for="tiffEnabled">TIFF</label>
+              </div>
+              <div class="format-main">
+                <div class="mode-line">
+                  <button id="tiffCompression" class="mode-button" type="button" data-value="lzw">LZW</button>
+                </div>
+                <label class="option-line" for="tiffTransparency">
+                  <input id="tiffTransparency" class="option-checkbox" type="checkbox" checked>
+                  <div class="option-label">Save Transparency</div>
+                </label>
+              </div>
+            </div>
+
+            <div class="format-row" id="bmpRow">
+              <div class="format-toggle">
+                <input id="bmpEnabled" class="format-checkbox" type="checkbox">
+                <label class="format-name" for="bmpEnabled">BMP</label>
+              </div>
+              <div class="format-main">
+                <div class="mode-line">
+                  <button id="bmpDepth" class="mode-button" type="button" data-value="24">24-bit</button>
+                </div>
+                <label class="option-line" for="bmpAlphaChannels">
+                  <input id="bmpAlphaChannels" class="option-checkbox" type="checkbox">
+                  <div class="option-label">Alpha Channels</div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section section-block section-collapsible is-collapsed" id="renameSection">
+          <div id="renameToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
+            <div class="section-toggle-text">Rename</div>
+            <div class="section-toggle-icon" id="renameToggleIcon">-</div>
+          </div>
+          <div class="section-body rename-row">
+            <div class="field">
+              <input id="prefixInput" class="text-input" type="text" placeholder="Prefix">
+            </div>
+            <div class="field">
+              <input id="suffixInput" class="text-input" type="text" placeholder="Suffix">
+            </div>
+          </div>
+        </div>
+
+        <div class="section section-block section-collapsible is-collapsed" id="exportLocationSection">
+          <div id="exportLocationToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
+            <div class="section-toggle-text">Export Location</div>
+            <div class="section-toggle-icon" id="exportLocationToggleIcon">-</div>
+          </div>
+          <div class="section-body">
+            <div class="location-field">
+              <input id="locationInput" class="text-input" type="text" placeholder="Using Current Document Folder">
+            </div>
+            <div class="location-actions">
+              <button id="changeLocationBtn" class="app-button app-button-secondary" type="button">Change Location</button>
+              <button id="defaultLocationBtn" class="app-button app-button-secondary" type="button">Default</button>
+            </div>
+            <div class="note-text">Default resets the export location to the current document folder.</div>
+          </div>
+        </div>
+
+        <div class="section toolbar">
+          <button id="exportBtn" class="app-button app-button-primary" type="button">Export</button>
+        </div>
+
+        <div class="section section-block section-collapsible is-collapsed" id="exportPreviewSection">
+          <div id="exportPreviewToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
+            <div class="section-toggle-text">Preview</div>
+            <div class="section-toggle-icon" id="exportPreviewToggleIcon">-</div>
+          </div>
+          <div class="section-body">
+            <div class="shared-preview-shell">
+              <pre id="selectionPreview" class="shared-preview-content" tabindex="0" contenteditable="true" spellcheck="false">No preview yet.</pre>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- Rename Selected Layers -->
+      <div class="controls section-collapsible is-collapsed" id="renameLayersMenuSection">
+        <div id="renameLayersMenuToggleBtn" class="section-toggle section-toggle-primary" role="button" tabindex="0" aria-expanded="true">
+          <div class="section-toggle-text section-toggle-text-main">Rename Selected Layers</div>
+          <div class="section-toggle-icon section-toggle-icon-main" id="renameLayersMenuToggleIcon">-</div>
+        </div>
+        <div class="controls-body">
+          <label class="rename-target-scope" for="renameAllLayersCheckbox">
+            <input id="renameAllLayersCheckbox" class="option-checkbox" type="checkbox">
+            <div class="option-label">Rename all layers in the document</div>
+          </label>
+
+          <div class="section section-block section-collapsible" id="renameLayersActionSection">
+            <div id="renameLayersActionToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
+              <div class="section-toggle-text">Rename Layers</div>
+              <div class="section-toggle-icon" id="renameLayersActionToggleIcon">-</div>
+            </div>
+            <div class="section-body">
+              <div class="field rename-base-field">
+                <div class="field-label">Base Name</div>
+                <input id="renameBaseNameInput" class="text-input" type="text" placeholder="Base Name" value="">
+              </div>
+              <div class="rename-number-row">
+                <div class="field rename-number-field">
+                  <div class="field-label">Start At</div>
+                  <input id="renameStartInput" class="text-input" type="text" value="1">
+                </div>
+                <div class="field rename-number-field">
+                  <div class="field-label">Step</div>
+                  <input id="renameStepInput" class="text-input" type="text" value="1">
+                </div>
+                <div class="field rename-number-field">
+                  <div class="field-label">Digits</div>
+                  <input id="renameDigitsInput" class="text-input" type="text" value="2">
+                </div>
+              </div>
+              <div class="shared-preview-shell shared-preview-shell-compact">
+                <pre id="renameLayersPreview" class="shared-preview-content shared-preview-content-compact" tabindex="0" contenteditable="true" spellcheck="false">1. Layer_1</pre>
+              </div>
+              <button id="renameLayersBtn" class="app-button app-button-primary" type="button">Rename</button>
+            </div>
+          </div>
+
+          <div class="section section-block section-collapsible is-collapsed" id="renamePrefixSuffixSection">
+            <div id="renamePrefixSuffixToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
+              <div class="section-toggle-text">Prefix / Suffix</div>
+              <div class="section-toggle-icon" id="renamePrefixSuffixToggleIcon">-</div>
+            </div>
+            <div class="section-body">
+              <div class="rename-row">
+                <div class="field">
+                  <input id="renameLayerPrefixInput" class="text-input" type="text" placeholder="Prefix" value="">
+                </div>
+                <div class="field">
+                  <input id="renameLayerSuffixInput" class="text-input" type="text" placeholder="Suffix" value="">
+                </div>
+              </div>
+              <div class="shared-preview-shell shared-preview-shell-compact">
+                <pre id="prefixSuffixPreview" class="shared-preview-content shared-preview-content-compact" tabindex="0" contenteditable="true" spellcheck="false">1. PrefixLayerSuffix</pre>
+              </div>
+              <button id="applyPrefixSuffixBtn" class="app-button app-button-primary" type="button">Add Prefix / Suffix</button>
+            </div>
+          </div>
+
+          <div class="section section-block section-collapsible is-collapsed" id="removeReplaceSection">
+            <div id="removeReplaceToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
+              <div class="section-toggle-text">Remove / Replace</div>
+              <div class="section-toggle-icon" id="removeReplaceToggleIcon">-</div>
+            </div>
+            <div class="section-body">
+              <div class="rename-row">
+                <div class="field">
+                  <input id="removeTargetInput" class="text-input" type="text" placeholder="Target" value="">
+                </div>
+                <div class="field">
+                  <input id="replaceWithInput" class="text-input" type="text" placeholder="Replace With" value="">
+                </div>
+              </div>
+              <div class="shared-preview-shell shared-preview-shell-compact">
+                <pre id="removeReplacePreview" class="shared-preview-content shared-preview-content-compact" tabindex="0" contenteditable="true" spellcheck="false">1. Layer name</pre>
+              </div>
+              <div class="action-row">
+                <button id="removeTextBtn" class="app-button app-button-secondary action-button-half" type="button">Remove</button>
+                <button id="replaceTextBtn" class="app-button app-button-secondary action-button-half" type="button">Replace</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sort Layers -->
+      <div class="controls section-collapsible is-collapsed" id="sortLayersMenuSection">
+        <div id="sortLayersMenuToggleBtn" class="section-toggle section-toggle-primary" role="button" tabindex="0" aria-expanded="true">
+          <div class="section-toggle-text section-toggle-text-main">Sort Layers</div>
+          <div class="section-toggle-icon section-toggle-icon-main" id="sortLayersMenuToggleIcon">-</div>
+        </div>
+        <div class="controls-body">
+          <div class="section section-block section-collapsible" id="sortScopeSection">
+            <div id="sortScopeToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
+              <div class="section-toggle-text">Scope</div>
+              <div class="section-toggle-icon" id="sortScopeToggleIcon">-</div>
+            </div>
+            <div class="section-body">
+              <label class="radio-option-line" for="sortScopeTopLevel">
+                <input id="sortScopeTopLevel" class="radio-option-input" type="radio" name="sortScope" value="top-level" checked>
+                <div class="radio-option-mark">
+                  <div class="radio-option-dot"></div>
+                </div>
+                <div class="radio-option-label">Top-level layers only</div>
+              </label>
+              <label class="radio-option-line" for="sortScopeRecursive">
+                <input id="sortScopeRecursive" class="radio-option-input" type="radio" name="sortScope" value="recursive">
+                <div class="radio-option-mark">
+                  <div class="radio-option-dot"></div>
+                </div>
+                <div class="radio-option-label">All layers (recursive)</div>
+              </label>
+              <label class="radio-option-line" for="sortScopeWithinGroup">
+                <input id="sortScopeWithinGroup" class="radio-option-input" type="radio" name="sortScope" value="within-group">
+                <div class="radio-option-mark">
+                  <div class="radio-option-dot"></div>
+                </div>
+                <div class="radio-option-label">Sort within one selected group only</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="section section-block section-collapsible" id="sortOrderSection">
+            <div id="sortOrderToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
+              <div class="section-toggle-text">Sorting Order</div>
+              <div class="section-toggle-icon" id="sortOrderToggleIcon">-</div>
+            </div>
+            <div class="section-body">
+              <label class="radio-option-line radio-option-line-strong" for="sortOrderAz">
+                <input id="sortOrderAz" class="radio-option-input" type="radio" name="sortOrder" value="az" checked>
+                <div class="radio-option-mark">
+                  <div class="radio-option-dot"></div>
+                </div>
+                <div class="radio-option-label">A → Z</div>
+              </label>
+              <label class="radio-option-line radio-option-line-strong" for="sortOrderZa">
+                <input id="sortOrderZa" class="radio-option-input" type="radio" name="sortOrder" value="za">
+                <div class="radio-option-mark">
+                  <div class="radio-option-dot"></div>
+                </div>
+                <div class="radio-option-label">Z → A</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="section toolbar">
+            <button id="sortLayersBtn" class="app-button app-button-primary" type="button">Sort</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- About Me -->
+      <div class="controls section-collapsible is-collapsed" id="aboutMeSection">
+        <div id="aboutMeToggleBtn" class="section-toggle section-toggle-primary section-toggle-primary-about" role="button" tabindex="0" aria-expanded="true">
+          <div class="section-toggle-text section-toggle-text-main">About Me</div>
+          <div class="section-toggle-icon section-toggle-icon-main" id="aboutMeToggleIcon">-</div>
+        </div>
+        <div class="controls-body">
+          <div class="about-text">My name is Trần Thắng Minh,
+but you can call me Max Chen.
+
+Thank you for using this tool.
+For more information, you can visit my website below.</div>
+          <div class="about-link-row">
+            <div class="about-link-label">Website:</div>
+            <button id="aboutWebsiteBtn" class="about-link-button" type="button">tranthangminh.github.io</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Export Info Dialog -->
+    <dialog id="exportInfoDialog">
+      <form method="dialog" class="info-dialog-form">
+        <div class="info-dialog-title">About Export as Layer Name</div>
+        <pre id="exportInfoDialogMessage" class="info-dialog-message"></pre>
+        <footer>
+          <button class="app-button app-button-primary info-dialog-button" type="submit">OK</button>
+        </footer>
+      </form>
+    </dialog>
+  </body>
+</html>
