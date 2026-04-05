@@ -4,6 +4,7 @@ var photographerGallery = document.querySelector('.photographer-gallery');
 var photographerImageManifest = Array.isArray(window.photographerImageManifest)
     ? window.photographerImageManifest
     : [];
+var sharedGallery = window.sharedGallery || null;
 
 if (typeof initSharedPage === 'function') {
     initSharedPage({
@@ -12,9 +13,10 @@ if (typeof initSharedPage === 'function') {
             rootId: 'sharedHeaderRoot',
             options: {
                 homeHref: '../index.html',
+                toolBaseHref: '../',
                 professionItems: [
                     { labelKey: 'header.profession.actor', label: 'Diễn Viên', href: '../actor/' },
-                    { labelKey: 'header.profession.artist', label: 'Họa Sĩ' },
+                    { labelKey: 'header.profession.artist', label: 'Họa Sĩ', href: '../artist/' },
                     { labelKey: 'header.profession.photographer', label: 'Nhiếp Ảnh', href: './' }
                 ]
             }
@@ -53,33 +55,21 @@ if (typeof initSharedPage === 'function') {
     });
 }
 
-function shuffleArray(items) {
-    var nextItems = items.slice();
-    for (var index = nextItems.length - 1; index > 0; index -= 1) {
-        var randomIndex = Math.floor(Math.random() * (index + 1));
-        var temp = nextItems[index];
-        nextItems[index] = nextItems[randomIndex];
-        nextItems[randomIndex] = temp;
-    }
-    return nextItems;
-}
-
-function createAltText(name, fallbackIndex) {
-    var baseName = String(name || '').replace(/\.[^.]+$/, '').trim();
-    return baseName
-        ? 'Ảnh nhiếp ảnh ' + baseName
-        : 'Ảnh nhiếp ảnh ' + String(fallbackIndex + 1);
-}
-
 function getManifestGalleryItems() {
+    if (sharedGallery && typeof sharedGallery.normalizeImageItems === 'function') {
+        return sharedGallery.normalizeImageItems(photographerImageManifest, {
+            altPrefix: 'Ảnh nhiếp ảnh'
+        });
+    }
+
     return photographerImageManifest
         .map(function (item, index) {
             var nextItem = item || {};
             var src = nextItem.src || '';
-            var alt = nextItem.alt || createAltText(src, index);
+            var baseName = String(src || '').replace(/\.[^.]+$/, '').trim();
             return {
                 src: src,
-                alt: alt
+                alt: nextItem.alt || (baseName ? 'Ảnh nhiếp ảnh ' + baseName : 'Ảnh nhiếp ảnh ' + String(index + 1))
             };
         })
         .filter(function (item) {
@@ -87,8 +77,16 @@ function getManifestGalleryItems() {
         });
 }
 
-function renderGallery(items) {
+function renderPhotographerGallery() {
+    var items = getManifestGalleryItems();
     if (!photographerGallery || !items.length) {
+        return;
+    }
+
+    if (sharedGallery && typeof sharedGallery.renderImageGallery === 'function') {
+        sharedGallery.renderImageGallery(photographerGallery, items, {
+            cardClass: 'photo-card masonry-card'
+        });
         return;
     }
 
@@ -98,7 +96,7 @@ function renderGallery(items) {
         var figure = document.createElement('figure');
         var image = document.createElement('img');
 
-        figure.className = 'photo-card';
+        figure.className = 'photo-card masonry-card';
         image.src = item.src;
         image.alt = item.alt;
         image.loading = 'lazy';
@@ -107,15 +105,6 @@ function renderGallery(items) {
         figure.appendChild(image);
         photographerGallery.appendChild(figure);
     });
-}
-
-function renderPhotographerGallery() {
-    var items = getManifestGalleryItems();
-    if (!items.length) {
-        return;
-    }
-
-    renderGallery(shuffleArray(items));
 }
 
 renderPhotographerGallery();

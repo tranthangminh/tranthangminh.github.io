@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Công Cụ - Trần Thắng Minh</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/shared-layout.css?v=20260405-3">
+<link rel="stylesheet" href="../css/shared-header.css?v=20260330-1">
+<link rel="stylesheet" href="../css/shared-footer.css?v=20260331-5">
+<link rel="stylesheet" href="../css/shared-book-now.css?v=20260330-1">
+<link rel="stylesheet" href="../css/shared-surfaces.css?v=20260330-1">
+<link rel="stylesheet" href="../css/shared-mobile-type-scale.css?v=20260330-1">
+<link rel="stylesheet" href="../css/pages/tools.css?v=20260405-7">
+<script src="../js/shared-utils.js?v=20260330-1"></script>
+<script src="../js/shared-i18n.js?v=20260330-1"></script>
+<script src="../js/i18n-vi.js?v=20260405-6"></script>
+<script src="../js/i18n-en.js?v=20260405-6"></script>
+<script src="../js/shared-header.js?v=20260405-2"></script>
+<script src="../js/shared-book-now.js?v=20260330-1"></script>
+<script src="../js/shared-contact.js?v=20260405-3"></script>
+<script src="../js/shared-page.js?v=20260330-1"></script>
+</head>
+<body class="tools-page-view actor-page-view">
+<div id="sharedHeaderRoot"></div>
+
+<main class="tools-page-main">
+    <div class="content-wrap tools-hero">
+        <h2 class="page-breadcrumb">
+            <a class="page-breadcrumb-link" href="../index.html">Trang Chủ</a>
+            <span class="page-breadcrumb-sep">&gt;</span>
+            <span>Công Cụ</span>
+        </h2>
+
+        <section class="tools-intro-card surface-card">
+            <div class="tools-intro-copy">
+                <h1 class="tools-section-title">Thông tin cơ bản</h1>
+                <p class="tools-summary">
+                    Mình có nền tảng công nghệ thông tin và thường tự viết thêm tool để giảm thao tác lặp,
+                    chuẩn hóa quy trình làm việc và giúp từng giai đoạn sản xuất diễn ra nhanh, gọn và ổn định hơn.
+                    Mỗi nhóm công cụ đều phục vụ một nhu cầu rất thực tế trong công việc hằng ngày.
+                </p>
+            </div>
+            <div class="tools-switch" role="tablist" aria-label="Chọn nhóm công cụ">
+                <button class="tools-switch-btn is-active" id="toolsTabPhotoshop" type="button" data-tool-tab="photoshop" aria-pressed="true">Photoshop</button>
+                <button class="tools-switch-btn" id="toolsTabMaya" type="button" data-tool-tab="maya" aria-pressed="false">Maya</button>
+                <button class="tools-switch-btn" id="toolsTabCheatEngine" type="button" data-tool-tab="cheat-engine" aria-pressed="false">Cheat Engine</button>
+            </div>
+        </section>
+
+        <section class="tools-panels">
+            <article class="tools-panel surface-card is-active" data-tool-panel="photoshop">
+                <div class="tools-panel-head">
+                    <h2 class="tools-panel-title">Tool Photoshop</h2>
+                    <span class="tools-panel-badge">2D Workflow</span>
+                </div>
+                <p class="tools-panel-summary">
+                    Mình dùng Photoshop để viết script và bộ công cụ nhỏ giúp xử lý hình ảnh hàng loạt, đẩy nhanh khâu chỉnh sửa,
+                    export và chuẩn hóa file cho các đầu việc thiết kế thực tế.
+                </p>
+                <ul class="tools-panel-list">
+                    <li>Tự động hóa các bước chỉnh sửa lặp lại và xuất nhiều phiên bản nhanh hơn.</li>
+                    <li>Chuẩn hóa tên layer, kích thước file và định dạng đầu ra cho từng mục đích sử dụng.</li>
+                    <li>Giảm thời gian thao tác tay để tập trung nhiều hơn vào bố cục và chất lượng hình ảnh.</li>
+                </ul>
+                <div class="tools-showcase">
+                    <div class="tools-embed">
+                        <div class="tools-embed-label" data-i18n="toolsPage.photoshop.previewLabel">Xem trước</div>
+                        <iframe
+                            class="tools-embed-frame"
+                            src="../assets/Layer%20Export,%20Rename%20%26%20Sort/index.html"
+                            title="Layer Export, Rename & Sort"
+                            loading="lazy">
+                        </iframe>
+                    </div>
+                    <div class="tools-detail">
+                        <section class="tools-detail-section">
+                            <h3 class="tools-detail-title" data-i18n="toolsPage.photoshop.overviewTitle">Tổng Quan Công Cụ</h3>
+                            <p class="tools-detail-text" data-i18n="toolsPage.photoshop.overviewBody">
+                                Layer Export, Rename &amp; Sort là một panel tiện ích cho Photoshop được tạo ra để tăng tốc các quy trình lặp đi lặp lại với layer.
+                                Công cụ này giúp xuất các layer đã chọn thành nhiều định dạng file, đổi tên layer hàng loạt và sắp xếp layer theo tên mà vẫn giữ nhịp làm việc liền mạch trong Photoshop.
+                            </p>
+                        </section>
+                        <section class="tools-detail-section">
+                            <h3 class="tools-detail-title" data-i18n="toolsPage.photoshop.exportTitle">Export</h3>
+                            <p class="tools-detail-text" data-i18n="toolsPage.photoshop.exportBody">
+                                Xuất các layer đã chọn thành từng file riêng theo tên layer, đồng thời có thể thêm tiền tố hoặc hậu tố để việc đặt tên gọn gàng hơn.
+                                Phần Export hỗ trợ JPG, PNG, WebP, PSD, TIFF và BMP, mỗi định dạng đều có nhóm thiết lập riêng như chất lượng, nén, bit depth, compatibility hoặc transparency.
+                                Bạn có thể xem trước tên file trước khi xuất, giữ thư mục của tài liệu hiện tại làm mặc định hoặc chọn thư mục xuất riêng khi cần.
+                            </p>
+                        </section>
+                        <section class="tools-detail-section">
+                            <h3 class="tools-detail-title" data-i18n="toolsPage.photoshop.renameTitle">Rename</h3>
+                            <p class="tools-detail-text" data-i18n="toolsPage.photoshop.renameBody">
+                                Đổi tên layer hàng loạt bằng những công cụ đơn giản nhưng linh hoạt.
+                                Bạn có thể đổi tên các layer đã chọn theo thứ tự số, thêm tiền tố hoặc hậu tố, hoặc xóa và thay thế một đoạn chữ trong nhiều tên layer cùng lúc.
+                                Công cụ này được thiết kế để dọn file nhanh và giữ cách đặt tên nhất quán khi làm việc với những bộ layer lớn.
+                            </p>
+                        </section>
+                        <section class="tools-detail-section">
+                            <h3 class="tools-detail-title" data-i18n="toolsPage.photoshop.sortTitle">Sort</h3>
+                            <p class="tools-detail-text" data-i18n="toolsPage.photoshop.sortBody">
+                                Sắp xếp layer theo thứ tự chữ cái để tài liệu luôn gọn gàng và dễ quản lý hơn.
+                                Bạn có thể chọn phạm vi sắp xếp như chỉ layer cấp cao nhất, toàn bộ layer theo kiểu đệ quy, hoặc các layer bên trong một group đang chọn,
+                                rồi sắp xếp theo chiều A đến Z hoặc Z đến A.
+                            </p>
+                        </section>
+                    </div>
+                </div>
+                <section class="tools-support">
+                    <div class="tools-action-row">
+                        <a
+                            class="tools-download-btn"
+                            href="../assets/Layer%20Export,%20Rename%20%26%20Sort/com.max.layerxrs_PS.ccx"
+                            download="com.max.layerxrs_PS.ccx">
+                            <span class="tools-download-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.29a1 1 0 1 1 1.4 1.41l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.41L11 12.59V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"/></svg>
+                            </span>
+                            <span data-i18n="toolsPage.photoshop.downloadLabel">Tải Xuống .CCX</span>
+                        </a>
+                    </div>
+                    <div class="tools-support-content">
+                        <section class="tools-detail-section">
+                            <h3 class="tools-detail-title" data-i18n="toolsPage.photoshop.installationTitle">Hướng Dẫn Cài Đặt</h3>
+                            <p class="tools-detail-text" data-i18n="toolsPage.photoshop.installationIntro">
+                                Plugin này yêu cầu Adobe Photoshop 23.3 trở lên.
+                            </p>
+                            <p class="tools-detail-text" data-i18n="toolsPage.photoshop.installationPathNote">
+                                Để tránh lỗi cài đặt, hãy đặt file .ccx ở một đường dẫn cục bộ ngắn trước khi cài. Ví dụ nên dùng: D:\com.max.layerxrs_PS.ccx. Tránh cài trực tiếp từ các đường dẫn quá dài, thư mục đồng bộ đám mây hoặc các vị trí bên ngoài.
+                            </p>
+                            <div class="tools-install-grid">
+                                <div class="tools-install-group">
+                                    <h4 class="tools-install-subtitle" data-i18n="toolsPage.photoshop.installStepsTitle">Cách cài đặt</h4>
+                                    <ol class="tools-install-list">
+                                        <li data-i18n="toolsPage.photoshop.installStep1">Nhấp đúp vào file .ccx.</li>
+                                        <li data-i18n="toolsPage.photoshop.installStep2">Adobe Creative Cloud Desktop sẽ mở lên và cài plugin.</li>
+                                        <li data-i18n="toolsPage.photoshop.installStep3">Khởi động lại Photoshop nếu cần.</li>
+                                    </ol>
+                                </div>
+                                <div class="tools-install-group">
+                                    <h4 class="tools-install-subtitle" data-i18n="toolsPage.photoshop.openStepsTitle">Cách mở công cụ trong Photoshop</h4>
+                                    <ol class="tools-install-list">
+                                        <li data-i18n="toolsPage.photoshop.openStep1">Mở Photoshop.</li>
+                                        <li data-i18n="toolsPage.photoshop.openStep2">Vào Plugins.</li>
+                                        <li data-i18n="toolsPage.photoshop.openStep3">Mở Layer Export, Rename &amp; Sort.</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </article>
+
+            <article class="tools-panel surface-card" data-tool-panel="maya" hidden>
+                <div class="tools-panel-head">
+                    <h2 class="tools-panel-title">Tool Maya</h2>
+                    <span class="tools-panel-badge">3D Workflow</span>
+                </div>
+                <p class="tools-panel-summary">
+                    Trong Maya, mình ưu tiên các tool phục vụ thao tác dựng hình, dọn scene và tăng tốc những bước kỹ thuật lặp đi lặp lại
+                    để pipeline 3D gọn hơn và ít lỗi vặt hơn.
+                </p>
+                <ul class="tools-panel-list">
+                    <li>Hỗ trợ clean scene, đổi tên object và gom nhóm cấu trúc file gọn hơn.</li>
+                    <li>Tăng tốc thao tác modeling, setup nhanh các bước kỹ thuật hay dùng.</li>
+                    <li>Giúp quá trình làm việc ổn định hơn khi phải xử lý nhiều asset trong cùng một dự án.</li>
+                </ul>
+            </article>
+
+            <article class="tools-panel surface-card" data-tool-panel="cheat-engine" hidden>
+                <div class="tools-panel-head">
+                    <h2 class="tools-panel-title">Tool Cheat Engine</h2>
+                    <span class="tools-panel-badge">Debug Workflow</span>
+                </div>
+                <p class="tools-panel-summary">
+                    Với Cheat Engine, mình chủ yếu dùng như một công cụ kiểm tra logic, theo dõi giá trị runtime và hỗ trợ debug nhanh
+                    trong những tình huống cần quan sát dữ liệu trực tiếp khi hệ thống đang chạy.
+                </p>
+                <ul class="tools-panel-list">
+                    <li>Kiểm tra trạng thái dữ liệu và biến số tại thời điểm chạy thực tế.</li>
+                    <li>Hỗ trợ truy vết logic và xác minh các trường hợp lỗi khó nhìn thấy bằng giao diện thông thường.</li>
+                    <li>Tăng tốc quá trình test ý tưởng, kiểm tra phản ứng hệ thống và rà soát workflow nội bộ.</li>
+                </ul>
+            </article>
+        </section>
+    </div>
+</main>
+
+<div id="sharedContactRoot"></div>
+<div id="sharedBookNowRoot"></div>
+
+<script src="../js/pages/tools.js?v=20260405-1"></script>
+</body>
+</html>

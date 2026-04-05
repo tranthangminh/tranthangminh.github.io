@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 if (typeof initSharedPage === 'function') {
     initSharedPage({
@@ -7,9 +7,10 @@ if (typeof initSharedPage === 'function') {
             rootId: 'sharedHeaderRoot',
             options: {
                 homeHref: '../index.html',
+                toolBaseHref: '../',
                 professionItems: [
                     { labelKey: 'header.profession.actor', label: 'Diễn Viên', href: './' },
-                    { labelKey: 'header.profession.artist', label: 'Họa Sĩ' },
+                    { labelKey: 'header.profession.artist', label: 'Họa Sĩ', href: '../artist/' },
                     { labelKey: 'header.profession.photographer', label: 'Nhiếp Ảnh', href: '../photographer/' }
                 ]
             }
@@ -63,22 +64,22 @@ if (typeof initSharedPage === 'function') {
     });
 }
 
-var actorPhoneToggle = document.getElementById("actorPhoneToggle");
+var actorPhoneToggle = document.getElementById('actorPhoneToggle');
 
 if (actorPhoneToggle) {
-    actorPhoneToggle.addEventListener("click", function () {
-        var phone = actorPhoneToggle.getAttribute("data-phone") || "";
-        var phoneDisplay = actorPhoneToggle.getAttribute("data-phone-display") || phone;
+    actorPhoneToggle.addEventListener('click', function () {
+        var phone = actorPhoneToggle.getAttribute('data-phone') || '';
+        var phoneDisplay = actorPhoneToggle.getAttribute('data-phone-display') || phone;
         if (!phone) {
             return;
         }
 
-        if (actorPhoneToggle.classList.contains("is-revealed")) {
-            window.location.href = "tel:" + phone;
+        if (actorPhoneToggle.classList.contains('is-revealed')) {
+            window.location.href = 'tel:' + phone;
             return;
         }
 
-        actorPhoneToggle.classList.add("is-revealed");
+        actorPhoneToggle.classList.add('is-revealed');
         actorPhoneToggle.textContent = phoneDisplay;
     });
 }

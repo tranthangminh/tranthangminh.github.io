@@ -1,0 +1,95 @@
+﻿body {
+    background:
+        radial-gradient(circle at 14% 16%, rgba(181, 83, 9, 0.11), transparent 36%),
+        radial-gradient(circle at 84% 18%, rgba(21, 94, 117, 0.12), transparent 34%),
+        radial-gradient(circle at 18% 84%, rgba(127, 29, 29, 0.08), transparent 30%),
+        linear-gradient(145deg, #f9f7f2 0%, #f4efe7 48%, #f5f9fb 100%);
+    color: var(--text-black);
+    min-height: 100vh;
+}
+
+.artist-page-main {
+    padding: calc(var(--header-h) + 18px) 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.artist-hero {
+    display: grid;
+    gap: 14px;
+}
+
+.artist-intro-card {
+    display: grid;
+    gap: 18px;
+    --surface-padding: 22px 20px;
+    --surface-bg: rgba(255, 255, 255, 0.78);
+    --surface-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    --surface-backdrop-filter: blur(6px);
+}
+
+.artist-section-title {
+    margin: 0 0 10px;
+    font-weight: 700;
+}
+
+.artist-summary {
+    margin: 0;
+    line-height: 1.7;
+    color: rgba(51, 51, 51, 0.86);
+}
+
+.artist-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.artist-switch-btn {
+    border: 1px solid rgba(51, 51, 51, 0.12);
+    background: rgba(255, 255, 255, 0.82);
+    color: #333;
+    min-height: 42px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.artist-switch-btn:hover {
+    transform: translateY(-1px);
+    border-color: rgba(51, 51, 51, 0.22);
+}
+
+.artist-switch-btn.is-active {
+    background: linear-gradient(145deg, #171717 0%, #2b2b2b 100%);
+    color: #fff;
+    border-color: transparent;
+}
+
+.artist-gallery {
+    --masonry-column-width: 225px;
+    --masonry-column-gap: 14px;
+    --masonry-item-gap: 14px;
+    --masonry-card-radius: 16px;
+    --masonry-card-border: 1px solid rgba(51, 51, 51, 0.08);
+    --masonry-card-bg: rgba(255, 255, 255, 0.78);
+    --masonry-card-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+    --masonry-mobile-gap: 7px;
+}
+
+@media (max-width: 768px) {
+    .artist-page-main {
+        padding: calc(var(--header-h) + 16px) 0 18px;
+        gap: 12px;
+    }
+
+    .artist-intro-card {
+        --surface-padding: 18px 16px;
+        gap: 14px;
+    }
+
+}
