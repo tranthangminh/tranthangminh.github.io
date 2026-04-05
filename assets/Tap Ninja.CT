@@ -1,0 +1,1839 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="46">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>16287</ID>
+      <Description>"◀️ Enable this checkbox to UPDATE or DOWNLOAD more game tables"</Description>
+      <Options moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState/>
+      <Color>BF40BF</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+shellExecute("https://drive.google.com/drive/folders/1psd4TzcmHOUAO7NIBKI0lf47hKGp-qkK?usp=drive_link")
+shellExecute("https://github.com/tranthangminh/Cheat-Engine-Tables-for-Games")
+{$asm}
+
+[DISABLE]
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16288</ID>
+          <Description>"◀️ Author: Max Chen (Trần Thắng Minh)"</Description>
+          <Options moActivateChildrenAsWell="1" moDeactivateChildrenAsWell="1"/>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16289</ID>
+              <Description>"◀️ Facebook"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.facebook.com/maxiechen/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16290</ID>
+              <Description>"◀️ Reddit"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.reddit.com/user/maxiechen96/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16291</ID>
+              <Description>"◀️ Discord"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://discord.com/users/@maxiechen")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>16317</ID>
+      <Description>"◀️ IMPORTANT: Enable this checkbox to ACTIVE Mono features FIRST"</Description>
+      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState/>
+      <Color>BF40BF</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+mono_initialize()
+LaunchMonoDataCollector()
+{$asm}
+
+[DISABLE]
+{$lua}
+mono_initialize()
+LaunchMonoDataCollector()
+{$asm}
+
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16318</ID>
+          <Description>"Active Mono (Menu bar ➜ Mono ➜ Active mono features)"</Description>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16319</ID>
+          <Description>"Make sure you have Cheat Engine 7.4 or later"</Description>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16320</ID>
+          <Description>"◀️ Enable checkbox to Download the latest version from: https://www.cheatengine.org/"</Description>
+          <LastState/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.cheatengine.org/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>45</ID>
+      <Description>"This games use Scientific Notation for Double type (1Ex = 1 × 10^x)"</Description>
+      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState Value="" RealAddress="00000000"/>
+      <Color>BF40BF</Color>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>46</ID>
+          <Description>"1E3 = 1 × 10³ = 1000 (3 zeros)"</Description>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>103</ID>
+          <Description>"5.3E9 = 5.3 × 10⁹ = 5,300,000,000 (9 zeros / 5.3 billion)"</Description>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>47</ID>
+          <Description>"3.51E15 = 3.51 × 10¹⁵ = 3,510,000,000,000,000 (15 zeros / 3.51 quadrillion)"</Description>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>77</ID>
+      <Description>"Memory Viewer     ──────────────────────────────────────────────────────────────────────────────────"</Description>
+      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState Value="" RealAddress="00000000"/>
+      <Color>BF4040</Color>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16294</ID>
+          <Description>"ALL Mastery Points"</Description>
+          <LastState Value="2156613058" RealAddress="7FFB1297C442"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GameAssembly.dll.il2cpp+147442</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16355</ID>
+          <Description>"ALL Coin Multiplier"</Description>
+          <LastState Value="-107374176" RealAddress="7FFB13169FB5"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>Float</VariableType>
+          <Address>GameAssembly.dll.il2cpp+934FB5</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16306</ID>
+          <Description>"Dust (realtime)"</Description>
+          <LastState Value="2077878482" RealAddress="7FFB1312CFB1"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GameAssembly.dll.il2cpp+8F7FB1</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16312</ID>
+          <Description>"Feather (realtime)"</Description>
+          <LastState Value="227232769" RealAddress="7FFB1312CE61"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"GameAssembly.dll"+BFCE61</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16324</ID>
+          <Description>"Everything (Achievements)"</Description>
+          <LastState Value="860160000" RealAddress="7FFB142AB2DD"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GameAssembly.dll.il2cpp+1A762DD</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16331</ID>
+          <Description>"ALL Bonus Timer (realtime)"</Description>
+          <LastState Value="1.42981893E-9" RealAddress="7FFB1316A92C"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>Float</VariableType>
+          <Address>GameAssembly.dll.il2cpp+93592C</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16348</ID>
+          <Description>"Achievements ??"</Description>
+          <LastState Value="860160000" RealAddress="7FFB142AB2DD"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GameAssembly.dll.il2cpp+1A762DD</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16357</ID>
+          <Description>"ALL Castle Level"</Description>
+          <LastState Value="123240843" RealAddress="7FFB12E0EC0C"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GameAssembly.dll.il2cpp+5D9C0C</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16349</ID>
+          <Description>"ALL Castle Level"</Description>
+          <LastState Value="2236090433" RealAddress="7FFB12DDB574"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GameAssembly.dll.il2cpp+5A6574</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16328</ID>
+          <Description>"ALL Heroes Levels (realtime)"</Description>
+          <LastState Value="2236092811" RealAddress="7FFB12C0368D"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GameAssembly.dll.il2cpp+3CE68D</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16338</ID>
+          <Description>"ALL Pets Stars (realtime)"</Description>
+          <LastState Value="34963422" RealAddress="7FFB135A104E"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GameAssembly.dll.il2cpp+D6C04E</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16327</ID>
+          <Description>"ALL Heroes Stars (realtime)"</Description>
+          <LastState Value="1207995208" RealAddress="7FFB1294C06E"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GameAssembly.dll.il2cpp+11706E</Address>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>16282</ID>
+      <Description>"Active Cheats     ──────────────────────────────────────────────────────────────"</Description>
+      <Options moManualExpandCollapse="1" moActivateChildrenAsWell="1" moDeactivateChildrenAsWell="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState/>
+      <Color>40BF40</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>//Active Mono Features
+
+[ENABLE]
+{$lua}
+mono_initialize()
+LaunchMonoDataCollector()
+{$asm}
+
+[DISABLE]
+{$lua}
+mono_initialize()
+LaunchMonoDataCollector()
+{$asm}
+
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16292</ID>
+          <Description>"Get Stats in Conquest     ・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・"</Description>
+          <Options moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>//Gold
+define(addressGold,"GameAssembly.dll"+BFD527)
+define(bytesGold,F2 0F 58 40 10)
+
+//Amber
+define(addressAmber,"GameAssembly.dll"+BF5140)
+define(bytesAmber,8B 40 24 48 83 C4 28)
+
+//Elixir
+define(addressElixir,"GameAssembly.dll"+BF97B6)
+define(bytesElixir,F2 0F 10 40 18)
+
+//Key
+define(addressKey,"GameAssembly.dll"+BFCD78)
+define(bytesKey,66 0F 6E 4A 30)
+
+//Medal
+define(addressMedal,"GameAssembly.dll"+BF5CD6)
+define(bytesMedal,8B 40 38 48 83 C4 28)
+
+//Dash
+define(addressDash,"GameAssembly.dll"+F6750E)
+define(bytesDash,F3 0F 10 80 74 02 00 00)
+
+//RopeHook
+define(addressRopeHook,"GameAssembly.dll"+F66B7E)
+define(bytesRopeHook,F3 0F 10 80 30 02 00 00)
+
+//ShurikenVortex
+define(addressShurikenVortex,"GameAssembly.dll"+F66EF4)
+define(bytesShurikenVortex,F3 0F 10 80 F0 01 00 00)
+
+//QuestBoardProgress
+define(addressQuestBoardProgress,"GameAssembly.dll"+CFCBD4)
+define(bytesQuestBoardProgress,66 0F 6E 88 0C 05 00 00)
+
+//HolidayTasks
+define(addressHolidayTasks,"GameAssembly.dll"+54B175)
+define(bytesHolidayTasks,44 8B B1 20 03 00 00)
+
+//SkillTreeUnlockedCount
+define(addressSkillTreeUnlockedCount,"GameAssembly.dll"+F9C53C)
+define(bytesSkillTreeUnlockedCount,39 4A 28 48 8B D0)
+
+//MasteryPoints
+define(addressMasteryPoints,"GameAssembly.dll"+44C442)
+define(bytesMasteryPoints,41 03 1C 00 FF C2)
+
+
+
+
+
+
+[ENABLE]
+
+//==============================Gold
+
+assert(addressGold,bytesGold)
+alloc(newmemGold,$1000,"GameAssembly.dll"+BFD527)
+
+alloc(Gold,4)
+registersymbol(Gold)
+
+label(codeGold)
+label(returnGold)
+
+newmemGold:
+
+codeGold:
+ mov [Gold],rax
+ addsd xmm0,[rax+10]
+ jmp returnGold
+
+addressGold:
+ jmp newmemGold
+returnGold:
+
+//==============================Amber
+
+assert(addressAmber,bytesAmber)
+alloc(newmemAmber,$1000,"GameAssembly.dll"+BF5140)
+
+alloc(Amber,4)
+registersymbol(Amber)
+
+label(codeAmber)
+label(returnAmber)
+
+newmemAmber:
+
+codeAmber:
+ mov [Amber],rax
+ mov eax,[rax+24]
+ add rsp,28
+ jmp returnAmber
+
+addressAmber:
+ jmp newmemAmber
+ nop 2
+returnAmber:
+
+//==============================Elixir
+
+assert(addressElixir,bytesElixir)
+alloc(newmemElixir,$1000,"GameAssembly.dll"+BF97B6)
+
+alloc(Elixir,4)
+registersymbol(Elixir)
+
+label(codeElixir)
+label(returnElixir)
+
+newmemElixir:
+
+codeElixir:
+ mov [Elixir],rax
+ movsd xmm0,[rax+18]
+ jmp returnElixir
+
+addressElixir:
+ jmp newmemElixir
+returnElixir:
+
+//==============================Key
+
+assert(addressKey,bytesKey)
+alloc(newmemKey,$1000,"GameAssembly.dll"+BFCD78)
+
+alloc(Key,4)
+registersymbol(Key)
+
+label(codeKey)
+label(returnKey)
+
+newmemKey:
+
+codeKey:
+ mov [Key],rdx
+ movd xmm1,[rdx+30]
+ jmp returnKey
+
+addressKey:
+ jmp newmemKey
+returnKey:
+
+//==============================Medal
+
+assert(addressMedal,bytesMedal)
+alloc(newmemMedal,$1000,"GameAssembly.dll"+BF5CD6)
+
+alloc(Medal,4)
+registersymbol(Medal)
+
+label(codeMedal)
+label(returnMedal)
+
+newmemMedal:
+
+codeMedal:
+ mov [Medal],rax
+ mov eax,[rax+38]
+ add rsp,28
+ jmp returnMedal
+
+addressMedal:
+ jmp newmemMedal
+ nop 2
+returnMedal:
+
+//==============================Dash
+
+assert(addressDash,bytesDash)
+alloc(newmemDash,$1000,"GameAssembly.dll"+F6750E)
+
+alloc(Dash,4)
+registersymbol(Dash)
+
+label(codeDash)
+label(returnDash)
+
+newmemDash:
+
+codeDash:
+ mov [Dash],rax
+ movss xmm0,[rax+00000274]
+ jmp returnDash
+
+addressDash:
+ jmp newmemDash
+ nop 3
+returnDash:
+
+//==============================RopeHook
+
+assert(addressRopeHook,bytesRopeHook)
+alloc(newmemRopeHook,$1000,"GameAssembly.dll"+F66B7E)
+
+alloc(RopeHook,4)
+registersymbol(RopeHook)
+
+label(codeRopeHook)
+label(returnRopeHook)
+
+newmemRopeHook:
+
+codeRopeHook:
+ mov [RopeHook],rax
+ movss xmm0,[rax+00000230]
+ jmp returnRopeHook
+
+addressRopeHook:
+ jmp newmemRopeHook
+ nop 3
+returnRopeHook:
+
+//==============================ShurikenVortex
+
+assert(addressShurikenVortex,bytesShurikenVortex)
+alloc(newmemShurikenVortex,$1000,"GameAssembly.dll"+F66EF4)
+
+alloc(ShurikenVortex,4)
+registersymbol(ShurikenVortex)
+
+label(codeShurikenVortex)
+label(returnShurikenVortex)
+
+newmemShurikenVortex:
+
+codeShurikenVortex:
+ mov [ShurikenVortex],rax
+ movss xmm0,[rax+000001F0]
+ jmp returnShurikenVortex
+
+addressShurikenVortex:
+ jmp newmemShurikenVortex
+ nop 3
+returnShurikenVortex:
+
+//==============================QuestBoardProgress
+
+assert(addressQuestBoardProgress,bytesQuestBoardProgress)
+alloc(newmemQuestBoardProgress,$1000,"GameAssembly.dll"+CFCBD4)
+
+alloc(QuestBoardProgress,4)
+registersymbol(QuestBoardProgress)
+
+label(codeQuestBoardProgress)
+label(returnQuestBoardProgress)
+
+newmemQuestBoardProgress:
+
+codeQuestBoardProgress:
+ mov [QuestBoardProgress],rax
+ movd xmm1,[rax+0000050C]
+ jmp returnQuestBoardProgress
+
+addressQuestBoardProgress:
+ jmp newmemQuestBoardProgress
+ nop 3
+returnQuestBoardProgress:
+
+//==============================HolidayTasks
+
+assert(addressHolidayTasks,bytesHolidayTasks)
+alloc(newmemHolidayTasks,$1000,"GameAssembly.dll"+54B175)
+
+alloc(HolidayTasks,4)
+registersymbol(HolidayTasks)
+
+label(codeHolidayTasks)
+label(returnHolidayTasks)
+
+newmemHolidayTasks:
+
+codeHolidayTasks:
+ mov [HolidayTasks],rcx
+ mov r14d,[rcx+00000320]
+ jmp returnHolidayTasks
+
+addressHolidayTasks:
+ jmp newmemHolidayTasks
+ nop 2
+returnHolidayTasks:
+
+//==============================SkillTreeUnlockedCount
+
+assert(addressSkillTreeUnlockedCount,bytesSkillTreeUnlockedCount)
+alloc(newmemSkillTreeUnlockedCount,$1000,"GameAssembly.dll"+F9C53C)
+
+alloc(SkillTreeUnlockedCount,4)
+registersymbol(SkillTreeUnlockedCount)
+
+label(codeSkillTreeUnlockedCount)
+label(returnSkillTreeUnlockedCount)
+
+newmemSkillTreeUnlockedCount:
+
+codeSkillTreeUnlockedCount:
+ mov [SkillTreeUnlockedCount],rdx //Save rdx address into SkillTreeUnlockedCount
+ cmp [rdx+28],ecx
+ mov rdx,rax
+ jmp returnSkillTreeUnlockedCount
+
+addressSkillTreeUnlockedCount:
+ jmp newmemSkillTreeUnlockedCount
+ nop
+returnSkillTreeUnlockedCount:
+
+//==============================MasteryPoints
+
+assert(addressMasteryPoints,bytesMasteryPoints)
+alloc(newmemMasteryPoints,$1000,"GameAssembly.dll"+44C442)
+
+alloc(MasteryPoints,4)
+registersymbol(MasteryPoints)
+
+label(codeMasteryPoints)
+label(returnMasteryPoints)
+
+newmemMasteryPoints:
+
+codeMasteryPoints:
+ push ebx
+ lea ebx,[r8+rax] //Save r8+rax address into ebx
+ mov [MasteryPoints],ebx //Save ebx address into MasteryPoints
+ pop ebx
+
+ add ebx,[r8+rax]
+ inc edx
+ jmp returnMasteryPoints
+
+addressMasteryPoints:
+ jmp newmemMasteryPoints
+ nop
+returnMasteryPoints:
+
+
+
+
+
+
+
+[DISABLE]
+
+//==============================Gold
+
+addressGold:
+ db bytesGold
+ // addsd xmm0,[rax+10]
+
+dealloc(newmemGold)
+dealloc(Gold)
+unregistersymbol(Gold)
+
+//==============================Amber
+
+addressAmber:
+ db bytesAmber
+ // mov eax,[rax+24]
+ // add rsp,28
+
+dealloc(newmemAmber)
+dealloc(Amber)
+unregistersymbol(Amber)
+
+//==============================Elixir
+
+addressElixir:
+ db bytesElixir
+ // movsd xmm0,[rax+18]
+
+dealloc(newmemElixir)
+dealloc(Elixir)
+unregistersymbol(Elixir)
+
+//==============================Key
+
+addressKey:
+ db bytesKey
+ // movd xmm1,[rdx+30]
+
+dealloc(newmemKey)
+dealloc(Key)
+unregistersymbol(Key)
+
+//==============================Medal
+
+addressMedal:
+ db bytesMedal
+ // mov eax,[rax+38]
+ // add rsp,28
+
+dealloc(newmemMedal)
+dealloc(Medal)
+unregistersymbol(Medal)
+
+//==============================Dash
+
+addressDash:
+ db bytesDash
+ // movss xmm0,[rax+00000274]
+
+dealloc(newmemDash)
+dealloc(Dash)
+unregistersymbol(Dash)
+
+//==============================RopeHook
+
+addressRopeHook:
+ db bytesRopeHook
+ // movss xmm0,[rax+00000230]
+
+dealloc(newmemRopeHook)
+dealloc(RopeHook)
+unregistersymbol(RopeHook)
+
+//==============================ShurikenVortex
+
+addressShurikenVortex:
+ db bytesShurikenVortex
+ // movss xmm0,[rax+000001F0]
+
+dealloc(newmemShurikenVortex)
+dealloc(ShurikenVortex)
+unregistersymbol(ShurikenVortex)
+
+//==============================QuestBoardProgress
+
+addressQuestBoardProgress:
+ db bytesQuestBoardProgress
+ // movd xmm1,[rax+0000050C]
+
+dealloc(newmemQuestBoardProgress)
+dealloc(QuestBoardProgress)
+unregistersymbol(QuestBoardProgress)
+
+//==============================HolidayTasks
+
+addressHolidayTasks:
+ db bytesHolidayTasks
+ // mov r14d,[rcx+00000320]
+
+dealloc(newmemHolidayTasks)
+dealloc(HolidayTasks)
+unregistersymbol(HolidayTasks)
+
+//==============================SkillTreeUnlockedCount
+
+addressSkillTreeUnlockedCount:
+ db bytesSkillTreeUnlockedCount
+ // cmp [rdx+28],ecx
+ // mov rdx,rax
+
+dealloc(newmemSkillTreeUnlockedCount)
+dealloc(SkillTreeUnlockedCount)
+unregistersymbol(SkillTreeUnlockedCount)
+
+//==============================MasteryPoints
+
+addressMasteryPoints:
+ db bytesMasteryPoints
+ // add ebx,[r8+rax]
+ // inc edx
+
+dealloc(newmemMasteryPoints)
+dealloc(MasteryPoints)
+unregistersymbol(MasteryPoints)
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16340</ID>
+              <Description>"Currency"</Description>
+              <LastState Value="" RealAddress="00000000"/>
+              <GroupHeader>1</GroupHeader>
+              <CheatEntries>
+                <CheatEntry>
+                  <ID>16332</ID>
+                  <Description>"Amber"</Description>
+                  <ShowAsSigned>0</ShowAsSigned>
+                  <Color>40BFBF</Color>
+                  <VariableType>4 Bytes</VariableType>
+                  <Address>Amber</Address>
+                  <Offsets>
+                    <Offset>24</Offset>
+                  </Offsets>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>16325</ID>
+                  <Description>"Medal"</Description>
+                  <ShowAsSigned>0</ShowAsSigned>
+                  <Color>40BFBF</Color>
+                  <VariableType>4 Bytes</VariableType>
+                  <Address>Medal</Address>
+                  <Offsets>
+                    <Offset>38</Offset>
+                  </Offsets>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>16311</ID>
+                  <Description>"Key"</Description>
+                  <ShowAsSigned>0</ShowAsSigned>
+                  <Color>40BFBF</Color>
+                  <VariableType>4 Bytes</VariableType>
+                  <Address>Key</Address>
+                  <Offsets>
+                    <Offset>30</Offset>
+                  </Offsets>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>16321</ID>
+                  <Description>"Elixir"</Description>
+                  <ShowAsSigned>0</ShowAsSigned>
+                  <Color>40BFBF</Color>
+                  <VariableType>Double</VariableType>
+                  <Address>Elixir</Address>
+                  <Offsets>
+                    <Offset>18</Offset>
+                  </Offsets>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>16301</ID>
+                  <Description>"Gold"</Description>
+                  <ShowAsSigned>0</ShowAsSigned>
+                  <Color>40BFBF</Color>
+                  <VariableType>Double</VariableType>
+                  <Address>Gold</Address>
+                  <Offsets>
+                    <Offset>10</Offset>
+                  </Offsets>
+                </CheatEntry>
+              </CheatEntries>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16354</ID>
+              <Description>"Mastery Points"</Description>
+              <LastState Value="" RealAddress="00000000"/>
+              <GroupHeader>1</GroupHeader>
+              <CheatEntries>
+                <CheatEntry>
+                  <ID>16356</ID>
+                  <Description>"ALL Mastery Points"</Description>
+                  <LastState Value="2156613058" RealAddress="7FFB1297C442"/>
+                  <ShowAsSigned>0</ShowAsSigned>
+                  <Color>BF4040</Color>
+                  <VariableType>4 Bytes</VariableType>
+                  <Address>GameAssembly.dll.il2cpp+147442</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>16310</ID>
+                  <Description>"Mastery Points"</Description>
+                  <ShowAsSigned>0</ShowAsSigned>
+                  <Color>40BFBF</Color>
+                  <VariableType>4 Bytes</VariableType>
+                  <Address>MasteryPoints</Address>
+                  <Offsets>
+                    <Offset>0</Offset>
+                  </Offsets>
+                </CheatEntry>
+              </CheatEntries>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16339</ID>
+              <Description>"ALL Coin Multiplier"</Description>
+              <LastState Value="-107374176" RealAddress="7FFB13169FB5"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>Float</VariableType>
+              <Address>GameAssembly.dll.il2cpp+934FB5</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16352</ID>
+              <Description>"ALL Elixir Multiplier"</Description>
+              <LastState Value="1.10226508E18" RealAddress="7FFB1316A25C"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>Float</VariableType>
+              <Address>GameAssembly.dll.il2cpp+93525C</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16351</ID>
+              <Description>"ALL Bonus Timer (realtime)"</Description>
+              <LastState Value="1.42981893E-9" RealAddress="7FFB1316A92C"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>Float</VariableType>
+              <Address>GameAssembly.dll.il2cpp+93592C</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16353</ID>
+              <Description>"Skill Tree Unlocked Count"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>SkillTreeUnlockedCount</Address>
+              <Offsets>
+                <Offset>28</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16341</ID>
+              <Description>"Holiday Tasks"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>HolidayTasks</Address>
+              <Offsets>
+                <Offset>320</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16296</ID>
+              <Description>"Quest Board Progress"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>QuestBoardProgress</Address>
+              <Offsets>
+                <Offset>50C</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16295</ID>
+              <Description>"Dash (timer)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>Float</VariableType>
+              <Address>Dash</Address>
+              <Offsets>
+                <Offset>274</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16323</ID>
+              <Description>"Rope Hook (timer)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>Float</VariableType>
+              <Address>RopeHook</Address>
+              <Offsets>
+                <Offset>230</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16322</ID>
+              <Description>"Shuriken Vortex (timer)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>Float</VariableType>
+              <Address>ShurikenVortex</Address>
+              <Offsets>
+                <Offset>1F0</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16342</ID>
+          <Description>"Get Stats in Ascension Skill Tree     ・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・"</Description>
+          <Options moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>//ElementOfVoid
+define(addressElementOfVoid,"GameAssembly.dll"+865DA3)
+define(bytesElementOfVoid,8B 80 C0 01 00 00)
+
+
+
+
+
+
+[ENABLE]
+
+
+
+//==============================ElementOfVoid
+
+assert(addressElementOfVoid,bytesElementOfVoid)
+alloc(newmemElementOfVoid,$1000,"GameAssembly.dll"+865DA3)
+
+alloc(ElementOfVoid,4)
+registersymbol(ElementOfVoid)
+
+label(codeElementOfVoid)
+label(returnElementOfVoid)
+
+newmemElementOfVoid:
+
+codeElementOfVoid:
+ mov [ElementOfVoid],rax //Save rax address into ElementOfVoid
+ mov eax,[rax+000001C0]
+ jmp returnElementOfVoid
+
+addressElementOfVoid:
+ jmp newmemElementOfVoid
+ nop
+returnElementOfVoid:
+
+
+
+
+
+
+
+[DISABLE]
+
+
+
+//==============================ElementOfVoid
+
+addressElementOfVoid:
+ db bytesElementOfVoid
+ // mov eax,[rax+000001C0]
+
+dealloc(newmemElementOfVoid)
+dealloc(ElementOfVoid)
+unregistersymbol(ElementOfVoid)
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16343</ID>
+              <Description>"Element Of Water Level"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>ElementOfVoid</Address>
+              <Offsets>
+                <Offset>1CC</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16346</ID>
+              <Description>"Element Of Fire Level"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>ElementOfVoid</Address>
+              <Offsets>
+                <Offset>1C8</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16345</ID>
+              <Description>"Element Of Wind Level"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>ElementOfVoid</Address>
+              <Offsets>
+                <Offset>1C4</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16344</ID>
+              <Description>"Element Of Void Level"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>ElementOfVoid</Address>
+              <Offsets>
+                <Offset>1C0</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16297</ID>
+          <Description>"Get Stats in Conquest     ・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・"</Description>
+          <Options moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>//Lumber
+define(addressLumber,"GameAssembly.dll"+BF92CF)
+define(bytesLumber,F3 0F 10 80 48 06 00 00)
+
+//Ore
+define(addressOre,"GameAssembly.dll"+BF4C4F)
+define(bytesOre,F3 0F 10 80 68 06 00 00)
+
+//CastleLevel
+define(addressCastleLevel,"GameAssembly.dll"+8DEC0C)
+define(bytesCastleLevel,8B 44 8A 20 33 D2)
+
+
+
+
+
+
+[ENABLE]
+
+//==============================Lumber
+
+assert(addressLumber,bytesLumber)
+alloc(newmemLumber,$1000,"GameAssembly.dll"+BF92CF)
+
+alloc(Lumber,4)
+registersymbol(Lumber)
+
+label(codeLumber)
+label(returnLumber)
+
+newmemLumber:
+
+codeLumber:
+ mov [Lumber],rax
+ movss xmm0,[rax+00000648]
+ jmp returnLumber
+
+addressLumber:
+ jmp newmemLumber
+ nop 3
+returnLumber:
+
+//==============================Ore
+
+assert(addressOre,bytesOre)
+alloc(newmemOre,$1000,"GameAssembly.dll"+BF4C4F)
+
+alloc(Ore,4)
+registersymbol(Ore)
+
+label(codeOre)
+label(returnOre)
+
+newmemOre:
+
+codeOre:
+ mov [Ore],rax
+ movss xmm0,[rax+00000668]
+ jmp returnOre
+
+addressOre:
+ jmp newmemOre
+ nop 3
+returnOre:
+
+//==============================CastleLevel
+
+assert(addressCastleLevel,bytesCastleLevel)
+alloc(newmemCastleLevel,$1000,"GameAssembly.dll"+8DEC0C)
+
+alloc(CastleLevel,4)
+registersymbol(CastleLevel)
+
+label(codeCastleLevel)
+label(returnCastleLevel)
+
+newmemCastleLevel:
+
+codeCastleLevel:
+ push ebx
+ lea ebx,[rdx+rcx*4+20] //Save rdx+rcx*4+20 address into eax
+ mov [CastleLevel],ebx //Save eax address into CastleLevel
+ pop ebx
+
+ mov eax,[rdx+rcx*4+20]
+ xor edx,edx
+ jmp returnCastleLevel
+
+addressCastleLevel:
+ jmp newmemCastleLevel
+ nop
+returnCastleLevel:
+
+
+
+
+
+
+
+[DISABLE]
+
+//==============================Lumber
+
+addressLumber:
+ db bytesLumber
+ // movss xmm0,[rax+00000648]
+
+dealloc(newmemLumber)
+dealloc(Lumber)
+unregistersymbol(Lumber)
+
+//==============================Ore
+
+addressOre:
+ db bytesOre
+ // movss xmm0,[rax+00000668]
+
+dealloc(newmemOre)
+dealloc(Ore)
+unregistersymbol(Ore)
+
+//==============================CastleLevel
+
+addressCastleLevel:
+ db bytesCastleLevel
+ // mov eax,[rdx+rcx*4+20]
+ // xor edx,edx
+
+dealloc(newmemCastleLevel)
+dealloc(CastleLevel)
+unregistersymbol(CastleLevel)
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16347</ID>
+              <Description>"Capture Process"</Description>
+              <LastState Value="2336751715" RealAddress="7FFB12B0BFE1"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GameAssembly.dll.il2cpp+2D6FE1</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16360</ID>
+              <Description>"ALL Castle Level"</Description>
+              <LastState Value="2236090433" RealAddress="7FFB12DDB574"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>"GameAssembly.dll"+8AB574</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16298</ID>
+              <Description>"Castle Level"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>CastleLevel</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16330</ID>
+              <Description>"Ore"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>Float</VariableType>
+              <Address>Ore</Address>
+              <Offsets>
+                <Offset>668</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16329</ID>
+              <Description>"Lumber"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>Float</VariableType>
+              <Address>Lumber</Address>
+              <Offsets>
+                <Offset>648</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16299</ID>
+          <Description>"Get Stats in Heroes / Pets     ・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・"</Description>
+          <Options moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>//HeroEXP
+define(addressHeroEXP,"GameAssembly.dll"+BF7610)
+define(bytesHeroEXP,F3 0F 10 80 50 02 00 00)
+
+//EpicScrolls
+define(addressEpicScrolls,"GameAssembly.dll"+BFD163)
+define(bytesEpicScrolls,41 8B 98 24 06 00 00)
+
+//DustAllType
+define(addressDustAllType,"GameAssembly.dll"+BFCFB1)
+define(bytesDustAllType,8B 2C 03 48 8B 82 B8 00 00 00)
+
+//Feather
+define(addressFeather,"GameAssembly.dll"+BFCE61)
+define(bytesFeather,45 8B 3C 06 48 8B 82 B8 00 00 00)
+
+//RareScrolls
+define(addressRareScrolls,"GameAssembly.dll"+BFD0A8)
+define(bytesRareScrolls,8B 99 08 06 00 00)
+
+//SummoningEgg
+define(addressSummoningEgg,"GameAssembly.dll"+BFCDB4)
+define(bytesSummoningEgg,66 0F 6E 4A 34)
+
+
+
+
+
+
+[ENABLE]
+
+//==============================HeroEXP
+
+assert(addressHeroEXP,bytesHeroEXP)
+alloc(newmemHeroEXP,$1000,"GameAssembly.dll"+BF7610)
+
+alloc(HeroEXP,4)
+registersymbol(HeroEXP)
+
+label(codeHeroEXP)
+label(returnHeroEXP)
+
+newmemHeroEXP:
+
+codeHeroEXP:
+ mov [HeroEXP],rax
+ movss xmm0,[rax+00000250]
+ jmp returnHeroEXP
+
+addressHeroEXP:
+ jmp newmemHeroEXP
+ nop 3
+returnHeroEXP:
+
+//==============================EpicScrolls
+
+assert(addressEpicScrolls,bytesEpicScrolls)
+alloc(newmemEpicScrolls,$1000,"GameAssembly.dll"+BFD163)
+
+alloc(EpicScrolls,4)
+registersymbol(EpicScrolls)
+
+label(codeEpicScrolls)
+label(returnEpicScrolls)
+
+newmemEpicScrolls:
+
+codeEpicScrolls:
+ mov [EpicScrolls],r8
+ mov ebx,[r8+00000624]
+ jmp returnEpicScrolls
+
+addressEpicScrolls:
+ jmp newmemEpicScrolls
+ nop 2
+returnEpicScrolls:
+
+//==============================DustAllType
+
+assert(addressDustAllType,bytesDustAllType)
+alloc(newmemDustAllType,$1000,"GameAssembly.dll"+BFCFB1)
+
+alloc(DustAllType,4)
+registersymbol(DustAllType)
+
+label(codeDustAllType)
+label(returnDustAllType)
+
+newmemDustAllType:
+
+codeDustAllType:
+ lea rcx,[rbx+rax]
+ mov [DustAllType],rcx
+ mov ebp,[rbx+rax]
+ mov rax,[rdx+000000B8]
+ jmp returnDustAllType
+
+addressDustAllType:
+ jmp newmemDustAllType
+ nop 5
+returnDustAllType:
+
+//==============================Feather
+
+assert(addressFeather,bytesFeather)
+alloc(newmemFeather,$1000,"GameAssembly.dll"+BFCE61)
+
+alloc(Feather,4)
+registersymbol(Feather)
+
+label(codeFeather)
+label(returnFeather)
+
+newmemFeather:
+
+codeFeather:
+ lea rcx,[r14+rax]
+ mov [Feather],rcx
+ mov r15d,[r14+rax]
+ mov rax,[rdx+000000B8]
+ jmp returnFeather
+
+addressFeather:
+ jmp newmemFeather
+ nop 6
+returnFeather:
+
+//==============================RareScrolls
+
+assert(addressRareScrolls,bytesRareScrolls)
+alloc(newmemRareScrolls,$1000,"GameAssembly.dll"+BFD0A8)
+
+alloc(RareScrolls,4)
+registersymbol(RareScrolls)
+
+label(codeRareScrolls)
+label(returnRareScrolls)
+
+newmemRareScrolls:
+
+codeRareScrolls:
+ mov [RareScrolls],rcx
+ mov ebx,[rcx+00000608]
+ jmp returnRareScrolls
+
+addressRareScrolls:
+ jmp newmemRareScrolls
+ nop
+returnRareScrolls:
+
+//==============================SummoningEgg
+
+assert(addressSummoningEgg,bytesSummoningEgg)
+alloc(newmemSummoningEgg,$1000,"GameAssembly.dll"+BFCDB4)
+
+alloc(SummoningEgg,4)
+registersymbol(SummoningEgg)
+
+label(codeSummoningEgg)
+label(returnSummoningEgg)
+
+newmemSummoningEgg:
+
+codeSummoningEgg:
+ mov [SummoningEgg],rdx //Save rdx address into SummoningEgg
+ movd xmm1,[rdx+34]
+ jmp returnSummoningEgg
+
+addressSummoningEgg:
+ jmp newmemSummoningEgg
+returnSummoningEgg:
+
+
+
+
+
+
+
+[DISABLE]
+
+//==============================HeroEXP
+
+addressHeroEXP:
+ db bytesHeroEXP
+ // movss xmm0,[rax+00000250]
+
+dealloc(newmemHeroEXP)
+dealloc(HeroEXP)
+unregistersymbol(HeroEXP)
+
+//==============================EpicScrolls
+
+addressEpicScrolls:
+ db bytesEpicScrolls
+ // mov ebx,[r8+00000624]
+
+dealloc(newmemEpicScrolls)
+dealloc(EpicScrolls)
+unregistersymbol(EpicScrolls)
+
+//==============================DustAllType
+
+addressDustAllType:
+ db bytesDustAllType
+ // mov ebp,[rbx+rax]
+ // mov rax,[rdx+000000B8]
+
+dealloc(newmemDustAllType)
+dealloc(DustAllType)
+unregistersymbol(DustAllType)
+
+//==============================Feather
+
+addressFeather:
+ db bytesFeather
+ // mov r15d,[r14+rax]
+ // mov rax,[rdx+000000B8]
+
+dealloc(newmemFeather)
+dealloc(Feather)
+unregistersymbol(Feather)
+
+//==============================RareScrolls
+
+addressRareScrolls:
+ db bytesRareScrolls
+ // mov ebx,[rcx+00000608]
+
+dealloc(newmemRareScrolls)
+dealloc(RareScrolls)
+unregistersymbol(RareScrolls)
+
+//==============================SummoningEgg
+
+addressSummoningEgg:
+ db bytesSummoningEgg
+ // movd xmm1,[rdx+34]
+
+dealloc(newmemSummoningEgg)
+dealloc(SummoningEgg)
+unregistersymbol(SummoningEgg)
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16336</ID>
+              <Description>"ALL Pets Stars (realtime)"</Description>
+              <LastState Value="34963422" RealAddress="7FFB135A104E"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GameAssembly.dll.il2cpp+D6C04E</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16337</ID>
+              <Description>"ALL Pets Level (realtime)"</Description>
+              <LastState Value="2336816927" RealAddress="7FFB135A173A"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GameAssembly.dll.il2cpp+D6C73A</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16334</ID>
+              <Description>"ALL Heroes Levels (realtime)"</Description>
+              <LastState Value="2236092811" RealAddress="7FFB12C0368D"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GameAssembly.dll.il2cpp+3CE68D</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16335</ID>
+              <Description>"ALL Heroes Stars (realtime)"</Description>
+              <LastState Value="1207995208" RealAddress="7FFB1294C06E"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GameAssembly.dll.il2cpp+11706E</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16304</ID>
+              <Description>"Hero EXP"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>Float</VariableType>
+              <Address>HeroEXP</Address>
+              <Offsets>
+                <Offset>250</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16293</ID>
+              <Description>"Summoning Egg"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>SummoningEgg</Address>
+              <Offsets>
+                <Offset>34</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16305</ID>
+              <Description>"Rare Scrolls"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>RareScrolls</Address>
+              <Offsets>
+                <Offset>608</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16326</ID>
+              <Description>"Epic Scrolls"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>EpicScrolls</Address>
+              <Offsets>
+                <Offset>624</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16313</ID>
+              <Description>"Dust Red (Heroes)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>DustAllType</Address>
+              <Offsets>
+                <Offset>-C</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16309</ID>
+              <Description>"Dust Yellow (Heroes)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>DustAllType</Address>
+              <Offsets>
+                <Offset>-8</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16308</ID>
+              <Description>"Dust Green (Heroes)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>DustAllType</Address>
+              <Offsets>
+                <Offset>-4</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16307</ID>
+              <Description>"Dust Blue (Heroes)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>DustAllType</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16316</ID>
+              <Description>"Feather Green (Pets)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>Feather</Address>
+              <Offsets>
+                <Offset>-C</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16315</ID>
+              <Description>"Feather Red (Pets)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>Feather</Address>
+              <Offsets>
+                <Offset>-8</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16314</ID>
+              <Description>"Feather Yellow (Pets)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>Feather</Address>
+              <Offsets>
+                <Offset>-4</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16300</ID>
+              <Description>"Feather Blue (Pets)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>Feather</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16302</ID>
+          <Description>"Get Stats in Achievements     ・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・・"</Description>
+          <Options moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>//CollectXCoins
+define(addressCollectXCoins,"GameAssembly.dll"+F9B9EC)
+define(bytesCollectXCoins,F2 0F 10 70 20)
+
+//CompleteXHolidayTasks
+define(addressCompleteXHolidayTasks,"GameAssembly.dll"+F9F062)
+define(bytesCompleteXHolidayTasks,45 8B 80 24 03 00 00)
+
+
+
+
+
+
+[ENABLE]
+
+//==============================CollectXCoins
+
+assert(addressCollectXCoins,bytesCollectXCoins)
+alloc(newmemCollectXCoins,$1000,"GameAssembly.dll"+F9B9EC)
+
+alloc(CollectXCoins,4)
+registersymbol(CollectXCoins)
+
+label(codeCollectXCoins)
+label(returnCollectXCoins)
+
+newmemCollectXCoins:
+
+codeCollectXCoins:
+ mov [CollectXCoins],rax
+ movsd xmm6,[rax+20]
+ jmp returnCollectXCoins
+
+addressCollectXCoins:
+ jmp newmemCollectXCoins
+returnCollectXCoins:
+
+//==============================CompleteXHolidayTasks
+
+assert(addressCompleteXHolidayTasks,bytesCompleteXHolidayTasks)
+alloc(newmemCompleteXHolidayTasks,$1000,"GameAssembly.dll"+F9F062)
+
+alloc(CompleteXHolidayTasks,4)
+registersymbol(CompleteXHolidayTasks)
+
+label(codeCompleteXHolidayTasks)
+label(returnCompleteXHolidayTasks)
+
+newmemCompleteXHolidayTasks:
+
+codeCompleteXHolidayTasks:
+ mov [CompleteXHolidayTasks],r8
+ mov r8d,[r8+00000324]
+ jmp returnCompleteXHolidayTasks
+
+addressCompleteXHolidayTasks:
+ jmp newmemCompleteXHolidayTasks
+ nop 2
+returnCompleteXHolidayTasks:
+
+
+
+
+
+
+
+[DISABLE]
+
+//==============================CollectXCoins
+
+addressCollectXCoins:
+ db bytesCollectXCoins
+ // movsd xmm6,[rax+20]
+
+dealloc(newmemCollectXCoins)
+dealloc(CollectXCoins)
+unregistersymbol(CollectXCoins)
+
+//==============================CompleteXHolidayTasks
+
+addressCompleteXHolidayTasks:
+ db bytesCompleteXHolidayTasks
+ // mov r8d,[r8+00000324]
+
+dealloc(newmemCompleteXHolidayTasks)
+dealloc(CompleteXHolidayTasks)
+unregistersymbol(CompleteXHolidayTasks)
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16358</ID>
+              <Description>"Achievements ??"</Description>
+              <LastState Value="860160000" RealAddress="7FFB142AB2DD"/>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>BF4040</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GameAssembly.dll.il2cpp+1A762DD</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16303</ID>
+              <Description>"Quests: Complete X Holiday Tasks levels"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>CompleteXHolidayTasks</Address>
+              <Offsets>
+                <Offset>324</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16333</ID>
+              <Description>"Coins: Collect X Coins"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>Double</VariableType>
+              <Address>CollectXCoins</Address>
+              <Offsets>
+                <Offset>20</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+  </CheatEntries>
+  <CheatCodes>
+    <CodeEntry>
+      <Description>Change of movss [rax+0000031C],xmm0</Description>
+      <AddressString>GameAssembly.dll+9EBACA</AddressString>
+      <Before>
+        <Byte>F3</Byte>
+        <Byte>41</Byte>
+        <Byte>0F</Byte>
+        <Byte>5C</Byte>
+        <Byte>C0</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>80</Byte>
+        <Byte>1C</Byte>
+        <Byte>03</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>05</Byte>
+        <Byte>67</Byte>
+        <Byte>59</Byte>
+      </After>
+    </CodeEntry>
+  </CheatCodes>
+  <UserdefinedSymbols/>
+</CheatTable>
