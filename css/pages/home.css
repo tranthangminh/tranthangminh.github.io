@@ -310,6 +310,15 @@ body {
     letter-spacing: 0.02em;
 }
 
+.intro-tag-link {
+    text-decoration: none;
+}
+
+.intro-tag-link:hover,
+.intro-tag-link:focus-visible {
+    background: #222;
+}
+
 .intro-note {
     line-height: 1.65;
     color: rgba(51, 51, 51, 0.85);
@@ -455,6 +464,10 @@ body {
 .artist-tool-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-bottom: 0;
+}
+
+.artist-tool-list .intro-item-link {
+    height: 100%;
 }
 
 .artist-tool-list .intro-years {

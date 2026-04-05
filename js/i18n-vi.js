@@ -67,6 +67,12 @@
             signatureAlt: 'Chữ ký'
         },
         toolsPage: {
+            cheatTables: {
+                title: 'Danh Sách Cheat Table',
+                note: 'Bấm vào từng file để tải xuống.',
+                count: '{{count}} file',
+                searchPlaceholder: 'Tìm game hoặc tên file...'
+            },
             photoshop: {
                 previewLabel: 'Xem trước',
                 overviewTitle: 'Tổng Quan Công Cụ',

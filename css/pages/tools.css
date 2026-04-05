@@ -48,12 +48,14 @@
 }
 
 .tools-switch {
-    display: flex;
-    flex-wrap: wrap;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
 }
 
 .tools-switch-btn {
+    width: 100%;
     border: 1px solid rgba(51, 51, 51, 0.12);
     background: rgba(255, 255, 255, 0.82);
     color: var(--text-black);
@@ -255,6 +257,159 @@
     color: rgba(51, 51, 51, 0.9);
 }
 
+.tools-file-section {
+    display: grid;
+    gap: 12px;
+    justify-items: center;
+}
+
+.tools-file-note {
+    margin: 0;
+    line-height: 1.6;
+    color: rgba(51, 51, 51, 0.72);
+    text-align: center;
+}
+
+.tools-file-toolbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid rgba(51, 51, 51, 0.08);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.58);
+}
+
+.tools-file-count {
+    margin: 0;
+    color: rgba(51, 51, 51, 0.72);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.tools-file-search {
+    display: flex;
+    width: min(100%, 320px);
+}
+
+.tools-file-search-input {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 14px;
+    border: 1px solid rgba(51, 51, 51, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--text-black);
+    font: inherit;
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.tools-file-search-input:focus {
+    border-color: rgba(51, 51, 51, 0.24);
+}
+
+.tools-file-groups {
+    display: grid;
+    gap: 18px;
+    width: 100%;
+}
+
+.tools-file-group {
+    display: grid;
+    gap: 10px;
+}
+
+.tools-file-group-title {
+    margin: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(51, 51, 51, 0.1);
+    color: rgba(51, 51, 51, 0.72);
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.tools-file-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+}
+
+.tools-file-link {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 10px;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid rgba(51, 51, 51, 0.1);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--text-black);
+    text-decoration: none;
+    font-weight: 600;
+    line-height: 1.45;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    word-break: break-word;
+}
+
+.tools-file-link-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    min-height: calc(1.45em * 2);
+}
+
+.tools-file-link-name {
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.tools-file-link-ext {
+    margin-left: 10px;
+    color: rgba(51, 51, 51, 0.54);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.tools-file-link-media {
+    overflow: hidden;
+    border-radius: 10px;
+    background: rgba(17, 17, 17, 0.06);
+    width: 100%;
+    aspect-ratio: 231 / 87;
+}
+
+.tools-file-link-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tools-file-link:hover,
+.tools-file-link:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(51, 51, 51, 0.2);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.tools-file-link.is-loading {
+    opacity: 0.72;
+    pointer-events: none;
+}
+
 @media (max-width: 768px) {
     .tools-page-main {
         padding: calc(var(--header-h) + 16px) 0 18px;
@@ -282,5 +437,22 @@
     .tools-install-grid {
         grid-template-columns: 1fr;
         gap: 14px;
+    }
+
+    .tools-file-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tools-file-count {
+        text-align: center;
+    }
+
+    .tools-file-search {
+        width: 100%;
+    }
+
+    .tools-file-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

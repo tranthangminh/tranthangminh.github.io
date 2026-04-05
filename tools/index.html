@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -11,11 +11,11 @@
 <link rel="stylesheet" href="../css/shared-book-now.css?v=20260330-1">
 <link rel="stylesheet" href="../css/shared-surfaces.css?v=20260330-1">
 <link rel="stylesheet" href="../css/shared-mobile-type-scale.css?v=20260330-1">
-<link rel="stylesheet" href="../css/pages/tools.css?v=20260405-7">
+<link rel="stylesheet" href="../css/pages/tools.css?v=20260405-17">
 <script src="../js/shared-utils.js?v=20260330-1"></script>
 <script src="../js/shared-i18n.js?v=20260330-1"></script>
-<script src="../js/i18n-vi.js?v=20260405-6"></script>
-<script src="../js/i18n-en.js?v=20260405-6"></script>
+<script src="../js/i18n-vi.js?v=20260405-8"></script>
+<script src="../js/i18n-en.js?v=20260405-8"></script>
 <script src="../js/shared-header.js?v=20260405-2"></script>
 <script src="../js/shared-book-now.js?v=20260330-1"></script>
 <script src="../js/shared-contact.js?v=20260405-3"></script>
@@ -173,14 +173,32 @@
                     <span class="tools-panel-badge">Debug Workflow</span>
                 </div>
                 <p class="tools-panel-summary">
-                    Với Cheat Engine, mình chủ yếu dùng như một công cụ kiểm tra logic, theo dõi giá trị runtime và hỗ trợ debug nhanh
-                    trong những tình huống cần quan sát dữ liệu trực tiếp khi hệ thống đang chạy.
+                    Với Cheat Engine, mình chỉ tập trung vào việc cheat game Steam và PC trong những trường hợp cần thử nghiệm nhanh
+                    hoặc kiểm tra trực tiếp dữ liệu đang chạy trong game.
                 </p>
                 <ul class="tools-panel-list">
-                    <li>Kiểm tra trạng thái dữ liệu và biến số tại thời điểm chạy thực tế.</li>
-                    <li>Hỗ trợ truy vết logic và xác minh các trường hợp lỗi khó nhìn thấy bằng giao diện thông thường.</li>
-                    <li>Tăng tốc quá trình test ý tưởng, kiểm tra phản ứng hệ thống và rà soát workflow nội bộ.</li>
+                    <li>Chỉ áp dụng cho game Steam và PC.</li>
+                    <li>Hỗ trợ theo dõi giá trị runtime để chỉnh đúng thông số cần thiết trong lúc game đang chạy.</li>
+                    <li>Giúp thử nghiệm nhanh và kiểm tra trực tiếp những thay đổi ngay trong game.</li>
                 </ul>
+                <section class="tools-file-section">
+                    <h3 class="tools-detail-title" data-i18n="toolsPage.cheatTables.title">Danh Sách Cheat Table</h3>
+                    <p class="tools-file-note" data-i18n="toolsPage.cheatTables.note">Bấm vào từng file để tải xuống.</p>
+                    <div class="tools-file-toolbar">
+                        <p class="tools-file-count" id="cheatTableFileCount">0 file</p>
+                        <label class="tools-file-search">
+                            <input
+                                class="tools-file-search-input"
+                                id="cheatTableSearch"
+                                type="search"
+                                autocomplete="off"
+                                spellcheck="false"
+                                placeholder="Tìm game hoặc tên file..."
+                                data-i18n-attr="placeholder:toolsPage.cheatTables.searchPlaceholder">
+                        </label>
+                    </div>
+                    <div class="tools-file-groups" id="cheatTableFileList"></div>
+                </section>
             </article>
         </section>
     </div>
@@ -189,6 +207,8 @@
 <div id="sharedContactRoot"></div>
 <div id="sharedBookNowRoot"></div>
 
-<script src="../js/pages/tools.js?v=20260405-1"></script>
+<script src="../js/data/cheat-table-files.js?v=20260406-002643"></script>
+<script src="../js/data/cheat-table-artwork.js?v=20260406-002643"></script>
+<script src="../js/pages/tools.js?v=20260405-10"></script>
 </body>
 </html>

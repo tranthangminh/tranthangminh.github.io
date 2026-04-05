@@ -67,6 +67,12 @@
             signatureAlt: 'Signature'
         },
         toolsPage: {
+            cheatTables: {
+                title: 'Cheat Table List',
+                note: 'Click a file to download it.',
+                count: '{{count}} files',
+                searchPlaceholder: 'Search by game or file name...'
+            },
             photoshop: {
                 previewLabel: 'Preview',
                 overviewTitle: 'Tool Overview',
