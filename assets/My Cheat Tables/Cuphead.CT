@@ -1,0 +1,1353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="46">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>16290</ID>
+      <Description>"◀️ Enable this checkbox to UPDATE or DOWNLOAD more game tables"</Description>
+      <Options moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState/>
+      <Color>BF40BF</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+shellExecute("https://drive.google.com/drive/folders/1psd4TzcmHOUAO7NIBKI0lf47hKGp-qkK?usp=drive_link")
+shellExecute("https://github.com/tranthangminh/Cheat-Engine-Tables-for-Games")
+{$asm}
+
+[DISABLE]
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16291</ID>
+          <Description>"◀️ Author: Max Chen (Trần Thắng Minh)"</Description>
+          <Options moActivateChildrenAsWell="1" moDeactivateChildrenAsWell="1"/>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16292</ID>
+              <Description>"◀️ Facebook"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.facebook.com/maxiechen/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16293</ID>
+              <Description>"◀️ Reddit"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.reddit.com/user/maxiechen96/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16294</ID>
+              <Description>"◀️ Discord"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://discord.com/users/@maxiechen")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>16296</ID>
+      <Description>"◀️ IMPORTANT: Enable this checkbox to ACTIVE Mono features FIRST"</Description>
+      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState/>
+      <Color>BF40BF</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+mono_initialize()
+LaunchMonoDataCollector()
+{$asm}
+
+[DISABLE]
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16297</ID>
+          <Description>"Active Mono (Menu bar ➜ Mono ➜ Active mono features)"</Description>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16298</ID>
+          <Description>"Make sure you have Cheat Engine 7.4 or later"</Description>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>16285</ID>
+          <Description>"◀️ Enable this checkbox to Download the latest version from: https://www.cheatengine.org/"</Description>
+          <LastState/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.cheatengine.org/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>110</ID>
+      <Description>"Memory Viewer"</Description>
+      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState Value="" RealAddress="00000000"/>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>86</ID>
+          <Description>"HP"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>PlayerStatsManager:TakeDamage+f9</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>91</ID>
+          <Description>"Energy"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>PlayerStatsManager:OnSuperChanged+8b</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>95</ID>
+          <Description>"Parry Count"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>LevelPlayerMotor:LeaveGround+e4</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>106</ID>
+          <Description>"Total Parry - Run &amp; Gun"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>PlayerStatsManager:OnParry+13b </Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>108</ID>
+          <Description>"Total Parry - Boss"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>UnityPlayer.dll.text+4E6E0B</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>102</ID>
+          <Description>"Coins (PlayerData+PlayerInventory:Buy+8b)"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>BF4040</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>CoinsMemoryViewer</Address>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>16299</ID>
+      <Description>"Active cheats"</Description>
+      <Options moManualExpandCollapse="1" moActivateChildrenAsWell="1" moDeactivateChildrenAsWell="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState/>
+      <Color>40BF40</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>//Active Mono Features
+
+[ENABLE]
+{$lua}
+mono_initialize()
+LaunchMonoDataCollector()
+{$asm}
+
+[DISABLE]
+{$lua}
+mono_initialize()
+LaunchMonoDataCollector()
+{$asm}
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16295</ID>
+          <Description>"Get Stats (Freezing the value below may crash the game)"</Description>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{Author: Max Chen (Trần Thắng Minh) - Contact me:
+ 🌐Facebook: https://www.facebook.com/maxiechen
+ 🌐Reddit: https://www.reddit.com/user/maxiechen96
+ 🌐Discord: https://discord.com/users/@maxiechen
+
+Update Here:
+ ☁️GoogleDrive: https://drive.google.com/drive/folders/1psd4TzcmHOUAO7NIBKI0lf47hKGp-qkK?usp=drive_link
+ ☁️Github: https://github.com/tranthangminh/Cheat-Engine-Tables-for-Games
+Created on: 27-02-2026}
+
+
+
+//HP
+define(addressHP,AbstractPlayerController:get_IsDead+39)
+define(bytesHP,48 63 80 B4 00 00 00)
+
+//Energy
+define(addressEnergy,PlayerStatsManager:OnDealDamage+32)
+define(bytesEnergy,F3 0F 10 87 D8 00 00 00)
+
+//Timer
+define(addressTimer,Level:Update+2f)
+define(bytesTimer,F3 0F 10 86 40 01 00 00)
+
+
+
+
+
+
+[ENABLE]
+
+//==============================HP
+
+assert(addressHP,bytesHP)
+alloc(newmemHP,$1000,AbstractPlayerController:get_IsDead+39)
+
+alloc(HP,4)
+registersymbol(HP)
+
+label(codeHP)
+label(returnHP)
+
+newmemHP:
+
+codeHP:
+ mov [HP],rax //Save rax address into HP
+ movsxd rax,dword ptr [rax+000000B4]
+ jmp returnHP
+
+addressHP:
+ jmp newmemHP
+ nop 2
+returnHP:
+
+//==============================Energy
+
+assert(addressEnergy,bytesEnergy)
+alloc(newmemEnergy,$1000,PlayerStatsManager:OnDealDamage+32)
+
+alloc(Energy,4)
+registersymbol(Energy)
+
+label(codeEnergy)
+label(returnEnergy)
+
+newmemEnergy:
+
+codeEnergy:
+ mov [Energy],rdi //Save rdi address into Energy
+ movss xmm0,[rdi+000000D8]
+ jmp returnEnergy
+
+addressEnergy:
+ jmp newmemEnergy
+ nop 3
+returnEnergy:
+
+//==============================Timer
+
+assert(addressTimer,bytesTimer)
+alloc(newmemTimer,$1000,Level:Update+2f)
+
+alloc(Timer,4)
+registersymbol(Timer)
+
+label(codeTimer)
+label(returnTimer)
+
+newmemTimer:
+
+codeTimer:
+ mov [Timer],rsi //Save rsi address into Timer
+ movss xmm0,[rsi+00000140]
+ jmp returnTimer
+
+addressTimer:
+ jmp newmemTimer
+ nop 3
+returnTimer:
+
+
+
+
+
+
+
+[DISABLE]
+
+//==============================HP
+
+addressHP:
+ db bytesHP
+ // movsxd rax,dword ptr [rax+000000B4]
+
+dealloc(newmemHP)
+dealloc(HP)
+unregistersymbol(HP)
+
+//==============================Energy
+
+addressEnergy:
+ db bytesEnergy
+ // movss xmm0,[rdi+000000D8]
+
+dealloc(newmemEnergy)
+dealloc(Energy)
+unregistersymbol(Energy)
+
+//==============================Timer
+
+addressTimer:
+ db bytesTimer
+ // movss xmm0,[rsi+00000140]
+
+dealloc(newmemTimer)
+dealloc(Timer)
+unregistersymbol(Timer)
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16300</ID>
+              <Description>"Energy (MAX = 50)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>Float</VariableType>
+              <Address>Energy</Address>
+              <Offsets>
+                <Offset>D8</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16303</ID>
+              <Description>"HP (MAX = 3)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>HP</Address>
+              <Offsets>
+                <Offset>B4</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16307</ID>
+              <Description>"Timer"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <Color>40BFBF</Color>
+              <VariableType>Float</VariableType>
+              <Address>Timer</Address>
+              <Offsets>
+                <Offset>140</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>83</ID>
+          <Description>"HP = 3"</Description>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : Cuphead
+  Version: 
+  Date   : 2025-10-23
+  Author : Max
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+define(INJECT,PlayerStatsManager:TakeDamage+f9) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  mov [rsi+000000B4],3
+  //mov [rsi+000000B4],eax
+  jmp return
+
+INJECT:
+  jmp newmem
+  nop
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db 89 86 B4 00 00 00
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: PlayerStatsManager:TakeDamage+f9
+
+PlayerStatsManager:TakeDamage+c6: 48 B8 60 94 E3 CF C6 01 00 00  - mov rax,000001C6CFE39460
+PlayerStatsManager:TakeDamage+d0: 0F B6 00                       - movzx eax,byte ptr [rax]
+PlayerStatsManager:TakeDamage+d3: 85 C0                          - test eax,eax
+PlayerStatsManager:TakeDamage+d5: 0F 85 F9 01 00 00              - jne PlayerStatsManager:TakeDamage+2d4
+PlayerStatsManager:TakeDamage+db: 48 B8 61 94 E3 CF C6 01 00 00  - mov rax,000001C6CFE39461
+PlayerStatsManager:TakeDamage+e5: 0F B6 00                       - movzx eax,byte ptr [rax]
+PlayerStatsManager:TakeDamage+e8: 85 C0                          - test eax,eax
+PlayerStatsManager:TakeDamage+ea: 0F 85 E4 01 00 00              - jne PlayerStatsManager:TakeDamage+2d4
+PlayerStatsManager:TakeDamage+f0: 48 63 86 B4 00 00 00           - movsxd  rax,dword ptr [rsi+000000B4]
+PlayerStatsManager:TakeDamage+f7: FF C8                          - dec eax
+// ---------- INJECTING HERE ----------
+PlayerStatsManager:TakeDamage+f9: 89 86 B4 00 00 00              - mov [rsi+000000B4],eax
+// ---------- DONE INJECTING  ----------
+PlayerStatsManager:TakeDamage+ff: 48 8B CE                       - mov rcx,rsi
+PlayerStatsManager:TakeDamage+102: 48 83 EC 20                    - sub rsp,20
+PlayerStatsManager:TakeDamage+106: 49 BB 80 39 4C 9A C6 01 00 00  - mov r11,AbstractPlayerComponent:get_basePlayer
+PlayerStatsManager:TakeDamage+110: 41 FF D3                       - call r11
+PlayerStatsManager:TakeDamage+113: 48 83 C4 20                    - add rsp,20
+PlayerStatsManager:TakeDamage+117: 48 8B C8                       - mov rcx,rax
+PlayerStatsManager:TakeDamage+11a: 83 39 00                       - cmp dword ptr [rcx],00
+PlayerStatsManager:TakeDamage+11d: 48 63 88 A0 00 00 00           - movsxd  rcx,dword ptr [rax+000000A0]
+PlayerStatsManager:TakeDamage+124: 48 83 EC 20                    - sub rsp,20
+PlayerStatsManager:TakeDamage+128: 49 BB 50 90 4C 9A C6 01 00 00  - mov r11,Level:GetPlayerStats
+}
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>99</ID>
+          <Description>"MANA - won't reduce OnEx"</Description>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : Cuphead
+  Version: 
+  Date   : 2025-10-24
+  Author : Max
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+define(INJECT,PlayerStatsManager:OnEx+63) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  //movss [rsi+000000D8],xmm5
+  jmp return
+
+INJECT:
+  jmp newmem
+  nop 3
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db F3 0F 11 AE D8 00 00 00
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: PlayerStatsManager:OnEx+63
+
+PlayerStatsManager:OnEx+34: F3 0F 10 45 F4                 - movss xmm0,[rbp-0C]
+PlayerStatsManager:OnEx+39: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+PlayerStatsManager:OnEx+3d: F3 0F 10 0D 4B 00 00 00        - movss xmm1,[PlayerStatsManager:OnEx+90]
+PlayerStatsManager:OnEx+45: F3 0F 5A C9                    - cvtss2sd xmm1,xmm1
+PlayerStatsManager:OnEx+49: F2 0F 5C C1                    - subsd xmm0,xmm1
+PlayerStatsManager:OnEx+4d: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+PlayerStatsManager:OnEx+51: F3 0F 11 6D F4                 - movss [rbp-0C],xmm5
+PlayerStatsManager:OnEx+56: F3 0F 10 45 F4                 - movss xmm0,[rbp-0C]
+PlayerStatsManager:OnEx+5b: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+PlayerStatsManager:OnEx+5f: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+// ---------- INJECTING HERE ----------
+PlayerStatsManager:OnEx+63: F3 0F 11 AE D8 00 00 00        - movss [rsi+000000D8],xmm5
+// ---------- DONE INJECTING  ----------
+PlayerStatsManager:OnEx+6b: 48 8B CE                       - mov rcx,rsi
+PlayerStatsManager:OnEx+6e: BA 01 00 00 00                 - mov edx,00000001
+PlayerStatsManager:OnEx+73: 48 83 EC 20                    - sub rsp,20
+PlayerStatsManager:OnEx+77: 49 BB B0 F5 FB F5 2C 02 00 00  - mov r11,PlayerStatsManager:OnSuperChanged
+PlayerStatsManager:OnEx+81: 41 FF D3                       - call r11
+PlayerStatsManager:OnEx+84: 48 83 C4 20                    - add rsp,20
+PlayerStatsManager:OnEx+88: 48 8B 75 F8                    - mov rsi,[rbp-08]
+PlayerStatsManager:OnEx+8c: C9                             - leave 
+PlayerStatsManager:OnEx+8d: C3                             - ret 
+PlayerStatsManager:OnEx+8e: 00 00                          - add [rax],al
+}
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>100</ID>
+          <Description>"MANA - won't reduce OnSuper"</Description>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : Cuphead
+  Version: 
+  Date   : 2025-10-24
+  Author : Max
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+define(INJECT,PlayerStatsManager:OnSuper+51) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  //movss [rsi+000000D8],xmm5
+  jmp return
+
+INJECT:
+  jmp newmem
+  nop 3
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db F3 0F 11 AE D8 00 00 00
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: PlayerStatsManager:OnSuper+51
+
+PlayerStatsManager:OnSuper+25: 48 8B 00                       - mov rax,[rax]
+PlayerStatsManager:OnSuper+28: 48 63 80 24 01 00 00           - movsxd  rax,dword ptr [rax+00000124]
+PlayerStatsManager:OnSuper+2f: 85 C0                          - test eax,eax
+PlayerStatsManager:OnSuper+31: 0F 84 3F 00 00 00              - je PlayerStatsManager:OnSuper+76
+PlayerStatsManager:OnSuper+37: 66 0F 57 C0                    - xorpd xmm0,xmm0
+PlayerStatsManager:OnSuper+3b: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+PlayerStatsManager:OnSuper+3f: F3 0F 11 6D F4                 - movss [rbp-0C],xmm5
+PlayerStatsManager:OnSuper+44: F3 0F 10 45 F4                 - movss xmm0,[rbp-0C]
+PlayerStatsManager:OnSuper+49: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+PlayerStatsManager:OnSuper+4d: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+// ---------- INJECTING HERE ----------
+PlayerStatsManager:OnSuper+51: F3 0F 11 AE D8 00 00 00        - movss [rsi+000000D8],xmm5
+// ---------- DONE INJECTING  ----------
+PlayerStatsManager:OnSuper+59: 48 8B CE                       - mov rcx,rsi
+PlayerStatsManager:OnSuper+5c: BA 01 00 00 00                 - mov edx,00000001
+PlayerStatsManager:OnSuper+61: 48 83 EC 20                    - sub rsp,20
+PlayerStatsManager:OnSuper+65: 49 BB B0 F5 FB F5 2C 02 00 00  - mov r11,PlayerStatsManager:OnSuperChanged
+PlayerStatsManager:OnSuper+6f: 41 FF D3                       - call r11
+PlayerStatsManager:OnSuper+72: 48 83 C4 20                    - add rsp,20
+PlayerStatsManager:OnSuper+76: C7 86 00 01 00 00 01 00 00 00  - mov [rsi+00000100],00000001
+PlayerStatsManager:OnSuper+80: 48 8B 75 F8                    - mov rsi,[rbp-08]
+PlayerStatsManager:OnSuper+84: C9                             - leave 
+PlayerStatsManager:OnSuper+85: C3                             - ret 
+}
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>87</ID>
+          <Description>"MANA = 40 on shoot"</Description>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : Cuphead
+  Version: 
+  Date   : 2025-10-23
+  Author : Max
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+define(INJECT,PlayerStatsManager:OnDealDamage+a5) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  mov [rdi+000000D8],(float)40
+  //movss [rdi+000000D8],xmm5
+  jmp return
+
+INJECT:
+  jmp newmem
+  nop 3
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db F3 0F 11 AF D8 00 00 00
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: PlayerStatsManager:OnDealDamage+a5
+
+PlayerStatsManager:OnDealDamage+79: F3 0F 11 6D EC                 - movss [rbp-14],xmm5
+PlayerStatsManager:OnDealDamage+7e: F3 0F 10 55 EC                 - movss xmm2,[rbp-14]
+PlayerStatsManager:OnDealDamage+83: F3 0F 5A D2                    - cvtss2sd xmm2,xmm2
+PlayerStatsManager:OnDealDamage+87: F2 0F 5E CA                    - divsd xmm1,xmm2
+PlayerStatsManager:OnDealDamage+8b: F2 0F 58 C1                    - addsd xmm0,xmm1
+PlayerStatsManager:OnDealDamage+8f: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+PlayerStatsManager:OnDealDamage+93: F3 0F 11 6D EC                 - movss [rbp-14],xmm5
+PlayerStatsManager:OnDealDamage+98: F3 0F 10 45 EC                 - movss xmm0,[rbp-14]
+PlayerStatsManager:OnDealDamage+9d: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+PlayerStatsManager:OnDealDamage+a1: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+// ---------- INJECTING HERE ----------
+PlayerStatsManager:OnDealDamage+a5: F3 0F 11 AF D8 00 00 00        - movss [rdi+000000D8],xmm5
+// ---------- DONE INJECTING  ----------
+PlayerStatsManager:OnDealDamage+ad: 48 8B CF                       - mov rcx,rdi
+PlayerStatsManager:OnDealDamage+b0: 33 D2                          - xor edx,edx
+PlayerStatsManager:OnDealDamage+b2: 48 83 EC 20                    - sub rsp,20
+PlayerStatsManager:OnDealDamage+b6: 49 BB 00 3B 51 9A C6 01 00 00  - mov r11,PlayerStatsManager:OnSuperChanged
+PlayerStatsManager:OnDealDamage+c0: 41 FF D3                       - call r11
+PlayerStatsManager:OnDealDamage+c3: 48 83 C4 20                    - add rsp,20
+PlayerStatsManager:OnDealDamage+c7: 48 8D 65 F0                    - lea rsp,[rbp-10]
+PlayerStatsManager:OnDealDamage+cb: 5F                             - pop rdi
+PlayerStatsManager:OnDealDamage+cc: 5E                             - pop rsi
+PlayerStatsManager:OnDealDamage+cd: C9                             - leave 
+}
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>101</ID>
+          <Description>"MANA = 50 on shoot"</Description>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : Cuphead
+  Version: 
+  Date   : 2025-10-23
+  Author : Max
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+define(INJECT,PlayerStatsManager:OnDealDamage+a5) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  mov [rdi+000000D8],(float)50
+  //movss [rdi+000000D8],xmm5
+  jmp return
+
+INJECT:
+  jmp newmem
+  nop 3
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db F3 0F 11 AF D8 00 00 00
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: PlayerStatsManager:OnDealDamage+a5
+
+PlayerStatsManager:OnDealDamage+79: F3 0F 11 6D EC                 - movss [rbp-14],xmm5
+PlayerStatsManager:OnDealDamage+7e: F3 0F 10 55 EC                 - movss xmm2,[rbp-14]
+PlayerStatsManager:OnDealDamage+83: F3 0F 5A D2                    - cvtss2sd xmm2,xmm2
+PlayerStatsManager:OnDealDamage+87: F2 0F 5E CA                    - divsd xmm1,xmm2
+PlayerStatsManager:OnDealDamage+8b: F2 0F 58 C1                    - addsd xmm0,xmm1
+PlayerStatsManager:OnDealDamage+8f: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+PlayerStatsManager:OnDealDamage+93: F3 0F 11 6D EC                 - movss [rbp-14],xmm5
+PlayerStatsManager:OnDealDamage+98: F3 0F 10 45 EC                 - movss xmm0,[rbp-14]
+PlayerStatsManager:OnDealDamage+9d: F3 0F 5A C0                    - cvtss2sd xmm0,xmm0
+PlayerStatsManager:OnDealDamage+a1: F2 0F 5A E8                    - cvtsd2ss xmm5,xmm0
+// ---------- INJECTING HERE ----------
+PlayerStatsManager:OnDealDamage+a5: F3 0F 11 AF D8 00 00 00        - movss [rdi+000000D8],xmm5
+// ---------- DONE INJECTING  ----------
+PlayerStatsManager:OnDealDamage+ad: 48 8B CF                       - mov rcx,rdi
+PlayerStatsManager:OnDealDamage+b0: 33 D2                          - xor edx,edx
+PlayerStatsManager:OnDealDamage+b2: 48 83 EC 20                    - sub rsp,20
+PlayerStatsManager:OnDealDamage+b6: 49 BB 00 3B 51 9A C6 01 00 00  - mov r11,PlayerStatsManager:OnSuperChanged
+PlayerStatsManager:OnDealDamage+c0: 41 FF D3                       - call r11
+PlayerStatsManager:OnDealDamage+c3: 48 83 C4 20                    - add rsp,20
+PlayerStatsManager:OnDealDamage+c7: 48 8D 65 F0                    - lea rsp,[rbp-10]
+PlayerStatsManager:OnDealDamage+cb: 5F                             - pop rdi
+PlayerStatsManager:OnDealDamage+cc: 5E                             - pop rsi
+PlayerStatsManager:OnDealDamage+cd: C9                             - leave 
+}
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>107</ID>
+          <Description>"+10 Parry - Run &amp; Gun"</Description>
+          <LastState/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : Cuphead
+  Version: 
+  Date   : 2025-11-04
+  Author : Max
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+define(INJECT,PlayerStatsManager:OnParry+13b) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  add [rax+20],(int)10
+  //mov [rax+20],ecx
+  sub rsp,20
+  jmp return
+
+INJECT:
+  jmp newmem
+  nop 2
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db 89 48 20 48 83 EC 20
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: PlayerStatsManager:OnParry+13b
+
+PlayerStatsManager:OnParry+115: 41 FF D3                       - call r11
+PlayerStatsManager:OnParry+118: 48 83 C4 20                    - add rsp,20
+PlayerStatsManager:OnParry+11c: 85 C0                          - test eax,eax
+PlayerStatsManager:OnParry+11e: 75 1E                          - jne PlayerStatsManager:OnParry+13e
+PlayerStatsManager:OnParry+120: 48 83 EC 20                    - sub rsp,20
+PlayerStatsManager:OnParry+124: 49 BB 00 1F CA 3A B2 02 00 00  - mov r11,Level:get_ScoringData
+PlayerStatsManager:OnParry+12e: 41 FF D3                       - call r11
+PlayerStatsManager:OnParry+131: 48 83 C4 20                    - add rsp,20
+PlayerStatsManager:OnParry+135: 48 63 48 20                    - movsxd  rcx,dword ptr [rax+20]
+PlayerStatsManager:OnParry+139: FF C1                          - inc ecx
+// ---------- INJECTING HERE ----------
+PlayerStatsManager:OnParry+13b: 89 48 20                       - mov [rax+20],ecx
+// ---------- DONE INJECTING  ----------
+PlayerStatsManager:OnParry+13e: 48 83 EC 20                    - sub rsp,20
+PlayerStatsManager:OnParry+142: 49 BB 90 18 E5 16 B2 02 00 00  - mov r11,OnlineManager:get_Instance
+PlayerStatsManager:OnParry+14c: 41 FF D3                       - call r11
+PlayerStatsManager:OnParry+14f: 48 83 C4 20                    - add rsp,20
+PlayerStatsManager:OnParry+153: 48 8B C8                       - mov rcx,rax
+PlayerStatsManager:OnParry+156: 83 39 00                       - cmp dword ptr [rcx],00
+PlayerStatsManager:OnParry+159: 48 8B 40 10                    - mov rax,[rax+10]
+PlayerStatsManager:OnParry+15d: 48 89 45 D8                    - mov [rbp-28],rax
+PlayerStatsManager:OnParry+161: 48 8B CF                       - mov rcx,rdi
+PlayerStatsManager:OnParry+164: 48 83 EC 20                    - sub rsp,20
+}
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>105</ID>
+          <Description>"COINS - won't reduce"</Description>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : Cuphead
+  Version: 
+  Date   : 2025-11-04
+  Author : Max
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+define(INJECT,PlayerData+PlayerInventory:Buy+8b) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  //mov [rdi+28],eax
+  mov rax,[rdi+10]
+  jmp return
+
+INJECT:
+  jmp newmem
+  nop 2
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db 89 47 28 48 8B 47 10
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: PlayerData+PlayerInventory:Buy+8b
+
+PlayerData+PlayerInventory:Buy+62: 48 63 47 28                    - movsxd  rax,dword ptr [rdi+28]
+PlayerData+PlayerInventory:Buy+66: 48 89 45 E8                    - mov [rbp-18],rax
+PlayerData+PlayerInventory:Buy+6a: 48 8B CE                       - mov rcx,rsi
+PlayerData+PlayerInventory:Buy+6d: 48 83 EC 20                    - sub rsp,20
+PlayerData+PlayerInventory:Buy+71: 49 BB 30 E8 8D D3 EA 01 00 00  - mov r11,WeaponProperties:GetValue
+PlayerData+PlayerInventory:Buy+7b: 41 FF D3                       - call r11
+PlayerData+PlayerInventory:Buy+7e: 48 83 C4 20                    - add rsp,20
+PlayerData+PlayerInventory:Buy+82: 48 8B C8                       - mov rcx,rax
+PlayerData+PlayerInventory:Buy+85: 48 8B 45 E8                    - mov rax,[rbp-18]
+PlayerData+PlayerInventory:Buy+89: 2B C1                          - sub eax,ecx
+// ---------- INJECTING HERE ----------
+PlayerData+PlayerInventory:Buy+8b: 89 47 28                       - mov [rdi+28],eax
+// ---------- DONE INJECTING  ----------
+PlayerData+PlayerInventory:Buy+8e: 48 8B 47 10                    - mov rax,[rdi+10]
+PlayerData+PlayerInventory:Buy+92: 48 8B C8                       - mov rcx,rax
+PlayerData+PlayerInventory:Buy+95: 48 8B D6                       - mov rdx,rsi
+PlayerData+PlayerInventory:Buy+98: 48 83 EC 20                    - sub rsp,20
+PlayerData+PlayerInventory:Buy+9c: 83 38 00                       - cmp dword ptr [rax],00
+PlayerData+PlayerInventory:Buy+9f: 49 BB E0 88 83 BD EA 01 00 00  - mov r11,System.Collections.Generic.List`1[Weapon]:Add
+PlayerData+PlayerInventory:Buy+a9: 41 FF D3                       - call r11
+PlayerData+PlayerInventory:Buy+ac: 48 83 C4 20                    - add rsp,20
+PlayerData+PlayerInventory:Buy+b0: C6 47 2C 01                    - mov byte ptr [rdi+2C],01
+PlayerData+PlayerInventory:Buy+b4: B8 01 00 00 00                 - mov eax,00000001
+}
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>93</ID>
+          <Description>"Parry count won't reset"</Description>
+          <LastState/>
+          <Color>40BF40</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : Cuphead
+  Version:
+  Date   : 2026-02-27
+  Author : Max
+
+  This script does blah blah blah
+}
+
+define(address,LevelPlayerMotor:LeaveGround+e4)
+define(bytes,C7 80 E8 00 00 00 00 00 00 00)
+
+[ENABLE]
+
+assert(address,bytes)
+alloc(newmem,$1000,LevelPlayerMotor:LeaveGround+e4)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  //mov [rax+000000E8],00000000
+  jmp return
+
+address:
+  jmp newmem
+  nop 5
+return:
+
+[DISABLE]
+
+address:
+  db bytes
+  // mov [rax+000000E8],00000000
+
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: LevelPlayerMotor:LeaveGround+e4
+
+LevelPlayerMotor:LeaveGround+ba: F3 0F 11 68 1C                 - movss [rax+1C],xmm5
+LevelPlayerMotor:LeaveGround+bf: 48 8B 47 68                    - mov rax,[rdi+68]
+LevelPlayerMotor:LeaveGround+c3: 48 8B C8                       - mov rcx,rax
+LevelPlayerMotor:LeaveGround+c6: 48 83 EC 20                    - sub rsp,20
+LevelPlayerMotor:LeaveGround+ca: 83 38 00                       - cmp dword ptr [rax],00
+LevelPlayerMotor:LeaveGround+cd: 49 BB 10 BD BE DB EC 01 00 00  - mov r11,AbstractPlayerController:get_stats
+LevelPlayerMotor:LeaveGround+d7: 41 FF D3                       - call r11
+LevelPlayerMotor:LeaveGround+da: 48 83 C4 20                    - add rsp,20
+LevelPlayerMotor:LeaveGround+de: 48 8B C8                       - mov rcx,rax
+LevelPlayerMotor:LeaveGround+e1: 83 39 00                       - cmp dword ptr [rcx],00
+// ---------- INJECTING HERE ----------
+LevelPlayerMotor:LeaveGround+e4: C7 80 E8 00 00 00 00 00 00 00  - mov [rax+000000E8],00000000
+// ---------- DONE INJECTING  ----------
+LevelPlayerMotor:LeaveGround+ee: 48 8B CF                       - mov rcx,rdi
+LevelPlayerMotor:LeaveGround+f1: 48 83 EC 20                    - sub rsp,20
+LevelPlayerMotor:LeaveGround+f5: 49 BB 10 B2 C7 DB EC 01 00 00  - mov r11,LevelPlayerMotor:ResetSuperAndEx
+LevelPlayerMotor:LeaveGround+ff: 41 FF D3                       - call r11
+LevelPlayerMotor:LeaveGround+102: 48 83 C4 20                    - add rsp,20
+LevelPlayerMotor:LeaveGround+106: 48 8B 47 68                    - mov rax,[rdi+68]
+LevelPlayerMotor:LeaveGround+10a: 48 8B C8                       - mov rcx,rax
+LevelPlayerMotor:LeaveGround+10d: 48 83 EC 20                    - sub rsp,20
+LevelPlayerMotor:LeaveGround+111: 83 38 00                       - cmp dword ptr [rax],00
+LevelPlayerMotor:LeaveGround+114: 49 BB E0 1E C6 DB EC 01 00 00  - mov r11,LevelPlayerController:get_weaponManager
+}
+</AssemblerScript>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>109</ID>
+      <Description>"+10 Parry - Boss (not work yet"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>{ Game   : Cuphead
+  Version: 
+  Date   : 2025-11-04
+  Author : Max
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+aobscanmodule(INJECT,UnityPlayer.dll,4C 89 76 18 48 C1 E7 04) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+  cmp [rsp+34], 0
+  add [rsi+18],(int)10
+  jne code
+
+code:
+  mov [rsi+18],r14
+  shl rdi,04
+  jmp return
+
+INJECT:
+  jmp newmem
+  nop 3
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db 4C 89 76 18 48 C1 E7 04
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: UnityPlayer.dll.text+4E6E0B
+
+UnityPlayer.dll.text+4E6DDF: 41 BD 01 00 00 00              - mov r13d,00000001
+UnityPlayer.dll.text+4E6DE5: 4C 8D 77 01                    - lea r14,[rdi+01]
+UnityPlayer.dll.text+4E6DE9: 4C 3B F2                       - cmp r14,rdx
+UnityPlayer.dll.text+4E6DEC: 76 1D                          - jna UnityPlayer.dll.text+4E6E0B
+UnityPlayer.dll.text+4E6DEE: 48 03 D2                       - add rdx,rdx
+UnityPlayer.dll.text+4E6DF1: 49 3B D5                       - cmp rdx,r13
+UnityPlayer.dll.text+4E6DF4: 49 0F 42 D5                    - cmovb rdx,r13
+UnityPlayer.dll.text+4E6DF8: 48 83 C1 08                    - add rcx,08
+UnityPlayer.dll.text+4E6DFC: E8 4F 97 04 00                 - call UnityPlayer.dll.text+530550
+UnityPlayer.dll.text+4E6E01: 48 B8 FF FF FF FF FF FF FF 7F  - mov rax,7FFFFFFFFFFFFFFF
+// ---------- INJECTING HERE ----------
+UnityPlayer.dll.text+4E6E0B: 4C 89 76 18                    - mov [rsi+18],r14
+// ---------- DONE INJECTING  ----------
+UnityPlayer.dll.text+4E6E0F: 48 C1 E7 04                    - shl rdi,04
+UnityPlayer.dll.text+4E6E13: 48 03 7E 08                    - add rdi,[rsi+08]
+UnityPlayer.dll.text+4E6E17: 48 89 2F                       - mov [rdi],rbp
+UnityPlayer.dll.text+4E6E1A: 44 89 67 08                    - mov [rdi+08],r12d
+UnityPlayer.dll.text+4E6E1E: 48 8D 7D 08                    - lea rdi,[rbp+08]
+UnityPlayer.dll.text+4E6E22: 48 8B 5F 10                    - mov rbx,[rdi+10]
+UnityPlayer.dll.text+4E6E26: 48 8B 57 18                    - mov rdx,[rdi+18]
+UnityPlayer.dll.text+4E6E2A: 48 23 D0                       - and rdx,rax
+UnityPlayer.dll.text+4E6E2D: 48 8D 6B 01                    - lea rbp,[rbx+01]
+UnityPlayer.dll.text+4E6E31: 48 3B EA                       - cmp rbp,rdx
+}
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+  <CheatCodes>
+    <CodeEntry>
+      <Description>Change of mov [rsi+000000B4],eax </Description>
+      <AddressString>1BCB073D899</AddressString>
+      <Before>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>FF</Byte>
+        <Byte>C8</Byte>
+      </Before>
+      <Actual>
+        <Byte>89</Byte>
+        <Byte>86</Byte>
+        <Byte>B4</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>CE</Byte>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of mov [rsi+000000B4],eax</Description>
+      <AddressString>1BCB073DB31</AddressString>
+      <Before>
+        <Byte>D3</Byte>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
+        <Byte>C4</Byte>
+        <Byte>20</Byte>
+      </Before>
+      <Actual>
+        <Byte>89</Byte>
+        <Byte>86</Byte>
+        <Byte>B4</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>46</Byte>
+        <Byte>70</Byte>
+        <Byte>48</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of movss [rsi+000000D8],xmm5</Description>
+      <AddressString>1BCB0750C23</AddressString>
+      <Before>
+        <Byte>C0</Byte>
+        <Byte>F2</Byte>
+        <Byte>0F</Byte>
+        <Byte>5A</Byte>
+        <Byte>E8</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>AE</Byte>
+        <Byte>D8</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>CE</Byte>
+        <Byte>BA</Byte>
+        <Byte>01</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of movss [rdi+000000D8],xmm5</Description>
+      <AddressString>1BCB0738F85</AddressString>
+      <Before>
+        <Byte>C0</Byte>
+        <Byte>F2</Byte>
+        <Byte>0F</Byte>
+        <Byte>5A</Byte>
+        <Byte>E8</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>AF</Byte>
+        <Byte>D8</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>CF</Byte>
+        <Byte>33</Byte>
+        <Byte>D2</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of movss [rdi+000000D8],xmm5</Description>
+      <AddressString>27D4EE6D91B</AddressString>
+      <Before>
+        <Byte>C0</Byte>
+        <Byte>F2</Byte>
+        <Byte>0F</Byte>
+        <Byte>5A</Byte>
+        <Byte>E8</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>AF</Byte>
+        <Byte>D8</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>47</Byte>
+        <Byte>78</Byte>
+        <Byte>48</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of movss [rdi+000000D8],xmm5</Description>
+      <AddressString>27D4EE6D7C5</AddressString>
+      <Before>
+        <Byte>C0</Byte>
+        <Byte>F2</Byte>
+        <Byte>0F</Byte>
+        <Byte>5A</Byte>
+        <Byte>E8</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>AF</Byte>
+        <Byte>D8</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>CF</Byte>
+        <Byte>33</Byte>
+        <Byte>D2</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of mov [rsi+000000B4],eax</Description>
+      <AddressString>27D4EE79719</AddressString>
+      <Before>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>FF</Byte>
+        <Byte>C8</Byte>
+      </Before>
+      <Actual>
+        <Byte>89</Byte>
+        <Byte>86</Byte>
+        <Byte>B4</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>CE</Byte>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of mov [rax+000000E8],00000000</Description>
+      <AddressString>1BB23090F34</AddressString>
+      <Before>
+        <Byte>8B</Byte>
+        <Byte>C8</Byte>
+        <Byte>83</Byte>
+        <Byte>39</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>C7</Byte>
+        <Byte>80</Byte>
+        <Byte>E8</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>CF</Byte>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of mov byte ptr [rax+0000008C],00</Description>
+      <AddressString>1BB2307717B</AddressString>
+      <Before>
+        <Byte>0C</Byte>
+        <Byte>24</Byte>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>C1</Byte>
+      </Before>
+      <Actual>
+        <Byte>C6</Byte>
+        <Byte>80</Byte>
+        <Byte>8C</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
+        <Byte>C4</Byte>
+        <Byte>08</Byte>
+        <Byte>C3</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of mov [rsi+000000B4],eax</Description>
+      <AddressString>1C69A4FF759</AddressString>
+      <Before>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>FF</Byte>
+        <Byte>C8</Byte>
+      </Before>
+      <Actual>
+        <Byte>89</Byte>
+        <Byte>86</Byte>
+        <Byte>B4</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>CE</Byte>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
+      </After>
+    </CodeEntry>
+  </CheatCodes>
+  <UserdefinedSymbols>
+    <SymbolEntry>
+      <Name>speedhack_wantedspeed</Name>
+      <Address>18FD0000</Address>
+    </SymbolEntry>
+  </UserdefinedSymbols>
+  <LuaScript>if syntaxcheck then return end
+
+-- Title + Author
+getMainForm().Caption = "Cuphead | Created by Max (Tran Thang Minh)"
+
+
+
+
+
+-- Toggle Compact / Full
+function toggleView(sender)
+  local f = getMainForm()
+  local state = (sender.Caption == "Compact View Mode")
+
+  f.Panel5.Visible = state
+  f.Splitter1.Visible = state
+  sender.Caption = state and "Full View Mode" or "Compact View Mode"
+end
+
+
+
+
+
+-- Check if menu already exists
+local parent = getMainForm().Menu.Items
+local exists = false
+
+for i=0,parent.Count-1 do
+  if parent[i].Caption == "Compact View Mode" or parent[i].Caption == "Full View Mode" then
+    exists = true
+    break
+  end
+end
+
+-- Create menu if not exists
+if not exists then
+  local m = createMenuItem(parent)
+  m.Caption = "Compact View Mode"
+  m.OnClick = toggleView
+  parent.add(m)
+end
+
+
+</LuaScript>
+</CheatTable>

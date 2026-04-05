@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="46">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>16287</ID>
+      <Description>"◀️ Enable this checkbox to UPDATE or DOWNLOAD more game tables"</Description>
+      <Options moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState/>
+      <Color>BF40BF</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+shellExecute("https://drive.google.com/drive/folders/1psd4TzcmHOUAO7NIBKI0lf47hKGp-qkK?usp=drive_link")
+shellExecute("https://github.com/tranthangminh/Cheat-Engine-Tables-for-Games")
+{$asm}
+
+[DISABLE]
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16288</ID>
+          <Description>"◀️ Author: Max Chen (Trần Thắng Minh)"</Description>
+          <Options moActivateChildrenAsWell="1" moDeactivateChildrenAsWell="1"/>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16289</ID>
+              <Description>"◀️ Facebook"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.facebook.com/maxiechen/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16290</ID>
+              <Description>"◀️ Reddit"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.reddit.com/user/maxiechen96/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16291</ID>
+              <Description>"◀️ Discord"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://discord.com/users/@maxiechen")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>2</ID>
+      <Description>"Death count"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <Color>BF4040</Color>
+      <VariableType>4 Bytes</VariableType>
+      <Address>GameAssembly.dll+5DB8E8</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>1</ID>
+      <Description>"Death count = 0"</Description>
+      <LastState/>
+      <Color>40BF40</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>{ Game   : Planet of Lana
+  Version: 
+  Date   : 2025-09-19
+  Author : Max
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+aobscanmodule(INJECT,GameAssembly.dll,FF 40 40 48 83 C4 20) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  mov [rax+40],0
+  //inc [rax+40]
+  add rsp,20
+  jmp return
+
+INJECT:
+  jmp newmem
+  nop 2
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db FF 40 40 48 83 C4 20
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: GameAssembly.dll+5DB8E8
+
+GameAssembly.dll+5DB8C0: 75 13                 - jne GameAssembly.dll+5DB8D5
+GameAssembly.dll+5DB8C2: 48 8D 0D CF 08 E0 01  - lea rcx,[GameAssembly.dll+23DC198]
+GameAssembly.dll+5DB8C9: E8 82 B4 C0 FF        - call GameAssembly.DllCanUnloadNow+8560
+GameAssembly.dll+5DB8CE: C6 05 36 99 F5 01 01  - mov byte ptr [GameAssembly.dll+253520B],01
+GameAssembly.dll+5DB8D5: 48 8B 4B 18           - mov rcx,[rbx+18]
+GameAssembly.dll+5DB8D9: 48 85 C9              - test rcx,rcx
+GameAssembly.dll+5DB8DC: 74 13                 - je GameAssembly.dll+5DB8F1
+GameAssembly.dll+5DB8DE: E8 4D 3E A8 FF        - call GameAssembly.il2cpp_property_get_flags+1320
+GameAssembly.dll+5DB8E3: 48 85 C0              - test rax,rax
+GameAssembly.dll+5DB8E6: 74 09                 - je GameAssembly.dll+5DB8F1
+// ---------- INJECTING HERE ----------
+GameAssembly.dll+5DB8E8: FF 40 40              - inc [rax+40]
+// ---------- DONE INJECTING  ----------
+GameAssembly.dll+5DB8EB: 48 83 C4 20           - add rsp,20
+GameAssembly.dll+5DB8EF: 5B                    - pop rbx
+GameAssembly.dll+5DB8F0: C3                    - ret 
+GameAssembly.dll+5DB8F1: E8 DA 1F C5 FF        - call GameAssembly.dll+22D8D0
+GameAssembly.dll+5DB8F6: CC                    - int 3 
+GameAssembly.dll+5DB8F7: CC                    - int 3 
+GameAssembly.dll+5DB8F8: CC                    - int 3 
+GameAssembly.dll+5DB8F9: CC                    - int 3 
+GameAssembly.dll+5DB8FA: CC                    - int 3 
+GameAssembly.dll+5DB8FB: CC                    - int 3 
+}
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3</ID>
+      <Description>"Robot Activate"</Description>
+      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState Value="" RealAddress="00000000"/>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16</ID>
+          <Description>"Active Code"</Description>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>18</ID>
+              <Description>"ㆍ┃ㆍ     ┃┃ㆍ     ┃┃ㆍ     ㆍ┃ㆍ     ㆍㆍ┃"</Description>
+              <LastState Value="" RealAddress="00000000"/>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>12</ID>
+          <Description>"Music Sheet"</Description>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>14</ID>
+              <Description>"A Ը Ը A 🌀"</Description>
+              <LastState Value="" RealAddress="00000000"/>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>11</ID>
+              <Description>"Details"</Description>
+              <LastState Value="" RealAddress="00000000"/>
+              <GroupHeader>1</GroupHeader>
+              <CheatEntries>
+                <CheatEntry>
+                  <ID>8</ID>
+                  <Description>"⊢     ┃ㆍㆍ"</Description>
+                  <LastState Value="" RealAddress="00000000"/>
+                  <GroupHeader>1</GroupHeader>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>4</ID>
+                  <Description>"A     ㆍ┃ㆍ"</Description>
+                  <LastState Value="" RealAddress="00000000"/>
+                  <GroupHeader>1</GroupHeader>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>10</ID>
+                  <Description>"⟥    ㆍㆍ┃"</Description>
+                  <LastState Value="" RealAddress="00000000"/>
+                  <GroupHeader>1</GroupHeader>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>5</ID>
+                  <Description>"Ը      ┃┃ㆍ"</Description>
+                  <LastState Value="" RealAddress="00000000"/>
+                  <GroupHeader>1</GroupHeader>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>9</ID>
+                  <Description>"🌀     ┃ㆍ┃"</Description>
+                  <LastState Value="" RealAddress="00000000"/>
+                  <GroupHeader>1</GroupHeader>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>7</ID>
+                  <Description>"⊻     ㆍ┃┃"</Description>
+                  <LastState Value="" RealAddress="00000000"/>
+                  <GroupHeader>1</GroupHeader>
+                </CheatEntry>
+              </CheatEntries>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols/>
+</CheatTable>

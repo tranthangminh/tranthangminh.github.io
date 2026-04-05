@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="46">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>16287</ID>
+      <Description>"◀️ Enable this checkbox to UPDATE or DOWNLOAD more game tables"</Description>
+      <Options moManualExpandCollapse="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState/>
+      <Color>BF40BF</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+shellExecute("https://drive.google.com/drive/folders/1psd4TzcmHOUAO7NIBKI0lf47hKGp-qkK?usp=drive_link")
+shellExecute("https://github.com/tranthangminh/Cheat-Engine-Tables-for-Games")
+{$asm}
+
+[DISABLE]
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>16288</ID>
+          <Description>"◀️ Author: Max Chen (Trần Thắng Minh)"</Description>
+          <Options moActivateChildrenAsWell="1" moDeactivateChildrenAsWell="1"/>
+          <LastState Value="" RealAddress="00000000"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>16289</ID>
+              <Description>"◀️ Facebook"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.facebook.com/maxiechen/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16290</ID>
+              <Description>"◀️ Reddit"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://www.reddit.com/user/maxiechen96/")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>16291</ID>
+              <Description>"◀️ Discord"</Description>
+              <LastState/>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+
+{$lua}
+shellExecute("https://discord.com/users/@maxiechen")
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>69</ID>
+      <Description>"HP"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <Color>BF4040</Color>
+      <VariableType>4 Bytes</VariableType>
+      <Address>Buckshot Roulette.exe+204AE81</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>59</ID>
+      <Description>"_HP"</Description>
+      <Options moRecursiveSetValue="1" moAlwaysHideChildren="1" moManualExpandCollapse="1" moActivateChildrenAsWell="1" moDeactivateChildrenAsWell="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState Value="" RealAddress="00000000"/>
+      <Color>40BFBF</Color>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>48</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"Buckshot Roulette.exe"+0362D4B8</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>2B0</Offset>
+            <Offset>60</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>47</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>0</Offset>
+            <Offset>248</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>49</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>2B0</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>50</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000628</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>2B0</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>52</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>53</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>54</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>270</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>55</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>57</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000740</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>450</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>58</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>450</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>64</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>65</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000740</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>66</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000628</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>67</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"Buckshot Roulette.exe"+035AD2C0</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>68</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>110</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>41</ID>
+      <Description>"_HP - Enemy"</Description>
+      <Options moRecursiveSetValue="1" moAlwaysHideChildren="1" moManualExpandCollapse="1" moActivateChildrenAsWell="1" moDeactivateChildrenAsWell="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState Value="" RealAddress="00000000"/>
+      <Color>40BFBF</Color>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>21</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>0</Offset>
+            <Offset>248</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>22</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"Buckshot Roulette.exe"+035AD2C0</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>0</Offset>
+            <Offset>248</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>23</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>2B0</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>24</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>2B0</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>25</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"Buckshot Roulette.exe"+035AD2C0</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>2B0</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>26</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>2B0</Offset>
+            <Offset>450</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>27</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>2B0</Offset>
+            <Offset>450</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>28</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"Buckshot Roulette.exe"+035AD2C0</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>A8</Offset>
+            <Offset>2B0</Offset>
+            <Offset>450</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>29</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>30</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>31</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>32</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>33</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"Buckshot Roulette.exe"+035AD2C0</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>350</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>34</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>450</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>35</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>450</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>36</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"Buckshot Roulette.exe"+035AD2C0</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+            <Offset>220</Offset>
+            <Offset>450</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>37</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"Buckshot Roulette.exe"+035AD2C0</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>38</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000248</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>270</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>39</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"THREADSTACK0"-00000770</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>270</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>40</ID>
+          <Description>"pointerscan result"</Description>
+          <Color>40BFBF</Color>
+          <VariableType>4 Bytes</VariableType>
+          <Address>"Buckshot Roulette.exe"+035AD2C0</Address>
+          <Offsets>
+            <Offset>128</Offset>
+            <Offset>28</Offset>
+            <Offset>68</Offset>
+            <Offset>0</Offset>
+            <Offset>270</Offset>
+            <Offset>0</Offset>
+            <Offset>318</Offset>
+          </Offsets>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols>
+    <SymbolEntry>
+      <Name>speedhack_wantedspeed</Name>
+      <Address>1FC03600000</Address>
+    </SymbolEntry>
+  </UserdefinedSymbols>
+</CheatTable>
