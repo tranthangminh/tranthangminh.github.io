@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 if (typeof initSharedPage === 'function') {
     initSharedPage({
@@ -6,12 +6,12 @@ if (typeof initSharedPage === 'function') {
         header: {
             rootId: 'sharedHeaderRoot',
             options: {
-                homeHref: '../index.html',
-                toolBaseHref: '../',
+                homeHref: 'index.html',
+                toolBaseHref: '',
                 professionItems: [
-                    { labelKey: 'header.profession.actor', label: 'Diễn Viên', href: './' },
-                    { labelKey: 'header.profession.artist', label: 'Họa Sĩ', href: '../artist/' },
-                    { labelKey: 'header.profession.photographer', label: 'Nhiếp Ảnh', href: '../photographer/' }
+                    { labelKey: 'header.profession.actor', label: 'Diễn Viên', href: 'actor.html' },
+                    { labelKey: 'header.profession.artist', label: 'Họa Sĩ', href: 'artist.html' },
+                    { labelKey: 'header.profession.photographer', label: 'Nhiếp Ảnh', href: 'photographer.html' }
                 ]
             }
         },
@@ -29,7 +29,7 @@ if (typeof initSharedPage === 'function') {
                 pageClass: 'contact-page',
                 id: 'contactSection',
                 includeReveal: false,
-                assetBase: '../'
+                assetBase: ''
             }
         },
         bookNow: {

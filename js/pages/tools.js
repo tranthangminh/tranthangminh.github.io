@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 var toolTabButtons = Array.prototype.slice.call(document.querySelectorAll('.tools-switch-btn'));
 var toolPanels = Array.prototype.slice.call(document.querySelectorAll('[data-tool-panel]'));
@@ -14,12 +14,12 @@ if (typeof initSharedPage === 'function') {
         header: {
             rootId: 'sharedHeaderRoot',
             options: {
-                homeHref: '../index.html',
-                toolBaseHref: '../',
+                homeHref: 'index.html',
+                toolBaseHref: '',
                 professionItems: [
-                    { labelKey: 'header.profession.actor', label: 'Diễn Viên', href: '../actor/' },
-                    { labelKey: 'header.profession.artist', label: 'Họa Sĩ', href: '../artist/' },
-                    { labelKey: 'header.profession.photographer', label: 'Nhiếp Ảnh', href: '../photographer/' }
+                    { labelKey: 'header.profession.actor', label: 'Diễn Viên', href: 'actor.html' },
+                    { labelKey: 'header.profession.artist', label: 'Họa Sĩ', href: 'artist.html' },
+                    { labelKey: 'header.profession.photographer', label: 'Nhiếp Ảnh', href: 'photographer.html' }
                 ]
             }
         },
@@ -29,7 +29,7 @@ if (typeof initSharedPage === 'function') {
                 pageClass: 'contact-page',
                 id: 'contactSection',
                 includeReveal: false,
-                assetBase: '../'
+                assetBase: ''
             }
         },
         bookNow: {
@@ -180,7 +180,7 @@ function renderCheatTableFiles() {
 
         groupedFiles[groupKey].forEach(function (fileName) {
             var fileLink = document.createElement('a');
-            var fileUrl = '../assets/My%20Cheat%20Tables/' + encodeURIComponent(fileName);
+            var fileUrl = 'assets/My%20Cheat%20Tables/' + encodeURIComponent(fileName);
             var fileArtwork = getCheatTableArtwork(fileName);
             var fileLinkHead = document.createElement('div');
             var fileNameLabel = document.createElement('span');

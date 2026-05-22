@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Images2DDirectory,
     [string]$Images3DDirectory,
     [string]$Output2DFile,
@@ -55,7 +55,7 @@ function Write-ArtistManifest {
 
     for ($index = 0; $index -lt $imageFiles.Count; $index += 1) {
         $file = $imageFiles[$index]
-        $src = '../assets/images/' + $FolderName + '/' + $file.Name
+        $src = 'assets/images/' + $FolderName + '/' + $file.Name
         $suffix = if ($index -lt ($imageFiles.Count - 1)) { ',' } else { '' }
         $lines.Add("    { src: '$(Escape-JavaScriptString $src)' }$suffix")
     }

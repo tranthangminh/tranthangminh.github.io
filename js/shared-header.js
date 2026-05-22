@@ -105,15 +105,15 @@
 
         var homeHref = escapeHtml(opts.homeHref || 'index.html');
         var professionItems = Array.isArray(opts.professionItems) && opts.professionItems.length ? opts.professionItems : [
-            { labelKey: 'header.profession.actor', label: 'Di\u1ec5n Vi\u00ean', href: 'actor/' },
-            { labelKey: 'header.profession.artist', label: 'H\u1ecda S\u0129', href: 'artist/' },
-            { labelKey: 'header.profession.photographer', label: 'Nhi\u1ebfp \u1ea2nh', href: 'photographer/' }
+            { labelKey: 'header.profession.actor', label: 'Di\u1ec5n Vi\u00ean', href: 'actor.html' },
+            { labelKey: 'header.profession.artist', label: 'H\u1ecda S\u0129', href: 'artist.html' },
+            { labelKey: 'header.profession.photographer', label: 'Nhi\u1ebfp \u1ea2nh', href: 'photographer.html' }
         ];
         var toolBaseHref = typeof opts.toolBaseHref === 'string' ? opts.toolBaseHref : '';
         var toolItems = Array.isArray(opts.toolItems) && opts.toolItems.length ? opts.toolItems : [
-            { labelKey: 'header.tool.photoshop', label: 'Tool Photoshop', href: toolBaseHref + 'tools/?tab=photoshop' },
-            { labelKey: 'header.tool.maya', label: 'Tool Maya', href: toolBaseHref + 'tools/?tab=maya' },
-            { labelKey: 'header.tool.cheatEngine', label: 'Tool Cheat Engine', href: toolBaseHref + 'tools/?tab=cheat-engine' }
+            { labelKey: 'header.tool.photoshop', label: 'Tool Photoshop', href: toolBaseHref + 'tools.html?tab=photoshop' },
+            { labelKey: 'header.tool.maya', label: 'Tool Maya', href: toolBaseHref + 'tools.html?tab=maya' },
+            { labelKey: 'header.tool.cheatEngine', label: 'Tool Cheat Engine', href: toolBaseHref + 'tools.html?tab=cheat-engine' }
         ];
         var currentLanguage = window.sharedI18n && typeof window.sharedI18n.getLanguage === 'function'
             ? window.sharedI18n.getLanguage()

@@ -80,11 +80,42 @@ let wheelGestureLastTime = 0;
 const bookNowButton = document.getElementById('bookNowButton');
 
 const aboutActorVideos = [
-    { id: 'S-YVjeYC4T8', title: 'Trộm Vía' },
-    { id: '9WZ0-d3x1QU', title: 'Sư phụ - NPC game logic' },
-    { id: 'r7RW-Ppiqv8', title: 'Clip nổi bật' }
+    { id: 'S-YVjeYC4T8', title: 'Trộm Vía', embeddable: false },
+    { id: '9WZ0-d3x1QU', title: 'Sư phụ - NPC game logic', embeddable: true },
+    { id: 'r7RW-Ppiqv8', title: 'Clip nổi bật', embeddable: true }
 ];
 let aboutActorVideoIndex = 0;
+let isVideoPlayingInline = false;
+let activeVideoIframe = null;
+
+function stopInlineVideo() {
+    if (activeVideoIframe) {
+        if (activeVideoIframe.parentNode) {
+            activeVideoIframe.parentNode.removeChild(activeVideoIframe);
+        }
+        activeVideoIframe = null;
+    }
+    isVideoPlayingInline = false;
+}
+
+function playInlineVideo(videoId) {
+    stopInlineVideo();
+
+    const iframe = document.createElement('iframe');
+    iframe.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+    iframe.style.position = 'absolute';
+    iframe.style.inset = '0';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.style.zIndex = '5';
+    iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
+    iframe.setAttribute('allowfullscreen', 'true');
+
+    aboutActorVideoLink.appendChild(iframe);
+    activeVideoIframe = iframe;
+    isVideoPlayingInline = true;
+}
 
 function fetchAboutActorVideoTitle(video) {
     const watchUrl = 'https://www.youtube.com/watch?v=' + video.id;
@@ -111,6 +142,8 @@ function renderAboutActorVideo() {
     if (!aboutActorVideoLink || !aboutActorVideoThumb) {
         return;
     }
+
+    stopInlineVideo();
 
     aboutActorVideoRenderToken += 1;
     const currentToken = aboutActorVideoRenderToken;
@@ -166,6 +199,16 @@ if (aboutActorVideoLink && aboutActorVideoThumb) {
         /* Ignore and keep fallback titles */
     });
 
+    aboutActorVideoLink.addEventListener('click', function (event) {
+        const currentVideo = aboutActorVideos[aboutActorVideoIndex];
+        if (currentVideo.embeddable !== false) {
+            event.preventDefault();
+            if (!isVideoPlayingInline) {
+                playInlineVideo(currentVideo.id);
+            }
+        }
+    });
+
     if (aboutActorVideoPrev) {
         aboutActorVideoPrev.addEventListener('click', function (event) {
             event.preventDefault();
@@ -204,6 +247,10 @@ function updateSnapIndicator() {
 
     if (bookNowButton) {
         bookNowButton.classList.toggle('hidden', activeIndex === pages.length - 1);
+    }
+
+    if (activeIndex !== 2 && isVideoPlayingInline) {
+        stopInlineVideo();
     }
 
     applyPageRevealStates(activeIndex);

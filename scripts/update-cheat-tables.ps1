@@ -3,7 +3,7 @@ param(
     [string]$OutputFile,
     [string]$ArtworkOutputFile,
     [string]$ToolsPageFile,
-    [string]$RemovalListFile
+    [string]$MetadataFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -20,22 +20,14 @@ if (-not $ArtworkOutputFile) {
     $ArtworkOutputFile = Join-Path $projectRoot 'js\data\cheat-table-artwork.js'
 }
 if (-not $ToolsPageFile) {
-    $ToolsPageFile = Join-Path $projectRoot 'tools\index.html'
+    $ToolsPageFile = Join-Path $projectRoot 'tools.html'
 }
-if (-not $RemovalListFile) {
-    $RemovalListFile = Join-Path $projectRoot 'remove-cheat-tables.txt'
+if (-not $MetadataFile) {
+    $MetadataFile = Join-Path $CheatTableDirectory '_ID.txt'
 }
 
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $steamAppDetailsCache = @{}
-$steamSearchAliases = @{
-    '[PROTOTYPE®].CT' = 'PROTOTYPE'
-    'Left 4 Dead 2 - Direct3D 9.CT' = 'Left 4 Dead 2'
-    'Home Sheep Home Farmageddon Party Edition.CT' = 'Home Sheep Home: Farmageddon Party Edition'
-    'Kink Inc Steam.CT' = 'Kink.Inc'
-    'Grand Theft Auto San Andreas – The Definitive Edition  .CT' = 'Grand Theft Auto San Andreas The Definitive Edition'
-    'Need for Speed™ Most Wanted.CT' = 'Need for Speed Most Wanted'
-}
 
 function Escape-JavaScriptString {
     param([string]$Value)
@@ -43,24 +35,19 @@ function Escape-JavaScriptString {
     return ($Value -replace '\\', '\\' -replace "'", "\'")
 }
 
-function Normalize-SteamSearchText {
+function Normalize-CheatTableKey {
     param([string]$Value)
 
     if ([string]::IsNullOrWhiteSpace($Value)) {
         return ''
     }
 
-    $normalized = $Value.ToLowerInvariant().Trim()
-    $normalized = $normalized -replace '\.[a-z0-9]+$', ''
-    $normalized = $normalized -replace '[-–—_:]+', ' '
-    $normalized = $normalized -replace '[\[\]\(\)!®™''".,]', ''
-    $normalized = $normalized -replace '\bdirect3d\s*9\b', ''
-    $normalized = $normalized -replace '\bsteam\b', ''
-    $normalized = $normalized -replace '\s+', ' '
+    $normalized = $Value.Trim()
+    $normalized = $normalized -replace '(?i)\.ct$', ''
     return $normalized.Trim()
 }
 
-function Get-OverrideImageUrlFromText {
+function Get-OverrideImageUrl {
     param([string]$Value)
 
     if ([string]::IsNullOrWhiteSpace($Value)) {
@@ -75,87 +62,71 @@ function Get-OverrideImageUrlFromText {
     return $null
 }
 
-function Get-ExcludedCheatTableNames {
+function Get-CheatTableMetadataState {
     param([string]$FilePath)
 
+    $entries = @{}
     $excludedNames = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    $isRemoveSection = $false
 
     if (-not (Test-Path -LiteralPath $FilePath)) {
-        return $excludedNames
+        return @{
+            Entries = $entries
+            ExcludedNames = $excludedNames
+        }
     }
 
-    $entries = [System.IO.File]::ReadAllLines($FilePath)
-    foreach ($entry in $entries) {
-        $trimmedEntry = [string]$entry
-        if ([string]::IsNullOrWhiteSpace($trimmedEntry)) {
+    $lines = [System.IO.File]::ReadAllLines($FilePath)
+    foreach ($line in $lines) {
+        $trimmedLine = [string]$line
+        if ([string]::IsNullOrWhiteSpace($trimmedLine)) {
             continue
         }
 
-        $trimmedEntry = $trimmedEntry.Trim()
-        if ($trimmedEntry.StartsWith('#')) {
+        $trimmedLine = $trimmedLine.Trim()
+        if ($trimmedLine -eq '==Remove List==') {
+            $isRemoveSection = $true
             continue
         }
 
-        [void]$excludedNames.Add($trimmedEntry)
-
-        if ($trimmedEntry -notmatch '\.[^.]+$') {
-            [void]$excludedNames.Add($trimmedEntry + '.CT')
+        if ($trimmedLine.StartsWith('#')) {
+            continue
         }
-    }
 
-    return $excludedNames
-}
+        if ($isRemoveSection) {
+            [void]$excludedNames.Add($trimmedLine)
 
-function Get-CompanionSteamInfo {
-    param(
-        [System.IO.FileInfo]$CheatTableFile,
-        [string]$DirectoryPath
-    )
-
-    if (-not $CheatTableFile -or -not (Test-Path -LiteralPath $DirectoryPath)) {
-        return $null
-    }
-
-    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($CheatTableFile.Name)
-    if ([string]::IsNullOrWhiteSpace($baseName)) {
-        return $null
-    }
-
-    $escapedBaseName = [Regex]::Escape($baseName.Trim())
-    $txtFiles = Get-ChildItem -LiteralPath $DirectoryPath -File -Filter *.txt
-
-    foreach ($txtFile in $txtFiles) {
-        $txtBaseName = [System.IO.Path]::GetFileNameWithoutExtension($txtFile.Name)
-
-        if ($txtBaseName -match ('^' + $escapedBaseName + '\s*-\s*(\d+)$')) {
-            $txtContent = ([System.IO.File]::ReadAllText($txtFile.FullName)).Trim()
-            return @{
-                HasCompanion = $true
-                AppId = $matches[1]
-                OverrideImageSrc = Get-OverrideImageUrlFromText -Value $txtContent
+            if ($trimmedLine -notmatch '\.[^.]+$') {
+                [void]$excludedNames.Add($trimmedLine + '.CT')
             }
+
+            continue
         }
 
-        if ($txtBaseName -match ('^' + $escapedBaseName + '\s*-\s*\[SteamAppId\]$')) {
-            $txtContent = ([System.IO.File]::ReadAllText($txtFile.FullName)).Trim()
-            return @{
-                HasCompanion = $true
-                AppId = $null
-                OverrideImageSrc = Get-OverrideImageUrlFromText -Value $txtContent
-            }
+        $parts = ([string]$line).Split([char]9)
+        if (-not $parts.Length) {
+            continue
         }
 
-        if ($txtBaseName -eq $baseName) {
-            $content = ([System.IO.File]::ReadAllText($txtFile.FullName)).Trim()
-            return @{
-                HasCompanion = $true
-                AppId = $null
-                OverrideImageSrc = Get-OverrideImageUrlFromText -Value $content
-            }
+        $rawName = if ($parts.Length -ge 1) { [string]$parts[0] } else { '' }
+        $rawAppId = if ($parts.Length -ge 2) { [string]$parts[1] } else { '' }
+        $rawImageUrl = if ($parts.Length -ge 3) { [string]::Join("`t", $parts[2..($parts.Length - 1)]) } else { '' }
+
+        $key = Normalize-CheatTableKey -Value $rawName
+        if ([string]::IsNullOrWhiteSpace($key)) {
+            continue
+        }
+
+        $entries[$key] = @{
+            AppId = if ($rawAppId.Trim() -match '^\d+$') { $rawAppId.Trim() } else { $null }
+            ImageSrc = Get-OverrideImageUrl -Value $rawImageUrl
         }
     }
 
-    return $null
+    return @{
+        Entries = $entries
+        ExcludedNames = $excludedNames
+    }
 }
 
 function Get-SteamAppDetailsById {
@@ -190,107 +161,71 @@ function Get-SteamAppDetailsById {
     return $null
 }
 
-function Resolve-SteamArtwork {
+function Get-FallbackSteamCapsuleImageUrl {
+    param([string]$AppId)
+
+    if ([string]::IsNullOrWhiteSpace($AppId)) {
+        return $null
+    }
+
+    return 'https://cdn.akamai.steamstatic.com/steam/apps/' + [Uri]::EscapeDataString($AppId) + '/capsule_231x87.jpg'
+}
+
+function Resolve-CheatTableDisplayData {
     param(
         [string]$FileName,
-        [string]$AppId,
-        [string]$OverrideImageSrc,
-        [bool]$HasCompanion = $false
+        [hashtable]$MetadataEntries
     )
 
-    if (-not [string]::IsNullOrWhiteSpace($AppId)) {
-        $resolvedDetails = Get-SteamAppDetailsById -AppId $AppId
-        $resolvedTitle = if ($resolvedDetails) { $resolvedDetails.Title } else { $null }
-        $resolvedImageSrc = if ($resolvedDetails) {
-            if (-not [string]::IsNullOrWhiteSpace($resolvedDetails.CapsuleImage)) {
-                $resolvedDetails.CapsuleImage
-            } elseif (-not [string]::IsNullOrWhiteSpace($resolvedDetails.HeaderImage)) {
-                $resolvedDetails.HeaderImage
+    $baseName = Normalize-CheatTableKey -Value ([System.IO.Path]::GetFileNameWithoutExtension($FileName))
+    $metadata = if ($MetadataEntries.ContainsKey($baseName)) { $MetadataEntries[$baseName] } else { $null }
+    $appId = if ($metadata) { $metadata.AppId } else { $null }
+    $overrideImageSrc = if ($metadata) { $metadata.ImageSrc } else { $null }
+
+    if (-not [string]::IsNullOrWhiteSpace($appId)) {
+        $steamDetails = Get-SteamAppDetailsById -AppId $appId
+        $steamTitle = if ($steamDetails) { $steamDetails.Title } else { $null }
+        $steamImage = if ($steamDetails) {
+            if (-not [string]::IsNullOrWhiteSpace($steamDetails.CapsuleImage)) {
+                $steamDetails.CapsuleImage
+            } elseif (-not [string]::IsNullOrWhiteSpace($steamDetails.HeaderImage)) {
+                $steamDetails.HeaderImage
             } else {
                 $null
             }
         } else {
             $null
         }
+        $fallbackSteamImage = Get-FallbackSteamCapsuleImageUrl -AppId $appId
 
         return @{
-            title = if (-not [string]::IsNullOrWhiteSpace($resolvedTitle)) { $resolvedTitle } else { [System.IO.Path]::GetFileNameWithoutExtension($FileName).Trim() }
-            imageSrc = if (-not [string]::IsNullOrWhiteSpace($OverrideImageSrc)) { $OverrideImageSrc } elseif (-not [string]::IsNullOrWhiteSpace($resolvedImageSrc)) { $resolvedImageSrc } else { 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/' + $AppId + '/capsule_231x87.jpg' }
-        }
-    }
-
-    if (-not [string]::IsNullOrWhiteSpace($OverrideImageSrc)) {
-        return @{
-            title = [System.IO.Path]::GetFileNameWithoutExtension($FileName).Trim()
-            imageSrc = $OverrideImageSrc
-        }
-    }
-
-    if ($HasCompanion) {
-        return @{
-            title = [System.IO.Path]::GetFileNameWithoutExtension($FileName).Trim()
-            imageSrc = $null
-        }
-    }
-
-    $searchQuery = if ($steamSearchAliases.ContainsKey($FileName)) {
-        $steamSearchAliases[$FileName]
-    } else {
-        [System.IO.Path]::GetFileNameWithoutExtension($FileName).Trim()
-    }
-
-    if ([string]::IsNullOrWhiteSpace($searchQuery)) {
-        return $null
-    }
-
-    try {
-        $searchUri = 'https://store.steampowered.com/api/storesearch/?term=' + [Uri]::EscapeDataString($searchQuery) + '&l=english&cc=US'
-        $response = Invoke-RestMethod -Uri $searchUri -Headers @{ 'User-Agent' = 'Mozilla/5.0' }
-        $items = @($response.items)
-        if (-not $items.Count) {
-            return $null
-        }
-
-        $normalizedQuery = Normalize-SteamSearchText $searchQuery
-        $bestMatch = $null
-
-        foreach ($item in $items) {
-            $normalizedName = Normalize-SteamSearchText $item.name
-
-            if ($normalizedName -eq $normalizedQuery) {
-                $bestMatch = $item
-                break
+            Title = if (-not [string]::IsNullOrWhiteSpace($steamTitle)) { $steamTitle } else { $baseName }
+            ImageSrc = if (-not [string]::IsNullOrWhiteSpace($overrideImageSrc)) {
+                $overrideImageSrc
+            } elseif (-not [string]::IsNullOrWhiteSpace($steamImage)) {
+                $steamImage
+            } else {
+                $fallbackSteamImage
             }
-
-            if (-not $bestMatch -and (
-                $normalizedName.StartsWith($normalizedQuery) -or
-                $normalizedQuery.StartsWith($normalizedName) -or
-                $normalizedName.Contains($normalizedQuery) -or
-                $normalizedQuery.Contains($normalizedName)
-            )) {
-                $bestMatch = $item
-            }
+            HasAppId = $true
+            HasOverrideImage = -not [string]::IsNullOrWhiteSpace($overrideImageSrc)
         }
+    }
 
-        if (-not $bestMatch -and $items.Count -eq 1) {
-            $bestMatch = $items[0]
-        }
-
-        if (-not $bestMatch) {
-            return $null
-        }
-
-        return @{
-            title = [string]$bestMatch.name
-            imageSrc = [string]$bestMatch.tiny_image
-        }
-    } catch {
-        return $null
+    return @{
+        Title = $baseName
+        ImageSrc = $overrideImageSrc
+        HasAppId = $false
+        HasOverrideImage = -not [string]::IsNullOrWhiteSpace($overrideImageSrc)
     }
 }
 
 if (-not (Test-Path -LiteralPath $CheatTableDirectory)) {
     throw "Cheat table directory not found: $CheatTableDirectory"
+}
+
+if (-not (Test-Path -LiteralPath $MetadataFile)) {
+    [System.IO.File]::WriteAllText($MetadataFile, '', $utf8NoBom)
 }
 
 $outputDirectory = Split-Path -Parent $OutputFile
@@ -303,7 +238,9 @@ if (-not (Test-Path -LiteralPath $artworkOutputDirectory)) {
     New-Item -ItemType Directory -Path $artworkOutputDirectory -Force | Out-Null
 }
 
-$excludedCheatTables = Get-ExcludedCheatTableNames -FilePath $RemovalListFile
+$metadataState = Get-CheatTableMetadataState -FilePath $MetadataFile
+$excludedCheatTables = $metadataState.ExcludedNames
+$metadataEntries = $metadataState.Entries
 
 $allCheatTableFiles = Get-ChildItem -LiteralPath $CheatTableDirectory -File |
     Where-Object { $_.Extension -match '^(?i)\.ct$' }
@@ -317,61 +254,48 @@ $cheatTableFiles = $allCheatTableFiles |
 
 $excludedFileCount = $allCheatTableFiles.Count - $cheatTableFiles.Count
 
-$lines = [System.Collections.Generic.List[string]]::new()
-$lines.Add('window.cheatTableFiles = [')
+$fileLines = [System.Collections.Generic.List[string]]::new()
+$fileLines.Add('window.cheatTableFiles = [')
 
 for ($index = 0; $index -lt $cheatTableFiles.Count; $index += 1) {
     $file = $cheatTableFiles[$index]
     $suffix = if ($index -lt ($cheatTableFiles.Count - 1)) { ',' } else { '' }
-    $lines.Add("    '$(Escape-JavaScriptString $file.Name)'$suffix")
+    $fileLines.Add("    '$(Escape-JavaScriptString $file.Name)'$suffix")
 }
 
-$lines.Add('];')
-$lines.Add('')
-
-$content = [string]::Join([Environment]::NewLine, $lines)
-[System.IO.File]::WriteAllText($OutputFile, $content, $utf8NoBom)
-
-$artworkEntries = [System.Collections.Generic.List[string]]::new()
-$companionMatches = 0
-$companionFallbackMatches = 0
-$autoSearchMatches = 0
-
-foreach ($file in $cheatTableFiles) {
-    $companionInfo = Get-CompanionSteamInfo -CheatTableFile $file -DirectoryPath $CheatTableDirectory
-    $hasCompanion = if ($companionInfo) { [bool]$companionInfo.HasCompanion } else { $false }
-    $companionAppId = if ($companionInfo) { $companionInfo.AppId } else { $null }
-    $overrideImageSrc = if ($companionInfo) { $companionInfo.OverrideImageSrc } else { $null }
-
-    $artwork = Resolve-SteamArtwork -FileName $file.Name -AppId $companionAppId -OverrideImageSrc $overrideImageSrc -HasCompanion:$hasCompanion
-    if (-not $artwork) {
-        continue
-    }
-
-    if ($companionAppId) {
-        $companionMatches += 1
-    } elseif ($hasCompanion) {
-        $companionFallbackMatches += 1
-    } else {
-        $autoSearchMatches += 1
-    }
-
-    $artworkEntries.Add("    '$(Escape-JavaScriptString $file.Name)': { title: '$(Escape-JavaScriptString $artwork.title)', imageSrc: '$(Escape-JavaScriptString $artwork.imageSrc)' }")
-}
+$fileLines.Add('];')
+$fileLines.Add('')
+[System.IO.File]::WriteAllText($OutputFile, ([string]::Join([Environment]::NewLine, $fileLines)), $utf8NoBom)
 
 $artworkLines = [System.Collections.Generic.List[string]]::new()
 $artworkLines.Add('window.cheatTableArtworkManifest = {')
 
-for ($index = 0; $index -lt $artworkEntries.Count; $index += 1) {
-    $suffix = if ($index -lt ($artworkEntries.Count - 1)) { ',' } else { '' }
-    $artworkLines.Add($artworkEntries[$index] + $suffix)
+$steamIdCount = 0
+$overrideImageCount = 0
+$metadataOnlyCount = 0
+
+for ($index = 0; $index -lt $cheatTableFiles.Count; $index += 1) {
+    $file = $cheatTableFiles[$index]
+    $displayData = Resolve-CheatTableDisplayData -FileName $file.Name -MetadataEntries $metadataEntries
+    $imageLiteral = if (-not [string]::IsNullOrWhiteSpace($displayData.ImageSrc)) { "'$(Escape-JavaScriptString $displayData.ImageSrc)'" } else { 'null' }
+    $suffix = if ($index -lt ($cheatTableFiles.Count - 1)) { ',' } else { '' }
+
+    if ($displayData.HasAppId) {
+        $steamIdCount += 1
+    }
+    if ($displayData.HasOverrideImage) {
+        $overrideImageCount += 1
+    }
+    if ((-not $displayData.HasAppId) -and (-not $displayData.HasOverrideImage)) {
+        $metadataOnlyCount += 1
+    }
+
+    $artworkLines.Add("    '$(Escape-JavaScriptString $file.Name)': { title: '$(Escape-JavaScriptString $displayData.Title)', imageSrc: $imageLiteral }$suffix")
 }
 
 $artworkLines.Add('};')
 $artworkLines.Add('')
-
-$artworkContent = [string]::Join([Environment]::NewLine, $artworkLines)
-[System.IO.File]::WriteAllText($ArtworkOutputFile, $artworkContent, $utf8NoBom)
+[System.IO.File]::WriteAllText($ArtworkOutputFile, ([string]::Join([Environment]::NewLine, $artworkLines)), $utf8NoBom)
 
 if (Test-Path -LiteralPath $ToolsPageFile) {
     $toolsPageContent = [System.IO.File]::ReadAllText($ToolsPageFile)
@@ -394,9 +318,9 @@ if (Test-Path -LiteralPath $ToolsPageFile) {
 
 Write-Host "Updated cheat table manifest:" $OutputFile
 Write-Host "Cheat tables found:" $cheatTableFiles.Count
-Write-Host "Excluded by remove-cheat-tables.txt:" $excludedFileCount
+Write-Host "Excluded by _ID.txt remove list:" $excludedFileCount
+Write-Host "Metadata file:" $MetadataFile
+Write-Host "Entries using Steam ID:" $steamIdCount
+Write-Host "Entries using custom image link:" $overrideImageCount
+Write-Host "Entries using CT name only:" $metadataOnlyCount
 Write-Host "Updated cheat table artwork manifest:" $ArtworkOutputFile
-Write-Host "Steam artwork matches:" $artworkEntries.Count
-Write-Host "Companion TXT matches:" $companionMatches
-Write-Host "Companion TXT without ID:" $companionFallbackMatches
-Write-Host "Auto search matches:" $autoSearchMatches
