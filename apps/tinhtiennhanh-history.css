@@ -1,0 +1,605 @@
+.history-view {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    min-width: 0;
+    min-height: 0;
+    height: calc(100% - 7vh);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    
+    /* Brand Theme Colors matching the Bún Giò Minh Nhật Logo */
+    --h-accent: #d97706;           /* High contrast gold for text */
+    --h-accent-bg: #f1a30f;        /* Logo warm golden yellow */
+    --h-accent-soft: rgba(241, 163, 15, 0.08); /* Transparent golden yellow background */
+    --h-accent-border: rgba(241, 163, 15, 0.20); /* Transparent yellow border */
+    --h-brown: #4a3022;            /* Logo chocolate brown */
+}
+
+.history-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    margin-top: 4px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
+
+.filter-buttons-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.filter-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: var(--text-soft);
+    padding: 8px 4px;
+    font-size: clamp(12px, 2.8vw, 14px);
+    font-weight: 700;
+    font-family: "Montserrat", sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+
+.filter-btn.is-active {
+    background: var(--h-accent-bg);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: var(--h-brown);
+    box-shadow: 0 2px 8px rgba(241, 163, 15, 0.3);
+}
+
+.filter-btn:active {
+    transform: scale(0.96);
+}
+
+.custom-calendar-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 290px;
+    max-width: 100%;
+    background: rgba(24, 28, 30, 0.95);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    padding: 12px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.custom-calendar-popover.is-hidden {
+    display: none !important;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cal-nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--h-accent-bg);
+    font-size: 14px;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.cal-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cal-month-year {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-soft);
+    padding: 4px 0;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 6px;
+    text-align: center;
+}
+
+.cal-day-cell {
+    position: relative;
+    height: 34px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+.cal-day-cell:hover:not(.empty-cell) {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.cal-day-cell.selected-day {
+    background: var(--h-accent-bg);
+    color: var(--h-brown);
+    font-weight: 700;
+}
+
+.cal-day-cell.empty-cell {
+    cursor: default;
+}
+
+.cal-day-dot {
+    position: absolute;
+    bottom: 3px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 4px #10b981;
+}
+
+.cal-day-cell.selected-day .cal-day-dot {
+    background: #fff;
+    box-shadow: none;
+}
+
+
+
+.history-header-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.history-floating-clear {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--danger);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 14px rgba(180, 35, 24, 0.35);
+    z-index: 100;
+    cursor: pointer;
+    overflow: hidden;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    padding: 0;
+}
+
+.history-floating-clear .clear-icon {
+    font-size: 24px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.history-floating-clear .clear-text {
+    font-size: 15px;
+    font-weight: 700;
+    opacity: 0;
+    max-width: 0;
+    transition: opacity 0.2s ease, max-width 0.2s ease, margin-left 0.2s ease;
+    overflow: hidden;
+}
+
+/* Expanded state */
+.history-floating-clear.is-expanded {
+    width: 140px;
+    border-radius: 26px;
+    padding: 0 16px;
+}
+
+.history-floating-clear.is-expanded .clear-text {
+    opacity: 1;
+    max-width: 80px;
+    margin-left: 8px;
+}
+
+.history-floating-clear:active {
+    background: #991b1b;
+    transform: scale(0.95);
+}
+
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 7px 0 76px 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.history-date-header {
+    position: sticky;
+    top: -8px;
+    z-index: 5;
+    margin: 8px 0 4px 0;
+    padding: 8px 12px;
+    font-size: clamp(12px, 2.4vw, 14px);
+    font-weight: 800;
+    color: #fff;
+    background: #e6a63c;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: "Montserrat", sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.history-date-header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.history-date-revenue {
+    font-size: clamp(12px, 2.4vw, 14px);
+    font-weight: 800;
+    color: #fff;
+}
+
+.history-date-header:hover {
+    background-color: #d1932f;
+}
+
+.history-date-header:active {
+    opacity: 0.8;
+}
+
+.history-date-arrow {
+    display: inline-block;
+    font-size: 10px;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: rotate(0deg);
+}
+
+.history-date-header.is-collapsed .history-date-arrow {
+    transform: rotate(-90deg);
+}
+
+.history-list .history-date-header:first-of-type {
+    margin-top: 4px;
+}
+
+.history-card.is-collapsed-item {
+    display: none !important;
+}
+
+.history-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    flex-shrink: 0;
+}
+
+.history-card-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 40%;
+    flex-basis: 40%;
+    flex-shrink: 0;
+}
+
+.history-info-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+}
+
+.history-table-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: #614838;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.history-table-badge-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.history-order-seq {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background: var(--h-accent-bg);
+    color: var(--h-brown);
+    font-size: 9px;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    line-height: 1.2;
+    font-family: "Montserrat", sans-serif;
+    z-index: 2;
+}
+
+.history-total {
+    font-size: clamp(30px, 6.2vw, 38px);
+    font-weight: 800;
+    color: var(--h-accent);
+    font-family: "Montserrat", sans-serif;
+}
+
+.history-card-middle {
+    flex: 1;
+    margin: 0 10px;
+    min-width: 0;
+}
+
+.history-summary {
+    font-size: clamp(17px, 3.4vw, 21px);
+    color: var(--text-soft);
+    font-weight: 700;
+    font-family: "Barlow Condensed", "Montserrat", sans-serif;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.history-datetime {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+}
+
+.history-time {
+    font-size: 12px;
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.history-date {
+    font-size: 9px;
+    color: var(--text-soft);
+    font-weight: 600;
+}
+
+.history-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-soft);
+    font-weight: 600;
+    font-size: 16px;
+    background: var(--panel-bg);
+    border: 1px dashed var(--panel-border);
+    border-radius: 8px;
+}
+
+
+
+.history-card-right {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.history-card-delete {
+    background: transparent;
+    border: none;
+    color: var(--danger);
+    font-size: 18px;
+    padding: 0;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, padding 0.25s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 0;
+}
+
+.delete-mode-active .history-card-delete {
+    width: 32px;
+    opacity: 1;
+    padding: 6px;
+    margin-left: 14px;
+}
+
+.history-card-delete:active {
+    background: rgba(180, 35, 24, 0.1);
+}
+
+.calendar-footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 4px;
+}
+
+.cal-today-btn {
+    background: var(--h-accent-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--h-brown);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: "Montserrat", sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: center;
+}
+
+.cal-today-btn:hover {
+    background: #d18f0c;
+}
+
+.cal-today-btn:active {
+    transform: scale(0.97);
+}
+
+/* Integrated Stats Style inside History Filter Bar */
+.history-stats-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stats-summary-line {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.stats-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stats-revenue-label,
+.stats-orders-label {
+    color: var(--text-soft);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.stats-revenue-val,
+.stats-orders-val {
+    color: var(--h-accent);
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.stats-products-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-height: 90px;
+    overflow-y: auto;
+    padding-bottom: 2px;
+}
+
+.stats-product-tag {
+    background: var(--h-accent-soft);
+    border: 1px solid var(--h-accent-border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tag-count {
+    color: var(--h-accent);
+    font-weight: 800;
+}
+
+.tag-name {
+    color: var(--text-main);
+}
+
+.tag-divider {
+    color: var(--text-soft);
+    opacity: 0.5;
+}
+
+.tag-total {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.stats-no-products {
+    font-size: 12px;
+    color: var(--text-soft);
+    font-style: italic;
+    padding: 2px 0;
+}

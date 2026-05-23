@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tính Tiền Nhanh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./tinhtiennhanh_order.css?v=20260521-15">
+<link rel="stylesheet" href="./tinhtiennhanh_table.css?v=20260521-15">
+<link rel="stylesheet" href="./tinhtiennhanh-history.css?v=20260521-15">
+<link rel="stylesheet" href="./tinhtiennhanh-stats.css?v=20260521-15">
+<link rel="stylesheet" href="./tinhtiennhanh-settings.css?v=20260521-15">
+<script>
+(function() {
+    const now = new Date();
+    const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    if (localStorage.getItem("fastFoodUnlockDate") === today) {
+        document.documentElement.classList.add("app-unlocked");
+    } else {
+        document.documentElement.classList.add("app-locked");
+    }
+})();
+</script>
+</head>
+<body>
+<main class="app" aria-label="Tính tiền nhanh">
+    <section class="table-view" id="tableView" aria-label="Chọn bàn" style="position: relative;">
+        <div class="table-layout">
+            <div class="table-column table-column-left">
+                <div class="table-button" role="button" tabindex="0" data-table="11"></div>
+                <div class="table-button" role="button" tabindex="0" data-table="10"></div>
+                <div class="table-button" role="button" tabindex="0" data-table="9"></div>
+                <div class="table-button" role="button" tabindex="0" data-table="8"></div>
+                <div class="table-button" role="button" tabindex="0" data-table="7"></div>
+            </div>
+            <div class="table-column table-column-right">
+                <div class="table-button" role="button" tabindex="0" data-table="4"></div>
+                <div class="table-button" role="button" tabindex="0" data-table="3"></div>
+                <div class="table-button" role="button" tabindex="0" data-table="2"></div>
+                <div class="table-button" role="button" tabindex="0" data-table="1"></div>
+            </div>
+            <div class="table-button table-button-outside" role="button" tabindex="0" data-table="0"></div>
+        </div>
+    </section>
+
+    <section class="order-view is-hidden" id="orderView" aria-label="Tính tiền theo bàn">
+        <div class="top-row">
+            <section class="panel top-panel" aria-label="Khung tổng tiền">
+                <div class="order-column">
+                    <div class="metric">
+                        <span class="metric-label">Tổng</span>
+                        <strong class="metric-value" id="orderTotal">0đ</strong>
+                    </div>
+                    <div class="order-summary" id="orderSummary" aria-label="Thống kê món đã chọn"></div>
+                </div>
+            </section>
+
+            <section class="panel auto-panel" aria-label="Khung auto tính">
+                <div class="calc-viewport" id="calcViewport">
+                    <div class="calc-track" id="calcTrack">
+                        <div class="calc-page auto-page">
+                            <div class="auto-grid" id="autoGrid"></div>
+                        </div>
+                        <div class="calc-page manual-page">
+                            <div class="manual-display">
+                                <div class="manual-metric">
+                                    <span class="manual-label">Khách đưa</span>
+                                    <strong class="manual-value" id="customerPaid">0đ</strong>
+                                </div>
+                                <div class="manual-metric">
+                                    <span class="manual-label">Thối</span>
+                                    <strong class="manual-value manual-change" id="manualChange">0đ</strong>
+                                </div>
+                            </div>
+                            <div class="cash-grid" id="cashGrid"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-indicators" id="pageIndicatorsCalc">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                </div>
+            </section>
+        </div>
+
+        <section class="panel products-panel products-main-panel" aria-label="Sản phẩm chính">
+            <div class="product-viewport-main" id="productViewportMain">
+                <div class="product-track-main" id="productTrackMain">
+                    <div class="product-page">
+                        <div class="product-grid" id="productGridMainPage1"></div>
+                    </div>
+                    <div class="product-page">
+                        <div class="product-grid" id="productGridMainPage2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-indicators" id="pageIndicatorsMain">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+            </div>
+        </section>
+        <section class="panel products-panel products-sub-panel" aria-label="Sản phẩm phụ">
+            <div class="product-grid" id="productGridSub"></div>
+        </section>
+        <div class="product-clear-row">
+            <button class="table-back" type="button" id="tableBack">⤶</button>
+            <button class="order-pay-btn" type="button" id="orderPayBtn">💳 Trả</button>
+            <button class="order-finish-btn" type="button" id="orderFinishBtn">✅ Xong</button>
+            <button class="clear-all" type="button" id="clearAll">Xóa hết</button>
+        </div>
+    </section>
+
+    <section class="history-view is-hidden" id="historyView" aria-label="Lịch sử giao dịch" style="position: relative;">
+        <div class="history-filter-bar" id="historyFilterBar">
+            <div class="filter-buttons-row">
+                <button type="button" class="filter-btn" id="filterCalendarBtn">
+                    <span class="filter-btn-text">📅 Lịch</span>
+                </button>
+                <button type="button" class="filter-btn" id="filterDayBtn">Hôm nay</button>
+                <button type="button" class="filter-btn" id="filterWeekBtn">Tuần</button>
+                <button type="button" class="filter-btn" id="filterMonthBtn">Tháng</button>
+            </div>
+
+            <!-- Custom Calendar Popover -->
+            <div class="custom-calendar-popover is-hidden" id="customCalendarPopover">
+                <div class="calendar-header">
+                    <button type="button" class="cal-nav-btn" id="calPrevMonth">◀</button>
+                    <span class="cal-month-year" id="calMonthYear">Tháng --/----</span>
+                    <button type="button" class="cal-nav-btn" id="calNextMonth">▶</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                </div>
+                <div class="calendar-days" id="calendarDaysGrid"></div>
+                <div class="calendar-footer">
+                    <button type="button" class="cal-today-btn" id="calTodayBtn">Hôm nay</button>
+                </div>
+            </div>
+
+            <!-- Integrated Stats Area -->
+            <div class="history-stats-panel" id="historyStatsPanel">
+                <div class="stats-summary-line">
+                    <div class="stats-summary-item">
+                        <span class="stats-revenue-label">Doanh thu:</span>
+                        <strong class="stats-revenue-val" id="statsRevenueVal">0đ</strong>
+                    </div>
+                    <div class="stats-summary-item">
+                        <span class="stats-orders-label">Số đơn:</span>
+                        <strong class="stats-orders-val" id="statsOrdersVal">0</strong>
+                    </div>
+                </div>
+                <div class="stats-products-tags" id="statsProductsTags">
+                    <!-- Dynamic tag elements will go here -->
+                </div>
+            </div>
+        </div>
+        <div class="history-list" id="historyList"></div>
+        <button class="history-floating-clear" id="historyClear" aria-label="Xóa tất cả lịch sử">
+            <span class="clear-icon">🗑️</span>
+            <span class="clear-text">Xóa hết</span>
+        </button>
+    </section>
+
+<!-- Fixed bottom menu -->
+<div class="fixed-menu">
+    <button class="menu-item" id="tablesBtn">Bàn</button>
+    <button class="menu-item" id="historyBtn">Lịch sử</button>
+    <button class="menu-item" id="settingsBtn">Cài đặt <span class="status-dot menu-status-dot"></span></button>
+</div>
+
+    <section class="settings-view is-hidden" id="settingsView" aria-label="Cài đặt">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3>Cài đặt Firebase Sync</h3>
+            </div>
+            <div class="settings-body">
+                <div class="settings-group">
+                    <label for="fbConfig">Cấu hình Firebase (JSON / JS Code)</label>
+                    <textarea id="fbConfig" placeholder="Dán đoạn mã firebaseConfig vào đây..."></textarea>
+                </div>
+                <div class="settings-group">
+                    <label for="fbPath">Đường dẫn dữ liệu (Node Path)</label>
+                    <input type="text" id="fbPath" value="shopData" placeholder="shopData">
+                </div>
+                <div class="settings-status" id="settingsStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Chưa cấu hình đồng bộ</span>
+                </div>
+                <button class="settings-save-btn" id="settingsSaveBtn" type="button">Lưu Cấu Hình</button>
+                <button class="settings-lock-btn" id="settingsLockBtn" type="button">🔐 Khóa Ứng Dụng</button>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Admin Password Modal -->
+    <div id="passwordModal" class="pw-modal is-hidden">
+        <div class="pw-modal-content">
+            <div class="pw-modal-header">
+                <h4>🔐 Xác thực Quản trị</h4>
+                <p>Vui lòng nhập mật khẩu để truy cập ứng dụng</p>
+            </div>
+            <div class="pw-modal-body">
+                <input type="password" id="adminPasswordInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="******">
+                <div id="pwErrorMsg" class="pw-error-msg is-hidden">Mật khẩu không chính xác!</div>
+            </div>
+            <div class="pw-modal-footer">
+                <button id="cancelPasswordBtn" class="pw-btn pw-cancel-btn" style="display: none;">Hủy</button>
+                <button id="submitPasswordBtn" class="pw-btn pw-submit-btn">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="./tinhtiennhanh-settings.js?v=20260521-15"></script>
+<script src="./tinhtiennhanh_order.js?v=20260521-15"></script>
+<script src="./tinhtiennhanh_table.js?v=20260521-15"></script>
+<script src="./tinhtiennhanh-history.js?v=20260521-15"></script>
+</body>
+</html>
