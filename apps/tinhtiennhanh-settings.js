@@ -112,7 +112,10 @@
             const paidVal = localStorage.getItem(paidKey);
             if (orderVal) {
                 try {
-                    state.orders[id] = JSON.parse(orderVal);
+                    const parsed = JSON.parse(orderVal);
+                    if (parsed !== null) {
+                        state.orders[id] = parsed;
+                    }
                 } catch(e) {}
             }
             if (paidVal) {
@@ -144,7 +147,9 @@
 
         if (state.orders) {
             Object.entries(state.orders).forEach(([id, val]) => {
-                localStorage.setItem(`fastFoodCalculatorOrder:${id}`, JSON.stringify(val));
+                if (val !== null && val !== undefined) {
+                    localStorage.setItem(`fastFoodCalculatorOrder:${id}`, JSON.stringify(val));
+                }
             });
         }
         if (state.paid) {
@@ -227,8 +232,12 @@
             }
 
             const localVal = local.orders ? local.orders[id] : undefined;
-            const serverVal = server.orders ? server.orders[id] : undefined;
-            const baseVal = base.orders ? base.orders[id] : undefined;
+            // Firebase converts numeric-keyed objects to arrays, returning null for missing slots.
+            // Normalize null → undefined so null slots don't count as "server has data".
+            const rawServerVal = server.orders ? server.orders[id] : undefined;
+            const serverVal = rawServerVal === null ? undefined : rawServerVal;
+            const rawBaseVal = base.orders ? base.orders[id] : undefined;
+            const baseVal = rawBaseVal === null ? undefined : rawBaseVal;
 
             if (localVal !== undefined && serverVal !== undefined) {
                 if (JSON.stringify(localVal) !== JSON.stringify(baseVal)) {
@@ -609,6 +618,33 @@
         }, 1500);
     }
 
+    // Stamps the current order for tableId into lastSync (base state) BEFORE it is
+    // deleted locally. This ensures the 3-way merge later sees:
+    //   local=undefined, server=oldOrder, base=oldOrder  →  "Client deleted it"  (correct)
+    // instead of:
+    //   local=undefined, server=oldOrder, base=undefined  →  "Server added it"  (restores order = bug)
+    function markOrderDeleted(tableId) {
+        const nodePath = localStorage.getItem(configKeys.nodePath) || "shopData";
+        const lastSyncKey = `fastFoodCalculatorLastSync:${nodePath}`;
+        try {
+            let base = { orders: {}, paid: {}, history: [], calcMode: "auto" };
+            const baseStr = localStorage.getItem(lastSyncKey);
+            if (baseStr) { base = JSON.parse(baseStr) || base; }
+            if (!base.orders) base.orders = {};
+
+            const orderStr = localStorage.getItem(`fastFoodCalculatorOrder:${tableId}`);
+            if (orderStr) {
+                const parsed = JSON.parse(orderStr);
+                if (parsed !== null) {
+                    base.orders[tableId] = parsed;
+                    localStorage.setItem(lastSyncKey, JSON.stringify(base));
+                }
+            }
+        } catch (e) {
+            console.error("markOrderDeleted failed:", e);
+        }
+    }
+
     function initUI() {
         settingsBtn = document.getElementById("settingsBtn");
         configInput = document.getElementById("fbConfig");
@@ -744,7 +780,8 @@
         syncToCloud,
         pullFromGitHub: pullFromFirebase,
         startPolling: startIdleCheck,
-        stopPolling: stopIdleCheck
+        stopPolling: stopIdleCheck,
+        markOrderDeleted
     };
 
     function init() {
