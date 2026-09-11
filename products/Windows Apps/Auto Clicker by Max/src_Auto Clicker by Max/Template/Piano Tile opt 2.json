@@ -1,0 +1,36 @@
+﻿{
+  "Name": "Piano Tile opt 2",
+  "IsCombine": false,
+  "LoopCount": 0,
+  "RandomIntervalMs": 0,
+  "RandomJitterPx": 0,
+  "DefaultWindowTitle": "",
+  "DefaultProcessName": "",
+  "DefaultRelativeToWindow": false,
+  "Steps": [
+    {
+      "Id": "3635e5f8c7434df8b5389a7e3b7d1650",
+      "Name": "Step",
+      "ActionType": 10,
+      "Enabled": true,
+      "IsChecked": true,
+      "StartX": 669,
+      "StartY": 696,
+      "EndX": 911,
+      "EndY": 701,
+      "HoldMs": 0,
+      "DelayMs": 0,
+      "RepeatCount": 1,
+      "ScrollStep": 0,
+      "KeyData": "Space",
+      "ColorHex": "#090A0B",
+      "Tolerance": 25,
+      "IfTrueStep": -2,
+      "IfFalseStep": 0,
+      "WindowTitle": "Magic Tiles 3 | Play Online For Free On Magictiles.org - Google Chrome",
+      "ProcessName": "chrome",
+      "RelativeToWindow": true,
+      "Note": ""
+    }
+  ]
+}

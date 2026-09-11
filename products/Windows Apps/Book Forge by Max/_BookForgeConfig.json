@@ -1,0 +1,21 @@
+{
+  "_comment": "BookForge Studio Persistent Configuration",
+  "ExtractSourcePath": "D:\\Mine\\Acting\\Test\\Respect For Acting Expanded Edition.pdf",
+  "OutputLocationMode": "SameAsSource",
+  "OutputCustomFolder": "",
+  "SplitH2H3": true,
+  "Threshold": "25,000 characters (Golden Standard)",
+  "ExtractImages": true,
+  "ScaffoldBible": true,
+  "PublishFolderPath": "",
+  "SourceTranslated": true,
+  "SourceOriginal": true,
+  "PaperSize": "A5",
+  "FontFamily": "Lora (Recommended)",
+  "BindingMode": "Print",
+  "IncludeTranslatorNote": true,
+  "SelectedTab": 0,
+  "IsDarkTheme": true,
+  "WindowWidth": 660,
+  "WindowHeight": 780
+}
