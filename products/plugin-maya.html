@@ -63,11 +63,16 @@
                         <a
                             class="tools-download-btn"
                             href="Plugins/Maya%20Tools.zip"
-                            download="Maya Tools.zip">
+                            download="Maya Tools.zip"
+                            data-product-id="plugin-maya"
+                            data-download-url="Plugins/Maya Tools.zip"
+                            data-download-name="Maya Tools.zip"
+                            data-direct-download="true">
                             <span class="tools-download-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.29a1 1 0 1 1 1.4 1.41l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.41L11 12.59V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"/></svg>
                             </span>
                             <span data-i18n="toolsPage.maya.downloadLabel">Tải Xuống .ZIP</span>
+                            <span class="tools-download-badge"><span class="product-download-count">0</span> lượt tải</span>
                         </a>
                     </div>
                 </section>
@@ -79,6 +84,7 @@
 <div id="sharedContactRoot"></div>
 <div id="sharedBookNowRoot"></div>
 
+<script src="../common/shared-download-counter.js?v=20260911-1"></script>
 <script>
 if (typeof initSharedPage === 'function') {
     initSharedPage({

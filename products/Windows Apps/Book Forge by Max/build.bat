@@ -107,6 +107,12 @@ if exist "%~dp0setup.bat" (
 if exist "%~dp0README.txt" (
     copy /y "%~dp0README.txt" "!DIST_FOLDER!\" >nul
 )
+if exist "%~dp0README.md" (
+    copy /y "%~dp0README.md" "!DIST_FOLDER!\" >nul
+)
+if exist "%~dp0Book Forge by Max.md" (
+    copy /y "%~dp0Book Forge by Max.md" "!DIST_FOLDER!\" >nul
+)
 
 :: Copy script folder recursively
 if exist "%~dp0src_Book Forge by Max\script" (

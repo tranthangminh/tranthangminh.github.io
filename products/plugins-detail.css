@@ -212,6 +212,21 @@ body {
     fill: currentColor;
 }
 
+.tools-download-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    margin-left: 6px;
+    border-radius: var(--border-radius-full);
+    background: var(--bg-overlay);
+    border: 1px solid var(--border-color);
+    font-size: var(--font-xs);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text-on-accent);
+}
+
 .tools-detail-title {
     margin: 0;
     font-size: 1rem;
