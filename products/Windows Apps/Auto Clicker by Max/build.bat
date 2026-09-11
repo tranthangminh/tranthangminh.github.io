@@ -84,13 +84,13 @@ for /d %%D in ("%~dp0src_*") do (
         set /a SUCCESS_COUNT+=1
         echo !GREEN![OK] Successfully built: "%~dp0!APP_NAME!.exe"!RESET!
 
-        :: Package exe into zip (output goes one level up, next to the project folder)
-        echo [*] Packaging into zip...
-        powershell -NoProfile -Command "Compress-Archive -Path '%~dp0!APP_NAME!.exe' -DestinationPath '%~dp0..\!APP_NAME!.zip' -Force"
+        :: Copy exe one level up (next to the project folder)
+        echo [*] Copying exe to parent folder...
+        copy /Y "%~dp0!APP_NAME!.exe" "%~dp0..\" >nul
         if !ERRORLEVEL! equ 0 (
-            echo !GREEN![OK] Packaged: "%~dp0..\!APP_NAME!.zip"!RESET!
+            echo !GREEN![OK] Copied: "%~dp0..\!APP_NAME!.exe"!RESET!
         ) else (
-            echo !YELLOW![WARN] Zip packaging failed for "!APP_NAME!"!RESET!
+            echo !YELLOW![WARN] Copy failed for "!APP_NAME!"!RESET!
         )
     ) else (
         echo !RED![ERROR] Build failed for "!APP_NAME!"!RESET!
