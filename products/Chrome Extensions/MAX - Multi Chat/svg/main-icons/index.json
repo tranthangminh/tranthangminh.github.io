@@ -1,0 +1,27 @@
+{
+  "_comment": "Danh sách icon cho Main Group selector. Thêm tên file SVG mới vào đây (không cần .svg) để extension tự nhận.",
+  "icons": [
+    "Achievement",
+    "Book",
+    "Business",
+    "Chart",
+    "Chat",
+    "Code",
+    "Creative",
+    "Folder",
+    "Game",
+    "Health",
+    "Idea",
+    "Location",
+    "Money",
+    "Movie",
+    "Music",
+    "Personal",
+    "Photo",
+    "Quick",
+    "Robot",
+    "Science",
+    "Shopping",
+    "Star"
+  ]
+}

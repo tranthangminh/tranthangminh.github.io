@@ -41,7 +41,7 @@
             },
             tool: {
                 windowsApps: 'Windows Apps',
-                chromeExtension: 'Chrome Extension',
+                chromeExtension: 'Chrome Extensions',
                 books: 'Sách',
                 plugins: 'Plugins',
                 photoshop: 'Tool Photoshop',
@@ -75,7 +75,8 @@
             email: 'Email: maxiechen96@gmail.com',
             moreSocial: 'Xem thêm mạng xã hội',
             copyright: 'Bản quyền 2026 Trần Thắng Minh. Bảo lưu mọi quyền.',
-            signatureAlt: 'Chữ ký'
+            signatureAlt: 'Chữ ký',
+            visitsPrefix: 'Số lượt truy cập:'
         },
         toolsPage: {
             cheatTables: {
@@ -115,11 +116,11 @@
             title: 'Sản Phẩm',
             breadcrumbHome: 'Trang Chủ',
             breadcrumbProducts: 'Sản Phẩm',
-            summary: 'Bộ sưu tập các ứng dụng Windows, tiện ích mở rộng Chrome Extension và Plugins hỗ trợ thiết kế, đồ họa và tự động hóa quy trình làm việc.',
+            summary: 'Bộ sưu tập các ứng dụng Windows, tiện ích mở rộng Chrome Extensions và Plugins hỗ trợ thiết kế, đồ họa và tự động hóa quy trình làm việc.',
             tabs: {
                 all: 'Tất Cả',
                 windowsApps: 'Windows Apps',
-                chromeExtension: 'Chrome Extension',
+                chromeExtension: 'Chrome Extensions',
                 books: 'Sách',
                 plugins: 'Plugins'
             },

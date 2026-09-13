@@ -1,0 +1,137 @@
+.capture-history-section {
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* History Grid Layout */
+.capture-history-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.capture-history-grid.cols-1 {
+  grid-template-columns: 1fr !important;
+}
+
+.capture-history-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.capture-history-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.capture-history-header,
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.capture-history-title-group,
+.history-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.capture-history-title,
+.history-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #f8fafc);
+  letter-spacing: 0.2px;
+}
+
+.capture-history-count-badge,
+.history-count-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-full);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.clear-history-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.clear-history-btn:hover {
+  color: var(--c-red);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* [C9 Fix] Video recording placeholder (blob URL already revoked) */
+.rec-video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  min-height: 72px;
+  background: rgba(6, 182, 212, 0.06);
+  border-radius: var(--border-radius-sm);
+  color: var(--accent-primary);
+}
+
+.rec-video-placeholder svg {
+  width: 26px;
+  height: 26px;
+  opacity: 0.7;
+}
+
+.rec-video-label {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-secondary, #94a3b8);
+  letter-spacing: 0.3px;
+}
+
+.rec-video-date {
+  font-size: 8px;
+  font-weight: 400;
+  color: var(--text-tertiary, #64748b);
+  letter-spacing: 0.2px;
+}
+
+/* File Access Permission Warning Banner */
+.file-access-warning {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px dashed rgba(239, 68, 68, 0.3);
+  padding: 10px 12px;
+  border-radius: var(--border-radius-md);
+  font-size: 11px;
+  color: #fca5a5;
+  line-height: 1.4;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.file-access-warning a {
+  color: #f87171;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.file-access-warning a:hover {
+  color: var(--c-red);
+}
+
+.file-access-warning.hidden {
+  display: none !important;
+}

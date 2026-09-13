@@ -1,0 +1,192 @@
+/* ============================================================
+   Version Changelog Modal — changelog.css
+   ============================================================ */
+
+.changelog-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  z-index: 900;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: var(--transition-fast);
+  opacity: 1;
+}
+
+.changelog-overlay.hidden {
+  display: none;
+}
+
+.changelog-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: calc(100% - 32px);
+  max-width: 600px;
+  max-height: 82vh;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  z-index: 9950;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+  box-shadow: var(--shadow-md);
+  opacity: 1;
+}
+
+.changelog-panel.hidden {
+  transform: translate(-50%, -50%) scale(0.92);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.changelog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  flex-shrink: 0;
+}
+
+.changelog-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.changelog-title {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  background: var(--text-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.changelog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+}
+
+.changelog-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-primary);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  padding: 12px;
+}
+
+.changelog-version-badge {
+  font-size: var(--font-xs);
+  font-weight: 700;
+  color: var(--text-primary);
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-tertiary);
+  width: fit-content;
+}
+
+.changelog-version-badge.current {
+  color: var(--text-on-accent);
+  background: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+}
+
+.changelog-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.changelog-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.changelog-type-badge {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  font-size: var(--font-md);
+  border-radius: var(--border-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  cursor: default;
+  transition: transform 0.15s ease;
+}
+
+.changelog-type-badge:hover {
+  transform: scale(1.12);
+}
+
+.changelog-type-badge.feature {
+  background: var(--c-green-bg);
+  color: var(--c-green);
+  border: 1px solid var(--c-green);
+}
+
+.changelog-type-badge.tweak {
+  background: var(--c-blue-bg);
+  color: var(--c-blue);
+  border: 1px solid var(--c-blue);
+}
+
+.changelog-type-badge.bug {
+  background: var(--c-red-bg);
+  color: var(--c-red);
+  border: 1px solid var(--c-red);
+}
+
+.changelog-type-badge.optimize {
+  background: var(--c-yellow-bg);
+  color: var(--c-yellow);
+  border: 1px solid var(--c-yellow);
+}
+
+.changelog-type-badge.other {
+  background: var(--c-purple-bg);
+  color: var(--c-purple);
+  border: 1px solid var(--c-purple);
+}
+
+.changelog-entry-text {
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  line-height: 1.45;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.changelog-entry-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.changelog-entry-title strong {
+  color: var(--text-primary);
+}
+
+.changelog-entry-details {
+  color: var(--text-secondary);
+  line-height: 1.45;
+}

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -11,33 +12,142 @@ namespace ModernAutoClicker.Info
 {
     public static class SvgFileRenderer
     {
-        private static string _lastLoadedPath = null;
-        private static DateTime _lastLoadedTime = DateTime.MinValue;
-        private static GraphicsPath _cachedPath = null;
-        private static RectangleF _cachedViewBox = RectangleF.Empty;
+        private class SvgData
+        {
+            public GraphicsPath Path;
+            public RectangleF ViewBox;
+        }
+
+        private static readonly Dictionary<string, SvgData> _svgCache =
+            new Dictionary<string, SvgData>(StringComparer.OrdinalIgnoreCase);
+
         private static Image _cachedAppIconImage = null;
         private static int _cachedAppIconSize = 0;
 
-        public static string FindAppSvgFile()
+        /// <summary>
+        /// Universal SVG renderer: renders directly from embedded resource inside exe, or from file on disk.
+        /// </summary>
+        public static Bitmap RenderSvg(string nameOrPath, int targetWidth, int targetHeight, Color? tintColor = null)
         {
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            List<string> searchPaths = new List<string>();
             try
             {
-                foreach (string d in Directory.GetDirectories(baseDir, "src_*"))
+                SvgData data;
+                if (!_svgCache.TryGetValue(nameOrPath, out data))
                 {
-                    searchPaths.Add(Path.Combine(d, "app.svg"));
-                    searchPaths.Add(Path.Combine(d, "Info", "app.svg"));
+                    XmlDocument doc = LoadSvgDocument(nameOrPath);
+                    if (doc != null)
+                    {
+                        data = ParseSvgDocument(doc);
+                        if (data != null)
+                        {
+                            _svgCache[nameOrPath] = data;
+                        }
+                    }
+                }
+
+                if (data == null || data.Path == null || data.ViewBox.Width <= 0 || data.ViewBox.Height <= 0)
+                {
+                    return null;
+                }
+
+                Bitmap bmp = new Bitmap(targetWidth, targetHeight);
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    g.Clear(Color.Transparent);
+
+                    float scaleX = targetWidth / data.ViewBox.Width;
+                    float scaleY = targetHeight / data.ViewBox.Height;
+                    float scale = Math.Min(scaleX, scaleY) * 0.92f;
+
+                    float drawW = data.ViewBox.Width * scale;
+                    float drawH = data.ViewBox.Height * scale;
+                    float offX = (targetWidth - drawW) / 2.0f - (data.ViewBox.X * scale);
+                    float offY = (targetHeight - drawH) / 2.0f - (data.ViewBox.Y * scale);
+
+                    using (Matrix mat = new Matrix())
+                    {
+                        mat.Translate(offX, offY);
+                        mat.Scale(scale, scale);
+
+                        using (GraphicsPath transformed = (GraphicsPath)data.Path.Clone())
+                        {
+                            transformed.Transform(mat);
+                            Color c = tintColor ?? Color.FromArgb(100, 102, 233);
+                            using (SolidBrush brush = new SolidBrush(c))
+                            {
+                                g.FillPath(brush, transformed);
+                            }
+                        }
+                    }
+                }
+                return bmp;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static XmlDocument LoadSvgDocument(string nameOrPath)
+        {
+            try
+            {
+                // 1. Try embedded resource inside exe
+                Assembly asm = Assembly.GetExecutingAssembly();
+                string[] resNames = asm.GetManifestResourceNames();
+                foreach (string res in resNames)
+                {
+                    if (res.Equals(nameOrPath, StringComparison.OrdinalIgnoreCase) ||
+                        res.EndsWith("." + nameOrPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        using (Stream s = asm.GetManifestResourceStream(res))
+                        {
+                            if (s != null)
+                            {
+                                XmlDocument d = new XmlDocument();
+                                d.Load(s);
+                                return d;
+                            }
+                        }
+                    }
+                }
+
+                // 2. Try file system
+                string path = nameOrPath;
+                if (!File.Exists(path))
+                {
+                    string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                    string p1 = Path.Combine(baseDir, nameOrPath);
+                    if (File.Exists(p1)) path = p1;
+                    else
+                    {
+                        string p2 = Path.Combine(baseDir, "Info", nameOrPath);
+                        if (File.Exists(p2)) path = p2;
+                        else
+                        {
+                            foreach (string d in Directory.GetDirectories(baseDir, "src_*"))
+                            {
+                                string p3 = Path.Combine(d, nameOrPath);
+                                if (File.Exists(p3)) { path = p3; break; }
+                                string p4 = Path.Combine(d, "Info", nameOrPath);
+                                if (File.Exists(p4)) { path = p4; break; }
+                            }
+                        }
+                    }
+                }
+
+                if (File.Exists(path))
+                {
+                    XmlDocument d = new XmlDocument();
+                    d.Load(path);
+                    return d;
                 }
             }
             catch { }
-            searchPaths.Add(Path.Combine(baseDir, "app.svg"));
-            searchPaths.Add(Path.Combine(baseDir, "Info", "app.svg"));
 
-            foreach (string p in searchPaths)
-            {
-                if (File.Exists(p)) return p;
-            }
             return null;
         }
 
@@ -46,6 +156,7 @@ namespace ModernAutoClicker.Info
             if (_cachedAppIconImage != null && _cachedAppIconSize == size)
                 return _cachedAppIconImage;
 
+            // Keep original app icon (.ico / image)
             try
             {
                 Icon ico = AppLogo.GetAppIcon();
@@ -61,136 +172,19 @@ namespace ModernAutoClicker.Info
             return null;
         }
 
-        public static string FindLogoFile()
-        {
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            List<string> searchPaths = new List<string>();
-            try
-            {
-                foreach (string d in Directory.GetDirectories(baseDir, "src_*"))
-                {
-                    searchPaths.Add(Path.Combine(d, "Info", "logo-MAX.svg"));
-                    searchPaths.Add(Path.Combine(d, "logo-MAX.svg"));
-                    searchPaths.Add(Path.Combine(d, "Info", "logo-MAX.png"));
-                    searchPaths.Add(Path.Combine(d, "logo-MAX.png"));
-                    searchPaths.Add(Path.Combine(d, "app.svg"));
-                }
-            }
-            catch { }
-            searchPaths.Add(Path.Combine(baseDir, "Info", "logo-MAX.svg"));
-            searchPaths.Add(Path.Combine(baseDir, "logo-MAX.svg"));
-            searchPaths.Add(Path.Combine(baseDir, "logo-MAX.png"));
-            searchPaths.Add(Path.Combine(baseDir, "app.svg"));
-
-            foreach (string p in searchPaths)
-            {
-                if (File.Exists(p)) return p;
-            }
-            return null;
-        }
-
         public static Bitmap RenderLogoFromFile(int targetWidth, int targetHeight, Color? tintColor = null)
         {
-            string filePath = FindLogoFile();
-            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-            {
-                // Fallback default
-                return AppLogo.RenderLogo(targetWidth, targetHeight, tintColor);
-            }
+            // Max Logo in Info tab: uses logo-MAX.svg
+            Bitmap bmp = RenderSvg("logo-MAX.svg", targetWidth, targetHeight, tintColor);
+            if (bmp != null) return bmp;
 
-            string ext = Path.GetExtension(filePath).ToLowerInvariant();
-            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".gif")
-            {
-                try
-                {
-                    using (Image img = Image.FromFile(filePath))
-                    {
-                        Bitmap bmp = new Bitmap(targetWidth, targetHeight);
-                        using (Graphics g = Graphics.FromImage(bmp))
-                        {
-                            g.SmoothingMode = SmoothingMode.AntiAlias;
-                            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                            g.Clear(Color.Transparent);
-
-                            float scale = Math.Min((float)targetWidth / img.Width, (float)targetHeight / img.Height);
-                            float w = img.Width * scale;
-                            float h = img.Height * scale;
-                            float x = (targetWidth - w) / 2.0f;
-                            float y = (targetHeight - h) / 2.0f;
-
-                            g.DrawImage(img, x, y, w, h);
-                        }
-                        return bmp;
-                    }
-                }
-                catch
-                {
-                    return AppLogo.RenderLogo(targetWidth, targetHeight, tintColor);
-                }
-            }
-
-            // SVG Parser
-            try
-            {
-                DateTime lastWrite = File.GetLastWriteTime(filePath);
-                if (_cachedPath == null || _lastLoadedPath != filePath || _lastLoadedTime != lastWrite)
-                {
-                    LoadSvgGeometry(filePath);
-                }
-
-                if (_cachedPath == null || _cachedViewBox.Width <= 0 || _cachedViewBox.Height <= 0)
-                {
-                    return AppLogo.RenderLogo(targetWidth, targetHeight, tintColor);
-                }
-
-                Bitmap bmp = new Bitmap(targetWidth, targetHeight);
-                using (Graphics g = Graphics.FromImage(bmp))
-                {
-                    g.SmoothingMode = SmoothingMode.AntiAlias;
-                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    g.Clear(Color.Transparent);
-
-                    float scaleX = targetWidth / _cachedViewBox.Width;
-                    float scaleY = targetHeight / _cachedViewBox.Height;
-                    float scale = Math.Min(scaleX, scaleY) * 0.92f;
-
-                    float drawW = _cachedViewBox.Width * scale;
-                    float drawH = _cachedViewBox.Height * scale;
-                    float offX = (targetWidth - drawW) / 2.0f - (_cachedViewBox.X * scale);
-                    float offY = (targetHeight - drawH) / 2.0f - (_cachedViewBox.Y * scale);
-
-                    using (Matrix mat = new Matrix())
-                    {
-                        mat.Translate(offX, offY);
-                        mat.Scale(scale, scale);
-
-                        using (GraphicsPath transformed = (GraphicsPath)_cachedPath.Clone())
-                        {
-                            transformed.Transform(mat);
-                            Color c = tintColor ?? Color.FromArgb(100, 102, 233);
-                            using (SolidBrush brush = new SolidBrush(c))
-                            {
-                                g.FillPath(brush, transformed);
-                            }
-                        }
-                    }
-                }
-                return bmp;
-            }
-            catch
-            {
-                return AppLogo.RenderLogo(targetWidth, targetHeight, tintColor);
-            }
+            return AppLogo.RenderLogo(targetWidth, targetHeight, tintColor);
         }
 
-        private static void LoadSvgGeometry(string filePath)
+        private static SvgData ParseSvgDocument(XmlDocument doc)
         {
-            XmlDocument doc = new XmlDocument();
-            doc.Load(filePath);
-
             XmlNode svgNode = doc.DocumentElement;
-            if (svgNode == null || svgNode.Name.ToLowerInvariant() != "svg") return;
+            if (svgNode == null || svgNode.Name.ToLowerInvariant() != "svg") return null;
 
             RectangleF viewBox = RectangleF.Empty;
             XmlAttribute vbAttr = svgNode.Attributes["viewBox"];
@@ -307,10 +301,10 @@ namespace ModernAutoClicker.Info
                 }
             }
 
-            _cachedPath = totalPath;
-            _cachedViewBox = viewBox;
-            _lastLoadedPath = filePath;
-            _lastLoadedTime = File.GetLastWriteTime(filePath);
+            SvgData result = new SvgData();
+            result.Path = totalPath;
+            result.ViewBox = viewBox;
+            return result;
         }
 
         private static bool IsElementNoneFill(XmlNode node, HashSet<string> noneFillClasses)

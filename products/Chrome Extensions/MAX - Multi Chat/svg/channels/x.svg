@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="loading-x-anim-0" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 24">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <rect width="24" height="24"/>
+  <path class="st0" d="M17.75,2.96h3.07l-6.7,7.66,7.88,10.42h-6.17l-4.83-6.32-5.53,6.32h-3.07l7.17-8.19L2,2.96h6.33l4.37,5.77,5.06-5.77ZM16.68,19.2h1.7L7.41,4.7h-1.83l11.09,14.5Z"/>
+</svg>

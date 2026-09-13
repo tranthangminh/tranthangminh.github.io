@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Harry Perfume - Tư Vấn Nhanh</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="panel.css">
+  <link rel="stylesheet" href="perfume/perfume.css">
+  <link rel="stylesheet" href="perfume/perfume-filter.css">
+  <link rel="stylesheet" href="perfume/perfume-preview.css">
+  <link rel="stylesheet" href="perfume/perfume-recent.css">
+  <link rel="stylesheet" href="news/news.css">
+  <link rel="stylesheet" href="news/news-detail.css">
+  <link rel="stylesheet" href="news/news-add.css">
+  <link rel="stylesheet" href="order/order.css">
+</head>
+<body>
+  <!-- Toast thông báo -->
+  <div id="toast" class="toast">
+    <span id="toastMsg">Đã copy vào bộ nhớ tạm!</span>
+  </div>
+
+  <!-- Header chứa Logo, Nút làm mới và Điều hướng Tab -->
+  <div class="header-container">
+    <button id="btnSecretAdmin" type="button" class="btn-secret-admin" title=""></button>
+    <div class="brand-row">
+      <div class="brand-header">
+        <span id="brandTitleLogo" class="brand-title-logo icon-mask" style="mask-image: url('svg/logo-full.svg'); -webkit-mask-image: url('svg/logo-full.svg');" title="Harry Perfume"></span>
+      </div>
+      <div class="header-right">
+        <div id="headerProgress" class="header-progress" style="display: none;">
+          <span id="progressLine1" class="progress-line1"></span>
+          <span id="progressLine2" class="progress-line2"></span>
+        </div>
+        <button id="btnRefresh" class="btn-refresh-icon" title="Làm mới dữ liệu" type="button">
+          <svg class="refresh-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path class="st0" d="M1,12C1,5.92,5.92,1,12,1c3.08.01,6.03,1.21,8.24,3.35l2.76,2.76"/>
+            <path class="st0" d="M23,1v6.11h-6.11"/>
+            <path class="st0" d="M23,12c0,6.08-4.92,11-11,11h0c-3.08-.01-6.03-1.21-8.24-3.35l-2.76-2.76"/>
+            <path class="st0" d="M1,23v-6.11h6.11"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <!-- Thanh Tab Điều Hướng -->
+    <div class="tab-row">
+      <button id="tabImport" class="tab-btn" type="button" style="display: none;">Nhập</button>
+      <button id="tabPerfume" class="tab-btn active" type="button">Nước Hoa</button>
+      <button id="tabNews" class="tab-btn" type="button">Văn Mẫu</button>
+      <button id="tabOrder" class="tab-btn" type="button">Đơn Hàng</button>
+    </div>
+  </div>
+
+  <!-- Nội dung Tab 0: Nhập -->
+  <div id="paneImport" class="tab-pane" style="display: none;">
+    <div style="padding: 20px 15px; text-align: center; color: var(--text-secondary); width: 100%; box-sizing: border-box;">
+      <h3 style="color: var(--gold-primary); margin-bottom: 8px;">📥 Tab Nhập Dữ Liệu</h3>
+      <p style="font-size: 12px; line-height: 1.5;">Khu vực quản trị nhập liệu dành riêng cho Quản Trị Viên.</p>
+    </div>
+  </div>
+
+  <!-- Nội dung Tab 1: Nước Hoa -->
+  <div id="panePerfume" class="tab-pane">
+    <div class="search-row">
+      <button id="btnBack" class="btn-back-header" title="Quay lại danh sách" type="button" style="display: none;">
+        <span class="back-icon">←</span>
+        <span class="back-text">Trở về</span>
+      </button>
+      <div class="search-wrapper">
+        <input type="text" id="searchBox" placeholder="Tìm kiếm nước hoa...">
+        <button id="btnClear" class="btn-clear" title="Xóa tìm kiếm" type="button">&times;</button>
+      </div>
+      <button id="btnFilterToggle" class="btn-filter-toggle" title="Bộ lọc giá" type="button">
+        <svg class="filter-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <line class="st0" x1="5" y1="1" x2="5" y2="23"/>
+          <polyline class="st0" points="9 15 5 23 1 15"/>
+          <line class="st0" x1="13" y1="1" x2="23" y2="1"/>
+          <line class="st0" x1="13" y1="6.5" x2="21" y2="6.5"/>
+          <line class="st0" x1="13" y1="12" x2="18" y2="12"/>
+          <line class="st0" x1="13" y1="23" x2="15" y2="23"/>
+          <line class="st0" x1="13" y1="17.5" x2="16" y2="17.5"/>
+        </svg>
+      </button>
+      <button id="btnTogglePrice" class="btn-toggle-price" title="Ẩn/Hiện giá" type="button">
+        <svg class="money-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21.56 24">
+          <path class="st0" d="M13.22,10.17c0,1.69-2.74,3.06-6.11,3.06s-6.11-1.37-6.11-3.06M13.22,10.17c0-1.69-2.74-3.06-6.11-3.06s-6.11,1.37-6.11,3.06M13.22,10.17v4.89M1,10.17v4.89M20.56,4.06c0-1.69-2.74-3.06-6.11-3.06-2.42,0-4.51.7-5.5,1.72M20.56,4.06c0,1.13-1.23,2.12-3.06,2.65M20.56,4.06v10.39c0,.9-1.23,1.69-3.06,2.12M20.56,9.56c0,.92-1.28,1.73-3.18,2.15M13.22,15.06c0,1.69-2.74,3.06-6.11,3.06s-6.11-1.37-6.11-3.06M13.22,15.06v4.89c0,1.69-2.74,3.06-6.11,3.06s-6.11-1.37-6.11-3.06v-4.89"/>
+        </svg>
+      </button>
+
+      <!-- Bộ lọc giá & dung tích (Nằm bên trong search-row) -->
+      <div id="filterPanel" class="filter-panel" style="display: none;">
+        <div class="filter-sizes-row">
+          <button type="button" class="filter-size-btn" data-size="Full">Full</button>
+          <button type="button" class="filter-size-btn" data-size="Tester">Tester</button>
+          <button type="button" class="filter-size-btn" data-size="5ml">5ml</button>
+          <button type="button" class="filter-size-btn" data-size="10ml">10ml</button>
+          <button type="button" class="filter-size-btn" data-size="20ml">20ml</button>
+          <button type="button" class="filter-size-btn" data-size="Gốc">Gốc</button>
+        </div>
+        <div class="filter-inputs-row">
+          <span class="filter-label">Giá từ:</span>
+          <input type="text" id="filterMinPrice" placeholder="0">
+          <span class="filter-label">đến</span>
+          <input type="text" id="filterMaxPrice" placeholder="0">
+          <button type="button" id="btnClearFilter" class="btn-clear-filter" title="Xóa bộ lọc">✕</button>
+        </div>
+        <div class="filter-genders-row">
+          <button type="button" class="filter-gender-btn" data-gender="Nam">
+            <img src="svg/male.svg" class="filter-btn-icon" alt="Nam"> Nam
+          </button>
+          <button type="button" class="filter-gender-btn" data-gender="Nữ">
+            <img src="svg/female.svg" class="filter-btn-icon" alt="Nữ"> Nữ
+          </button>
+          <button type="button" class="filter-gender-btn" data-gender="Unisex">
+            <img src="svg/unisex.svg" class="filter-btn-icon" alt="Unisex"> Unisex
+          </button>
+        </div>
+        <div class="filter-tags-row">
+          <button type="button" class="filter-tag-btn" data-tag="xuan">🌸 Xuân</button>
+          <button type="button" class="filter-tag-btn" data-tag="ha">☀️ Hạ</button>
+          <button type="button" class="filter-tag-btn" data-tag="thu">🍂 Thu</button>
+          <button type="button" class="filter-tag-btn" data-tag="dong">❄️ Đông</button>
+          <button type="button" class="filter-tag-btn" data-tag="ngay">🌤 Ngày</button>
+          <button type="button" class="filter-tag-btn" data-tag="dem">🌙 Đêm</button>
+        </div>
+      </div>
+
+      <!-- Thanh tóm tắt bộ lọc đang hoạt động (Nằm bên trong search-row) -->
+      <div id="filterSummaryBar" class="filter-summary-bar" style="display: none;">
+        <span class="summary-icon">⚡</span>
+        <div id="filterSummaryBadges" class="filter-summary-badges"></div>
+        <button type="button" id="btnResetSummary" class="btn-reset-summary" title="Xóa tất cả bộ lọc">Xóa hết</button>
+      </div>
+    </div>
+
+    <!-- Dòng hiển thị số lượng sản phẩm -->
+    <div id="searchCountBar" class="search-count-bar" style="display: none;">
+      <span class="count-text">Hiển thị <span id="countCurrent">0</span> / <span id="countTotal">0</span> sản phẩm</span>
+    </div>
+
+    <div class="perfume-scroll-wrapper">
+      <!-- Trạng thái Loading -->
+      <div id="loadingView" class="loading-container" style="display: none;">
+        <p>Đang cập nhật...</p>
+      </div>
+
+      <!-- Trạng thái Lỗi kết nối -->
+      <div id="errorView" class="error-container" style="display: none;">
+        <span class="error-icon">⚠️</span>
+        <p id="errorText">Không thể tải dữ liệu từ Google Sheet.</p>
+        <button id="btnRetry" class="btn btn-retry">Thử lại</button>
+      </div>
+
+      <!-- Danh sách kết quả tìm kiếm -->
+      <div id="searchResult" class="search-results"></div>
+
+      <!-- Chi tiết sản phẩm -->
+      <div id="detailView" class="detail-view" style="display: none;">
+        <!-- Card sản phẩm 2 cột -->
+        <div class="product-card">
+          <div class="product-header-row">
+            <h3 id="prodName">Tên sản phẩm</h3>
+          </div>
+
+          <div class="product-meta-row">
+            <span id="prodMetaTonKho" class="product-meta meta-tonkho" style="display:none;"></span>
+            <span id="prodMetaCountry" class="product-meta meta-country" style="display:none;"></span>
+            <span id="prodMetaYear" class="product-meta meta-year" style="display:none;"></span>
+          </div>
+          
+          <div class="product-body-columns">
+            <!-- Cột 1: Ảnh sản phẩm (Trái) -->
+            <div id="prodImgContainer" class="product-img-wrapper"></div>
+            
+            <!-- Cột 2: Các tầng hương (Phải) -->
+            <div class="product-scent-info">
+              <div class="scent-row" id="rowScentMain">
+                <span class="scent-label">Hương chính:</span>
+                <span id="scentMain" class="scent-value">-</span>
+              </div>
+              <div class="scent-row" id="rowScentTop">
+                <span class="scent-label">Hương đầu:</span>
+                <span id="scentTop" class="scent-value">-</span>
+              </div>
+              <div class="scent-row" id="rowScentMiddle">
+                <span class="scent-label">Hương giữa:</span>
+                <span id="scentMiddle" class="scent-value">-</span>
+              </div>
+              <div class="scent-row" id="rowScentBase">
+                <span class="scent-label">Hương cuối:</span>
+                <span id="scentBase" class="scent-value">-</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Khối hiển thị mùi tương tự -->
+          <div id="similarBlock" class="similar-block" style="display: none;">
+            <span class="scent-label">✨ Mùi tương tự:</span>
+            <div id="similarList" class="similar-list"></div>
+          </div>
+
+          <!-- Khối Tags Mùa & Thời điểm -->
+          <div id="tagsBlock" class="tags-block">
+            <span id="tagXuan"  class="season-tag tag-xuan">🌸 Xuân</span>
+            <span id="tagHa"    class="season-tag tag-ha">☀️ Hạ</span>
+            <span id="tagThu"   class="season-tag tag-thu">🍂 Thu</span>
+            <span id="tagDong"  class="season-tag tag-dong">❄️ Đông</span>
+            <span id="tagNgay"  class="season-tag tag-ngay">🌤 Ngày</span>
+            <span id="tagDem"   class="season-tag tag-dem">🌙 Đêm</span>
+          </div>
+        </div>
+        
+        <!-- Lưới giá bán nhanh -->
+        <div class="price-section">
+          <div class="section-header">
+            <h4>Giá bán nhanh (Click để copy)</h4>
+          </div>
+          <div class="price-rows-container">
+            <div class="price-row" id="rowPriceFull">
+              <span class="price-row-label">Full</span>
+              <div class="price-grid" id="gridPriceFull"></div>
+            </div>
+            <div class="price-row" id="rowPriceTester">
+              <span class="price-row-label">Tester</span>
+              <div class="price-grid" id="gridPriceTester"></div>
+            </div>
+            <div class="price-row" id="rowPriceChiet">
+              <span class="price-row-label">Chiết</span>
+              <div class="price-grid" id="gridPriceChiet"></div>
+            </div>
+            <div class="price-row" id="rowPriceGoc" style="display: none;">
+              <span class="price-row-label">Gốc</span>
+              <div class="price-grid" id="gridPriceGoc"></div>
+            </div>
+          </div>
+          
+          <div class="price-consultation-area" id="priceConsultationArea" style="display: none;">
+            <div class="consultation-section" id="consultationSection">
+              <div class="warning-note" id="warningConsultation" style="display: none;">⚠️ Data thiếu, Check trước khi gửi khách</div>
+              <div class="section-header">
+                <h4 id="titleConsultation">Nội dung tư vấn</h4>
+                <button class="btn-copy-small" id="btnCopyConsultation" title="Copy nội dung" type="button">Sao chép</button>
+              </div>
+              <div id="boxConsultation" class="box-content"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dải lịch sử xem gần đây -->
+    <div id="recentBar" class="recent-bar" style="display: none;">
+      <div class="recent-bar-label">
+        <img src="svg/recent.svg" class="recent-svg-icon" alt="Xem gần đây">
+        <span>Xem<br>gần đây</span>
+      </div>
+      <div id="recentList" class="recent-list"></div>
+    </div>
+  </div>
+
+  <!-- Nội dung Tab 2: Tin Nhanh -->
+  <div id="paneNews" class="tab-pane" style="display: none;">
+    <!-- Phần trên: Lưới các thẻ tiêu đề -->
+    <div class="news-tags-scroll-wrapper">
+      <div class="news-tags-grid" id="newsTagsGrid"></div>
+    </div>
+    
+    <!-- Phần dưới: Nội dung chi tiết tin nhanh -->
+    <div class="news-detail-card">
+      <div class="news-detail-header">
+        <h4 id="newsDetailTitle">-</h4>
+        <div class="news-detail-actions">
+          <button class="btn-edit-small" id="btnEditNews" title="Sửa thẻ này" type="button" style="display: none;">Sửa</button>
+          <button class="btn-delete-small" id="btnDeleteNews" title="Xóa thẻ này" type="button" style="display: none;">Xóa</button>
+          <button class="btn-copy-small" id="btnCopyNews" title="Copy nội dung" type="button">Sao chép</button>
+        </div>
+      </div>
+      <div class="news-detail-content-row">
+        <div class="news-detail-body" id="newsDetailBody"></div>
+        <div id="newsDetailImgContainer" class="news-detail-img-wrapper"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nội dung Tab 3: Đơn Hàng -->
+  <div id="paneOrder" class="tab-pane" style="display: none;">
+    <div class="order-container">
+      <!-- Toolbar tìm kiếm & Thêm SP (Pinned Top) -->
+      <div class="order-toolbar">
+        <div class="order-search-wrapper">
+          <input type="text" id="orderSearchInput" class="order-search-input" placeholder="🔍 Tìm SP thêm vào đơn (tên, mùi hương)..." autocomplete="off">
+          <button type="button" id="orderSearchClear" class="order-search-clear">&times;</button>
+          <div id="orderSearchDropdown" class="order-search-dropdown"></div>
+        </div>
+        <button type="button" id="btnOrderAddManual" class="btn-order-add-manual" title="Thêm sản phẩm ngoài kho (dùng 1 lần, không cần ảnh)">
+          <span>+ SP Ngoài</span>
+        </button>
+      </div>
+
+      <!-- Scrollable Body: Chỉ danh sách SP (Cuộn độc lập) -->
+      <div class="order-body-scroll">
+        <!-- Giỏ hàng rỗng -->
+        <div id="orderEmptyCart" class="order-empty-cart">
+          <span class="order-empty-icon">🛒</span>
+          <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">Chưa có sản phẩm nào trong đơn</p>
+          <p style="margin: 4px 0 0; font-size: 11px; color: #888;">Gõ tìm kiếm ở trên hoặc bấm "+ SP Ngoài" để thêm món</p>
+        </div>
+
+        <!-- Danh sách thẻ sản phẩm (2 Hàng) -->
+        <div id="orderItemList" class="order-item-list"></div>
+      </div>
+
+      <!-- FIXED FOOTER: Ghim đáy cố định (Thông tin khách hàng & Chi tiết thanh toán) -->
+      <div class="order-footer-fixed">
+        <!-- Khối Thông Tin Khách Hàng -->
+        <div class="order-customer-box">
+          <div class="order-box-title">👤 Thông Tin Khách Hàng</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <input type="text" id="orderCustomerName" class="order-input-field" placeholder="Tên">
+            <input type="text" id="orderCustomerPhone" class="order-input-field" placeholder="Số điện thoại" maxlength="15">
+          </div>
+          <input type="text" id="orderCustomerAddress" class="order-input-field" placeholder="Địa chỉ">
+        </div>
+
+        <!-- Khối Tổng Tiền & Chiết Khấu -->
+        <div class="order-summary-box">
+          <!-- Dòng 1: Tổng chưa giảm giá -->
+          <div class="order-summary-row">
+            <span>Tổng chưa giảm giá:</span>
+            <span id="orderSummaryRawTotal" style="font-weight: 700; color: var(--text-primary);">0đ</span>
+          </div>
+
+          <!-- Dòng 2: Chiết khấu sản phẩm (ẩn khi = 0, hiện khi > 0) -->
+          <div class="order-summary-row" id="orderSummaryProductDiscountRow" style="display: none;">
+            <span>Chiết khấu sản phẩm:</span>
+            <span id="orderSummaryProductDiscount" style="font-weight: 600; color: var(--c-green);">- 0đ</span>
+          </div>
+
+          <!-- Dòng 3: Chiết khấu hạng thẻ (Thành viên cũ) -->
+          <div class="order-summary-row">
+            <span>Chiết khấu hạng thẻ:</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <select id="orderMemberDiscountSelect" class="order-member-discount-select" title="Hạng thẻ thành viên">
+                <option value="0" selected>0%</option>
+                <option value="2">2%</option>
+                <option value="3">3%</option>
+                <option value="4">4%</option>
+                <option value="5">5%</option>
+                <option value="6">6%</option>
+              </select>
+              <span id="orderMemberDiscountMoney" style="font-size: 11.5px; font-weight: 600; color: var(--c-green); min-width: 45px; text-align: right;">- 0đ</span>
+            </div>
+          </div>
+
+          <!-- Dòng 4: Khuyến mãi (+ Thêm) -->
+          <div class="order-summary-row">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span>Khuyến mãi:</span>
+              <button type="button" id="btnOrderAddPromo" class="btn-order-add-promo">+ Thêm</button>
+            </div>
+            <span id="orderPromoAppliedSummary" class="order-promo-summary">- 0đ</span>
+          </div>
+          <div id="orderPromoTagsContainer" class="order-promo-tags" style="display: none;"></div>
+
+          <!-- Dòng 5: Khuyến mãi khác (ở cuối cùng các khuyến mãi) -->
+          <div class="order-summary-row">
+            <span>Khuyến mãi khác:</span>
+            <div class="order-discount-input-wrap">
+              <div class="segmented-toggle-group">
+                <button type="button" id="btnOrderDiscountPct" class="btn-segmented-toggle active">%</button>
+                <button type="button" id="btnOrderDiscountVnd" class="btn-segmented-toggle">VNĐ</button>
+              </div>
+              <input type="text" id="orderDiscountInput" class="order-discount-input" placeholder="0">
+            </div>
+          </div>
+
+          <!-- Dòng 6: Phí giao hàng -->
+          <div class="order-summary-row">
+            <span>Phí giao hàng:</span>
+            <div class="order-shipping-input-wrap">
+              <span id="orderShippingBadge" class="badge-freeship">Freeship</span>
+              <input type="text" id="orderShippingInput" class="order-shipping-input" placeholder="0" value="0">
+            </div>
+          </div>
+
+          <!-- Dòng 7: Thành tiền -->
+          <div class="order-summary-row total-row">
+            <span>THÀNH TIỀN:</span>
+            <span id="orderSummaryGrandTotal" class="order-highlight-price">0đ</span>
+          </div>
+
+          <!-- Các nút hành động -->
+          <div class="order-actions-row">
+            <button type="button" id="btnOrderReset" class="btn-order-reset" title="Làm mới giỏ hàng">
+              <span>✕ Đơn mới</span>
+            </button>
+            <button type="button" id="btnOrderCreateInvoice" class="btn-order-create-invoice">
+              <span>⚡ TẠO ĐƠN XÁC NHẬN</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Thêm Thẻ Mới (Lưu Local) -->
+  <div id="addCardModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Thêm thẻ văn mẫu mới</h4>
+        <button id="btnModalClose" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="inputCardTitle">Tiêu đề thẻ</label>
+          <input type="text" id="inputCardTitle" placeholder="Ví dụ: 👤Hỗ trợ Kỹ thuật">
+        </div>
+        <div class="form-group">
+          <label for="inputCardImg">Đường dẫn / File ảnh (tùy chọn)</label>
+          <div class="image-upload-row">
+            <input type="text" id="inputCardImg" placeholder="Nhập URL hoặc chọn nhiều file" style="flex: 1;">
+            <button type="button" id="btnBrowseImg" class="btn-secondary" style="flex-shrink: 0; padding: 6px 10px; font-size: 11px;" title="Chọn ảnh từ máy tính">📁 Chọn file</button>
+            <input type="file" id="inputCardFile" accept="image/*" multiple style="display: none;">
+          </div>
+          <div id="imgUploadPreviewContainer" style="display: none; margin-top: 8px; flex-direction: column; gap: 6px; align-items: flex-start;">
+            <div id="imgUploadPreviewsList" style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; max-width: 100%;"></div>
+            <button type="button" id="btnRemoveUploadedImg" class="btn-delete-small" style="padding: 2px 6px; font-size: 9px;">Xóa tất cả ảnh</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputCardContent">Nội dung copy</label>
+          <textarea id="inputCardContent" rows="6" placeholder="Nhập nội dung văn mẫu..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnModalCancel" class="btn-secondary">Hủy</button>
+        <button id="btnModalSave" class="btn-primary">Lưu lại</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Đăng nhập Secret Admin -->
+  <div id="loginModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content login-modal-box">
+      <div class="modal-header">
+        <h4 class="modal-title">🔒 Đăng Nhập Quản Trị</h4>
+        <button type="button" id="btnCloseLoginModal" class="btn-close-modal">✕</button>
+      </div>
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label for="loginUsername">Tài khoản</label>
+          <input type="text" id="loginUsername" placeholder="Nhập tài khoản" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Mật khẩu</label>
+          <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" required autocomplete="current-password">
+        </div>
+        <div id="loginErrorMsg" class="login-error-msg" style="display: none;">Tài khoản hoặc mật khẩu không chính xác!</div>
+        <div class="modal-actions">
+          <button type="submit" id="btnLoginSubmit" class="btn btn-submit">Đăng Nhập</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Đăng xuất Secret Admin -->
+  <div id="logoutModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content login-modal-box">
+      <div class="modal-header">
+        <h4 class="modal-title">🔒 Đăng Xuất Quản Trị</h4>
+        <button type="button" id="btnCloseLogoutModal" class="btn-close-modal">✕</button>
+      </div>
+      <div style="padding: 10px 0; font-size: 12px; color: var(--text-secondary); text-align: center; line-height: 1.5;">
+        Bạn có chắc chắn muốn đăng xuất khỏi quyền Quản Trị Viên không?
+      </div>
+      <div class="modal-actions" style="display: flex; gap: 8px; margin-top: 10px;">
+        <button type="button" id="btnCancelLogout" class="btn-secondary" style="flex: 1; padding: 7px; font-size: 12px;">Hủy</button>
+        <button type="button" id="btnConfirmLogout" class="btn btn-submit" style="flex: 1; background: #ef4444; color: white; padding: 7px; font-size: 12px;">Đăng xuất</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Sửa Giá & Chiết Khấu Từng Sản Phẩm -->
+  <div id="orderItemPriceModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>🏷️ Sửa Giá & Chiết Khấu</h4>
+        <button type="button" id="btnCloseItemPriceModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" style="margin-bottom: 12px; gap: 10px;">
+        <div id="itemPriceModalProdName" class="order-modal-item-name">Tên sản phẩm</div>
+        <div class="form-group">
+          <label for="itemPriceInput">Đơn giá gốc</label>
+          <input type="text" id="itemPriceInput" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label for="itemDiscountInput">Chiết khấu sản phẩm</label>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <input type="text" id="itemDiscountInput" placeholder="0" style="flex: 1; min-width: 0;">
+            <div class="segmented-toggle-group">
+              <button type="button" id="btnItemDiscountPct" class="btn-segmented-toggle active">%</button>
+              <button type="button" id="btnItemDiscountVnd" class="btn-segmented-toggle">VNĐ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCancelItemPriceModal" class="btn-secondary">Hủy</button>
+        <button type="button" id="btnSaveItemPriceModal" class="btn-primary">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Chọn Đổi Đơn Vị Nhanh -->
+  <div id="orderUnitPickerModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>🔄 Đổi Đơn Vị / Dung Tích</h4>
+        <button type="button" id="btnCloseUnitPickerModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" style="margin-bottom: 12px; gap: 10px;">
+        <div id="unitPickerProdName" class="order-modal-item-name">Tên sản phẩm</div>
+        <div id="unitPickerList" class="unit-picker-list"></div>
+        <div class="unit-picker-custom-wrap">
+          <div style="font-size: 11px; font-weight: bold; color: var(--text-secondary); margin-bottom: 6px;">Dung tích tùy chỉnh:</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0;">
+            <div class="form-group">
+              <input type="text" id="unitCustomName" placeholder="Tên đơn vị (vd: 30ml)">
+            </div>
+            <div class="form-group">
+              <input type="text" id="unitCustomPrice" placeholder="Đơn giá (VNĐ)">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCancelUnitPickerModal" class="btn-secondary">Đóng</button>
+        <button type="button" id="btnApplyCustomUnit" class="btn-primary">Áp dụng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Thêm Sản Phẩm Ngoài Kho Thủ Công (1 lần, không cần ảnh) -->
+  <div id="orderManualModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>➕ Thêm SP Ngoài Kho</h4>
+        <button type="button" id="btnCloseManualModal" class="modal-close-btn">&times;</button>
+      </div>
+      <form id="orderManualForm">
+        <div class="modal-body" style="margin-bottom: 12px; gap: 10px;">
+          <div class="form-group">
+            <label for="manualItemName">Tên sản phẩm <span style="color: var(--c-red);">*</span></label>
+            <input type="text" id="manualItemName" placeholder="Ví dụ: Sáp vuốt tóc / Túi quà..." required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0;">
+            <div class="form-group">
+              <label for="manualItemUnit">Đơn vị / Dung tích</label>
+              <input type="text" id="manualItemUnit" placeholder="Full 30ml / Full 50ml..." value="Full 30ml">
+            </div>
+            <div class="form-group">
+              <label for="manualItemQty">Số lượng</label>
+              <input type="number" id="manualItemQty" value="1" min="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="manualItemPrice">Đơn giá (VNĐ) <span style="color: var(--c-red);">*</span></label>
+            <input type="text" id="manualItemPrice" placeholder="Ví dụ: 150000" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btnCancelManualModal" class="btn-secondary">Hủy</button>
+          <button type="submit" id="btnSubmitManualModal" class="btn-primary">+ Thêm vào đơn</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Xem Trước & Copy Ảnh Hóa Đơn -->
+  <div id="invoicePreviewModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content invoice-preview-modal" style="max-width: 380px;">
+      <div class="modal-header">
+        <h4>✨ Ảnh Xác Nhận Đơn Hàng</h4>
+        <button type="button" id="btnCloseInvoicePreviewModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" style="margin-bottom: 10px; padding: 0;">
+        <div class="invoice-preview-img-container">
+          <img id="invoicePreviewImg" class="invoice-preview-img" alt="Hóa đơn xác nhận">
+        </div>
+      </div>
+      <div class="invoice-preview-actions">
+        <button type="button" id="btnCopyInvoiceAgain" class="btn-invoice-copy">
+          <span>📋 Copy ảnh</span>
+        </button>
+        <button type="button" id="btnViewInvoiceTab" class="btn-invoice-view">
+          <span>👁 Xem ảnh</span>
+        </button>
+        <button type="button" id="btnDownloadInvoice" class="btn-invoice-download">
+          <span>💾 Tải ảnh</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Chọn Chương Trình Khuyến Mãi -->
+  <div id="orderPromoModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 330px;">
+      <div class="modal-header">
+        <h4>🎁 Chọn Khuyến Mãi</h4>
+        <button type="button" id="btnClosePromoModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" style="margin-bottom: 12px; gap: 8px;">
+        <div id="orderPromoList" class="order-promo-checklist"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCancelPromoModal" class="btn-secondary">Đóng</button>
+        <button type="button" id="btnApplyPromoModal" class="btn-primary">Áp dụng</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="storage-helper.js"></script>
+  <script src="panel.js"></script>
+  <script src="perfume/perfume-template.js"></script>
+  <script src="perfume/perfume.js"></script>
+  <script src="perfume/perfume-search.js"></script>
+  <script src="perfume/perfume-filter.js"></script>
+  <script src="perfume/perfume-preview.js"></script>
+  <script src="perfume/perfume-recent.js"></script>
+  <script src="news/news.js"></script>
+  <script src="news/news-detail.js"></script>
+  <script src="news/news-add.js"></script>
+  <script src="order/order-canvas.js"></script>
+  <script src="order/order.js"></script>
+</body>
+</html>

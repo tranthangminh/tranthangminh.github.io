@@ -197,7 +197,7 @@
         ];
         var toolItems = Array.isArray(opts.toolItems) && opts.toolItems.length ? opts.toolItems : [
             { labelKey: 'header.tool.windowsApps', label: 'Windows Apps', href: prodBase + '?tab=windows-apps' },
-            { labelKey: 'header.tool.chromeExtension', label: 'Chrome Extension', href: prodBase + '?tab=chrome-extension' },
+            { labelKey: 'header.tool.chromeExtension', label: 'Chrome Extensions', href: prodBase + '?tab=chrome-extension' },
             { labelKey: 'header.tool.books', label: 'Books', href: prodBase + '?tab=books' },
             { labelKey: 'header.tool.plugins', label: 'Plugins', href: prodBase + '?tab=plugins' }
         ];

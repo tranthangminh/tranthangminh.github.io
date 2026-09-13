@@ -1,0 +1,181 @@
+/* App Settings Modal Styles (modals/settings.css) */
+
+#settings-modal .modal-content,
+#info-modal .modal-content {
+  width: 480px;
+  max-width: 92%;
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.settings-modal-body,
+.info-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.app-info-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-info-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.3));
+}
+
+.app-info-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.app-info-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  font-family: var(--font-main);
+}
+
+.app-info-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: rgba(99, 102, 241, 0.15);
+  color: var(--accent-primary);
+  font-family: monospace;
+}
+
+.app-info-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Feature Visibility & Data Sync Sections */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background-color: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.settings-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.settings-toggles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.settings-toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background-color: var(--bg-sidebar-sub);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  gap: 8px;
+}
+
+.settings-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.settings-toggle-label .icon-mask {
+  width: 18px;
+  height: 18px;
+  background-color: var(--text-primary);
+}
+
+.settings-toggle-item:nth-child(1) .icon-mask {
+  mask-image: url('../svg/main-icons/AI.svg');
+  -webkit-mask-image: url('../svg/main-icons/AI.svg');
+}
+
+.settings-toggle-item:nth-child(2) .icon-mask {
+  mask-image: url('../svg/split-view.svg');
+  -webkit-mask-image: url('../svg/split-view.svg');
+}
+
+.settings-toggle-item:nth-child(3) .icon-mask {
+  mask-image: url('../svg/window.svg');
+  -webkit-mask-image: url('../svg/window.svg');
+}
+
+.settings-toggle-item:nth-child(4) .icon-mask {
+  mask-image: url('../svg/hide.svg');
+  -webkit-mask-image: url('../svg/hide.svg');
+}
+
+
+
+/* Data & Sync Management Section - 2 Equal Columns x 2 Rows Grid */
+.settings-data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.settings-data-btn,
+.btn-sync-app {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--bg-sidebar-sub);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+#google-sheet-sync-status {
+  display: none;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-main);
+  white-space: pre-line;
+  line-height: 1.35;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+.settings-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}

@@ -1,0 +1,571 @@
+/* Video Speed Controller CSS (contextmenutools/videospeed.css) */
+.max-video-speed-controller,
+.max-video-speed-controller *,
+.max-speed-settings-panel,
+.max-speed-settings-panel * {
+  font-family: var(--font-family) !important;
+  -webkit-user-drag: none !important;
+  user-drag: none !important;
+}
+
+/* Container wrapper to relative position things on videos if necessary */
+.max-video-speed-wrapper {
+  position: relative !important;
+}
+
+/* Floating controller container */
+.max-video-speed-controller {
+  position: absolute !important;
+  z-index: 2147483647 !important;
+  zoom: 0.8 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+  padding: 6px 8px !important;
+  border-radius: var(--border-radius) !important;
+  background: var(--bg-secondary) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: var(--shadow-md) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform: translateY(-5px) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Controller inner rows (Speed row & Audio Boost row) */
+.max-controller-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+/* Active visible state when mouse moves */
+.max-video-speed-controller.max-visible {
+  opacity: var(--max-hud-opacity, 0.5) !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+  transition: opacity var(--transition-speed) ease,
+              visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.max-video-speed-controller.max-visible:hover {
+  opacity: 1 !important;
+}
+
+/* Control buttons (+ and - and settings) */
+.max-speed-btn {
+  width: 32px !important;
+  height: 28px !important;
+  border-radius: var(--border-radius-sm) !important;
+  border: 1px solid var(--border-color) !important;
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: all var(--transition-speed) ease !important;
+  outline: none !important;
+  line-height: 1 !important;
+}
+
+.max-video-speed-controller:hover .max-speed-btn,
+.max-video-speed-controller:focus-within .max-speed-btn,
+.max-video-speed-controller:has(.max-speed-settings-panel.max-open) .max-speed-btn,
+.max-video-speed-controller:has(.max-speed-settings-panel.max-hover-open) .max-speed-btn {
+  display: flex !important;
+  animation: maxBtnFadeIn 0.15s ease !important;
+}
+
+.max-speed-btn:hover {
+  background: var(--c-cyan-bg) !important;
+  border-color: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+}
+
+.max-boost-btn:hover {
+  background: var(--c-purple-bg) !important;
+  border-color: var(--accent-secondary) !important;
+  color: var(--accent-secondary) !important;
+}
+
+.max-speed-btn:active {
+  transform: scale(0.95) !important;
+}
+
+@keyframes maxBtnFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Speed display area and container for dropdown */
+.max-speed-display-container {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 28px !important;
+}
+
+.max-speed-display {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--accent-primary) !important;
+  border: 1px solid var(--accent-primary) !important;
+  background: rgba(0, 242, 254, 0.15) !important;
+  min-width: 50px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 0 4px !important;
+  border-radius: var(--border-radius-sm) !important;
+  cursor: pointer !important;
+  transition: all var(--transition-speed) ease !important;
+  box-sizing: border-box !important;
+}
+
+.max-speed-display:hover {
+  background: var(--bg-tertiary) !important;
+  color: var(--accent-primary) !important;
+}
+
+/* Presets popover menu — now includes slider + presets grid + settings */
+.max-speed-presets {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  transform: translateY(6px) !important;
+  z-index: 2147483647 !important;
+  padding: 8px 10px !important;
+  width: 235px !important;
+  border-radius: var(--border-radius-md) !important;
+  background: var(--bg-secondary) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-md) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease !important;
+  pointer-events: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Hover bridge */
+.max-speed-presets::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -10px !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 10px !important;
+  background: transparent !important;
+}
+
+/* JS class triggers popover (set by mouseenter on badge or popover itself) */
+.max-speed-presets.max-popover-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(2px) !important;
+}
+
+/* Speed slider row (label + value) */
+.max-speed-slider-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+}
+
+.max-speed-slider-val {
+  color: var(--accent-primary) !important;
+  font-weight: 700 !important;
+}
+
+/* Speed range slider */
+.max-speed-range-slider {
+  width: 100% !important;
+  height: 4px !important;
+  background: transparent !important;
+  accent-color: var(--accent-primary) !important;
+  cursor: pointer !important;
+  margin: 2px 0 !important;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Preset buttons 5-column grid (no divider) */
+.max-presets-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 4px !important;
+}
+
+/* Audio Boost Theme Modifier (.max-boost-theme) */
+.max-boost-theme .max-speed-display {
+  color: var(--accent-secondary) !important;
+  border: 1px solid #a855f7 !important;
+  background: rgba(168, 85, 247, 0.15) !important;
+}
+
+.max-boost-theme .max-speed-display:hover {
+  background: var(--bg-tertiary) !important;
+  color: var(--accent-secondary) !important;
+}
+
+.max-boost-theme .max-speed-slider-val {
+  color: #a855f7 !important;
+}
+
+.max-boost-theme .max-speed-range-slider {
+  accent-color: #a855f7 !important;
+}
+
+.max-boost-theme .max-preset-btn.max-active {
+  color: #a855f7 !important;
+  background: rgba(168, 85, 247, 0.2) !important;
+  border: 1px solid #a855f7 !important;
+}
+
+.max-boost-theme .max-preset-btn:hover {
+  background: var(--bg-primary) !important;
+  color: #a855f7 !important;
+  border-color: #a855f7 !important;
+}
+
+.max-boost-theme .max-settings-title {
+  color: #a855f7 !important;
+}
+
+.max-boost-theme .max-settings-checkbox {
+  accent-color: #a855f7 !important;
+}
+
+.max-boost-theme .max-shortcut-key-box:hover {
+  border-color: #a855f7 !important;
+  background: rgba(168, 85, 247, 0.2) !important;
+}
+
+.max-boost-theme .max-shortcut-val-input:focus,
+.max-boost-theme .max-shortcut-val-input:hover {
+  border-color: #a855f7 !important;
+}
+
+/* Preset buttons */
+.max-preset-btn {
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  padding: 4px 6px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-radius: var(--border-radius-sm) !important;
+  cursor: pointer !important;
+  text-align: center !important;
+  transition: all 0.12s ease !important;
+  min-width: 32px !important;
+}
+
+.max-preset-btn:hover {
+  background: var(--bg-primary) !important;
+  color: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+.max-preset-btn.max-active {
+  color: var(--accent-primary) !important;
+  background: rgba(0, 242, 254, 0.2) !important;
+  border: 1px solid var(--accent-primary) !important;
+  padding: 3px 5px !important;
+}
+
+
+
+/* Settings Panel — inline inside presetsMenu */
+.max-speed-presets .max-speed-settings-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  position: static !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: inherit !important;
+  transform: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-top: 1px solid var(--border-color) !important;
+  padding-top: 8px !important;
+  margin-top: 2px !important;
+  gap: 10px !important;
+  box-sizing: border-box !important;
+}
+
+/* Settings elements */
+.max-settings-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding-bottom: 4px !important;
+  margin-bottom: 2px !important;
+}
+
+.max-settings-title {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: var(--accent-primary) !important;
+  margin: 0 !important;
+}
+
+.max-settings-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.max-shortcut-label {
+  font-size: 11px !important;
+  color: var(--text-primary) !important;
+  flex-grow: 1 !important;
+  text-align: left !important;
+}
+
+/* Draggable key box styling */
+.max-shortcut-key-box {
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--border-radius-sm) !important;
+  width: 55px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  transition: all var(--transition-speed) ease !important;
+}
+
+.max-shortcut-key-box:hover {
+  border-color: var(--accent-primary) !important;
+  background: rgba(0, 242, 254, 0.2) !important;
+}
+
+.max-shortcut-key-box.max-recording {
+  border-color: var(--c-red) !important;
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: var(--c-red) !important;
+  animation: maxPulse 1s infinite alternate !important;
+}
+
+.max-shortcut-val-input {
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--border-radius-sm) !important;
+  width: 45px !important;
+  height: 24px !important;
+  text-align: center !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  outline: none !important;
+  transition: all var(--transition-speed) ease !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Combined increase+decrease row: labels stacked left, tall shared input right */
+.max-settings-combined-row {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+}
+
+.max-settings-combined-labels {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.max-settings-combined-row .max-shortcut-val-input {
+  height: auto !important;
+  align-self: stretch !important;
+  flex-shrink: 0 !important;
+}
+
+.max-shortcut-val-input:focus,
+.max-shortcut-val-input:hover {
+  border-color: var(--accent-primary) !important;
+  background: var(--bg-primary) !important;
+}
+
+/* Checkbox Row (no extra top margin — use panel gap for uniform spacing) */
+.max-settings-checkbox-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+.max-settings-checkbox {
+  cursor: pointer !important;
+  margin: 0 !important;
+  accent-color: var(--accent-primary) !important;
+}
+
+.max-settings-checkbox-label {
+  font-size: 11px !important;
+  color: var(--text-secondary) !important;
+  cursor: pointer !important;
+}
+
+@keyframes maxPulse {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+
+/* Hide HTML5 Up/Down spin buttons on number inputs in settings panel */
+.max-shortcut-val-input::-webkit-outer-spin-button,
+.max-shortcut-val-input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+.max-shortcut-val-input {
+  -moz-appearance: textfield !important;
+}
+
+/* Slider row inside settings panel (no extra top margin — use panel gap for uniform spacing) */
+.max-settings-slider-row {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.max-settings-slider-label {
+  font-size: 11px !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+}
+
+.max-opacity-val {
+  color: var(--accent-primary) !important;
+  font-weight: 700 !important;
+}
+
+.max-opacity-slider {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 100% !important;
+  height: 4px !important;
+  border-radius: var(--border-radius-sm) !important;
+  background: var(--border-color) !important;
+  outline: none !important;
+  margin: 6px 0 !important;
+  cursor: pointer !important;
+}
+
+.max-opacity-slider::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: var(--border-radius-full) !important;
+  background: var(--accent-primary) !important;
+  box-shadow: 0 0 6px rgba(0, 242, 254, 0.5) !important;
+  transition: transform 0.1s ease !important;
+}
+
+.max-opacity-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2) !important;
+}
+
+.max-opacity-slider::-moz-range-thumb {
+  width: 12px !important;
+  height: 12px !important;
+  border: none !important;
+  border-radius: var(--border-radius-full) !important;
+  background: var(--accent-primary) !important;
+  box-shadow: 0 0 6px rgba(0, 242, 254, 0.5) !important;
+  transition: transform 0.1s ease !important;
+  cursor: pointer !important;
+}
+
+.max-opacity-slider::-moz-range-thumb:hover {
+  transform: scale(1.2) !important;
+}
+
+/* Center Video HUD Text Popup (Pure Text, Continuous illumination at 50% opacity, 0s-0.25s-0.75s-1s timeline) */
+.max-center-hud {
+  position: absolute !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) scale(0.9) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 800 !important;
+  font-family: var(--font-family) !important;
+  color: var(--accent-primary) !important;
+  pointer-events: none !important;
+  z-index: 2147483647 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  line-height: 1.1 !important;
+}
+
+/* Audio Boost Purple Mode */
+.max-center-hud.max-boost-mode {
+  color: #a855f7 !important;
+}
+
+/* Active Visible State (Steady 50% opacity during changes and up to 0.75s after last change) */
+.max-center-hud.max-visible {
+  opacity: 0.5 !important;
+  visibility: visible !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease !important;
+}

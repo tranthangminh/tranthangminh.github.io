@@ -1,0 +1,749 @@
+/* ==========================================================================
+   MAX DESIGN SYSTEM - COMMON UI COMPONENTS (common.css)
+   Cross-Project Production Ready Component Library Standards
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. BASE RESET & TYPOGRAPHY BASELINE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--font-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea {
+  font-family: inherit !important;
+}
+
+/* Custom Smooth Scrollbar */
+.scroll-custom::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scroll-custom::-webkit-scrollbar-track,
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-full);
+}
+
+.scroll-custom::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* --------------------------------------------------------------------------
+   2. ACTION CLICK BUTTONS (.btn, .btn-action, .btn-primary, .btn-secondary, .btn-danger)
+   -------------------------------------------------------------------------- */
+.btn,
+.btn-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--btn-height-lg);
+  padding: 0 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-md);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  text-decoration: none;
+  transition: var(--transition-fast);
+  outline: none;
+}
+
+.btn:hover,
+.btn-action:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+/* Master Icon Button (.btn-icon) */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--btn-height-md, 32px);
+  height: var(--btn-height-md, 32px);
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-icon:hover {
+  color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
+}
+
+/* Master Mask Icon (.icon-mask) */
+.icon-mask {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  flex-shrink: 0;
+}
+
+/* Inner Icon Graphic System (Reset for icons inside any button) */
+.btn .icon-mask,
+.btn svg,
+.btn img,
+.btn-icon .icon-mask,
+.btn-icon svg,
+.btn-icon img {
+  pointer-events: none !important;
+  border-radius: 0 !important;
+  flex-shrink: 0;
+}
+
+.btn:active,
+.btn-action:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.btn:focus-visible,
+.btn-action:focus-visible {
+  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent-primary);
+}
+
+/* Disabled & Loading States */
+.btn:disabled,
+.btn-action:disabled,
+.btn.disabled,
+.btn[disabled] {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: currentColor;
+  border-radius: var(--border-radius-full);
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Button Sizing Variants */
+.btn-sm {
+  height: var(--btn-height-sm);
+  padding: 0 10px;
+  font-size: var(--font-sm);
+  border-radius: var(--border-radius-sm);
+}
+
+.btn-lg {
+  height: var(--btn-height-lg);
+  padding: 0 18px;
+  font-size: var(--font-lg);
+  border-radius: var(--border-radius-md);
+}
+
+.btn-icon {
+  width: var(--btn-height-md);
+  padding: 0;
+  border-radius: var(--border-radius-md);
+}
+
+.btn-icon.btn-sm {
+  width: var(--btn-height-sm);
+  border-radius: var(--border-radius-sm);
+}
+
+/* Button Color Theme Variants */
+.btn-primary {
+  background: var(--accent-gradient);
+  border: none;
+  color: var(--text-on-accent);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background: var(--accent-gradient-hover);
+  color: var(--text-on-accent);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-accent);
+  filter: brightness(1.05);
+}
+
+.btn-secondary {
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-subtle);
+  border-color: var(--border-hover);
+  color: var(--accent-primary);
+}
+
+.btn-danger {
+  background: var(--c-red-bg);
+  border: 1px solid var(--accent-danger);
+  color: var(--accent-danger);
+}
+
+.btn-danger:hover {
+  background: var(--accent-danger);
+  color: #ffffff;
+  box-shadow: var(--shadow-danger);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+}
+
+.btn-ghost:hover .icon-mask {
+  background-color: var(--accent-primary) !important;
+}
+
+.btn-icon:hover .icon-mask {
+  background-color: var(--accent-primary) !important;
+}
+
+.btn .tool-icon-svg,
+.btn-action .tool-icon-svg {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  transition: var(--transition-fast);
+}
+
+.btn-primary .tool-icon-svg {
+  filter: var(--icon-filter-active);
+}
+
+/* --------------------------------------------------------------------------
+   3. RADIO & SEGMENTED CONTROL BUTTONS (.btn-radio, .radio-group, .segmented-control)
+   -------------------------------------------------------------------------- */
+.radio-group,
+.segmented-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  width: 100%;
+}
+
+.btn-radio {
+  flex: 1;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 10px !important;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm, 6px) !important;
+  color: var(--text-primary);
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: var(--transition-fast);
+  box-sizing: border-box !important;
+}
+
+.btn-radio:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.btn-radio.active {
+  background: rgba(0, 242, 254, 0.15);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-radio.active .tool-icon-svg {
+  filter: var(--icon-filter-active);
+}
+
+/* --------------------------------------------------------------------------
+   4. CUSTOM CHECKBOX & TOGGLE SWITCH CONTROL (.btn-checkbox, .toggle-switch)
+   -------------------------------------------------------------------------- */
+.btn-checkbox,
+.checkbox-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--font-md);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Reusable Toggle Switch (.toggle-switch, .toggle-slider) */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-tertiary);
+  transition: 0.25s ease;
+  border-radius: var(--border-radius-full, 9999px);
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-secondary);
+  transition: 0.25s ease;
+  border-radius: var(--border-radius-full);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: var(--accent-primary);
+}
+
+.toggle-switch input:focus + .toggle-slider {
+  box-shadow: 0 0 0 2px var(--c-cyan-bg);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(16px);
+  background-color: var(--text-on-accent);
+}
+
+/* Native Checkbox Hidden Wrapper */
+.btn-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   5. DROPDOWN / POPOVER TRIGGER BUTTONS (.btn-dropdown, .popover-panel)
+   -------------------------------------------------------------------------- */
+.btn-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: var(--btn-height-md);
+  padding: 0 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-md);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition-fast);
+}
+
+.btn-dropdown:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
+}
+
+.btn-dropdown.active {
+  border-color: var(--accent-primary);
+}
+
+.dropdown-arrow {
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.btn-dropdown.active .dropdown-arrow {
+  transform: rotate(180deg);
+  color: var(--text-on-accent);
+}
+
+/* Popover Floating Container Baseline */
+.popover-panel {
+  position: absolute;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+  padding: 14px;
+  box-shadow: var(--shadow-lg);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.popover-panel.hidden {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. CHIPS, BADGES, & TAGS (.chip, .badge)
+   -------------------------------------------------------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-fast);
+}
+
+.chip:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+.chip.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-on-accent);
+  font-weight: 700;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: var(--accent-subtle);
+  border-radius: var(--border-radius-sm);
+  color: var(--accent-primary);
+  font-size: var(--font-xs);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   7. FORM INPUTS, LABELS & SLIDERS (.form-group, .input-text, .input-range)
+   -------------------------------------------------------------------------- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.form-label {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-hint {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+.form-error {
+  font-size: var(--font-xs);
+  color: var(--c-red);
+}
+
+.input-text {
+  width: 100%;
+  height: var(--btn-height-md);
+  padding: 0 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-md);
+  font-family: inherit;
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.input-text:focus {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-accent);
+}
+
+/* Master Select Dropdown Input (.input-select) */
+.input-select {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  height: 22px;
+  padding: 0 24px 0 10px;
+  background-color: var(--bg-tertiary);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 12px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  color: var(--text-primary);
+  font-family: var(--font-family, 'Outfit', -apple-system, sans-serif) !important;
+  font-size: var(--font-xs, 12px);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: var(--transition-fast);
+}
+
+.input-select:hover {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.input-select:focus {
+  border-color: var(--accent-primary);
+}
+
+.input-select option {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font-family, 'Outfit', -apple-system, sans-serif);
+  font-size: var(--font-xs, 12px);
+  padding: 6px 10px;
+}
+
+.input-range {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--border-radius-full);
+  outline: none;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   8. ALERTS & FEEDBACK BANNERS (.alert)
+   -------------------------------------------------------------------------- */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-md);
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.alert-success {
+  background: var(--c-green-bg);
+  border-color: var(--c-green);
+  color: var(--c-green);
+}
+
+.alert-warning {
+  background: var(--c-yellow-bg);
+  border-color: var(--c-yellow);
+  color: var(--c-yellow);
+}
+
+.alert-danger {
+  background: var(--c-red-bg);
+  border-color: var(--c-red);
+  color: var(--c-red);
+}
+
+.alert-info {
+  background: var(--c-blue-bg);
+  border-color: var(--c-blue);
+  color: var(--c-blue);
+}
+
+/* --------------------------------------------------------------------------
+   9. MODAL DIALOG BASELINE (.modal-backdrop, .modal-dialog)
+   -------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-dialog {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: var(--font-lg);
+  font-weight: 700;
+}
+
+.modal-body {
+  padding: 18px;
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 18px;
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* --------------------------------------------------------------------------
+   10. TOOLTIP STANDARD ([data-tooltip])
+   -------------------------------------------------------------------------- */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  padding: 4px 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: var(--shadow-md);
+  z-index: 100000;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* --------------------------------------------------------------------------
+   11. UTILITY HELPERS
+   -------------------------------------------------------------------------- */
+.hidden {
+  display: none !important;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

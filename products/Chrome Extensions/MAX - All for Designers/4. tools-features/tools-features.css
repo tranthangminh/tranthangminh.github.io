@@ -1,0 +1,239 @@
+/* Context Menu Tools Styles (contextmenutools/contextmenutools.css) */
+
+.context-tool-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.context-tool-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.context-tool-section-title {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.context-tool-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background-color: var(--bg-secondary) !important;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+  transition: all var(--transition-speed) ease;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.context-tool-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.context-tool-icon-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--border-radius-md);
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.context-tool-icon-wrapper .tool-icon-svg {
+  width: 20px;
+  height: 20px;
+  filter: var(--icon-filter);
+}
+
+.context-tool-card .tool-icon-svg {
+  filter: var(--icon-filter);
+}
+
+.context-tool-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.context-tool-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #f8fafc);
+}
+
+.context-tool-desc {
+  font-size: 11px;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.35;
+}
+
+.context-tool-action {
+  flex-shrink: 0;
+}
+
+/* Grouped Card Styles for Image Search Tools */
+.context-tool-card-grouped {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.context-tool-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  transition: background 0.2s ease;
+}
+
+.context-tool-row:hover {
+  background: var(--bg-tertiary);
+}
+
+.context-tool-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0 14px;
+}
+
+/* Card with Hover Option Sub-menu */
+.context-tool-card-with-options {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.context-tool-main-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.context-tool-suboptions {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 1px solid transparent;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s ease,
+              margin-top 0.3s ease,
+              padding-top 0.3s ease,
+              border-color 0.3s ease;
+}
+
+.context-tool-card:hover .context-tool-suboptions,
+.context-tool-card:focus-within .context-tool-suboptions {
+  max-height: 80px;
+  opacity: 1;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top-color: var(--border-color, rgba(255, 255, 255, 0.08));
+}
+
+.context-option-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  user-select: none;
+  border: 1.5px solid transparent;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  transition: all var(--transition-speed) ease;
+  outline: none;
+}
+
+.context-option-chip:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.context-option-chip.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-on-accent);
+  font-weight: 700;
+}
+
+/* Section Header Titles within Tools Tab */
+.context-tool-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+  margin-top: 4px;
+  user-select: none;
+}
+
+/* Image Search Buttons in Preview Modal */
+.modal-actions #modal-yandex-search-btn,
+.modal-actions #modal-tineye-search-btn {
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--btn-secondary-text);
+}
+
+.modal-actions #modal-yandex-search-btn:hover,
+.modal-actions #modal-tineye-search-btn:hover {
+  background: var(--btn-secondary-hover-bg);
+  border-color: var(--btn-secondary-hover-border);
+  color: var(--btn-secondary-hover-text);
+}
+
+/* Save As File Type Settings Toggle Labels */
+.toggle-switch-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.toggle-switch-label .settings-radio-content {
+  flex: 1;
+}
+
+/* Support MAX Container Centering & Max Width */
+.support-max-mount {
+  width: 100%;
+  max-width: 420px;
+  margin: 24px auto 0 auto;
+  box-sizing: border-box;
+}
+
+.toggle-switch-label .toggle-switch {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+

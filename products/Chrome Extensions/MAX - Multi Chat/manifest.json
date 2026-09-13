@@ -1,0 +1,76 @@
+{
+  "manifest_version": 3,
+  "name": "MAX - Multi Chat/AI, Multi Account & Tab Manager", 
+  "short_name": "MAX Chat",
+  "version": "1.0.1",
+  "description": "Centralize all your messaging apps, multi-accounts, and custom websites into one powerful workspace. Bypass limits in real-time.",
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "storage",
+    "cookies",
+    "webNavigation",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "icons": {
+    "16": "icon/icon16.png",
+    "32": "icon/icon32.png",
+    "48": "icon/icon48.png",
+    "128": "icon/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "all_frames": true,
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-main.js"],
+      "all_frames": true,
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["*://web.telegram.org/*"],
+      "js": ["connections/telegram.js"],
+      "all_frames": true,
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "*://*.weavy.com/*",
+        "*://*.weavy.io/*"
+      ],
+      "js": ["connections/weavy.js"],
+      "all_frames": true,
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon/icon16.png",
+      "32": "icon/icon32.png",
+      "48": "icon/icon48.png",
+      "128": "icon/icon128.png"
+    },
+    "default_title": "Open MAX Multi Chat"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "max-multichat@yourdomain.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}

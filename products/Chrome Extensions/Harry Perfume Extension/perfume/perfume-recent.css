@@ -1,0 +1,144 @@
+/* ===== Dải lịch sử xem gần đây ===== */
+.recent-bar {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  padding: 6px 4px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  align-items: center;
+}
+
+.recent-bar-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  opacity: 0.8;
+}
+
+.recent-label-icon,
+.recent-svg-icon {
+  width: 22px;
+  height: 22px;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.recent-list {
+  display: contents;
+}
+
+.recent-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 3px 2px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.recent-item:hover {
+  border-color: var(--gold-primary);
+  background: rgba(229, 193, 88, 0.08);
+}
+
+.recent-item:hover .recent-name {
+  color: var(--gold-primary);
+}
+
+.recent-thumb {
+  max-width: 50px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 4px;
+  background: transparent;
+  padding: 1px;
+  box-sizing: border-box;
+}
+
+.recent-thumb-placeholder {
+  max-width: 50px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  object-fit: contain;
+  box-sizing: border-box;
+}
+
+.recent-name {
+  font-size: 7px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.1;
+  width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+  transition: color 0.15s ease;
+}
+
+/* Nút xóa trên từng chai (Xem Gần Đây) */
+.recent-item {
+  position: relative;
+}
+
+.recent-delete-btn {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 14px;
+  height: 14px;
+  background: rgba(239, 68, 68, 0.85);
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  z-index: 10;
+}
+
+.recent-item:hover .recent-delete-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.recent-item:hover .recent-thumb{
+  transform: scale(1.2);
+  transition: var(--transition);
+}
+
+.recent-delete-btn:hover {
+  background: var(--c-red);
+  transform: scale(1.15) !important;
+}

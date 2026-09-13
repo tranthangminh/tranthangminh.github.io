@@ -1,0 +1,586 @@
+/* Standalone MAX Screen Recorder Styles — Matched with popup.html */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+select, option, button, input, textarea {
+  font-family: var(--font-family, 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+body {
+  font-family: var(--font-family, 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.recorder-card {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px;
+}
+
+/* Header */
+.recorder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 12px;
+}
+
+.recorder-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recorder-logo {
+  width: 20px;
+  height: 20px;
+  animation: pulseGlowMini 3s infinite alternate ease-in-out;
+}
+
+@keyframes pulseGlowMini {
+  from {
+    opacity: 0.7;
+    filter: drop-shadow(0 0 2px rgba(0, 242, 254, 0.3));
+  }
+  to {
+    opacity: 1;
+    filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.85));
+  }
+}
+
+.logo-text {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  font-family: var(--font-family, sans-serif) !important;
+}
+
+.logo-text span {
+  font-weight: 400;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.recorder-close-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 26px;
+  height: 26px;
+  border-radius: var(--border-radius-full);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed, 0.2s) ease;
+}
+
+.recorder-close-btn:hover {
+  background: var(--c-red);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.recorder-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 12px;
+}
+
+.recorder-body.hidden {
+  display: none !important;
+}
+
+/* Symmetrical 2-Column Grid Layout */
+.setup-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  flex: 1;
+  align-items: stretch;
+}
+
+.setup-col-left,
+.setup-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.col-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+  font-family: var(--font-family, sans-serif) !important;
+}
+
+/* Mode Cards & Settings Group Container */
+.mode-selector-grid,
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+/* Symmetrical Row Cards */
+.mode-card,
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  height: 52px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  gap: 10px;
+  transition: all var(--transition-speed, 0.2s) ease;
+}
+
+.mode-card {
+  justify-content: flex-start;
+  cursor: pointer;
+}
+
+.mode-card:hover {
+  border-color: var(--border-hover);
+}
+
+.mode-card.active {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
+}
+
+.mode-icon-wrap {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--border-radius-md);
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-speed, 0.2s) ease;
+}
+
+.mode-icon-wrap svg {
+  width: 16px;
+  height: 16px;
+}
+
+.mode-card.active .mode-icon-wrap {
+  color: var(--accent-primary);
+}
+
+.mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mode-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-family, sans-serif) !important;
+}
+
+.mode-card.active .mode-label,
+.mode-card.active .mode-sub{
+  color: var(--text-on-accent);
+}
+
+.mode-sub {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: var(--font-family, sans-serif) !important;
+}
+
+/* Full-Width Start Record Button (Gradient with BLACK text!) */
+.start-record-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 10px 14px;
+  background: var(--accent-gradient);
+  border: none;
+  border-radius: var(--border-radius);
+  color: var(--text-on-gradient) !important;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-family, sans-serif) !important;
+  cursor: pointer;
+  transition: transform var(--transition-speed, 0.2s) ease, box-shadow var(--transition-speed, 0.2s) ease;
+  box-shadow: 0 4px 15px rgba(0, 242, 254, 0.35);
+  margin-top: 4px;
+}
+
+.start-record-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+}
+
+.start-record-btn:active {
+  transform: translateY(0);
+}
+
+.rec-btn-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--border-radius-full);
+  background: var(--text-on-gradient);
+  display: inline-block;
+}
+
+/* Setting Icon Badges & Details */
+.setting-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.setting-icon-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--border-radius-md);
+  background-color: var(--bg-primary);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.syssound-icon {
+  color: var(--c-green);
+}
+
+.mic-icon {
+  color: var(--accent-primary);
+}
+
+.cam-icon {
+  color: var(--c-green);
+}
+
+.format-icon {
+  color: var(--accent-secondary);
+}
+
+.setting-icon-badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.setting-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-family, sans-serif) !important;
+}
+
+.setting-subtitle {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: var(--font-family, sans-serif) !important;
+}
+
+/* Dropdown styling with Outfit font */
+.device-select {
+  font-family: var(--font-family, sans-serif) !important;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm);
+  outline: none;
+  width: 100%;
+  margin-top: 1px;
+}
+
+.device-select option {
+  font-family: var(--font-family, sans-serif) !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.device-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-tertiary);
+  transition: 0.25s ease;
+  border-radius: var(--border-radius-full);
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: 0.25s ease;
+  border-radius: var(--border-radius-full);
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--accent-primary);
+}
+
+#toggle-sys-audio:checked + .toggle-slider {
+  background-color: var(--c-green);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(16px);
+}
+
+/* Format Pills */
+.format-pill-group {
+  display: flex;
+  background-color: var(--bg-primary);
+  padding: 2px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.format-pill {
+  font-family: var(--font-family, sans-serif) !important;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed, 0.2s) ease;
+}
+
+.format-pill.active {
+  background: var(--accent-primary);
+  color: var(--bg-primary) !important;
+}
+
+/* Active Recording View & Live Video Preview Player */
+.active-record-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  height: 100%;
+}
+
+.record-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.active-record-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 5px 12px;
+  border-radius: var(--border-radius-full);
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-family, sans-serif) !important;
+}
+
+.record-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--border-radius-full);
+  background: var(--c-red);
+  animation: pulseDot 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.7); }
+}
+
+.recording-timer-text {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-family, sans-serif) !important;
+}
+
+/* Live Video Preview Player Container */
+.live-preview-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: #000000;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--accent-primary);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.live-preview-player {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000000;
+}
+
+.live-watermark {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-secondary);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  padding: 3px 8px;
+  border-radius: var(--border-radius-full);
+  color: var(--text-primary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  font-family: var(--font-family, sans-serif) !important;
+}
+
+.watermark-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--border-radius-full);
+  background: var(--c-red);
+  animation: pulseDot 1.2s infinite ease-in-out;
+}
+
+.active-record-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.act-btn {
+  font-family: var(--font-family, sans-serif) !important;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: var(--border-radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-speed, 0.2s) ease;
+  color: var(--text-primary);
+}
+
+.pause-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+.pause-btn:hover {
+  background: var(--border-hover);
+}
+
+.stop-btn {
+  background: var(--accent-gradient);
+  color: var(--text-on-gradient) !important;
+  font-weight: 700;
+}
+.stop-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+}
+
+.cancel-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+.cancel-btn:hover {
+  background: var(--c-red);
+  color: #ffffff;
+}

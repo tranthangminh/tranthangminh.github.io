@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 24">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #fff;
+      }
+
+      .st1 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: .53px;
+      }
+    </style>
+  </defs>
+  <rect class="st0" width="24" height="24"/>
+  <g>
+    <path id="waves" class="st1" d="M2,20.29c.59,0,1.47-1.23,2.5-1.41.59,0,1.02,1.23,2.5,1.41,1.02,0,1.47-1.23,2.5-1.23s1.47,1.23,2.5,1.23,1.47-1.23,2.5-1.23,1.47,1.23,2.5,1.23,1.47-1.23,2.5-1.23,1.47,1.23,2.5,1.23"/>
+    <path id="hull" class="st1" d="M4.01,19.06l-.67-1.28,17.33-1.12c-1.36,1.24-3.12,2.24-4.88,3.06"/>
+    <path id="front_sail" class="st1" d="M10.24,5.79c2.95.9,7.07,5.25,8.47,9.94-.77-.3-1.35-.61-2.42-.34-1.04-3.8-2.92-7.43-6.05-9.6Z"/>
+    <path id="rear_sail" class="st1" d="M4.75,3.71c3.78,1.61,8.96,6.11,9.9,12.1-4.36-1.75-7.66-.82-9.97.61,3.52-4.47,1.94-9.57.07-12.7h0Z"/>
+  </g>
+</svg>

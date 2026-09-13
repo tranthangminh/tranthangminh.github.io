@@ -1,0 +1,47 @@
+/* ==========================================================================
+   HARRY PERFUME EXTENSION - STREAMLINED THEME TOKENS (~22 CORE VARIABLES)
+   ========================================================================== */
+
+:root {
+  /* ------------------------------------------------------------------------
+     1. BẢNG MÀU 7 SẮC CẦU VỒNG (RAINBOW ACCENT PALETTE - 7 MÀU NỔI BẬT)
+     ------------------------------------------------------------------------ */
+  --c-red:          #ef4444; /* Đỏ: Lỗi, Hủy, Thất bại, Xóa */
+  --c-orange:       #f97316; /* Cam: Cảnh báo, Giá Tester */
+  --c-yellow:       #e5c158; /* Vàng: Thương hiệu Gold, Fullbox */
+  --c-green:        #34d399; /* Lục: Thành công, Còn hàng */
+  --c-cyan:         #06b6d4; /* Lam: Điểm nhấn phụ */
+  --c-blue:         #60a5fa; /* Chàm: Tin nhanh Xanh, Edit */
+  --c-purple:       #c084fc; /* Tím: Tin nhanh Custom */
+
+  /* Mức nền trong suốt 12% tương ứng cho các thẻ badge cầu vồng */
+  --c-red-bg:       rgba(239, 68, 68, 0.12);
+  --c-orange-bg:    rgba(249, 115, 22, 0.12);
+  --c-yellow-bg:    rgba(229, 193, 88, 0.12);
+  --c-green-bg:     rgba(52, 211, 153, 0.12);
+  --c-cyan-bg:      rgba(6, 182, 212, 0.12);
+  --c-blue-bg:      rgba(96, 165, 250, 0.12);
+  --c-purple-bg:    rgba(192, 132, 252, 0.12);
+
+  /* ------------------------------------------------------------------------
+     2. NỀN, CHỮ & VIỀN TRUNG TÍNH (NEUTRAL BASE TOKENS)
+     ------------------------------------------------------------------------ */
+  --bg-primary:     #000000;
+  --bg-secondary:   #282828;
+  --bg-card:        #1c1c1c;
+  --bg-input:       #0f0f0f;
+
+  --text-primary:   #f8f8f8;
+  --text-secondary: #cccccc;
+  --text-dark:      #121214;
+
+  --border-color:   #555555;
+
+  /* ------------------------------------------------------------------------
+     3. THƯƠNG HIỆU HARRY PERFUME (GOLD SHORTCUTS)
+     ------------------------------------------------------------------------ */
+  --gold-primary:   var(--c-yellow);
+  --gold-light:     #f3d88c;
+  --gold-glow:      rgba(229, 193, 88, 0.25);
+  --transition:     0.25s ease;
+}

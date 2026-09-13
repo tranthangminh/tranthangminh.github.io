@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 24">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0, .st1 {
+        stroke-miterlimit: 10;
+      }
+
+      .st0, .st1, .st2, .st3, .st4 {
+        fill: none;
+      }
+
+      .st0, .st1, .st3, .st4 {
+        stroke: #a040ff;
+        stroke-linecap: round;
+      }
+
+      .st0, .st4 {
+        stroke-width: 2px;
+      }
+
+      .st1, .st3 {
+        stroke-width: 3px;
+      }
+
+      .st3, .st4 {
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <rect class="st2" width="24" height="24" rx="2" ry="2"/>
+  <g>
+    <circle class="st3" cx="12" cy="11.12" r="5"/>
+    <line class="st4" x1="21.24" y1="1.88" x2="15.24" y2="7.88"/>
+    <polyline class="st3" points="21.24 7.54 21.24 1.88 15.59 1.88"/>
+    <line class="st1" x1="12" y1="22.12" x2="12" y2="16.12"/>
+    <line class="st1" x1="8.5" y1="19.88" x2="15.5" y2="19.88"/>
+    <line class="st4" x1="2.76" y1="1.88" x2="8.76" y2="7.88"/>
+    <polyline class="st3" points="2.76 7.54 2.76 1.88 8.41 1.88"/>
+    <line class="st0" x1="8.15" y1="4.44" x2="5.32" y2="7.27"/>
+  </g>
+</svg>

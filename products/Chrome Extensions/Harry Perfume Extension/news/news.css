@@ -1,0 +1,221 @@
+/* ==========================================================================
+   Tin Nhanh (Quick News & Templates) Styles
+   ========================================================================== */
+
+#paneNews {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.news-tags-scroll-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding: 10px 10px 0 10px;
+}
+
+.news-tags-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.news-tag-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 8px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: all var(--transition-speed) ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  box-sizing: border-box;
+  line-height: 1.25;
+}
+
+.news-tag-card:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  background: rgba(229, 193, 88, 0.05);
+  box-shadow: 0 2px 8px var(--gold-glow);
+  transform: translateY(-1px);
+}
+
+.news-tag-card.active {
+  background-color: var(--bg-input);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  box-shadow: 0 2px 10px var(--gold-glow);
+}
+
+/* Chi tiết tin nhanh -> Đã được tách riêng ra file news-detail.css */
+
+/* Kiểu màu sắc thẻ Tin Nhanh (7 Sắc Cầu Vồng) */
+.news-tag-card.tag-red {
+  color: var(--c-red);
+  border-color: rgba(239, 68, 68, 0.4);
+  background: var(--c-red-bg);
+}
+.news-tag-card.tag-red:hover {
+  border-color: var(--c-red);
+  background: rgba(239, 68, 68, 0.2);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+.news-tag-card.tag-red.active {
+  background-color: rgba(239, 68, 68, 0.25);
+  border-color: var(--c-red);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35);
+}
+
+.news-tag-card.tag-orange {
+  color: var(--c-orange);
+  border-color: rgba(249, 115, 22, 0.4);
+  background: var(--c-orange-bg);
+}
+.news-tag-card.tag-orange:hover {
+  border-color: var(--c-orange);
+  background: rgba(249, 115, 22, 0.2);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
+}
+.news-tag-card.tag-orange.active {
+  background-color: rgba(249, 115, 22, 0.25);
+  border-color: var(--c-orange);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(249, 115, 22, 0.35);
+}
+
+.news-tag-card.tag-gold {
+  color: var(--gold-primary);
+  border-color: rgba(229, 193, 88, 0.4);
+  background: var(--c-yellow-bg);
+}
+.news-tag-card.tag-gold:hover {
+  border-color: var(--gold-light);
+  background: rgba(229, 193, 88, 0.18);
+  box-shadow: 0 2px 8px var(--gold-glow);
+}
+.news-tag-card.tag-gold.active {
+  background-color: rgba(229, 193, 88, 0.25);
+  border-color: var(--gold-primary);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 10px var(--gold-glow);
+}
+
+.news-tag-card.tag-green {
+  color: var(--c-green);
+  border-color: rgba(52, 211, 153, 0.4);
+  background: var(--c-green-bg);
+}
+.news-tag-card.tag-green:hover {
+  border-color: var(--c-green);
+  background: rgba(52, 211, 153, 0.2);
+  box-shadow: 0 2px 8px rgba(52, 211, 153, 0.25);
+}
+.news-tag-card.tag-green.active {
+  background-color: rgba(52, 211, 153, 0.25);
+  border-color: var(--c-green);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(52, 211, 153, 0.35);
+}
+
+.news-tag-card.tag-cyan {
+  color: var(--c-cyan);
+  border-color: rgba(6, 182, 212, 0.4);
+  background: var(--c-cyan-bg);
+}
+.news-tag-card.tag-cyan:hover {
+  border-color: var(--c-cyan);
+  background: rgba(6, 182, 212, 0.2);
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.25);
+}
+.news-tag-card.tag-cyan.active {
+  background-color: rgba(6, 182, 212, 0.25);
+  border-color: var(--c-cyan);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(6, 182, 212, 0.35);
+}
+
+.news-tag-card.tag-blue {
+  color: var(--c-blue);
+  border-color: rgba(96, 165, 250, 0.4);
+  background: var(--c-blue-bg);
+}
+.news-tag-card.tag-blue:hover {
+  border-color: var(--c-blue);
+  background: rgba(96, 165, 250, 0.2);
+  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.25);
+}
+.news-tag-card.tag-blue.active {
+  background-color: rgba(96, 165, 250, 0.25);
+  border-color: var(--c-blue);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(96, 165, 250, 0.35);
+}
+
+.news-tag-card.tag-purple, .news-tag-card.tag-custom {
+  color: var(--c-purple);
+  border-color: rgba(192, 132, 252, 0.4);
+  background: var(--c-purple-bg);
+}
+.news-tag-card.tag-purple:hover, .news-tag-card.tag-custom:hover {
+  border-color: var(--c-purple);
+  background: rgba(192, 132, 252, 0.2);
+  box-shadow: 0 2px 8px rgba(192, 132, 252, 0.25);
+}
+.news-tag-card.tag-purple.active, .news-tag-card.tag-custom.active {
+  background-color: rgba(192, 132, 252, 0.25);
+  border-color: var(--c-purple);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(192, 132, 252, 0.35);
+}
+
+/* Đường ngăn cách lưới Tin Nhanh */
+.news-grid-divider {
+  grid-column: 1 / -1;
+  border: none;
+  border-top: 1px dashed var(--border-color);
+  width: 100%;
+  height: 0;
+  margin: 3px 0;
+}
+
+/* Nút thêm thẻ mới trong lưới */
+.news-tag-card.btn-add-card {
+  border-style: dashed;
+  color: var(--text-secondary);
+  justify-content: center;
+  text-align: center;
+  background: transparent;
+  opacity: 0.8;
+  font-weight: 600;
+}
+
+.news-tag-card.btn-add-card:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  opacity: 1;
+  background: rgba(229, 193, 88, 0.03);
+}
+
+/* Các nút hành động trong chi tiết tin nhanh -> Đã được tách riêng ra file news-detail.css */
+
+/* CSS cho Modal Overlay & Content của khung Thêm Thẻ -> Đã được tách riêng ra file news-add.css */

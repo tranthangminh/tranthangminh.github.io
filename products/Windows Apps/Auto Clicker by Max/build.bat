@@ -66,6 +66,14 @@ for /d %%D in ("%~dp0src_*") do (
         )
     )
 
+    :: Bundle SVG icon files as embedded resources if present
+    pushd "%%D"
+    for /r %%F in (*.svg) do (
+        echo [*] Bundling SVG: %%~nxF
+        set "RES_ARGS=!RES_ARGS! /resource:"%%~fF","%%~nxF""
+    )
+    popd
+
     :: Check for application manifest
     set "MANIFEST_ARG="
     if exist "%%D\app.manifest" (

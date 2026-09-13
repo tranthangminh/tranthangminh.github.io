@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 24">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0, .st1, .st2 {
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2px;
+      }
+
+      .st0, .st3, .st2 {
+        fill-rule: evenodd;
+      }
+
+      .st1, .st2 {
+        fill: none;
+      }
+
+      .st3 {
+        opacity: .66;
+      }
+    </style>
+  </defs>
+  <polygon class="st3" points="14.47 14.52 5.41 14.52 .41 20.83 3.92 22.79 14.47 14.52"/>
+  <g>
+    <line class="st1" x1="10.86" y1="3.92" x2="20.08" y2="13.14"/>
+    <path class="st0" d="M13.87,6.93l5.27-5.27c.88-.88,2.32-.88,3.2,0s.88,2.32,0,3.2l-5.27,5.27-3.2-3.2Z"/>
+    <path class="st2" d="M17.96,11.02l-8.9,8.9c-.29.29-.77.29-1.07,0h0c-.29-.29-.77-.29-1.07,0l-2.49,2.49c-.79.79-2.07.79-2.86,0s-.79-2.07,0-2.86l2.49-2.49c.29-.29.29-.77,0-1.07h0c-.29-.29-.29-.77,0-1.07L12.98,6.04"/>
+  </g>
+</svg>

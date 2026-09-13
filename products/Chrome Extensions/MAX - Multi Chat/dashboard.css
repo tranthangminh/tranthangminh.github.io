@@ -1,0 +1,1848 @@
+
+
+/* Reset CSS */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  height: 100%;
+  font-family: var(--font-main);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* App Container Layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  position: relative; /* Anchor for sidebar-sub hover overlay */
+}
+
+/* ==================== COLUMN 1: MAIN SIDEBAR ==================== */
+.sidebar-main {
+  width: 72px;
+  background-color: var(--bg-sidebar-main);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  z-index: 10;
+  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+}
+
+/* Thêm đoạn này để hiển thị logo */
+.brand-logo img {
+  width: 100%; /* Bạn thay đổi con số này cho phù hợp với thiết kế */
+  height: auto; /* Giúp logo giữ đúng tỷ lệ, không bị méo */
+  display: block; /* Tránh khoảng trắng thừa dưới chân ảnh */
+  padding: 0 12px 12px 12px;
+}
+
+.sidebar-main-top-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.main-groups-list {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  overflow-y: auto;
+  padding: 16px 0;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  opacity: 0.25; /* Mờ khi không tương tác — tăng focus vào link web */
+  transition: var(--transition-speed);
+}
+
+.sidebar-main:hover .sidebar-main-footer, .sidebar-main:hover .main-groups-list{
+  opacity: 1; /* Mờ khi không tương tác — tăng focus vào link web */
+  transition: var(--transition-speed);
+}
+
+.main-groups-list::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome/Safari/Opera */
+}
+
+/* Group Action Buttons */
+.group-item {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background-color: var(--bg-sidebar-sub);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  
+}
+
+.group-item:hover {
+  border-radius: 12px;
+  background-color: var(--bg-hover);
+  transform: translateY(-2px);
+  color: var(--color-add-group);
+}
+
+.group-item .icon-mask {
+  width: 24px;
+  height: 24px;
+  background-color: var(--text-primary);
+  transition: background-color var(--transition-speed);
+}
+
+.group-item:not(.active):hover .icon-mask,
+.group-item:not(.active):hover [class^="icon-"],
+.group-item:not(.active):hover [class*=" icon-"] {
+  background-color: var(--color-add-group) !important;
+  color: var(--color-add-group) !important;
+}
+
+.group-item.active .icon-mask {
+  background-color: white !important;
+}
+
+.group-item.add-btn {
+  background-color: transparent;
+  border: 1px dashed var(--color-add-group);
+  color: var(--color-add-group);
+  box-shadow: none;
+}
+
+.group-item.add-btn .icon-add {
+  width: 18px;
+  height: 18px;
+}
+
+.group-item.add-btn:hover {
+  border-style: solid;
+  border-color: var(--color-add-group);
+  color: white;
+  background-color: var(--color-add-group);
+}
+
+.group-item.add-btn:hover .icon-add {
+  background-color: white !important;
+}
+
+.group-item.active {
+  border-radius: 12px;
+  background-color: var(--color-add-group);
+  border-color: var(--color-add-group);
+  color: white;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.group-item.active .icon-mask {
+  background-color: white !important;
+}
+
+.group-item.dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+}
+
+.dragging-main-group .group-item:not(.dragging) {
+  transition: transform 0.2s ease;
+}
+
+/* Active indicator strip */
+.group-item::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 16px;
+  width: 4px;
+  height: 16px;
+  border-radius: 0 4px 4px 0;
+  background-color: var(--text-primary);
+  opacity: 0;
+  transition: all var(--transition-speed);
+}
+
+.group-item:hover::before {
+  opacity: 0.5;
+  height: 24px;
+  top: 12px;
+}
+
+.group-item.active::before {
+  opacity: 1;
+  height: 32px;
+  top: 8px;
+  background-color: var(--color-add-group);
+}
+
+.sidebar-main-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+  align-items: center;
+  width: 100%;
+  opacity: 25%;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+  transition: var(--transition-speed);
+}
+
+.sidebar-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-sidebar-sub);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.sidebar-btn:hover {
+  background-color: var(--bg-hover);
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+.sidebar-btn.primary {
+  background-color: var(--bg-sidebar-sub);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.sidebar-btn.primary:hover {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+/* ==================== COLUMN 2: SUB SIDEBAR ==================== */
+.sidebar-sub {
+  /*
+   * Always position:absolute so it NEVER participates in flex layout.
+   * frame-container width is therefore completely unaffected by sidebar expansion.
+   */
+  position: absolute;
+  left: 72px; /* sidebar-main width */
+  top: 0;
+  height: 100%;
+  width: 68px;          /* collapsed width */
+  background-color: var(--bg-sidebar-sub);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s ease,
+              background-color var(--transition-speed),
+              border-color var(--transition-speed);
+  overflow: hidden;
+  overflow-x: hidden !important;
+}
+
+/* Triệt tiêu scrollbar ngang trên tất cả các thành phần con ở cột 2 */
+.sidebar-sub,
+.sidebar-sub * {
+  overflow-x: hidden !important;
+}
+
+/* Hover → expand width only; layout of frame-container is not touched */
+.sidebar-sub.expanded {
+  width: 240px;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+}
+
+/* ===================================================================
+   COLLAPSED STATE — applies when NOT hovering (always by default)
+   Key principle: icon và text luôn dùng cùng một layout.
+   Text bị clip tự nhiên bởi overflow:hidden trên sidebar-sub.
+   Khi expand, text dần hiện ra theo chiều rộng — không jump.
+   =================================================================== */
+
+/* Header: chỉ ẩn nút edit/delete (không có chỗ cho chúng) */
+.sidebar-sub:not(.expanded) #edit-main-group-btn,
+.sidebar-sub:not(.expanded) #delete-main-group-btn {
+  display: none !important;
+}
+
+/* Group header emoji icon — quá lớn cho 68px */
+.sidebar-sub:not(.expanded) .group-header-icon {
+  display: none !important;
+}
+
+.sidebar-sub.expanded .group-header-text{
+  transition: var(--transition-speed);
+}
+
+.sidebar-sub:not(.expanded) .group-header-text{
+  font-size: 14px;
+  transition: var(--transition-speed);
+}
+
+/* Action buttons & switches trên từng item — ẩn khi collapsed */
+.sidebar-sub:not(.expanded) .sub-group-actions,
+.sidebar-sub:not(.expanded) .tab-actions,
+.sidebar-sub:not(.expanded) .switch {
+  display: none !important;
+}
+
+/* Active-line indicator — ẩn khi collapsed (không đủ không gian) */
+.sidebar-sub:not(.expanded) .tab-link-item::before {
+  display: none !important;
+}
+
+/* Add Tab button — cần full width để hiển thị, ẩn khi collapsed */
+.sidebar-sub:not(.expanded) .tab-link-item.add-tab-btn {
+  display: none !important;
+}
+
+/* Active item style giữ nguyên (không còn cần override vì layout giống nhau) */
+/* Mọi rule khác (padding, justify-content, text visibility, icon margin)
+   đều được XÓA để layout luôn nhất quán giữa collapsed và expanded. */
+
+
+.sidebar-sub-header {
+  height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  background-color: var(--bg-sidebar-main);
+}
+
+.sidebar-sub-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-icon-small {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background var(--transition-speed);
+}
+
+.btn-icon-small:hover {
+  background-color: var(--bg-hover);
+}
+
+.btn-icon-small.danger:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.sub-groups-container {
+  flex: 1;
+  overflow-y: auto;
+  /*
+   * Không dùng horizontal padding ở đây — để tab-link-item tự xử lý (padding: 0 12px).
+   * Điều này đảm bảo icon luôn ở cùng vị trí dù sidebar collapsed hay expanded.
+   */
+  padding: 10px 10px;
+  
+  /* Firefox Scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+/* Custom Scrollbar for sub-groups-container */
+.sub-groups-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sub-groups-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sub-groups-container::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 10px;
+}
+
+.sub-groups-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-primary);
+}
+
+
+.sub-group-section {
+  margin-bottom: 20px;
+}
+
+.sub-group-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 4px;
+  height: 27px;
+}
+
+.sub-group-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  transition: var(--transition-speed);
+}
+
+.sidebar-sub.expanded .sub-group-title {
+  font-size: 12px;
+  transition: var(--transition-speed);
+}
+
+.sub-group-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.sub-group-actions .btn-icon-small:hover {
+  color: var(--color-add-sub-group);
+}
+
+.sub-group-actions .btn-icon-small.danger:hover {
+  color: var(--danger-color);
+}
+
+.sub-group-section:hover .sub-group-actions {
+  opacity: 1;
+}
+
+/* Tabs List */
+.tabs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tab-link-item {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+}
+
+.tab-link-item:hover {
+  background-color: var(--bg-hover);
+}
+
+.tab-link-item.active {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-color: var(--color-add-link);
+  color: var(--text-primary);
+}
+
+/* Small Action Icon Buttons inside sub-sidebar tabs & headers */
+.btn-icon-small {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: none;
+  background-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.2s ease;
+}
+
+.btn-icon-small .icon-mask {
+  width: 16px;
+  height: 16px;
+  background-color: var(--text-primary);
+  transition: background-color 0.2s ease;
+}
+
+.btn-icon-small.edit-btn .icon-mask {
+  mask-image: url('svg/edit.svg');
+  -webkit-mask-image: url('svg/edit.svg');
+}
+
+.btn-icon-small.clone-btn .icon-mask {
+  mask-image: url('svg/clone.svg');
+  -webkit-mask-image: url('svg/clone.svg');
+}
+
+.btn-icon-small.close-btn .icon-mask {
+  mask-image: url('svg/close.svg');
+  -webkit-mask-image: url('svg/close.svg');
+}
+
+.btn-icon-small.delete-btn .icon-mask {
+  mask-image: url('svg/clear.svg');
+  -webkit-mask-image: url('svg/clear.svg');
+}
+
+.btn-icon-small:hover {
+  background-color: var(--bg-hover);
+}
+
+.btn-icon-small.edit-btn:hover .icon-mask,
+.btn-icon-small.clone-btn:hover .icon-mask {
+  background-color: var(--accent-primary);
+}
+  background-color: var(--accent-primary, #6366f1);
+}
+
+.btn-icon-small.danger:hover .icon-mask {
+  background-color: var(--danger-color, #ef4444);
+}
+
+.tab-link-item.add-tab-btn {
+  background-color: transparent;
+  border: 1px dashed var(--color-add-link);
+  color: var(--color-add-link);
+  box-shadow: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.tab-link-item.add-tab-btn .tab-title {
+  flex: none; /* Giữ kích thước theo nội dung, không co giãn */
+}
+
+.tab-link-item.add-tab-btn:hover {
+  border-style: solid;
+  border-color: var(--color-add-link);
+  color: white;
+  background-color: var(--color-add-link);
+}
+
+.tab-link-item.add-tab-btn .icon-add {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.tab-favicon {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  flex-shrink: 0; /* Tránh bị co lại trong Flexbox */
+  object-fit: contain; /* Căn chỉnh tỷ lệ ảnh vừa vặn trong khung */
+  margin-right: 0px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.sidebar-sub.expanded .tab-favicon {
+  margin-right: 12px;
+}
+
+.text-icon-avatar {
+  color: white !important;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  word-break: break-word !important;
+  overflow: hidden !important;
+  padding: 1px !important;
+  white-space: normal !important;
+}
+
+/* Style 1: Corner Dot Pulse Indicators (Top-Left Corner) */
+.tab-link-item.connection-error::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.tab-link-item.loaded:not(.connection-error)::after,
+.tab-link-item.active:not(.connection-error)::after,
+.tab-link-item.active-sibling:not(.connection-error)::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.tab-link-item.connection-error .tab-title {
+  color: var(--danger-color) !important;
+  font-weight: 600;
+}
+
+/* Sound Playing Indicator Icon - Bottom-Left Corner Badge */
+.tab-sound-icon {
+  position: absolute;
+  top: 2px;
+  left: 33px;
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  display: inline-block;
+  background-color: var(--text-primary);
+  mask-image: url('svg/sound.svg');
+  -webkit-mask-image: url('svg/sound.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  animation: soundPulse 0.5s infinite ease-in-out;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes soundPulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+
+/* Dual Account Badge Indicator - Bottom-Left Corner Badge for Normal Tabs */
+.badge-dual-acc {
+  position: absolute;
+  left: 2px;
+  bottom: 2px;
+  height: 13px;
+  transform-origin: bottom left;
+  font-size: 8px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 2px;
+  padding: 1px 4px 1px 2px;
+  box-shadow: 0 0 6px rgba(99, 102, 241, 0.6);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.badge-dual-acc.badge-dual-left,
+.badge-dual-acc.badge-dual-right {
+  transform: scale(0.9);
+  padding: 1px 3px;
+}
+
+.badge-dual-acc.badge-dual-left {
+  left: 2px;
+  top: 20px;
+}
+
+.badge-dual-acc.badge-dual-right {
+  left: 30px !important;
+  bottom: 2px;
+}
+
+.tab-title {
+  font-size: 13px;
+  flex: 1;
+  /*
+   * white-space: nowrap — chìa khóa cho progressive reveal:
+   * Text không bao giờ wrap, chỉ bị clip bởi overflow:hidden của sidebar.
+   * Khi sidebar expand từ 68px → 240px, text dần hiện ra từ trái sang phải.
+   */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  margin-right: 8px;
+  flex-shrink: 1;
+  min-width: 0;
+  display: none;
+}
+
+.sidebar-sub.expanded .tab-title {
+  display: flex;
+}
+
+.tab-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  gap: 4px;
+  transition: opacity var(--transition-speed);
+  padding: 4px 4px 4px 12px;
+  border-radius: 6px;
+}
+
+.tab-link-item:hover .tab-actions {
+  opacity: 1;
+  pointer-events: auto;
+  background: linear-gradient(90deg, transparent 0%, var(--bg-hover) 25%, var(--bg-hover) 100%);
+}
+
+.tab-link-item.active:hover .tab-actions {
+  background: linear-gradient(90deg, transparent 0%, var(--bg-active) 25%, var(--bg-active) 100%);
+}
+
+.sidebar-sub-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+#add-sub-group-btn {
+  background-color: transparent;
+  border: 1px dashed var(--color-add-sub-group);
+  color: var(--color-add-sub-group);
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--transition-speed);
+  /* Chiều cao cố định — không thay đổi giữa collapsed và expanded */
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Khi sidebar collapse: ẩn text, chỉ giữ icon */
+.sidebar-sub:not(.expanded) #add-sub-group-btn .icon-add {
+  margin: 0;
+}
+.sidebar-sub:not(.expanded) #add-sub-group-btn span:not(.icon-add) {
+  display: none;
+}
+
+#add-sub-group-btn:hover {
+  border-style: solid;
+  border-color: var(--color-add-sub-group);
+  color: white !important;
+  background-color: var(--color-add-sub-group);
+}
+
+#add-sub-group-btn .icon-add {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* ==================== COLUMN 3: MAIN CONTENT & IFRAMES ==================== */
+.frame-container {
+  flex: 1;
+  /*
+   * Fixed left offset equal to the collapsed sidebar-sub width.
+   * sidebar-sub is always position:absolute (overlay), so we reserve
+   * this space manually. Width never changes — no jump on hover.
+   */
+  margin-left: 68px;
+  position: relative;
+  background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+
+
+/* Iframe Container & Persistence */
+.frames-holder {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.iframe-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  opacity: 0;
+  background-color: white; /* Standard white background to avoid screen flickering */
+}
+
+.iframe-wrapper.active {
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.iframe-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Sleek warning layout when iframe is blocked */
+.external-tab-warning {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 30px;
+  box-sizing: border-box;
+  text-align: center;
+  background-color: var(--bg-primary); /* Sync with theme background */
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  animation: warningFadeIn 0.4s ease-out;
+}
+
+.external-tab-warning .warning-icon-svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 20px;
+  background-color: var(--accent-primary); /* Nhuộm chuẩn màu tím của ứng dụng */
+  -webkit-mask: url("svg/website.svg") no-repeat center;
+  mask: url("svg/website.svg") no-repeat center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.6));
+  animation: warningPulseRotate 4s infinite linear;
+}
+
+.external-tab-warning h3 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  background: linear-gradient(135deg, #a5b4fc, var(--accent-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.external-tab-warning p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  max-width: 340px;
+  margin: 0 0 24px 0;
+}
+
+.external-tab-warning .open-external-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white !important;
+  background-color: var(--accent-primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.external-tab-warning .open-external-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+  background-color: #4f46e5;
+}
+
+.external-tab-warning .open-external-btn:active {
+  transform: translateY(0) scale(1);
+}
+
+@keyframes warningPulseRotate {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.06) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
+@keyframes warningFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== BUTTONS & UI GENERAL ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-primary);
+}
+
+.btn-secondary {
+  background-color: var(--bg-sidebar-sub);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-hover);
+}
+
+/* Form Inputs */
+.form-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.form-group input[type="radio"] {
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer;
+}
+
+.form-group input[type="radio"]:focus {
+  outline: none;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--border-hover);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.form-help {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ==================== MODAL STYLES ==================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  background-color: var(--bg-sidebar-sub);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  transform: translateY(-20px);
+  transition: transform 0.2s ease;
+}
+
+#tab-modal .modal-content {
+  width: 460px;
+}
+
+#main-group-modal .modal-content {
+  width: 480px;
+}
+
+.modal-overlay.show .modal-content {
+  transform: translateY(0);
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.close-modal {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.close-modal:hover {
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Emoji Selector styles moved to modals/main-group.css */
+
+/* ==================== CONTENT HEADER / ADDRESS BAR ==================== */
+.content-header {
+  height: 48px;
+  background-color: var(--bg-sidebar-sub);
+  border-bottom: 1px solid var(--border-color);
+  display: none; /* Hidden by default, displayed via JS when tab is active */
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  transition: background-color var(--transition-speed);
+}
+
+.browser-controls, .browser-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-control {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-speed);
+}
+
+.btn-control:hover {
+  background-color: var(--bg-hover);
+}
+
+.address-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-sidebar-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 12px;
+  gap: 8px;
+}
+
+.lock-icon {
+  font-size: 12px;
+  color: #10b981; /* Green lock representing HTTPS secure state */
+}
+
+#address-bar-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 13px;
+  outline: none;
+  width: 100%;
+}
+
+.frames-holder {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==================== DRAG & DROP STYLING ==================== */
+.tab-link-item[draggable="true"] {
+  cursor: grab;
+}
+
+.tab-link-item.dragging {
+  opacity: 0.4;
+  border: 1px dashed var(--color-add-link);
+  background-color: var(--bg-hover);
+  cursor: grabbing;
+}
+
+.tab-link-item.drag-over {
+  border-top: 2px solid var(--color-add-link);
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.group-item.drag-over-group {
+  background-color: var(--color-add-group) !important;
+  color: white !important;
+  border-color: var(--color-add-group) !important;
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 4px 12px rgba(45, 212, 191, 0.25);
+}
+
+/* ==================== SVG MASK ICONS ==================== */
+.icon-refresh {
+  background-color: currentColor;
+  mask: url(svg/refresh.svg) no-repeat center;
+  -webkit-mask: url(svg/refresh.svg) no-repeat center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.btn-icon-small:hover .icon-refresh {
+  background-color: var(--accent-primary);
+}
+
+.icon-add {
+  background-color: currentColor;
+  mask: url(svg/add.svg) no-repeat center;
+  -webkit-mask: url(svg/add.svg) no-repeat center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+  transition: background-color var(--transition-speed);
+}
+
+.icon-open-tab {
+  background-color: var(--text-primary);
+  mask: url(svg/open-tab.svg) no-repeat center;
+  -webkit-mask: url(svg/open-tab.svg) no-repeat center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+  transition: background-color var(--transition-speed);
+}
+
+.btn-icon-small:hover .icon-open-tab {
+  background-color: var(--accent-primary);
+}
+
+.icon-sub-sidebar-toggle {
+  background-color: var(--text-secondary);
+  mask: url(svg/close.svg) no-repeat center;
+  -webkit-mask: url(svg/close.svg) no-repeat center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  width: 22px;
+  height: 22px;
+  display: block;
+  margin: 0 auto;
+  transition: background-color var(--transition-speed);
+}
+
+.sidebar-btn:hover .icon-sub-sidebar-toggle {
+  background-color: var(--accent-primary);
+  filter: brightness(1.5);
+}
+
+/* Dynamic mask icon change when collapsed */
+#btn-toggle-sub-sidebar.collapsed .icon-sub-sidebar-toggle {
+  mask-image: url(svg/open.svg);
+  -webkit-mask-image: url(svg/open.svg);
+  background-color: #ffffff !important;
+}
+#btn-toggle-sub-sidebar.collapsed {
+  background-color: var(--accent-primary);
+}
+
+#btn-toggle-split-view.active {
+  background-color: var(--accent-primary);
+}
+
+#btn-toggle-split-view.active .icon-split-view {
+  background-color: #ffffff !important;
+}
+
+#btn-ai-multichat-group .icon-mask {
+  mask-image: url('svg/main-icons/AI.svg');
+  -webkit-mask-image: url('svg/main-icons/AI.svg');
+}
+
+#btn-ai-multichat-group:hover .icon-mask {
+  background-color: var(--accent-primary) !important;
+}
+
+#btn-ai-multichat-group.active {
+  border-radius: 12px;
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+#btn-ai-multichat-group.active:hover .icon-mask{
+  background-color: var(--text-primary) !important;
+}
+
+/* AI Group Active & Hover Indicator Strip (Vạch chỉ báo bên mép màu tím) */
+#btn-ai-multichat-group.active::before{
+  background-color: var(--accent-primary) !important;
+}
+
+#btn-toggle-split-view .icon-mask {
+  width: 22px;
+  height: 22px;
+  background-color: var(--text-secondary);
+  mask-image: url('svg/split-view.svg');
+  -webkit-mask-image: url('svg/split-view.svg');
+  transition: background-color 0.2s;
+}
+
+#btn-toggle-split-view:hover .icon-mask {
+  background-color: var(--accent-primary);
+}
+#btn-toggle-split-view.active .icon-mask {
+  background-color: #ffffff !important;
+}
+
+#btn-toggle-window-mode .icon-mask {
+  width: 22px;
+  height: 22px;
+  background-color: var(--text-secondary);
+  mask-image: url('svg/window.svg');
+  -webkit-mask-image: url('svg/window.svg');
+  transition: background-color 0.2s;
+}
+
+#btn-toggle-window-mode:hover .icon-mask {
+  background-color: var(--accent-primary);
+}
+#btn-toggle-window-mode.active .icon-mask {
+  background-color: #ffffff !important;
+}
+
+.icon-add-default {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: var(--text-secondary); /* Luôn màu xanh dương */
+  mask-image: url('svg/add-default.svg');
+  -webkit-mask-image: url('svg/add-default.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  transition: filter 0.2s;
+}
+
+
+
+/* ==================== SUB-GROUP CHANNELS GRID VISIBILITY ==================== */
+#sub-group-modal .modal-content {
+  width: 480px; /* Nhỏ lại một chút cho vừa vặn */
+  max-width: 95%;
+}
+
+/* ==================== startup flash highlight animations ==================== */
+.tab-link-item.add-tab-btn.flash-highlight {
+  animation: flash-pulse-link 1s ease-in-out 3;
+}
+
+#btn-add-default-channels.flash-highlight {
+  animation: flash-pulse-preset 1s ease-in-out 3;
+}
+
+@keyframes flash-pulse-link {
+  0%, 100% {
+    background-color: transparent;
+    border-color: var(--color-add-link);
+    color: var(--color-add-link);
+    box-shadow: none;
+  }
+  50% {
+    background-color: var(--color-add-link);
+    border-color: var(--color-add-link);
+    color: white;
+    box-shadow: 0 0 15px var(--color-add-link);
+  }
+}
+
+@keyframes flash-pulse-preset {
+  0%, 100% {
+    background-color: var(--bg-sidebar-sub);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    box-shadow: none;
+  }
+  50% {
+    background-color: var(--color-add-preset);
+    border-color: var(--color-add-preset);
+    color: white;
+    box-shadow: 0 0 15px var(--color-add-preset);
+  }
+}
+
+/* Integrated Icon Config & Swatches styles moved to modals/tab-link.css */
+
+/* ==================== SPLIT VIEW LAYOUT & SYSTEM ==================== */
+
+.sidebar-btn:hover .icon-add-default {
+  filter: brightness(1.5);
+}
+
+.split-view-pane {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.pane-header-bar {
+  height: 38px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s, border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.pane-header-bar .pane-header-title {
+  color: var(--text-muted);
+}
+
+.pane-header-bar .pane-address-container {
+  opacity: 0.5;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+
+.pane-header-bar .btn-icon-small {
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.pane-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pane-header-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+
+.pane-address-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-sidebar-main);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  height: 26px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.pane-address-container .lock-icon {
+  font-size: 10px;
+  margin-right: 6px;
+  opacity: 0.6;
+}
+
+.pane-address-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 11px;
+  outline: none;
+  text-align: left;
+}
+
+.pane-header-bar:hover {
+  background-color: var(--bg-hover);
+}
+
+.pane-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: white;
+}
+
+.split-view-pane.active-view-stroke .pane-header-bar {
+  background-color: var(--bg-active);
+}
+
+.split-view-pane.active-view-stroke .pane-header-title {
+  color: var(--color-add-preset) !important;
+}
+
+.split-view-pane.active-view-stroke .pane-address-container {
+  opacity: 1 !important;
+}
+
+.split-view-pane.active-view-stroke .btn-icon-small {
+  opacity: 1 !important;
+}
+
+.split-view-pane.active-view-stroke .btn-icon-small span {
+  background-color: var(--color-add-preset) !important;
+}
+
+/* Draggable Divider Styles */
+.split-divider {
+  width: 6px;
+  height: 100%;
+  background-color: var(--bg-sidebar-sub);
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 20;
+  transition: background-color 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.split-divider:hover,
+.split-divider.dragging {
+  background-color: var(--border-hover);
+}
+
+.split-divider-line {
+  width: 2px;
+  height: 30px;
+  background-color: var(--border-color);
+  border-radius: 1px;
+  transition: background-color 0.2s;
+}
+
+.split-divider:hover .split-divider-line,
+.split-divider.dragging .split-divider-line {
+  background-color: var(--color-tab-link);
+}
+
+/* Placeholder for unselected view */
+.pane-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  color: var(--text-muted);
+  z-index: 5;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.pane-placeholder .placeholder-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+.pane-placeholder .placeholder-text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Temporary transparent layer to prevent iframe mouse interception during resize */
+.resizing-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  cursor: col-resize;
+}
+
+.frames-holder.split-active {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+/* Drag over view pane effect */
+.split-view-pane.drag-over-pane {
+  position: relative;
+}
+.split-view-pane.drag-over-pane::before {
+  content: "Drop here to open";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(99, 102, 241, 0.15);
+  border: 3px dashed var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-main);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  z-index: 10000;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* Prevent iframe mouse interception during tab dragging */
+body.dragging-tab iframe {
+  pointer-events: none !important;
+}
+
+/* Split View Animation Transition */
+.frames-holder.animating-split .split-view-pane {
+  transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+/* ==================== SPLIT FAVICON DISPLAY (DUAL VIEW DIAGONAL) ==================== */
+.tab-favicon-split-wrapper {
+  position: relative !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  flex-shrink: 0 !important;
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+
+.favicon-diagonal {
+  position: absolute !important;
+  width: 21px !important;
+  height: 21px !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-sizing: border-box !important;
+  background-color: var(--bg-tertiary, #1e1e2e);
+}
+
+.favicon-diagonal.diagonal-top-left {
+  top: 0 !important;
+  left: 0 !important;
+}
+
+.favicon-diagonal.diagonal-bottom-right {
+  bottom: 0 !important;
+  right: 0 !important;
+}
+
+.favicon-diagonal img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  padding: 1.5px !important;
+  box-sizing: border-box !important;
+}
+
+.favicon-diagonal .tab-favicon-fallback {
+  font-size: 10px !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.favicon-diagonal.text-avatar {
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  line-height: 1 !important;
+  user-select: none !important;
+  text-align: center !important;
+  word-break: break-word !important;
+}
+
+/* ==================== AUTOHIDE SIDEBAR (SUPER COLLAPSE) ==================== */
+.sidebars-wrapper {
+  display: flex;
+  height: 100%;
+  position: relative; /* Anchor for sidebar-sub absolute positioning */
+  flex-shrink: 0;
+  transition: transform var(--transition-speed) ease;
+}
+
+/* Toggle Autohide Button Icon */
+#btn-toggle-autohide.active {
+  background-color: var(--accent-primary);
+}
+#btn-toggle-autohide .icon-mask {
+  width: 22px;
+  height: 22px;
+  background-color: var(--text-secondary);
+  mask-image: url('svg/hide.svg');
+  -webkit-mask-image: url('svg/hide.svg');
+  transition: background-color 0.2s;
+}
+
+#btn-toggle-autohide:hover .icon-mask {
+  background-color: var(--accent-primary);
+}
+#btn-toggle-autohide.active .icon-mask {
+  background-color: #ffffff !important;
+}
+
+#btn-export-csv .icon-mask {
+  width: 16px;
+  height: 16px;
+  mask-image: url('svg/download.svg');
+  -webkit-mask-image: url('svg/download.svg');
+}
+
+#btn-import-csv .icon-mask {
+  width: 16px;
+  height: 16px;
+  mask-image: url('svg/upload.svg');
+  -webkit-mask-image: url('svg/upload.svg');
+}
+
+#btn-sync-google-sheet .icon-mask {
+  width: 14px;
+  height: 14px;
+  mask-image: url('svg/refresh.svg');
+  -webkit-mask-image: url('svg/refresh.svg');
+}
+
+/* Settings & Info Modal Button Icon */
+#btn-open-settings-modal .icon-mask {
+  width: 22px;
+  height: 22px;
+  background-color: var(--text-secondary);
+  mask-image: url('svg/setting.svg');
+  -webkit-mask-image: url('svg/setting.svg');
+  transition: background-color 0.2s, transform 0.3s ease;
+}
+
+#btn-open-settings-modal:hover .icon-mask {
+  background-color: var(--accent-primary);
+  transform: rotate(45deg);
+}
+#btn-open-settings-modal.active .icon-mask {
+  background-color: #ffffff !important;
+}
+
+/* Autohide Thin Bar (35px) */
+.autohide-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 35px;
+  height: 100%;
+  background-color: var(--bg-sidebar-main);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 50; /* Below the wrapper but above iframe */
+  transition: background-color 0.2s;
+}
+
+.autohide-bar:hover {
+  background-color: var(--bg-active);
+}
+
+.icon-autohide-arrow {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--text-secondary);
+  mask-image: url('svg/arrow.svg');
+  -webkit-mask-image: url('svg/arrow.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  transform: rotate(0deg); /* points right initially */
+  transition: transform 0.3s, background-color 0.2s;
+}
+
+.autohide-bar:hover .icon-autohide-arrow {
+  background-color: var(--accent-primary);
+}
+
+/* Autohide Active Layout States */
+.app-container.autohide-active .sidebars-wrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  z-index: 100;
+  width: 140px; /* sidebar-main (72px) + sidebar-sub collapsed (68px) */
+  transform: translateX(-100%);
+  transition: width var(--transition-speed) ease, transform var(--transition-speed) ease;
+}
+
+.app-container.autohide-active .sidebars-wrapper.expanded {
+  width: 312px; /* sidebar-main (72px) + sidebar-sub expanded (240px) */
+}
+
+.app-container.autohide-active .frame-container {
+  margin-left: 35px;
+  width: calc(100vw - 35px);
+}
+
+/* Hover to Show Sidebars Overlay */
+.app-container.autohide-active.sidebar-visible .sidebars-wrapper {
+  transform: translateX(0);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+.app-container.autohide-active.sidebar-visible .icon-autohide-arrow {
+  transform: rotate(180deg); /* point left when sidebar is visible */
+}
+
+
+

@@ -1,0 +1,193 @@
+/* Welcome Screen & Card Styles */
+.welcome-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  background-color: var(--bg-primary);
+  padding: 24px;
+}
+
+.welcome-card {
+  width: 540px;
+  max-width: 95%;
+  text-align: center;
+  padding: 42px 36px;
+  background: var(--bg-sidebar-sub);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg), 0 20px 45px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+  font-family: var(--font-main) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.welcome-card h1 {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--accent-primary) !important;
+  -webkit-text-fill-color: var(--accent-primary) !important;
+  background: none !important;
+  letter-spacing: -1px;
+  font-family: var(--font-main) !important;
+}
+
+.welcome-subtitle {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  margin-bottom: 30px;
+  line-height: 1.5;
+  font-family: var(--font-main) !important;
+}
+
+/* Quick Start Guide Steps */
+.welcome-guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.guide-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background-color: var(--bg-sidebar-main);
+  border: 1px solid var(--border-color);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-main) !important;
+}
+
+.guide-step:hover {
+  transform: translateY(-2.5px);
+  background-color: var(--bg-hover);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+}
+
+/* Step 1: Add Group */
+.guide-step.step-group:hover {
+  border-color: var(--color-add-group);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.18);
+}
+.guide-step.step-group .step-number {
+  background-color: var(--color-add-group);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+}
+
+/* Step 2: Add Sub-group */
+.guide-step.step-sub-group:hover {
+  border-color: var(--color-add-sub-group);
+  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.18);
+}
+.guide-step.step-sub-group .step-number {
+  background-color: var(--color-add-sub-group);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+/* Step 3: Add Link */
+.guide-step.step-link:hover {
+  border-color: var(--color-add-link);
+  box-shadow: 0 8px 24px rgba(96, 165, 250, 0.18);
+}
+.guide-step.step-link .step-number {
+  background-color: var(--color-add-link);
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+}
+
+/* Step 4: Backup & Restore */
+.guide-step.step-backup:hover {
+  border-color: #a855f7;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.18);
+}
+.guide-step.step-backup .step-number {
+  background-color: #a855f7;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+}
+
+
+.step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all var(--transition-speed);
+}
+
+.step-info {
+  flex: 1;
+}
+
+.step-info h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  font-family: var(--font-main) !important;
+}
+
+.step-info p {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  font-family: var(--font-main) !important;
+}
+
+.badge {
+  background-color: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--text-primary);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+}
+
+.badge.badge-group {
+  border-color: var(--color-add-group);
+  color: var(--color-add-group);
+}
+.badge.badge-group .icon-add {
+  background-color: var(--color-add-group);
+}
+
+.badge.badge-sub-group {
+  border-color: var(--color-add-sub-group);
+  color: var(--color-add-sub-group);
+}
+.badge.badge-sub-group .icon-add {
+  background-color: var(--color-add-sub-group);
+}
+
+.badge.badge-link {
+  border-color: var(--color-add-link);
+  color: var(--color-add-link);
+}
+.badge.badge-link .icon-add {
+  background-color: var(--color-add-link);
+}
+
+.badge.badge-backup {
+  border-color: #a855f7;
+  color: #a855f7;
+}
+

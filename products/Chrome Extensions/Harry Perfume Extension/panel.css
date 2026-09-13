@@ -1,0 +1,546 @@
+/* ==========================================================================
+   LOCAL FONT NUNITO (VARIABLE FONT - 100% OFFLINE)
+   ========================================================================== */
+@font-face {
+  font-family: 'Nunito';
+  src: url('Nunito/Nunito-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('Nunito/Nunito-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+* {
+  font-family: "Nunito", sans-serif !important;
+}
+
+/* Các biến màu sắc hệ thống đã được chuyển sang theme.css */
+
+/* Tùy chỉnh thanh cuộn thống nhất toàn hệ thống (Single Unified Scrollbar Rule) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+  cursor: pointer;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-yellow);
+}
+
+body {
+  font-family: "Nunito", sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 0;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Header thương hiệu */
+.header-container {
+  position: relative;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Nút bí mật Admin */
+.btn-secret-admin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: default;
+  z-index: 9999;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.brand-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px 6px 20px;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+/* Quy tắc CSS Masking chuẩn (Mục 5 - MAX-RULES) */
+.icon-mask {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  flex-shrink: 0;
+}
+
+.brand-title-logo {
+  height: 22px;
+  width: 144px;
+  background-color: var(--text-primary);
+  display: block;
+}
+
+/* Khu vực thông báo tiến trình & nút Refresh bên phải */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.header-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: right;
+  line-height: 1.15;
+  font-size: 9px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.progress-line1 {
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: 9px;
+}
+
+.progress-line2 {
+  color: var(--gold-primary);
+  font-weight: 700;
+  white-space: nowrap;
+  font-size: 9.5px;
+}
+
+.header-progress.is-error .progress-line1,
+.header-progress.is-error .progress-line2 {
+  color: var(--c-red);
+}
+
+.header-progress.is-success .progress-line2 {
+  color: var(--c-green);
+}
+
+/* Nút refresh icon góc trên bên phải */
+.btn-refresh-icon {
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  opacity: 0.85;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.btn-refresh-icon .refresh-svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.btn-refresh-icon .refresh-svg .st0 {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2px;
+  transition: stroke var(--transition);
+}
+
+.btn-refresh-icon:hover {
+  opacity: 1;
+  background: var(--c-yellow-bg);
+  border-color: rgba(229, 193, 88, 0.25);
+}
+
+.btn-refresh-icon:hover .refresh-svg .st0 {
+  stroke: var(--gold-primary);
+}
+
+.btn-refresh-icon:active {
+  transform: scale(0.92);
+}
+
+/* Khi đang làm mới ngầm (is-refreshing) */
+.btn-refresh-icon.is-refreshing {
+  opacity: 1;
+  background: var(--c-yellow-bg);
+  border-color: rgba(229, 193, 88, 0.35);
+}
+
+.btn-refresh-icon.is-refreshing .refresh-svg {
+  animation: spin 1s infinite linear;
+}
+
+.btn-refresh-icon.is-refreshing .refresh-svg .st0 {
+  stroke: var(--gold-primary);
+}
+
+/* Khi làm mới thất bại (refresh-failed) - Nút chuyển sang màu ĐỎ */
+.btn-refresh-icon.refresh-failed {
+  opacity: 1;
+  background: var(--c-red-bg);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.25);
+}
+
+.btn-refresh-icon.refresh-failed .refresh-svg .st0 {
+  stroke: var(--c-red) !important;
+}
+
+.btn-refresh-icon.refresh-failed:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: var(--c-red);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Định dạng Button chung */
+.btn {
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all var(--transition-speed) ease;
+}
+
+.btn-retry {
+  background: var(--gold-primary);
+  color: var(--text-dark);
+  margin-top: 10px;
+}
+
+.btn-retry:hover {
+  background: var(--gold-light);
+  box-shadow: 0 4px 12px var(--gold-glow);
+}
+
+/* Nút copy nhỏ tích hợp trong card */
+.btn-copy-small {
+  background: rgba(229, 193, 88, 0.1);
+  color: var(--gold-primary);
+  border: 1px solid rgba(229, 193, 88, 0.2);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.btn-copy-small:hover {
+  background: var(--gold-primary);
+  color: var(--text-dark);
+  border-color: var(--gold-primary);
+}
+
+/* Loading Spinner */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(229, 193, 88, 0.1);
+  border-top-color: var(--gold-primary);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Trạng thái lỗi kết nối */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 14px;
+  text-align: center;
+  background-color: rgba(239, 68, 68, 0.05);
+  border: 1px dashed rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.error-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.error-container p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Trạng thái trống */
+.empty-state {
+  text-align: center;
+  padding: 40px 10px;
+  color: var(--text-secondary);
+}
+
+.empty-icon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Toast thông báo */
+.toast {
+  position: fixed;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(22, 22, 26, 0.95);
+  border: 1px solid var(--gold-primary);
+  color: var(--text-primary);
+  padding: 10px 16px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 9999;
+  box-shadow: 0 4px 15px rgba(229, 193, 88, 0.25);
+  backdrop-filter: blur(8px);
+  transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.toast.show {
+  bottom: 24px;
+}
+
+.toast-icon {
+  color: var(--gold-primary);
+}
+
+/* Tab Navigation */
+.tab-row {
+  display: flex;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  margin: 0px 10px;
+  gap: 4px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  font-family: "Outfit", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  text-align: center;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  background-color: rgba(229, 193, 88, 0.12);
+  color: var(--gold-primary);
+  box-shadow: 0 2px 8px var(--gold-glow);
+  border: 1px solid rgba(229, 193, 88, 0.35);
+}
+
+.tab-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+/* Modal Đăng nhập Secret Admin */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.login-modal-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 300px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+.login-modal-box .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.login-modal-box .modal-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold-primary);
+}
+
+.btn-close-modal {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.btn-close-modal:hover {
+  color: var(--c-red);
+}
+
+.login-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.login-form label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.login-form input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.login-form input:focus {
+  border-color: var(--gold-primary);
+}
+
+.login-error-msg {
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.btn-submit {
+  width: 100%;
+  background: var(--gold-primary);
+  color: var(--text-dark);
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-submit:hover {
+  background: var(--gold-light);
+}

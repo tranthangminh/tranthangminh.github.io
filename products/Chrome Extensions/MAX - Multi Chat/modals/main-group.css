@@ -1,0 +1,50 @@
+/* Icon Selector (Main Group modal) */
+.emoji-selector {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-sidebar-main);
+  margin-bottom: 12px;
+  /* Không dùng max-height / overflow-y — grid tự cao theo số icon */
+}
+
+.emoji-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+  aspect-ratio: 1;
+}
+
+.emoji-option img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  /* Tô màu icon SVG theo theme */
+  filter: brightness(0) invert(0.7);
+  transition: filter 0.15s;
+}
+
+.emoji-option:hover {
+  background-color: var(--bg-hover);
+}
+
+.emoji-option:hover img {
+  filter: brightness(0) invert(1);
+}
+
+.emoji-option.selected {
+  background-color: var(--accent-glow);
+  border-color: var(--accent-primary);
+}
+
+.emoji-option.selected img {
+  filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(214deg) brightness(118%) contrast(119%);
+}

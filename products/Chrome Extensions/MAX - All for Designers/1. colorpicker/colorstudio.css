@@ -1,0 +1,294 @@
+/* Color Studio Panel Overlay & Modal (Photoshop Style) */
+
+.color-studio-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 92%;
+  max-width: 320px;
+  max-height: 92vh;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.color-studio-panel.hidden {
+  display: none !important;
+}
+
+/* Header - Styled identically to Settings Panel */
+.color-studio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  flex-shrink: 0;
+}
+
+#color-studio-close-btn {
+  background-color: var(--c-red, #dc2626) !important;
+  border: 1px solid var(--c-red, #dc2626) !important;
+  color: var(--text-primary) !important;
+}
+
+#color-studio-close-btn .icon-mask {
+  background-color: var(--text-primary) !important;
+}
+
+#color-studio-close-btn:hover {
+  background-color: #ef4444 !important;
+  color: var(--text-primary) !important;
+  transform: scale(1) !important;
+  filter: brightness(1.2) !important;
+}
+
+#color-studio-close-btn:hover .icon-mask {
+  background-color: var(--text-primary) !important;
+}
+
+.color-studio-title {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  background: var(--text-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.color-studio-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+}
+
+/* Row 1: 2D Spectrum Box & 1D Hue Slider (100% Width) */
+.studio-spectrum-row {
+  display: flex;
+  gap: 12px;
+  width: 294px;
+  height: 256px;
+  align-items: stretch;
+}
+
+/* 2D Spectrum Box - 100% Fluid Width */
+.studio-spectrum-wrapper {
+  position: relative;
+  flex: 1;
+  width: 256px;
+  height: 256px;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.studio-spectrum-bg {
+  width: 256px;
+  height: 256px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.studio-spectrum-sat {
+  width: 256px;
+  height: 256px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(to right, #ffffff, transparent);
+}
+
+.studio-spectrum-val {
+  width: 256px;
+  height: 256px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(to top, #000000, transparent);
+}
+
+/* 2D Circle Handle */
+.studio-picker-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8), inset 0 0 2px rgba(0, 0, 0, 0.8);
+  border-radius: var(--border-radius-full);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* 1D Hue Slider */
+.studio-hue-wrapper {
+  position: relative;
+  width: 26px;
+  height: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  background: linear-gradient(to bottom, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+  flex-shrink: 0;
+}
+
+.studio-hue-handle {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+  border-radius: var(--border-radius-sm);
+  transform: translateY(-50%);
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Row 2: Actions & Comparison Row: [Add Color] [new | current] */
+.studio-actions-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Add Color Button */
+.studio-add-btn {
+  flex: 1;
+  height: 60px;
+}
+
+/* New vs Current Color Comparison Box (Horizontal Split: [new][current]) */
+.studio-color-compare-box {
+  width: 180px;
+  height: 60px;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.studio-compare-half {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-sm);
+  font-weight: 700;
+  text-transform: lowercase;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s ease;
+}
+
+.studio-compare-new {
+  cursor: default;
+}
+
+.studio-compare-current:hover {
+  filter: brightness(1.1);
+}
+
+/* Bottom Area: 4 Color Input Code Blocks */
+.studio-inputs-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius-md);
+  padding: 12px;
+}
+
+.studio-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.studio-input-label {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.studio-input-fields {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.studio-field-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-sm);
+  padding: 2px 6px;
+}
+
+.studio-field-group:focus-within {
+  border-color: var(--accent-primary);
+}
+
+.studio-field-prefix {
+  font-size: var(--font-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.studio-number-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  text-align: center;
+  padding: 2px 0;
+  -moz-appearance: textfield;
+}
+
+.studio-number-input::-webkit-outer-spin-button,
+.studio-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.studio-hex-input {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 0px;
+  border-radius: var(--border-radius-sm);
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-md);
+  font-weight: 700;
+  padding: 4px 8px;
+  text-transform: uppercase;
+}
+
+.studio-hex-input:focus {
+  border-color: var(--accent-primary);
+}

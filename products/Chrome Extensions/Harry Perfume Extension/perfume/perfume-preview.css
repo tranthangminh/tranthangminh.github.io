@@ -1,0 +1,557 @@
+/* ==========================================================================
+   Nước Hoa - Xem Chi Tiết & Tư Vấn (Perfume Preview Styles)
+   ========================================================================== */
+
+/* Chi tiết nước hoa */
+.detail-view {
+  display: none;
+}
+
+.product-card {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.product-header-row {
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.product-header-row.no-border {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 8px;
+}
+
+#prodName {
+  margin: 0 !important;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.product-meta-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+  width: 100%;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 10px;
+}
+
+.product-meta-row .product-meta {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.product-meta {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-primary);
+  background: rgba(229, 193, 88, 0.08);
+  border: 1px solid rgba(229, 193, 88, 0.25);
+  padding: 3px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.meta-country,
+.meta-year {
+  color: var(--text-primary) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.meta-tonkho {
+  color: var(--c-green) !important;
+  background: var(--c-green-bg) !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+
+.meta-tonkho-zero {
+  color: var(--c-red) !important;
+  background: var(--c-red-bg) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.product-body-columns {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.product-img-wrapper {
+  flex: 0 0 100px;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.product-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+}
+
+.product-img-placeholder {
+  background-color: transparent;
+  background: transparent;
+}
+
+.product-scent-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.scent-row {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.scent-label {
+  font-weight: 700;
+  color: var(--gold-primary);
+  margin-right: 4px;
+}
+
+.scent-value {
+  color: #e2e2e9;
+}
+
+.similar-block {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: left;
+}
+
+.similar-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 2px 6px 2px;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.similar-list.dragging {
+  cursor: grabbing;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.similar-item {
+  flex: 0 0 60px;
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform var(--transition-speed) ease;
+}
+
+.similar-item:hover {
+  transform: translateY(-2px);
+}
+
+.similar-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: transparent;
+  padding: 2px;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: border-color var(--transition-speed) ease;
+}
+
+.similar-item:hover .similar-thumb {
+  filter: drop-shadow(0 0 6px var(--gold-glow));
+}
+
+.similar-name {
+  font-size: 8.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.25;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.similar-item:hover .similar-name {
+  color: var(--gold-primary);
+}
+
+/* Tags mùa & thời điểm */
+.tags-block {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.season-tag {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 0;
+  border-radius: 10px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.tag-xuan  { color: #f9a8d4; background: rgba(249,168,212,0.10); border-color: rgba(249,168,212,0.30); }
+.tag-ha    { color: #fde047; background: rgba(253,224,71, 0.10); border-color: rgba(253,224,71, 0.30); }
+.tag-thu   { color: #fb923c; background: rgba(251,146,60, 0.10); border-color: rgba(251,146,60, 0.30); }
+.tag-dong  { color: #93c5fd; background: rgba(147,197,253,0.10); border-color: rgba(147,197,253,0.30); }
+.tag-ngay  { color: #fcd34d; background: rgba(252,211,77, 0.08); border-color: rgba(252,211,77, 0.25); }
+.tag-dem   { color: #a78bfa; background: rgba(167,139,250,0.10); border-color: rgba(167,139,250,0.30); }
+
+.tag-dim {
+  opacity: 0.2;
+  filter: grayscale(60%);
+}
+
+/* Lưới thẻ giá bán nhanh */
+.price-section {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 0 10px 10px 10px;
+}
+
+.price-section h4 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.price-rows-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.price-row-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  width: 40px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.price-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.price-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 2px;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.price-badge:hover {
+  border-color: var(--gold-primary);
+  background: rgba(229, 193, 88, 0.05);
+  box-shadow: 0 2px 8px var(--gold-glow);
+  transform: translateY(-1px);
+}
+
+/* Thẻ giá có tồn kho */
+.price-badge.has-stock {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+}
+
+.price-badge-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.price-badge-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 2px;
+}
+
+.price-stock-icon {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.price-stock-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--c-green);
+  line-height: 1;
+}
+
+.price-stock-num.out-of-stock {
+  color: var(--c-red);
+}
+
+.price-badge:active {
+  transform: translateY(0);
+}
+
+.price-badge.active {
+  border-color: var(--gold-primary);
+  background: var(--c-yellow-bg);
+  box-shadow: 0 2px 10px var(--gold-glow);
+  transform: translateY(-1px);
+}
+
+.price-badge.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+  border-style: dashed;
+  background: transparent;
+}
+
+.price-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.price-val {
+  font-size: 12px;
+  color: var(--gold-primary);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Đồng bộ màu sắc các nút giá trong Preview */
+/* 1. Fullbox (Gold - Xuân) */
+.price-badge.price-badge-full {
+  border-color: var(--gold-glow);
+  background: rgba(229, 193, 88, 0.03);
+}
+.price-badge.price-badge-full .price-label {
+  color: var(--c-yellow);
+  opacity: 0.8;
+}
+.price-badge.price-badge-full .price-val {
+  color: var(--c-yellow);
+}
+.price-badge.price-badge-full:hover,
+.price-badge.price-badge-full.active {
+  border-color: var(--c-yellow);
+  background: var(--c-yellow-bg);
+  box-shadow: 0 2px 8px var(--gold-glow);
+}
+
+/* 2. Tester (Orange - Thu) */
+.price-badge.price-badge-tester {
+  border-color: rgba(249, 115, 22, 0.2);
+  background: rgba(249, 115, 22, 0.03);
+}
+.price-badge.price-badge-tester .price-label {
+  color: var(--c-orange);
+  opacity: 0.8;
+}
+.price-badge.price-badge-tester .price-val {
+  color: var(--c-orange);
+}
+.price-badge.price-badge-tester:hover,
+.price-badge.price-badge-tester.active {
+  border-color: var(--c-orange);
+  background: var(--c-orange-bg);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+}
+
+/* 3. Chiết (Gray - Sáng) */
+.price-badge.price-badge-chiet {
+  border-color: rgba(163, 163, 179, 0.2);
+  background: rgba(163, 163, 179, 0.03);
+}
+.price-badge.price-badge-chiet .price-label {
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+.price-badge.price-badge-chiet .price-val {
+  color: var(--text-secondary);
+}
+.price-badge.price-badge-chiet:hover,
+.price-badge.price-badge-chiet.active {
+  border-color: var(--text-secondary);
+  background: rgba(163, 163, 179, 0.12);
+  box-shadow: 0 2px 8px rgba(163, 163, 179, 0.2);
+}
+
+/* 4. Gốc (Cyan) */
+.price-badge.price-badge-goc {
+  border-color: rgba(6, 182, 212, 0.2);
+  background: rgba(6, 182, 212, 0.03);
+}
+.price-badge.price-badge-goc .price-label {
+  color: var(--c-cyan);
+  opacity: 0.8;
+}
+.price-badge.price-badge-goc .price-val {
+  color: var(--c-cyan);
+}
+.price-badge.price-badge-goc:hover,
+.price-badge.price-badge-goc.active {
+  border-color: var(--c-cyan);
+  background: var(--c-cyan-bg);
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.25);
+}
+
+/* 4. Thẻ không có giá (Màu xám) */
+.price-badge.no-price {
+  border-color: var(--border-color) !important;
+  background: var(--bg-secondary) !important;
+}
+.price-badge.no-price .price-label {
+  color: var(--text-secondary) !important;
+  opacity: 0.6 !important;
+}
+.price-badge.no-price .price-val {
+  color: var(--text-secondary) !important;
+  opacity: 0.6 !important;
+}
+.price-badge.no-price:hover,
+.price-badge.no-price.active {
+  border-color: var(--text-secondary) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: none !important;
+}
+
+/* Khối nội dung tư vấn */
+.consultation-section {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  transition: border-color var(--transition);
+}
+
+.consultation-section:hover {
+  border-color: #3f3f4e;
+}
+
+.price-consultation-area {
+  margin-top: 12px;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 10px;
+}
+
+.price-section .consultation-section {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.section-header h4 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.box-content {
+  background: var(--bg-primary);
+  padding: 10px;
+  border: 1.5px solid var(--border-color);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  border-radius: 6px;
+  color: var(--text-primary);
+  max-height: none;
+}
+
+.box-content.warning {
+  background: var(--c-red-bg) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: var(--c-red) !important;
+}
+
+.warning-note {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--c-red);
+  margin-bottom: 4px;
+  text-align: left;
+}

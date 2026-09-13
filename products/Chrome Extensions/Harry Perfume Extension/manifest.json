@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Harry Perfume",
+  "version": "1.0.1",
+  "description": "Tiện ích tìm kiếm và copy nội dung tư vấn sản phẩm siêu nhanh.",
+  "permissions": [
+    "sidePanel",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://script.google.com/*",
+    "https://script.googleusercontent.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "icons": {
+    "16": "img/icon16.png",
+    "48": "img/icon48.png",
+    "128": "img/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "img/icon16.png",
+      "48": "img/icon48.png",
+      "128": "img/icon128.png"
+    },
+    "default_title": "Mở bảng tư vấn"
+  }
+}

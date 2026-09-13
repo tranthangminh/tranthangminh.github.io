@@ -1,0 +1,20 @@
+﻿version,is_current,category,title,details
+v1.3.0,TRUE,feature,Open in Image Studio,"ㆍReplaced ""Edit Image in New Tab"" with a dedicated Image Studio - a more capable in-browser image editor."
+v1.3.0,TRUE,feature,Resolution Scale,"ㆍAdded x2, x3 resolution export for Screen Capture (Custom Area, Visible, Full Page).
+ㆍUpgraded Full Page screenshot single-pass capture technique.
+ㆍAdded Max Width / Height dimension limit setting."
+v1.3.0,TRUE,tweak,Rename Menu,"ㆍRename ""Multimedia Downloader"" -> ""Downloader""
+ㆍRename ""Context Menu"" -> ""Tools/Features"""
+v1.3.0,TRUE,tweak,Update UI,"ㆍVideo Speed Controller: Minimal UI, hid +, -, and settings icons
+ㆍUpdate whole extension Visual"
+v1.3.0,TRUE,optimize,Optimized,"ㆍFaster startup speed and reduced memory usage.
+ㆍRefactored high-resolution image rendering pipeline."
+v1.3.0,TRUE,bug,Fix Bugs,ㆍFixed minor bugs.
+v1.2.0,FALSE,feature,Edit Image,ㆍAdded quick image editing capability in Context Menu.
+v1.2.0,FALSE,feature,Add Theme,ㆍNow you can choose Light & Dark theme.
+v1.2.0,FALSE,optimize,Optimized,ㆍOptimized open speed.
+v1.2.0,FALSE,bug,Fix Bugs,ㆍFixed minor bugs.
+v1.1.0,FALSE,feature,Add Video Speed Controller,ㆍNow you can Increase/Decrease Video speed easily.
+v1.1.0,FALSE,optimize,Optimized,ㆍOptimized open speed.
+v1.1.0,FALSE,bug,Fix Bugs,ㆍFixed minor bugs.
+v1.0.0,FALSE,other,Initial Release,"ㆍAll-in-one design suite featuring Color Picker, Screen Capture, Multimedia Downloader, Context Menu Tools."

@@ -1,0 +1,201 @@
+/* MAX Design System — Core Design Tokens */
+
+/* Self-hosted Outfit variable font — eliminates Google Fonts network dependency */
+@font-face {
+  font-family: 'Outfit';
+  src: url('chrome-extension://__MSG_@@extension_id__/Outfit/Outfit-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --------------------------------------------------------------------------
+   1. CONSTANT DESIGN TOKENS (Sizing, Radius, Typography, Motion)
+   (Các giá trị số cố định - KHÔNG THAY ĐỔI khi đổi Dark/Light mode)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Sizing & Button Heights */
+  --btn-height-sm: 28px;
+  --btn-height-md: 34px;
+  --btn-height-lg: 40px;
+
+  /* Border Radius Scale Matrix (Universal Standard) */
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-full: 9999px;
+
+  /* Typography Font Sizes & Family */
+  --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-xs: 10px;
+  --font-sm: 11px;
+  --font-md: 12px;
+  --font-lg: 14px;
+  --font-xl: 16px;
+
+  /* Motion & Animation Transitions */
+  --transition-speed: 0.2s;
+  --transition-fast: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. DYNAMIC COLOR TOKENS - DARK THEME (Default Theme)
+   -------------------------------------------------------------------------- */
+:root,
+:root[data-theme="dark"],
+#image-preview-modal[data-theme="dark"],
+.max-standalone-image-page[data-theme="dark"] {
+  /* ------------------------------------------------------------------------
+     BẢNG MÀU 7 SẮC CẦU VỒNG (RAINBOW ACCENT PALETTE - DARK THEME)
+     ------------------------------------------------------------------------ */
+  --c-red:          #ef4444; /* Đỏ: Lỗi, Hủy, Thất bại, Xóa */
+  --c-orange:       #f97316; /* Cam: Cảnh báo, Giá Tester */
+  --c-yellow:       #e5c158; /* Vàng: Thương hiệu Gold, Fullbox */
+  --c-green:        #34d399; /* Lục: Thành công, Còn hàng */
+  --c-cyan:         #8DF2F2; /* Lam: Điểm nhấn phụ */
+  --c-blue:         #60a5fa; /* Chàm: Tin nhanh Xanh, Edit */
+  --c-purple:       #b19ffb; /* Tím: Tin nhanh Custom */
+
+  /* Mức nền trong suốt 12% tương ứng cho các thẻ badge cầu vồng (Dark) */
+  --c-red-bg:       color-mix(in srgb, var(--c-red)    20%, transparent);
+  --c-orange-bg:    color-mix(in srgb, var(--c-orange) 20%, transparent);
+  --c-yellow-bg:    color-mix(in srgb, var(--c-yellow) 20%, transparent);
+  --c-green-bg:     color-mix(in srgb, var(--c-green)  20%, transparent);
+  --c-cyan-bg:      color-mix(in srgb, var(--c-cyan)   20%, transparent);
+  --c-blue-bg:      color-mix(in srgb, var(--c-blue)   20%, transparent);
+  --c-purple-bg:    color-mix(in srgb, var(--c-purple) 20%, transparent);
+
+  /* 1. Backgrounds (Preserved MAX Colors) */
+  --bg-primary:     #191919;
+  --bg-secondary:   #222222;
+  --bg-tertiary:    #343434;
+  --bg-elevated:    #464646;
+  --bg-overlay:     rgba(15, 23, 42, 0.82);
+
+  /* 2. Typography Colors (Preserved MAX Colors) */
+  --text-primary:   #ffffff;
+  --text-secondary: #bbbbbb;
+  --text-tertiary:  #888888;
+  --text-disabled:  #474747;
+  --text-on-accent: #0f0f0f;
+
+  /* 🎯 GENERIC SEMANTIC ACCENT TOKENS */
+  --accent-primary:         var(--c-cyan);
+  --accent-primary-hover:   #38f9ff;
+  --accent-secondary:       var(--c-purple);
+  --accent-secondary-hover: #60a5fa;
+  --accent-subtle:          var(--c-cyan-bg);
+
+  /* Legacy Accent Aliases for Backward Compatibility */
+  --accent-gradient: linear-gradient(135deg, var(--accent-primary) 0%, #00f2fe 40%, var(--accent-secondary) 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #38f9ff 0%, #60a5fa 100%);
+  --danger-gradient: linear-gradient(135deg, var(--c-red) 0%, #dc2626 100%);
+
+  /* Semantic State Tokens */
+  --accent-warning: var(--c-yellow);
+  --accent-danger:  var(--c-red);
+  --accent-danger-hover: #f87171;
+
+  /* Borders & Outlines (Màu đặc HEX) */
+  --border-color: #3a3a3a;
+  --border-hover: #8a8a8a;
+  --border-active: var(--accent-primary);
+
+  /* Shadows & Elevation */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.45);
+  --shadow-accent: 0 0 12px rgba(6, 182, 212, 0.35);
+  --shadow-danger: 0 0 12px rgba(239, 68, 68, 0.35);
+
+  /* Glassmorphism Backdrop Filter */
+  --glass-bg: rgba(28, 34, 48, 0.75);
+  --glass-border: #334155;
+  --glass-backdrop: blur(16px);
+
+  /* Filters & Overrides */
+  --icon-filter: brightness(0) invert(1);
+  --icon-filter-active: invert(72%) sepia(80%) saturate(1962%) hue-rotate(150deg) brightness(101%) contrast(101%);
+  --text-on-gradient: #0f172a;
+  --checkerboard-color: #334155;
+  --checkerboard-bg: #0f172a;
+}
+
+/* --------------------------------------------------------------------------
+   3. DYNAMIC COLOR TOKENS - LIGHT THEME (Automatic / Override)
+   -------------------------------------------------------------------------- */
+:root[data-theme="light"],
+.light-theme,
+#image-preview-modal[data-theme="light"],
+.max-standalone-image-page[data-theme="light"] {
+  /* ------------------------------------------------------------------------
+     BẢNG MÀU 7 SẮC CẦU VỒNG (RAINBOW ACCENT PALETTE - LIGHT THEME)
+     ------------------------------------------------------------------------ */
+  --c-red:          #dc2626; /* Đỏ: Lỗi, Hủy, Thất bại, Xóa */
+  --c-orange:       #ea580c; /* Cam: Cảnh báo, Giá Tester */
+  --c-yellow:       #d97706; /* Vàng: Thương hiệu Gold, Fullbox */
+  --c-green:        #16a34a; /* Lục: Thành công, Còn hàng */
+  --c-cyan:         #65d8f8; /* Lam: Điểm nhấn phụ */
+  --c-blue:         #2563eb; /* Chàm: Tin nhanh Xanh, Edit */
+  --c-purple:       #7c3aed; /* Tím: Tin nhanh Custom */
+
+  /* Mức nền trong suốt 12% tương ứng cho các thẻ badge cầu vồng (Light) */
+  --c-red-bg:       color-mix(in srgb, var(--c-red)    20%, transparent);
+  --c-orange-bg:    color-mix(in srgb, var(--c-orange) 20%, transparent);
+  --c-yellow-bg:    color-mix(in srgb, var(--c-yellow) 20%, transparent);
+  --c-green-bg:     color-mix(in srgb, var(--c-green)  20%, transparent);
+  --c-cyan-bg:      color-mix(in srgb, var(--c-cyan)   20%, transparent);
+  --c-blue-bg:      color-mix(in srgb, var(--c-blue)   20%, transparent);
+  --c-purple-bg:    color-mix(in srgb, var(--c-purple) 20%, transparent);
+
+  /* 1. Backgrounds (Preserved MAX Light Colors) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f6f6;
+  --bg-tertiary: #e8e8e8;
+  --bg-elevated: #e0e0e0;
+  --bg-overlay: rgba(255, 255, 255, 0.85);
+
+  /* 2. Typography Colors (Preserved MAX Light Colors) */
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --text-disabled: #cbd5e1;
+  --text-on-accent: #ffffff;
+
+  /* 🎯 GENERIC SEMANTIC ACCENT TOKENS (LIGHT THEME) */
+  --accent-primary: var(--c-cyan);
+  --accent-primary-hover: #0369a1;
+  --accent-secondary: var(--c-purple);
+  --accent-secondary-hover: #1d4ed8;
+  --accent-subtle: var(--c-cyan-bg);
+
+  /* Legacy Accent Aliases for Backward Compatibility */
+  --accent-gradient: linear-gradient(135deg, var(--accent-primary) 20%, var(--accent-secondary) 150%);
+
+  /* Semantic State Tokens */
+  --accent-warning: var(--c-yellow);
+  --accent-danger: var(--c-red);
+
+  /* Borders & Outlines (Màu đặc HEX) */
+  --border-color: #c4c4c4;
+  --border-hover: #888888;
+  --border-active: var(--accent-primary);
+
+  /* Shadows & Elevation */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+
+  /* Glassmorphism Backdrop Filter */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: #cbd5e1;
+
+  /* Filters & Overrides */
+  --icon-filter: brightness(0);
+  --icon-filter-active: invert(53%) sepia(93%) saturate(1756%) hue-rotate(150deg) brightness(98%) contrast(98%);
+  --text-on-gradient: #ffffff;
+  --checkerboard-color: #cbd5e1;
+  --checkerboard-bg: #f8fafc;
+}

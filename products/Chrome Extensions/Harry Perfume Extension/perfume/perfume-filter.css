@@ -1,0 +1,353 @@
+/* ==========================================================================
+   Bộ lọc nước hoa (Perfume Filter Styles)
+   ========================================================================== */
+
+/* Nút toggle bộ lọc trên search row */
+.btn-filter-toggle {
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed) ease;
+  color: var(--text-secondary);
+}
+
+.btn-filter-toggle .filter-svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+.btn-filter-toggle .filter-svg .st0 {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2px;
+  transition: stroke var(--transition-speed) ease;
+}
+
+.btn-filter-toggle:hover {
+  background: var(--bg-input);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+}
+
+.btn-filter-toggle:hover .filter-svg .st0 {
+  stroke: var(--gold-primary);
+}
+
+.btn-filter-toggle.active {
+  background: rgba(229, 193, 88, 0.12);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.btn-filter-toggle.active .filter-svg .st0 {
+  stroke: var(--gold-primary);
+}
+
+/* Panel Bộ Lọc - Tông màu sáng nổi bật */
+.filter-panel {
+  width: 100%;
+  flex: 0 0 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  background: #393939; /* Màu nền sáng hơn nền trang */
+  border: 1px solid var(--gold-primary); /* Viền màu vàng gold mờ sang trọng để bật lên */
+  border-radius: 10px;
+  padding: 8px 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dải chọn dung tích */
+.filter-sizes-row {
+  display: flex;
+  gap: 4px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.filter-size-btn {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-secondary); /* Làm tối nhẹ nút không chọn */
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 5px 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  text-align: center;
+}
+
+.filter-size-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.filter-size-btn.active {
+  background: rgba(229, 193, 88, 0.15);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  box-shadow: 0 2px 6px var(--gold-glow);
+}
+
+/* Dòng nhập khoảng giá */
+.filter-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.filter-label {
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filter-inputs-row input {
+  flex: 1;
+  min-width: 0;
+  width: 0; /* Ép bỏ min-width mặc định của trình duyệt để co giãn tự do */
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 6px;
+  padding: 5px 4px;
+  font-size: 10.5px;
+  transition: all var(--transition-speed) ease;
+  box-sizing: border-box;
+  text-align: right;
+}
+
+.filter-inputs-row input:focus {
+  outline: none;
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 5px var(--gold-glow);
+}
+
+/* Nút xóa bộ lọc */
+.btn-clear-filter {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  flex-shrink: 0;
+}
+
+.btn-clear-filter:hover {
+  background: var(--c-red-bg);
+  color: var(--c-red);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Dải chọn giới tính (Nam, Nữ, Unisex) */
+.filter-genders-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  justify-content: space-between;
+  border-top: 1px solid var(--border-color);
+  padding-top: 8px;
+  width: 100%;
+}
+
+.filter-gender-btn {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 5px 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all var(--transition-speed) ease;
+  white-space: nowrap;
+}
+
+.filter-gender-btn .filter-btn-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+}
+
+.filter-gender-btn:hover {
+  border-color: var(--gold-primary);
+  color: var(--text-primary);
+}
+
+.filter-gender-btn.active {
+  background: rgba(229, 193, 88, 0.15);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  box-shadow: 0 2px 6px var(--gold-glow);
+}
+
+/* Dải chọn tag mùa/thời điểm */
+.filter-tags-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.filter-tag-btn {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 20px; /* Dạng viên thuốc */
+  padding: 4px 1px; /* Tối ưu hóa padding ngang tối thiểu */
+  font-size: 9px; /* Giảm cỡ chữ xuống 9px để vừa khít màn hình hẹp */
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+  white-space: nowrap; /* Ngăn xuống dòng chữ bên trong nút */
+}
+
+.filter-tag-btn:hover {
+  border-color: var(--gold-primary);
+  color: var(--text-primary);
+}
+
+.filter-tag-btn.active {
+  background: var(--c-yellow-bg);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  box-shadow: 0 2px 6px var(--gold-glow);
+}
+
+/* Thanh tóm tắt bộ lọc đang hoạt động */
+.filter-summary-bar {
+  width: 100%;
+  flex: 0 0 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  padding: 6px 10px;
+  flex-shrink: 0;
+  animation: fadeIn 0.2s ease;
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.summary-icon {
+  font-size: 11px;
+  color: var(--gold-primary);
+}
+
+.filter-summary-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+
+/* Các badge tóm tắt bộ lọc */
+.summary-badge {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all var(--transition);
+  user-select: none;
+}
+
+.summary-badge:hover {
+  border-color: var(--c-red);
+  color: var(--c-red);
+  background: var(--c-red-bg);
+}
+
+.badge-remove {
+  font-size: 8px;
+  color: var(--text-secondary);
+  transition: color var(--transition);
+}
+
+.summary-badge:hover .badge-remove {
+  color: var(--c-red);
+}
+
+/* Nút xóa nhanh tất cả trên thanh tóm tắt */
+.btn-reset-summary {
+  background: none;
+  border: none;
+  color: var(--c-red);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: opacity var(--transition);
+  white-space: nowrap;
+}
+
+.btn-reset-summary:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+

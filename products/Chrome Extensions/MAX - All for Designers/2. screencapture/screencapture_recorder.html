@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAX Screen Recorder</title>
+
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="screencapture_recorder.css">
+  <script src="../theme-init.js"></script>
+</head>
+<body>
+  <div class="recorder-card">
+    <!-- Header -->
+    <div class="recorder-header">
+      <div class="recorder-brand">
+        <img src="../svg/logo-MAX.svg" class="recorder-logo" alt="MAX Logo">
+        <h1 class="logo-text">MAX <span>Screen Recorder</span></h1>
+      </div>
+      <button id="close-window-btn" class="recorder-close-btn" title="Close">✕</button>
+    </div>
+
+    <!-- Setup View Container (Symmetrical 4 Left / 4 Right Layout) -->
+    <div id="setup-view" class="recorder-body">
+      <div class="setup-grid-layout">
+        
+        <!-- Left Column: 4 Recording Modes -->
+        <div class="setup-col-left">
+          <span class="col-section-title">RECORDING MODE</span>
+          
+          <div class="mode-selector-grid">
+            <!-- Mode 1: Chrome Tab -->
+            <div class="mode-card active" data-mode="tab">
+              <div class="mode-icon-wrap">
+                <span class="icon-mask" style="mask-image: url('../svg/rec-tab.svg'); -webkit-mask-image: url('../svg/rec-tab.svg');"></span>
+              </div>
+              <div class="mode-text">
+                <span class="mode-label">Chrome Tab</span>
+                <span class="mode-sub">Active browser tab</span>
+              </div>
+            </div>
+
+            <!-- Mode 2: Entire Screen -->
+            <div class="mode-card" data-mode="screen">
+              <div class="mode-icon-wrap">
+                <span class="icon-mask" style="mask-image: url('../svg/rec-screen.svg'); -webkit-mask-image: url('../svg/rec-screen.svg');"></span>
+              </div>
+              <div class="mode-text">
+                <span class="mode-label">Entire Screen</span>
+                <span class="mode-sub">Entire desktop screen</span>
+              </div>
+            </div>
+
+            <!-- Mode 3: Window -->
+            <div class="mode-card" data-mode="window">
+              <div class="mode-icon-wrap">
+                <span class="icon-mask" style="mask-image: url('../svg/rec-window.svg'); -webkit-mask-image: url('../svg/rec-window.svg');"></span>
+              </div>
+              <div class="mode-text">
+                <span class="mode-label">Window</span>
+                <span class="mode-sub">Application window</span>
+              </div>
+            </div>
+
+            <!-- Mode 4: Webcam Only -->
+            <div class="mode-card" data-mode="camera">
+              <div class="mode-icon-wrap">
+                <span class="icon-mask" style="mask-image: url('../svg/rec-camera.svg'); -webkit-mask-image: url('../svg/rec-camera.svg');"></span>
+              </div>
+              <div class="mode-text">
+                <span class="mode-label">Webcam Only</span>
+                <span class="mode-sub">Camera feed only</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: 4 Settings (System Sound, Mic, Cam, Format) -->
+        <div class="setup-col-right">
+          <span class="col-section-title">INPUTS & SETTINGS</span>
+
+          <div class="settings-group">
+            <!-- Card 1: System Sound -->
+            <div class="setting-row">
+              <div class="setting-left">
+                <div class="setting-icon-badge syssound-icon">
+                  <span class="icon-mask" style="mask-image: url('../svg/rec-syssound.svg'); -webkit-mask-image: url('../svg/rec-syssound.svg');"></span>
+                </div>
+                <div class="setting-info">
+                  <span class="setting-title">System Sound</span>
+                  <span class="setting-subtitle">Tab & system audio</span>
+                </div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-sys-audio" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Card 2: Microphone -->
+            <div class="setting-row">
+              <div class="setting-left">
+                <div class="setting-icon-badge mic-icon">
+                  <span class="icon-mask" style="mask-image: url('../svg/rec-mic.svg'); -webkit-mask-image: url('../svg/rec-mic.svg');"></span>
+                </div>
+                <div class="setting-info">
+                  <span class="setting-title">Microphone</span>
+                  <select id="select-mic" class="device-select" disabled>
+                    <option value="">Default Microphone</option>
+                  </select>
+                </div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-mic">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Card 3: Webcam Camera -->
+            <div class="setting-row">
+              <div class="setting-left">
+                <div class="setting-icon-badge cam-icon">
+                  <span class="icon-mask" style="mask-image: url('../svg/rec-webcam.svg'); -webkit-mask-image: url('../svg/rec-webcam.svg');"></span>
+                </div>
+                <div class="setting-info">
+                  <span class="setting-title">Webcam Camera</span>
+                  <select id="select-cam" class="device-select" disabled>
+                    <option value="">Default Camera</option>
+                  </select>
+                </div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-cam">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Card 4: Video Format -->
+            <div class="setting-row">
+              <div class="setting-left">
+                <div class="setting-icon-badge format-icon">
+                  <span class="icon-mask" style="mask-image: url('../svg/rec-format.svg'); -webkit-mask-image: url('../svg/rec-format.svg');"></span>
+                </div>
+                <div class="setting-info">
+                  <span class="setting-title">Format</span>
+                  <span class="setting-subtitle">Output extension</span>
+                </div>
+              </div>
+              <div class="format-pill-group">
+                <button class="format-pill active" data-fmt="mp4">MP4</button>
+                <button class="format-pill" data-fmt="webm">WebM</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Prominent Full-Width Start Recording Action Button -->
+      <button id="start-record-btn" class="start-record-btn">
+        <span class="rec-btn-dot"></span>
+        <span>Start Recording</span>
+      </button>
+    </div>
+
+    <!-- Recording Active State Container with Live Video Preview -->
+    <div id="recording-view" class="recorder-body hidden">
+      <div class="active-record-card">
+        <!-- Top Status Bar -->
+        <div class="record-view-header">
+          <div class="active-record-badge">
+            <span class="record-pulse-dot"></span>
+            <span class="badge-label">RECORDING LIVE</span>
+          </div>
+          <span id="recording-timer" class="recording-timer-text">00:00</span>
+        </div>
+
+        <!-- Live Video Preview Player -->
+        <div class="live-preview-wrapper">
+          <video id="live-video-preview" class="live-preview-player" autoplay muted playsinline></video>
+          <div class="live-watermark">
+            <span class="watermark-dot"></span>
+            <span>LIVE FEED</span>
+          </div>
+        </div>
+
+        <!-- Action Control Buttons -->
+        <div class="active-record-actions">
+          <button id="pause-btn" class="act-btn pause-btn" title="Pause / Resume">
+            <span id="pause-icon">⏸</span> <span id="pause-text">Pause</span>
+          </button>
+          <button id="stop-btn" class="act-btn stop-btn" title="Stop & Save Video">
+            <span>⏹</span> <span>Stop & Save</span>
+          </button>
+          <button id="cancel-btn" class="act-btn cancel-btn" title="Cancel">
+            <span>✕</span> <span>Cancel</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../common/storage_schema.js"></script>
+  <script src="../common/common_utils.js"></script>
+  <script src="screencapture_recorder.js"></script>
+</body>
+</html>

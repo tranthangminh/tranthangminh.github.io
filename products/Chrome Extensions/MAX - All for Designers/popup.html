@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAX - Design Power-Pack</title>
+
+
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="common/common.css">
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="changelog.css">
+  <link rel="stylesheet" href="1. colorpicker/colorpicker.css">
+  <link rel="stylesheet" href="1. colorpicker/colorstudio.css">
+  <link rel="stylesheet" href="common_grid.css">
+  <link rel="stylesheet" href="3. multimediadownloader/multimediadownloader.css">
+  <link rel="stylesheet" href="image_previewmodal/image_previewmodal.css">
+  <link rel="stylesheet" href="image_previewmodal/image_previewmodal-editor.css">
+  <link rel="stylesheet" href="3. multimediadownloader/videoextractor.css">
+  <link rel="stylesheet" href="3. multimediadownloader/soundextractor.css">
+  <link rel="stylesheet" href="2. screencapture/screencapture.css">
+  <link rel="stylesheet" href="2. screencapture/screencapture_history.css">
+  <link rel="stylesheet" href="4. tools-features/supportmax.css">
+  <link rel="stylesheet" href="4. tools-features/tools-features.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <img class="logo-icon" src="svg/logo-MAX.svg" alt="MAX Logo">
+        <h1 class="logo-text">MAX <span>Design Power-Pack</span></h1>
+      </div>
+      <div class="header-actions">
+        <button id="open-popup-btn" class="btn btn-ghost btn-icon" title="Switch to Popup">
+          <span class="icon-mask" style="mask-image: url('svg/popup-mode.svg'); -webkit-mask-image: url('svg/popup-mode.svg');"></span>
+        </button>
+        <button id="open-sidepanel-btn" class="btn btn-ghost btn-icon" title="Open in Side Panel">
+          <span class="icon-mask" style="mask-image: url('svg/sidepanel.svg'); -webkit-mask-image: url('svg/sidepanel.svg');"></span>
+        </button>
+        <button id="theme-toggle-btn" class="btn btn-ghost btn-icon" title="Toggle Light/Dark Theme">
+          <span class="icon-mask" style="mask-image: url('svg/light-mode.svg'); -webkit-mask-image: url('svg/light-mode.svg');"></span>
+        </button>
+        <button id="changelog-btn" class="btn btn-ghost btn-icon" title="Version Changelog / Log">
+          <span class="icon-mask" style="mask-image: url('svg/log.svg'); -webkit-mask-image: url('svg/log.svg');"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Tab Bar (4 Main Tabs) -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="colorpicker">
+        <span class="tab-icon icon-mask" style="mask-image: url('svg/colorpicker.svg'); -webkit-mask-image: url('svg/colorpicker.svg');"></span>
+        <span>Color Picker</span>
+      </button>
+      <button class="tab-btn" data-tab="screencapture">
+        <span class="tab-icon icon-mask" style="mask-image: url('svg/camera.svg'); -webkit-mask-image: url('svg/camera.svg');"></span>
+        <span>Screen Capture</span>
+      </button>
+      <button class="tab-btn" data-tab="multimedia">
+        <span class="tab-icon icon-mask" style="mask-image: url('svg/images.svg'); -webkit-mask-image: url('svg/images.svg');"></span>
+        <span>Downloader</span>
+      </button>
+      <button class="tab-btn" data-tab="contexttool">
+        <span class="tab-icon icon-mask" style="mask-image: url('svg/tool.svg'); -webkit-mask-image: url('svg/tool.svg');"></span>
+        <span>Tools/Features</span>
+      </button>
+    </nav>
+
+    <!-- Tab Contents -->
+    <main class="tab-content-area">
+      <!-- Tab 1: Color Picker -->
+      <section id="tab-colorpicker" class="tab-content active">
+        <div class="color-picker-container">
+          <div class="color-picker-actions-row">
+            <button id="eyedropper-btn" class="btn btn-primary">
+              <span class="icon-mask" style="mask-image: url('svg/colorpicker.svg'); -webkit-mask-image: url('svg/colorpicker.svg');"></span>
+              <span>Pick Color</span>
+            </button>
+            <button id="color-studio-btn" class="btn btn-primary">
+              <span class="icon-mask" style="mask-image: url('svg/palette.svg'); -webkit-mask-image: url('svg/palette.svg');"></span>
+              <span>Color Studio</span>
+            </button>
+          </div>
+          
+          <div class="history-section">
+            <div class="history-header">
+              <div class="history-title-group">
+                <span class="history-title">Color History</span>
+                <span id="color-history-count" class="history-count-badge">0 items</span>
+              </div>
+              <button id="clear-history-btn" class="clear-history-btn" title="Clear History">Clear All</button>
+            </div>
+            <div id="color-history-list" class="history-list">
+              <!-- Dynamically populated -->
+              <div class="history-empty-state">
+                <p>No colors picked yet. Click "Pick Color" to start.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 2: Multimedia Downloader -->
+      <section id="tab-multimedia" class="tab-content show-images">
+        <!-- Row 1: Page Info Container (Shared) -->
+        <div class="page-info-container">
+          <button id="refresh-multimedia-btn" class="btn-icon refresh-btn" title="Rescan page resources">
+            <span class="icon-mask" style="mask-image: url('svg/refresh.svg'); -webkit-mask-image: url('svg/refresh.svg');"></span>
+          </button>
+          <img class="page-favicon" src="svg/icon16.png" alt="site favicon" />
+          <div class="page-meta">
+            <h2 class="page-title">Scanning page...</h2>
+          </div>
+        </div>
+
+        <nav class="sub-tab-bar">
+          <button class="sub-tab-btn active" data-subtab="images">
+            <span class="sub-tab-icon icon-mask" style="mask-image: url('svg/images.svg'); -webkit-mask-image: url('svg/images.svg');"></span>
+            <span class="sub-tab-count" id="subtab-images-count">0 Images</span>
+          </button>
+          <button class="sub-tab-btn" data-subtab="vectors">
+            <span class="sub-tab-icon icon-mask" style="mask-image: url('svg/vectors.svg'); -webkit-mask-image: url('svg/vectors.svg');"></span>
+            <span class="sub-tab-count" id="subtab-vectors-count">0 Vectors</span>
+          </button>
+          <button class="sub-tab-btn" data-subtab="videos">
+            <span class="sub-tab-icon icon-mask" style="mask-image: url('svg/videos.svg'); -webkit-mask-image: url('svg/videos.svg');"></span>
+            <span class="sub-tab-count" id="subtab-videos-count">0 Videos</span>
+          </button>
+          <button class="sub-tab-btn" data-subtab="sounds">
+            <span class="sub-tab-icon icon-mask" style="mask-image: url('svg/sounds.svg'); -webkit-mask-image: url('svg/sounds.svg');"></span>
+            <span class="sub-tab-count" id="subtab-sounds-count">0 Sounds</span>
+          </button>
+        </nav>
+
+        <!-- Controls Area (Toggled visible via CSS based on active subtab) -->
+        <div class="multimedia-controls">
+          <!-- Images Controls Group -->
+          <div class="sub-control-group" data-subtab="images">
+            <!-- Row 3: Select All (LEFT), Col Switcher (CENTER), Download (RIGHT) -->
+            <div class="controls-row-3">
+              <label class="checkbox-container">
+                <input type="checkbox" id="select-all-images" />
+                <span>Select All</span>
+              </label>
+              <div class="col-switcher">
+                <button class="col-btn" data-cols="1" title="1 Column">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                </button>
+                <button class="col-btn" data-cols="2" title="2 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                </button>
+                <button class="col-btn active" data-cols="3" title="3 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                </button>
+              </div>
+              <button id="download-images-btn" class="btn btn-primary action-btn disabled" disabled>Download (0)</button>
+            </div>
+
+            <!-- Row 4: Sort Select (RIGHT) & Filters (LEFT) -->
+            <div class="controls-row-4">
+              <div class="filter-group">
+                <div class="filter-container">
+                  <select class="input-select sort-select" id="filter-images-type">
+                    <option value="all">All</option>
+                    <option value="png">PNG</option>
+                    <option value="jpg">JPG</option>
+                    <option value="webp">WEBP</option>
+                    <option value="gif">GIF</option>
+                  </select>
+                </div>
+                <div class="filter-container">
+                  <select class="input-select sort-select" id="filter-images-layout">
+                    <option value="all">All Layouts</option>
+                    <option value="square">Square</option>
+                    <option value="wide">Wide</option>
+                    <option value="tall">Tall</option>
+                  </select>
+                </div>
+              </div>
+              <div class="sort-container">
+                <span class="sort-label">Sort:</span>
+                <select class="input-select sort-select" id="sort-images">
+                  <option value="none">Default</option>
+                  <option value="type">Type</option>
+                  <option value="size">Size</option>
+                  <option value="resolution">Resolution</option>
+                </select>
+              </div>
+            </div>
+            
+            <div id="image-count-summary" class="count-summary" style="display: none;">0 images found</div>
+          </div>
+
+          <!-- Vectors Controls Group -->
+          <div class="sub-control-group" data-subtab="vectors">
+            <!-- Row 3: Select All (LEFT), Col Switcher (CENTER), Download (RIGHT) -->
+            <div class="controls-row-3">
+              <label class="checkbox-container">
+                <input type="checkbox" id="select-all-vectors" />
+                <span>Select All</span>
+              </label>
+              <div class="col-switcher">
+                <button class="col-btn" data-cols="1" title="1 Column">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                </button>
+                <button class="col-btn" data-cols="2" title="2 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                </button>
+                <button class="col-btn active" data-cols="3" title="3 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                </button>
+              </div>
+              <button id="download-vectors-btn" class="btn btn-primary action-btn disabled" disabled>Download (0)</button>
+            </div>
+
+            <!-- Row 4: Sort Select (RIGHT) & Filters (LEFT) -->
+            <div class="controls-row-4">
+              <div class="filter-group">
+                <div class="filter-container">
+                  <select class="input-select sort-select" id="filter-vectors-layout">
+                    <option value="all">All Layouts</option>
+                    <option value="square">Square</option>
+                    <option value="wide">Wide</option>
+                    <option value="tall">Tall</option>
+                  </select>
+                </div>
+              </div>
+              <div class="sort-container">
+                <span class="sort-label">Sort:</span>
+                <select class="input-select sort-select" id="sort-vectors">
+                  <option value="none">Default</option>
+                  <option value="type">Type</option>
+                  <option value="size">Size</option>
+                </select>
+              </div>
+            </div>
+            
+            <div id="vector-count-summary" class="count-summary" style="display: none;">0 vectors found</div>
+          </div>
+
+          <!-- Videos Controls Group -->
+          <div class="sub-control-group" data-subtab="videos">
+            <!-- Row 3: Select All (LEFT), Col Switcher (CENTER), Download (RIGHT) -->
+            <div class="controls-row-3">
+              <label class="checkbox-container">
+                <input type="checkbox" id="select-all-videos" />
+                <span>Select All</span>
+              </label>
+              <div class="col-switcher">
+                <button class="col-btn active" data-cols="1" title="1 Column">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                </button>
+                <button class="col-btn" data-cols="2" title="2 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                </button>
+                <button class="col-btn" data-cols="3" title="3 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                </button>
+              </div>
+              <button id="download-videos-btn" class="btn btn-primary action-btn disabled" disabled>Download (0)</button>
+            </div>
+
+            <!-- Row 4: Sort Select (RIGHT) & Filters (LEFT) -->
+            <div class="controls-row-4">
+              <div class="filter-group">
+                <div class="filter-container">
+                  <select class="input-select sort-select" id="filter-videos-type">
+                    <option value="all">All</option>
+                    <option value="mp4">MP4</option>
+                    <option value="webm">WebM</option>
+                  </select>
+                </div>
+                <div class="filter-container">
+                  <select class="input-select sort-select" id="filter-videos-layout">
+                    <option value="all">All Layouts</option>
+                    <option value="square">Square</option>
+                    <option value="wide">Wide</option>
+                    <option value="tall">Tall</option>
+                  </select>
+                </div>
+              </div>
+              <div class="sort-container">
+                <span class="sort-label">Sort:</span>
+                <select class="input-select sort-select" id="sort-videos">
+                  <option value="none">Default</option>
+                  <option value="type">Type</option>
+                  <option value="size">Size</option>
+                  <option value="length">Length</option>
+                </select>
+              </div>
+            </div>
+            
+            <div id="video-count-summary" class="count-summary" style="display: none;">0 videos found</div>
+          </div>
+
+          <!-- Sounds Controls Group -->
+          <div class="sub-control-group" data-subtab="sounds">
+            <!-- Row 3: Select All (LEFT), Col Switcher (CENTER), Download (RIGHT) -->
+            <div class="controls-row-3">
+              <label class="checkbox-container">
+                <input type="checkbox" id="select-all-sounds" />
+                <span>Select All</span>
+              </label>
+              <div class="col-switcher">
+                <button class="col-btn" data-cols="1" title="1 Column">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                </button>
+                <button class="col-btn active" data-cols="2" title="2 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                </button>
+                <button class="col-btn" data-cols="3" title="3 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                </button>
+              </div>
+              <button id="download-sounds-btn" class="btn btn-primary action-btn disabled" disabled>Download (0)</button>
+            </div>
+
+            <!-- Row 4: Sort Select (RIGHT) & Filters (LEFT) -->
+            <div class="controls-row-4">
+              <div class="filter-group">
+                <div class="filter-container">
+                  <select class="input-select sort-select" id="filter-sounds-type">
+                    <option value="all">All</option>
+                    <option value="mp3">MP3</option>
+                    <option value="wav">WAV</option>
+                    <option value="ogg">OGG</option>
+                    <option value="aac">AAC/M4A</option>
+                  </select>
+                </div>
+              </div>
+              <div class="sort-container">
+                <span class="sort-label">Sort:</span>
+                <select class="input-select sort-select" id="sort-sounds">
+                  <option value="none">Default</option>
+                  <option value="type">Type</option>
+                  <option value="size">Size</option>
+                  <option value="length">Length</option>
+                </select>
+              </div>
+            </div>
+            
+            <div id="sound-count-summary" class="count-summary" style="display: none;">0 sounds found</div>
+          </div>
+        </div>
+
+        <!-- Grids Area -->
+        <div class="multimedia-grids-container">
+          <div id="image-grid-container" class="grid-container sub-grid-panel" data-subtab="images">
+            <div class="loading-state">
+              <p>Scanning page for images...</p>
+            </div>
+          </div>
+          <div id="vector-grid-container" class="grid-container sub-grid-panel" data-subtab="vectors">
+            <div class="loading-state">
+              <p>Scanning page for vectors...</p>
+            </div>
+          </div>
+          <div id="video-grid-container" class="grid-container sub-grid-panel" data-subtab="videos">
+            <div class="loading-state">
+              <p>Scanning page for videos...</p>
+            </div>
+          </div>
+          <div id="sound-grid-container" class="grid-container sub-grid-panel" data-subtab="sounds">
+            <div class="loading-state">
+              <p>Scanning page for sounds...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 2: Screen Capture -->
+      <section id="tab-screencapture" class="tab-content">
+        <div class="capture-modes-container">
+          <!-- Mode 1: Custom Area -->
+          <div class="capture-mode-card" data-mode="area">
+            <div class="capture-mode-icon-wrapper">
+              <span class="capture-mode-icon icon-mask" style="mask-image: url('svg/crop.svg'); -webkit-mask-image: url('svg/crop.svg');"></span>
+            </div>
+            <div class="capture-mode-info">
+              <h3 class="capture-mode-title">Custom Area</h3>
+              <div class="shortcut-badge-wrapper"><span class="shortcut-badge">Alt+Shift+Z</span></div>
+              <p class="capture-mode-desc">Drag to crop region</p>
+            </div>
+          </div>
+
+          <!-- Mode 2: Visible Area -->
+          <div class="capture-mode-card selected" data-mode="visible">
+            <div class="capture-mode-icon-wrapper">
+              <span class="capture-mode-icon icon-mask" style="mask-image: url('svg/camera.svg'); -webkit-mask-image: url('svg/camera.svg');"></span>
+            </div>
+            <div class="capture-mode-info">
+              <h3 class="capture-mode-title">Visible Area</h3>
+              <div class="shortcut-badge-wrapper"><span class="shortcut-badge">Alt+Shift+X</span></div>
+              <p class="capture-mode-desc">Capture current view</p>
+            </div>
+          </div>
+
+          <!-- Mode 3: Full Page -->
+          <div class="capture-mode-card" data-mode="full">
+            <div class="capture-mode-icon-wrapper">
+              <span class="capture-mode-icon icon-mask" style="mask-image: url('svg/fullscreen.svg'); -webkit-mask-image: url('svg/fullscreen.svg');"></span>
+            </div>
+            <div class="capture-mode-info">
+              <h3 class="capture-mode-title">Full Page</h3>
+              <div class="shortcut-badge-wrapper"><span class="shortcut-badge">Alt+Shift+C</span></div>
+              <p class="capture-mode-desc">Auto-scroll page</p>
+            </div>
+          </div>
+
+          <!-- Mode 4: Screen Recorder -->
+          <div class="capture-mode-card" data-mode="record">
+            <div class="capture-mode-icon-wrapper">
+              <span class="capture-mode-icon icon-mask" style="mask-image: url('svg/videos.svg'); -webkit-mask-image: url('svg/videos.svg');"></span>
+            </div>
+            <div class="capture-mode-info">
+              <h3 class="capture-mode-title">Screen Recorder</h3>
+              <div class="shortcut-badge-wrapper"><span class="shortcut-badge">Alt+Shift+V</span></div>
+              <p class="capture-mode-desc">Record tab / screen</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Capture Options Card (Image Format & Resolution Scale) -->
+        <div id="capture-options-card" class="capture-format-section">
+          <!-- Row 1: Image Format -->
+          <div class="capture-format-row-item">
+            <div class="capture-format-header">
+              <span id="capture-format-title" class="capture-format-title">Image Format:</span>
+            </div>
+            <div id="image-format-row" class="settings-format-row">
+              <label class="settings-format-option">
+                <input type="radio" name="capture-format" id="fmt-png" value="png">
+                <span class="settings-format-label">PNG</span>
+              </label>
+              <label class="settings-format-option">
+                <input type="radio" name="capture-format" id="fmt-jpg" value="jpg" checked>
+                <span class="settings-format-label">JPG</span>
+              </label>
+              <label class="settings-format-option">
+                <input type="radio" name="capture-format" id="fmt-webp" value="webp">
+                <span class="settings-format-label">WEBP</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Solid Horizontal Divider -->
+          <div class="capture-format-divider"></div>
+
+          <!-- Row 2: Resolution -->
+          <div id="capture-scale-section" class="capture-format-row-item">
+            <div class="capture-format-header">
+              <span class="capture-format-title">Resolution:</span>
+            </div>
+            <div id="image-scale-row" class="settings-format-row">
+              <label class="settings-format-option">
+                <input type="radio" name="capture-scale" id="scale-1" value="1" checked>
+                <span class="settings-format-label">x1</span>
+              </label>
+              <label class="settings-format-option">
+                <input type="radio" name="capture-scale" id="scale-2" value="2">
+                <span class="settings-format-label">x2</span>
+              </label>
+              <label class="settings-format-option" id="scale-3-wrapper">
+                <input type="radio" name="capture-scale" id="scale-3" value="3">
+                <span class="settings-format-label">x3</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Row 3: Max Dimension Limits -->
+          <div id="capture-limits-section" class="capture-format-row-item">
+            <div class="capture-format-header">
+              <span class="capture-format-title">Max Limit:</span>
+            </div>
+            <div class="capture-limits-inputs-row">
+              <div class="capture-limit-input-group">
+                <span class="limit-input-label">W</span>
+                <input type="number" id="max-capture-width-input" class="capture-limit-input" placeholder="Auto" min="0" step="100" title="Output image dimensions will be restricted by Max Limit. Set 0 to disable.">
+              </div>
+              <div class="capture-limit-input-group">
+                <span class="limit-input-label">H</span>
+                <input type="number" id="max-capture-height-input" class="capture-limit-input" placeholder="Auto" min="0" step="500" title="Output image dimensions will be restricted by Max Limit. Set 0 to disable.">
+              </div>
+            </div>
+          </div>
+
+          <!-- Max Limit Note -->
+          <div class="capture-limit-note">
+            <span>Output image dimensions will be restricted by Max Limit.</span>
+          </div>
+        </div>
+
+        <div class="capture-action-container">
+          <button id="start-capture-btn" class="btn btn-primary">
+            <span class="capture-btn-main">Capture Screen</span>
+            <span class="capture-btn-sub">Tip: Side Panel narrows page. Switch to Popup Mode for full width.</span>
+          </button>
+
+          <!-- Screen Capture History Section -->
+          <div class="capture-history-section">
+            <div class="capture-history-header">
+              <div class="capture-history-title-group">
+                <span class="capture-history-title">Capture History</span>
+                <span id="capture-history-count" class="capture-history-count-badge">0 items</span>
+              </div>
+
+              <!-- Column Switcher -->
+              <div class="col-switcher" id="capture-history-col-switcher">
+                <button class="col-btn" data-cols="1" title="1 Column">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                </button>
+                <button class="col-btn active" data-cols="2" title="2 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                </button>
+                <button class="col-btn" data-cols="3" title="3 Columns">
+                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                </button>
+              </div>
+
+              <button id="clear-capture-history-btn" class="clear-history-btn" title="Clear History">Clear All</button>
+            </div>
+            <div id="file-access-warning" class="file-access-warning hidden">
+              <p>⚠️ To preview local files directly in original quality, please enable <strong>"Allow access to file URLs"</strong> in <a href="#" id="open-extensions-link">extension settings</a>.</p>
+            </div>
+
+            <div id="capture-history-grid" class="capture-history-grid cols-2">
+              <!-- Dynamic history cards will be rendered here -->
+            </div>
+            <div id="capture-history-empty" class="history-empty-state hidden">
+              <p>No recent screen captures</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 4: Context Tool -->
+      <section id="tab-contexttool" class="tab-content">
+        <div class="context-tool-container" style="padding: 16px;">
+          <div class="context-tool-list">
+            <div class="context-tool-section-title">Right-Click Context Menu</div>
+
+            <!-- Item 1: Save Image As Type -->
+            <div class="context-tool-card context-tool-card-with-options">
+              <div class="context-tool-main-row">
+                <div class="context-tool-icon-wrapper">
+                  <img src="svg/download.svg" class="tool-icon-svg" alt="Save Image As" />
+                </div>
+                <div class="context-tool-info">
+                  <span class="context-tool-title">Save Image As Type...</span>
+                  <span class="context-tool-desc">Save web images as JPG, PNG, WebP, GIF, or PDF</span>
+                </div>
+                <div class="context-tool-action">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="setting-save-as-type" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="context-tool-suboptions">
+                <button type="button" class="context-option-chip active" data-key="saveAsFileType_jpg">JPG</button>
+                <button type="button" class="context-option-chip active" data-key="saveAsFileType_png">PNG</button>
+                <button type="button" class="context-option-chip active" data-key="saveAsFileType_webp">WebP</button>
+                <button type="button" class="context-option-chip active" data-key="saveAsFileType_gif">GIF</button>
+                <button type="button" class="context-option-chip active" data-key="saveAsFileType_pdf">PDF</button>
+              </div>
+            </div>
+
+            <!-- Item 2: Search Image on... -->
+            <div class="context-tool-card context-tool-card-with-options">
+              <div class="context-tool-main-row">
+                <div class="context-tool-icon-wrapper">
+                  <img src="svg/search.svg" class="tool-icon-svg" alt="Search Image" />
+                </div>
+                <div class="context-tool-info">
+                  <span class="context-tool-title">Search Image on...</span>
+                  <span class="context-tool-desc">Reverse search web images via Yandex or TinEye</span>
+                </div>
+                <div class="context-tool-action">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="setting-search-image-master" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="context-tool-suboptions">
+                <button type="button" class="context-option-chip active" data-key="yandexSearchEnabled">Yandex</button>
+                <button type="button" class="context-option-chip active" data-key="tineyeSearchEnabled">TinEye</button>
+              </div>
+            </div>
+
+            <!-- Item 3: Screen Capture Tools -->
+            <div class="context-tool-card context-tool-card-with-options">
+              <div class="context-tool-main-row">
+                <div class="context-tool-icon-wrapper">
+                  <img src="svg/camera.svg" class="tool-icon-svg" alt="Screen Capture" />
+                </div>
+                <div class="context-tool-info">
+                  <span class="context-tool-title">Screen Capture Tools</span>
+                  <span class="context-tool-desc">Capture screen areas, full page, or record video</span>
+                </div>
+                <div class="context-tool-action">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="setting-screencapture-context" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="context-tool-suboptions">
+                <button type="button" class="context-option-chip active" data-key="captureContext_area">Custom Area</button>
+                <button type="button" class="context-option-chip active" data-key="captureContext_visible">Visible Area</button>
+                <button type="button" class="context-option-chip active" data-key="captureContext_full">Full Page</button>
+                <button type="button" class="context-option-chip active" data-key="captureContext_record">Screen Recorder</button>
+              </div>
+            </div>
+
+            <div class="context-tool-section-title" style="margin-top: 10px;">Page Overlays & Utilities</div>
+
+            <!-- Item 5: Video / Sound Controller -->
+            <div class="context-tool-card">
+              <div class="context-tool-main-row">
+                <div class="context-tool-icon-wrapper">
+                  <img src="svg/videos.svg" class="tool-icon-svg" alt="Video / Sound Controller" />
+                </div>
+                <div class="context-tool-info">
+                  <span class="context-tool-title">Video / Sound Controller</span>
+                  <span class="context-tool-desc">Floating speed & sound controls with shortcuts for web media</span>
+                </div>
+                <div class="context-tool-action">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="setting-video-speed-controller" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 6: Direct Image Auto-Studio -->
+            <div class="context-tool-card">
+              <div class="context-tool-main-row">
+                <div class="context-tool-icon-wrapper">
+                  <img src="svg/open-tab.svg" class="tool-icon-svg" alt="Direct Image Auto-Studio" />
+                </div>
+                <div class="context-tool-info">
+                  <span class="context-tool-title">Auto-Open Image Studio</span>
+                  <span class="context-tool-desc">Automatically open direct image links in MAX Studio</span>
+                </div>
+                <div class="context-tool-action">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="setting-direct-image-studio" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Support MAX Card (Plug & Play Auto-Mount) -->
+          <div class="support-max-container support-max-mount" style="margin-top: 24px;"></div>
+        </div>
+      </section>
+    </main>
+    
+    <!-- Copy Notification Toast -->
+    <div id="toast" class="toast hidden">Copied to clipboard!</div>
+
+    <!-- Donate Nudge Popup Window (Powered by supportmax.css & supportmax.js) -->
+    <div id="donate-nudge" class="donate-nudge-popup hidden">
+      <div class="donate-card support-max-nudge-card">
+        <button id="donate-nudge-close" class="btn btn-ghost donate-nudge-close-btn" title="Close">✕</button>
+        <div class="support-max-header">
+          <span class="settings-section-icon icon-mask support-max-heart-icon" style="mask-image: url('svg/heart.svg'); -webkit-mask-image: url('svg/heart.svg'); width: 16px; height: 16px; background-color: #fbbf24 !important; color: #fbbf24 !important;"></span>
+          <span class="support-max-title">Enjoying MAX?</span>
+        </div>
+        <p class="donate-desc">If MAX saves you time, consider buying me a coffee ☕ — it helps keep the tool free and updated!</p>
+        <div class="donate-nudge-celebrate">
+          <span>🥳</span><span>🎉</span>
+        </div>
+        <a id="donate-btn-nudge" href="https://ko-fi.com/maxiechen96" target="_blank" class="btn btn-secondary donate-btn">
+          <img src="svg/kofi.svg" class="donate-kofi-icon" alt="Ko-fi">
+          Support on Ko-fi
+        </a>
+        <div class="donate-nudge-timer-wrapper">
+          <div class="donate-nudge-timer-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Image Preview Modal -->
+  <div id="image-preview-modal" class="modal hidden">
+
+    <!-- Image Edit Toolbar -->
+    <div id="modal-edit-toolbar" class="edit-toolbar hidden">
+      <div class="edit-toolbar-row">
+        <!-- Idle / Selection Mode Button -->
+        <button id="edit-idle-mode-btn" class="btn-modal-edit btn-icon active" title="Selection Mode (Drag text to move)">
+          <span class="icon-mask" style="mask-image: url('svg/cursor.svg'); -webkit-mask-image: url('svg/cursor.svg');"></span>
+        </button>
+
+        <!-- Brush Tool Popover Trigger -->
+        <div class="edit-tool-popover-wrapper">
+          <button id="edit-brush-tool-btn" class="btn-modal-edit btn-dropdown" title="Brush Settings">
+            <span class="icon-mask" style="mask-image: url('svg/brush.svg'); -webkit-mask-image: url('svg/brush.svg');"></span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+        </div>
+
+        <!-- Shape Tool Popover Trigger -->
+        <div class="edit-tool-popover-wrapper">
+          <button id="edit-shape-tool-btn" class="btn-modal-edit btn-dropdown" title="Shape Tool">
+            <span class="icon-mask" style="mask-image: url('svg/square.svg'); -webkit-mask-image: url('svg/square.svg');"></span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+
+          <!-- Shape Settings Popover Panel -->
+          <div id="edit-shape-panel" class="edit-brush-panel edit-shape-panel hidden">
+            <div class="brush-panel-section">
+              <div class="brush-panel-header">
+                <span class="brush-panel-title">Shape Type</span>
+              </div>
+              <div class="shape-type-grid">
+                <button id="shape-type-rect-btn" class="btn-radio shape-type-btn active" data-shape="rect" title="Polygon / Rectangle (M)">
+                  <span class="icon-mask" style="mask-image: url('svg/square.svg'); -webkit-mask-image: url('svg/square.svg');"></span>
+                  <span>Polygon (M)</span>
+                </button>
+                <button id="shape-type-ellipse-btn" class="btn-radio shape-type-btn" data-shape="ellipse" title="Ellipse (O / L)">
+                  <span class="icon-mask" style="mask-image: url('svg/circle.svg'); -webkit-mask-image: url('svg/circle.svg');"></span>
+                  <span>Ellipse (O)</span>
+                </button>
+                <button id="shape-type-polygonal-btn" class="btn-radio shape-type-btn" data-shape="polygonal" title="Line Path Straight Lines (P)">
+                  <span class="icon-mask" style="mask-image: url('svg/polygonal.svg'); -webkit-mask-image: url('svg/polygonal.svg');"></span>
+                  <span>Line Path (P)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Text Tool Trigger (Direct Edit Text Mode) -->
+        <button id="edit-text-tool-btn" class="btn-modal-edit btn-icon" title="Add Text">
+          <span class="icon-mask" style="mask-image: url('svg/text-tool.svg'); -webkit-mask-image: url('svg/text-tool.svg');"></span>
+        </button>
+
+        <div class="edit-toolbar-divider"></div>
+
+        <!-- Square 1:1 Action Icon Buttons -->
+        <button id="edit-undo-btn" class="btn-modal-edit btn-icon" title="Undo (Ctrl+Z)">
+          <span class="icon-mask" style="mask-image: url('svg/undo.svg'); -webkit-mask-image: url('svg/undo.svg');"></span>
+        </button>
+
+        <button id="edit-redo-btn" class="btn-modal-edit btn-icon" title="Redo (Ctrl+Y / Ctrl+Shift+Z)">
+          <span class="icon-mask" style="mask-image: url('svg/redo.svg'); -webkit-mask-image: url('svg/redo.svg');"></span>
+        </button>
+
+        <button id="edit-clear-btn" class="btn-modal-edit btn-icon" title="Clear drawing">
+          <span class="icon-mask" style="mask-image: url('svg/clear.svg'); -webkit-mask-image: url('svg/clear.svg');"></span>
+        </button>
+      </div>
+
+      <!-- Row 2 for Download Edited & Close Modal -->
+      <div class="edit-toolbar-row edit-toolbar-row-2">
+        <button id="edit-stop-brush-btn" class="edit-btn stop-brush-btn hidden" title="Stop Drawing & Return to Selection Mode">
+          <span class="icon-mask" style="mask-image: url('svg/close.svg'); -webkit-mask-image: url('svg/close.svg');"></span> Stop
+        </button>
+        <div class="edit-save-group">
+          <button id="edit-copy-btn" class="edit-btn copy-btn" title="Copy edited image to clipboard">
+            <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span> <span>Copy<br>Edited</span>
+          </button>
+          <button id="edit-save-btn" class="edit-btn save-btn" title="Download edited image">
+            <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span> <span>Download<br>Edited</span>
+          </button>
+          <button id="edit-close-modal-btn" class="btn btn-icon edit-close-btn modal-close-btn" title="Close Modal">
+            <span class="icon-mask" style="mask-image: url('svg/close.svg'); -webkit-mask-image: url('svg/close.svg');"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <img id="modal-image-preview" src="" alt="Preview" />
+    <div class="modal-info-wrapper">
+      <div class="modal-hud-controls">
+        <button id="modal-theme-toggle-btn" class="btn-icon hide-hud-btn modal-theme-toggle-btn" title="Toggle Studio Theme (Dark / Light)">
+          <span class="icon-mask" style="mask-image: url('svg/light-mode.svg'); -webkit-mask-image: url('svg/light-mode.svg');"></span>
+        </button>
+        <button id="modal-hide-hud-btn" class="btn-icon hide-hud-btn" title="Toggle Hide HUD (H)">
+          <span class="icon-mask" style="mask-image: url('svg/hide.svg'); -webkit-mask-image: url('svg/hide.svg');"></span>
+        </button>
+      </div>
+      <div class="modal-info">
+      <!-- Short Note Above Hints -->
+      <div class="modal-info-row modal-info-row-note">
+        <span class="modal-shortcut-note">All shortcuts & image controls remain active</span>
+      </div>
+      <!-- Expandable Hotkey Hint Chips Container (14 Ordered Chips) -->
+      <div class="modal-info-row modal-info-row-hints modal-info-row-expandable">
+        <span class="modal-hint-chip" title="Press A for Selection Mode">
+          <img src="svg/cursor.svg" alt="Select" class="hint-icon-svg" />
+          A: Select
+        </span>
+        <span class="modal-hint-chip" title="Press B for Brush Tool">
+          <img src="svg/brush.svg" alt="Brush" class="hint-icon-svg" />
+          B: Brush
+        </span>
+        <span class="modal-hint-chip" title="Press T for Text Tool">
+          <img src="svg/text-tool.svg" alt="Text" class="hint-icon-svg" />
+          T: Text
+        </span>
+        <span class="modal-hint-chip" title="Press M for Polygon / Rectangle Tool">
+          <img src="svg/square.svg" alt="Polygon" class="hint-icon-svg" />
+          M: Polygon
+        </span>
+        <span class="modal-hint-chip" title="Press O for Ellipse Tool">
+          <img src="svg/circle.svg" alt="Ellipse" class="hint-icon-svg" />
+          O: Ellipse
+        </span>
+        <span class="modal-hint-chip" title="Press P for Line Path Tool">
+          <img src="svg/polygonal.svg" alt="Line Path" class="hint-icon-svg" />
+          P: Line Path
+        </span>
+
+        <span class="modal-hint-chip chip-purple" title="Press H to Toggle Hide HUD">
+          <img src="svg/hide.svg" alt="Hide HUD" class="hint-icon-svg" />
+          H: Hide HUD
+        </span>
+        <span class="modal-hint-chip chip-purple" title="Press Ctrl+C to Copy Edited Image">
+          <img src="svg/copy.svg" alt="Copy" class="hint-icon-svg" />
+          Ctrl C: Copy Edited
+        </span>
+
+        <span class="modal-hint-chip chip-cyan" title="Hold & Drag Middle Mouse Button to Pan Image">
+          <img src="svg/mouse.svg" alt="Pan" class="hint-icon-svg" />
+          Middle: Pan
+        </span>
+        <span class="modal-hint-chip chip-cyan" title="Scroll Mouse Wheel to Zoom In/Out">
+          <img src="svg/zoom.svg" alt="Zoom" class="hint-icon-svg" />
+          Scroll: Zoom
+        </span>
+        <span class="modal-hint-chip chip-cyan" title="Double Click Image to Quick Zoom In/Out">
+          <img src="svg/double-click.svg" alt="Fast Zoom" class="hint-icon-svg" />
+          DblClick: Fast Zoom
+        </span>
+        <span class="modal-hint-chip chip-cyan" title="Press 1 to Zoom 100% Natural Size">
+          <img src="svg/zoom.svg" alt="100%" class="hint-icon-svg" />
+          1: 100%
+        </span>
+        <span class="modal-hint-chip chip-cyan" title="Press 2 for Fit on Screen">
+          <img src="svg/fullscreen.svg" alt="Fit" class="hint-icon-svg" />
+          2: Fit Screen
+        </span>
+
+        <span class="modal-hint-chip chip-red" title="Press Escape to Close Modal">
+          <img src="svg/close.svg" alt="Close" class="hint-icon-svg" />
+          ESC: Close
+        </span>
+      </div>
+
+      <!-- Row 2: Image dimensions & zoom level -->
+      <div class="modal-info-row modal-info-row-filename">
+        <span id="modal-image-size"></span>
+      </div>
+
+      <!-- Row 3: Action buttons (Open Tab, Copy, Download) -->
+      <div class="modal-info-row modal-info-row-actions">
+        <div class="modal-actions">
+          <button id="modal-open-tab-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Open image in new tab / Studio">
+            <span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg'); width: 14px; height: 14px;"></span> Open Tab
+          </button>
+          <button id="modal-copy-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Copy image to clipboard">
+            <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg'); width: 14px; height: 14px;"></span> Copy
+          </button>
+          <button id="modal-download-btn" class="btn btn-primary action-btn">
+            <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span> Download
+          </button>
+        </div>
+      </div>
+
+      <!-- Row 4: Search Image engines -->
+      <div class="modal-info-row modal-info-row-search">
+        <span class="search-image-label">Search Image on:</span>
+        <div class="search-image-actions">
+          <button id="modal-yandex-search-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Search Image on Yandex (Exact Full-Res)">
+            <span class="icon-mask" style="mask-image: url('svg/yandex.svg'); -webkit-mask-image: url('svg/yandex.svg'); width: 14px; height: 14px;"></span> Yandex
+          </button>
+          <button id="modal-tineye-search-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Search Image on TinEye">
+            <span class="icon-mask" style="mask-image: url('svg/tineye.svg'); -webkit-mask-image: url('svg/tineye.svg'); width: 14px; height: 14px;"></span> TinEye
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Resize Handle -->
+  <div id="popup-resize-handle" class="resize-handle"></div>
+
+  <!-- Version Changelog Panel Overlay -->
+  <div id="changelog-overlay" class="modal-overlay hidden"></div>
+  <div id="changelog-panel" class="changelog-panel hidden">
+    <div class="changelog-header">
+      <div class="changelog-title-group">
+        <h2 class="changelog-title">Version Changelog</h2>
+        <div class="changelog-version-badge current">v1.3.0</div>
+      </div>
+      <button id="changelog-close-btn" class="btn btn-ghost btn-icon" title="Close">
+        <span class="icon-mask" style="mask-image: url('svg/close.svg'); -webkit-mask-image: url('svg/close.svg');"></span>
+      </button>
+    </div>
+
+    <div id="changelog-body" class="changelog-body"></div>
+  </div>
+
+  <!-- Color Studio Panel Overlay & Modal -->
+  <div id="color-studio-overlay" class="modal-overlay hidden"></div>
+  <div id="color-studio-panel" class="color-studio-panel hidden">
+    <div class="color-studio-header">
+      <h2 class="color-studio-title">Color Studio</h2>
+      <button id="color-studio-close-btn" class="btn btn-ghost btn-icon" title="Close">
+        <span class="icon-mask" style="mask-image: url('svg/close.svg'); -webkit-mask-image: url('svg/close.svg');"></span>
+      </button>
+    </div>
+
+    <div class="color-studio-body">
+      <!-- Row 1: 2D Spectrum Box & 1D Hue Slider (100% Width) -->
+      <div class="studio-spectrum-row">
+        <!-- 2D Spectrum Box -->
+        <div id="studio-spectrum-wrapper" class="studio-spectrum-wrapper" title="Drag to pick Saturation & Brightness">
+          <div id="studio-spectrum-bg" class="studio-spectrum-bg"></div>
+          <div class="studio-spectrum-sat"></div>
+          <div class="studio-spectrum-val"></div>
+          <div id="studio-picker-handle" class="studio-picker-handle"></div>
+        </div>
+
+        <!-- 1D Hue Rainbow Slider -->
+        <div id="studio-hue-wrapper" class="studio-hue-wrapper" title="Drag to pick Hue (0° - 360°)">
+          <div id="studio-hue-handle" class="studio-hue-handle"></div>
+        </div>
+      </div>
+
+      <!-- Row 2: Actions & Comparison Row: [Add Color] [new | current] -->
+      <div class="studio-actions-row">
+        <button id="studio-add-btn" class="btn btn-primary studio-add-btn" title="Save color to Color History">
+          <span>+ Add Color</span>
+        </button>
+
+        <div class="studio-color-compare-box">
+          <div id="studio-compare-new" class="studio-compare-half studio-compare-new" title="New Selected Color">new</div>
+          <div id="studio-compare-current" class="studio-compare-half studio-compare-current" title="Click to Reset to Original Color">current</div>
+        </div>
+      </div>
+
+      <!-- Bottom Area: 4 Color Input Code Blocks -->
+      <div class="studio-inputs-area">
+        <!-- HEX Input -->
+        <div class="studio-input-row">
+          <span class="studio-input-label">HEX</span>
+          <input type="text" id="studio-hex-input" class="studio-hex-input" value="#20B14C" maxlength="7" spellcheck="false">
+        </div>
+
+        <!-- RGB Input -->
+        <div class="studio-input-row">
+          <span class="studio-input-label">RGB</span>
+          <div class="studio-input-fields">
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">R</span>
+              <input type="number" id="studio-r-input" class="studio-number-input" min="0" max="255" value="32">
+            </div>
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">G</span>
+              <input type="number" id="studio-g-input" class="studio-number-input" min="0" max="255" value="177">
+            </div>
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">B</span>
+              <input type="number" id="studio-b-input" class="studio-number-input" min="0" max="255" value="76">
+            </div>
+          </div>
+        </div>
+
+        <!-- HSL Input -->
+        <div class="studio-input-row">
+          <span class="studio-input-label">HSL</span>
+          <div class="studio-input-fields">
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">H°</span>
+              <input type="number" id="studio-h-input" class="studio-number-input" min="0" max="360" value="138">
+            </div>
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">S%</span>
+              <input type="number" id="studio-s-input" class="studio-number-input" min="0" max="100" value="82">
+            </div>
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">L%</span>
+              <input type="number" id="studio-l-input" class="studio-number-input" min="0" max="100" value="64">
+            </div>
+          </div>
+        </div>
+
+        <!-- CMYK Input -->
+        <div class="studio-input-row">
+          <span class="studio-input-label">CMYK</span>
+          <div class="studio-input-fields">
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">C%</span>
+              <input type="number" id="studio-c-input" class="studio-number-input" min="0" max="100" value="78">
+            </div>
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">M%</span>
+              <input type="number" id="studio-m-input" class="studio-number-input" min="0" max="100" value="1">
+            </div>
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">Y%</span>
+              <input type="number" id="studio-y-input" class="studio-number-input" min="0" max="100" value="99">
+            </div>
+            <div class="studio-field-group">
+              <span class="studio-field-prefix">K%</span>
+              <input type="number" id="studio-k-input" class="studio-number-input" min="0" max="100" value="0">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="popup.js" defer></script>
+  <script src="1. colorpicker/color-utils.js" defer></script>
+  <script src="1. colorpicker/colorpicker.js" defer></script>
+  <script src="1. colorpicker/colorstudio.js" defer></script>
+  <script src="3. multimediadownloader/multimediadownloader.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal-editor-state.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal-editor-math.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal-editor-renderer.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal-editor-popover.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal-editor-overlay.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal-editor-shortcuts.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal-editor-export.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal-editor-interaction.js" defer></script>
+  <script src="image_previewmodal/image_previewmodal-editor.js" defer></script>
+  <script src="common/storage_schema.js" defer></script>
+  <script src="common/common_utils.js" defer></script>
+  <script src="3. multimediadownloader/imageextractor.js" defer></script>
+  <script src="3. multimediadownloader/vectorextractor.js" defer></script>
+  <script src="3. multimediadownloader/videoextractor.js" defer></script>
+  <script src="3. multimediadownloader/soundextractor.js" defer></script>
+  <script src="2. screencapture/screencapture_debugger.js" defer></script>
+  <script src="2. screencapture/screencapture.js" defer></script>
+  <script src="2. screencapture/screencapture_visible.js" defer></script>
+  <script src="2. screencapture/screencapture_full.js" defer></script>
+  <script src="2. screencapture/screencapture_area.js" defer></script>
+  <script src="2. screencapture/screencapture_history.js" defer></script>
+  <script src="4. tools-features/saveasfiletype.js" defer></script>
+  <script src="4. tools-features/imagesearch.js" defer></script>
+  <script src="4. tools-features/supportmax.js" defer></script>
+  <script src="4. tools-features/tools-features.js" defer></script>
+  <script src="changelog.js" defer></script>
+</body>
+</html>

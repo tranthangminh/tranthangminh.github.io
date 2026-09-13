@@ -1,0 +1,128 @@
+/* Khung nội dung hiển thị chi tiết Tin Nhanh ở dưới cùng trang (News Detail & Copy Area Styles) */
+.news-detail-card {
+  flex-shrink: 0;
+  height: 40%;
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  padding: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.news-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.news-detail-header h4 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--gold-primary);
+  font-weight: 700;
+}
+
+.news-detail-content-row {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  align-items: flex-start;
+}
+
+.news-detail-body {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  text-align: left;
+  background-color: var(--bg-primary);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-color);
+  flex: 1;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.news-detail-img-wrapper {
+  flex: 0 0 30%;
+  width: 30%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.news-detail-img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  display: block;
+  transition: border-color var(--transition-speed) ease;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.news-detail-img:hover {
+  border-color: var(--gold-primary);
+}
+
+/* Các nút hành động trong chi tiết tin nhanh */
+.news-detail-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn-edit-small {
+  background: var(--c-blue-bg);
+  color: var(--c-blue);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-edit-small:hover {
+  background: var(--c-blue);
+  color: var(--text-dark);
+  border-color: var(--c-blue);
+}
+
+.btn-delete-small {
+  background: var(--c-red-bg);
+  color: var(--c-red);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-delete-small:hover {
+  background: var(--c-red);
+  color: var(--text-dark);
+  border-color: var(--c-red);
+}

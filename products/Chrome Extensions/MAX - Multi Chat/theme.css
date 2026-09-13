@@ -1,0 +1,80 @@
+/* Color Systems & CSS Variables for Dark/Light Themes */
+:root {
+  /* Dark Theme (Default) */
+  --bg-primary: #0f0f11;
+  --bg-sidebar-main: #16161a;
+  --bg-sidebar-sub: #1e1e24;
+  --bg-active: #2d2d39;
+  --bg-hover: #292933;
+  
+  --text-primary: #f2f2f2;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  
+  --accent-primary: #6366f1; /* Indigo */
+  --accent-glow: rgba(99, 102, 241, 0.15);
+  
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  
+  --border-color: #353542;
+  --border-hover: #4f46e5;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  --font-main: 'Open Sans', 'Plus Jakarta Sans', 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --transition-speed: 0.25s;
+
+  /* Specific Add colors for visual guide */
+  --color-add-group: #e06d35;
+  --color-add-sub-group: var(--text-secondary);
+  --color-add-link: var(--color-add-preset); /* =Blue — Add Link button */
+  --color-add-preset: #60a5fa;              /* Blue 400 */
+}
+
+/* Base class for all SVG Mask Icons */
+.icon-mask {
+  display: inline-block;
+  vertical-align: middle;
+  background-color: currentColor;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+.light-theme {
+  /* Light Theme */
+  --bg-primary: #f3f4f6;
+  --bg-sidebar-main: #e5e7eb;
+  --bg-sidebar-sub: #f9fafb;
+  --bg-active: #ffffff;
+  --bg-hover: #f3f4f6;
+  
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  
+  --accent-primary: #4f46e5;
+  --accent-glow: rgba(79, 70, 229, 0.1);
+  
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  
+  --border-color: #c0c2c6;
+  --border-hover: #4f46e5;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Specific Add colors for visual guide (Light Theme) */
+  --color-add-group: #e06d35;
+  --color-add-sub-group: #21B021;
+  --color-add-link: var(--color-add-preset);  /* =Blue — Add Link button */
+  --color-add-preset: #2563eb;               /* Blue 600 */
+}

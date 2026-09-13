@@ -1,0 +1,6 @@
+id,name,url,icon,active,description
+gemini,Gemini,https://gemini.google.com/app,svg/channels/gemini.svg,TRUE,Google LLM Model
+chatgpt,ChatGPT,https://chatgpt.com/,svg/channels/chatgpt.svg,TRUE,OpenAI Flagship
+claude,Claude,https://claude.ai/chats,svg/channels/claude.svg,TRUE,Anthropic AI
+deepseek,DeepSeek,https://chat.deepseek.com/,svg/channels/deepseek.svg,FALSE,DeepSeek Reasoner
+grok,Grok,https://grok.com/,svg/channels/grok.svg,FALSE,xAI Model

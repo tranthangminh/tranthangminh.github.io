@@ -41,7 +41,7 @@
             },
             tool: {
                 windowsApps: 'Windows Apps',
-                chromeExtension: 'Chrome Extension',
+                chromeExtension: 'Chrome Extensions',
                 books: 'Books',
                 plugins: 'Plugins',
                 photoshop: 'Photoshop Tool',
@@ -75,7 +75,8 @@
             email: 'Email: maxiechen96@gmail.com',
             moreSocial: 'See more social links',
             copyright: 'Copyright 2026 Tran Thang Minh. All rights reserved.',
-            signatureAlt: 'Signature'
+            signatureAlt: 'Signature',
+            visitsPrefix: 'Total Visits:'
         },
         toolsPage: {
             cheatTables: {
@@ -119,7 +120,7 @@
             tabs: {
                 all: 'All',
                 windowsApps: 'Windows Apps',
-                chromeExtension: 'Chrome Extension',
+                chromeExtension: 'Chrome Extensions',
                 books: 'Books',
                 plugins: 'Plugins'
             },

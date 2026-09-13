@@ -46,6 +46,10 @@ body {
 }
 
 .products-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     border: 1px solid var(--border-color);
     background: var(--bg-elevated);
     color: var(--text-primary);
@@ -67,6 +71,48 @@ body {
     background: var(--accent-primary);
     color: var(--text-on-accent);
     border-color: var(--accent-primary);
+}
+
+/* Category Switch Icons */
+.products-switch-icon {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+    display: inline-block;
+    background-color: var(--text-primary);
+    mask-size: contain;
+    -webkit-mask-size: contain;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-position: center;
+    transition: background-color var(--transition-normal);
+    flex-shrink: 0;
+}
+
+.products-switch-btn.is-active .products-switch-icon {
+    background-color: var(--text-on-accent);
+}
+
+.products-switch-icon--windows {
+    mask-image: url('svg/windows.svg');
+    -webkit-mask-image: url('svg/windows.svg');
+}
+
+.products-switch-icon--chrome {
+    mask-image: url('svg/chrome.svg');
+    -webkit-mask-image: url('svg/chrome.svg');
+}
+
+.products-switch-icon--books {
+    mask-image: url('svg/books.svg');
+    -webkit-mask-image: url('svg/books.svg');
+}
+
+.products-switch-icon--plugins {
+    mask-image: url('svg/plugins.svg');
+    -webkit-mask-image: url('svg/plugins.svg');
 }
 
 .products-sections {

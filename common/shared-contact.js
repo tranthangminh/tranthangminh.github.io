@@ -30,6 +30,7 @@
         var callLabel = escapeHtml(translate('contact.callBtn', 'Gọi'));
         var emailLabel = escapeHtml(translate('contact.emailBtn', 'Email'));
         var copyright = escapeHtml(translate('contact.copyright', '© 2026 Trần Thắng Minh. All rights reserved.'));
+        var visitsPrefix = escapeHtml(translate('contact.visitsPrefix', 'Số lượt truy cập:'));
 
         var v = '?v=20260905-1';
         var facebookSvg = assetBase + 'svg/facebook.svg' + v;
@@ -72,6 +73,9 @@
         root.innerHTML = '' +
             '<section class="' + sectionClass + '"' + sectionId + '>' +
             '    <div class="content-wrap">' +
+            '        <div class="contact-visits-row">' +
+            '            <span class="contact-visits-text"><span data-i18n="contact.visitsPrefix">' + visitsPrefix + '</span> <strong class="contact-visits-count">1,000</strong></span>' +
+            '        </div>' +
             '        <div class="contact-bar' + rv + '">' +
             '            <!-- Left 30%: Social Media -->' +
             '            <div class="contact-col contact-col-social">' +
@@ -120,5 +124,87 @@
                 }
             });
         }
+
+        initVisitsCounter();
     };
+
+    var VISITS_API_BASE = 'https://countapi.mileshilliard.com/api/v1';
+    var VISITS_KEY = 'tranthangminh_site_visits';
+    var VISITS_STORAGE_KEY = 'tranthangminh_site_visits_cache';
+    var VISITS_LAST_TS_KEY = 'tranthangminh_last_visit_ts';
+    var SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 phút
+    var BASE_VISITS_OFFSET = 999;
+    var visitsInitialized = false;
+
+    function formatNumberWithCommas(num) {
+        var n = parseInt(num, 10);
+        if (isNaN(n) || n < 1000) n = 1000;
+        return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function updateVisitsUI(count) {
+        var elements = document.querySelectorAll('.contact-visits-count');
+        var formatted = formatNumberWithCommas(count);
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].textContent = formatted;
+        }
+    }
+
+    function initVisitsCounter() {
+        // 1. Read cached visits from localStorage for instantaneous display
+        var cached = null;
+        try {
+            cached = localStorage.getItem(VISITS_STORAGE_KEY);
+        } catch (e) {}
+
+        var initialCount = 1000;
+        if (cached !== null) {
+            var parsed = parseInt(cached, 10);
+            if (!isNaN(parsed) && parsed >= 1000) {
+                initialCount = parsed;
+            }
+        }
+        updateVisitsUI(initialCount);
+
+        // Prevent duplicate network calls within the same page lifecycle
+        if (visitsInitialized) return;
+        visitsInitialized = true;
+
+        // 2. Check 15-minute session timeout
+        var now = Date.now();
+        var lastTs = 0;
+        try {
+            var storedTs = localStorage.getItem(VISITS_LAST_TS_KEY);
+            if (storedTs) lastTs = parseInt(storedTs, 10) || 0;
+        } catch (e) {}
+
+        var isExpired = !lastTs || (now - lastTs > SESSION_TIMEOUT_MS);
+        var endpoint = isExpired ? '/hit/' : '/get/';
+
+        if (typeof fetch === 'function') {
+            fetch(VISITS_API_BASE + endpoint + encodeURIComponent(VISITS_KEY))
+                .then(function (res) { return res.ok ? res.json() : null; })
+                .then(function (data) {
+                    if (data && typeof data.value === 'number') {
+                        var total = BASE_VISITS_OFFSET + data.value;
+                        updateVisitsUI(total);
+                        try {
+                            localStorage.setItem(VISITS_STORAGE_KEY, String(total));
+                            if (isExpired) {
+                                localStorage.setItem(VISITS_LAST_TS_KEY, String(now));
+                            }
+                        } catch (err) {}
+                    }
+                })
+                .catch(function () {});
+        }
+    }
+
+    // Cross-tab synchronization via window 'storage' event
+    window.addEventListener('storage', function (e) {
+        if (!e || !e.key) return;
+        if (e.key === VISITS_STORAGE_KEY && e.newValue) {
+            updateVisitsUI(e.newValue);
+        }
+    });
 })();

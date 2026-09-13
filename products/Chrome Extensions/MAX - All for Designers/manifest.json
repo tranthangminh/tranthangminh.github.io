@@ -1,0 +1,131 @@
+{
+  "manifest_version": 3,
+  "name": "MAX - Design Power-Pack - Color, Asset, Save, Edit, Search, Screen Grabber",
+  "short_name": "MAX Design",
+  "version": "1.3.0",
+  "description": "All-in-one premium design suite: Color Picker & Studio, Screen Grabber & Video Recorder, and Multimedia Asset Downloader.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "storage",
+    "debugger",
+    "downloads",
+    "sidePanel",
+    "desktopCapture",
+    "contextMenus",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "svg/icon16.png",
+      "32": "svg/icon32.png",
+      "48": "svg/icon48.png",
+      "128": "svg/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "svg/icon16.png",
+    "32": "svg/icon32.png",
+    "48": "svg/icon48.png",
+    "128": "svg/icon128.png"
+  },
+  "side_panel": {
+    "default_path": "popup.html?view=sidepanel"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "common/common_utils.js",
+        "image_previewmodal/image_previewmodal-editor-state.js",
+        "image_previewmodal/image_previewmodal-editor-math.js",
+        "image_previewmodal/image_previewmodal-editor-renderer.js",
+        "image_previewmodal/image_previewmodal-editor-popover.js",
+        "image_previewmodal/image_previewmodal-editor-overlay.js",
+        "image_previewmodal/image_previewmodal-editor-shortcuts.js",
+        "image_previewmodal/image_previewmodal-editor-export.js",
+        "image_previewmodal/image_previewmodal-editor-interaction.js",
+        "image_previewmodal/image_previewmodal-editor.js",
+        "image_previewmodal/image_previewmodal.js",
+        "content.js",
+        "4. tools-features/supportmax.js",
+        "4. tools-features/video-sound-controller.js",
+        "4. tools-features/video-controller.js",
+        "4. tools-features/sound-controller.js",
+        "4. tools-features/auto-open-image-studio.js"
+      ],
+      "css": [
+        "theme.css",
+        "image_previewmodal/image_previewmodal.css",
+        "image_previewmodal/image_previewmodal-editor.css",
+        "4. tools-features/supportmax.css",
+        "4. tools-features/video-sound-controller.css"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_origin_as_fallback": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["4. tools-features/sound-controller-main.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN",
+      "match_origin_as_fallback": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "Outfit/*",
+        "svg/*",
+        "theme.css",
+        "common/*",
+        "image_previewmodal/*",
+        "1. colorpicker/*",
+        "2. screencapture/*",
+        "3. multimediadownloader/*",
+        "4. tools-features/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "commands": {
+    "capture_area": {
+      "suggested_key": {
+        "default": "Alt+Shift+Z",
+        "mac": "Alt+Shift+Z"
+      },
+      "description": "Capture Custom Area"
+    },
+    "capture_visible": {
+      "suggested_key": {
+        "default": "Alt+Shift+X",
+        "mac": "Alt+Shift+X"
+      },
+      "description": "Capture Visible Area"
+    },
+    "capture_full": {
+      "suggested_key": {
+        "default": "Alt+Shift+C",
+        "mac": "Alt+Shift+C"
+      },
+      "description": "Capture Full Page"
+    },
+    "capture_record": {
+      "suggested_key": {
+        "default": "Alt+Shift+V",
+        "mac": "Alt+Shift+V"
+      },
+      "description": "Record Screen Video"
+    }
+  }
+}

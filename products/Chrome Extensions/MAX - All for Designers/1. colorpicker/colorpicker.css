@@ -1,0 +1,177 @@
+/* Color Picker tab styles */
+#tab-colorpicker {
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+.color-picker-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+/* Top Actions Row: Pick Color & Color Studio */
+.color-picker-actions-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.color-picker-actions-row .btn {
+  flex: 1;
+}
+
+/* History Section */
+.history-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 12px;
+}
+
+/* Responsive Auto-Fill Grid (Fluid stretch up to fill 100% width, min 75px per column) */
+.history-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+  grid-auto-rows: max-content;
+  gap: 8px;
+  align-content: start;
+  width: 100%;
+  padding-bottom: 12px;
+  box-sizing: border-box;
+}
+
+/* Color Card Item (Fluid Responsive Width) */
+.color-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  position: relative;
+  transition: var(--transition-fast);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.color-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* Top Square Color Swatch (1:1 Aspect Ratio with Hex Text at bottom) */
+.color-swatch-square {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  position: relative;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 6px;
+  box-sizing: border-box;
+}
+
+.color-hex {
+  font-family: var(--font-family);
+  font-size: var(--font-sm);
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  padding: 0 4px;
+  max-width: 95%;
+  user-select: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.color-info {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* 2x2 Copy Buttons Grid: [HEX][HSL] / [RGB][CMYK] */
+.copy-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.copy-badge {
+  font-size: var(--font-xs);
+  font-weight: 700;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 0;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition-fast);
+  user-select: none;
+}
+
+.copy-badge:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+  background-color: var(--bg-elevated);
+}
+
+.copy-badge.copied {
+  background-color: var(--c-green-bg);
+  color: var(--c-green);
+  border-color: var(--c-green);
+}
+
+/* Delete Color Button (Top Right of Swatch) */
+.delete-color-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition-fast);
+  font-size: var(--font-sm);
+  line-height: 1;
+}
+
+.color-swatch-square:hover .delete-color-btn,
+.color-card:hover .delete-color-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.delete-color-btn:hover {
+  color: #ffffff;
+  background-color: var(--accent-danger);
+  border-color: var(--accent-danger);
+}
+
+

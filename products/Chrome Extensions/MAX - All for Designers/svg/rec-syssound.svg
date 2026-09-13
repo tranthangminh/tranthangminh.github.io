@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 17.56">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2px;
+      }
+    </style>
+  </defs>
+  <polygon class="st0" points="10.9 1.08 5.4 5.48 1 5.48 1 12.08 5.4 12.08 10.9 16.48 10.9 1.08"/>
+  <path class="st0" d="M19.78,1c4.29,4.3,4.29,11.26,0,15.56M15.9,4.88c2.15,2.15,2.15,5.63,0,7.78"/>
+</svg>

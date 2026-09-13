@@ -17,6 +17,33 @@ body.actor-page-view .contact-page {
     padding: 32px 0 24px;
 }
 
+/* Contact Visits Counter Row (Top of Contact) */
+.contact-visits-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 16px;
+    user-select: none;
+    text-align: center;
+}
+
+.contact-visits-text {
+    font-family: var(--font-secondary);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.contact-visits-count {
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
 /* Contact Bar Horizontal Container */
 .contact-bar {
     display: flex;

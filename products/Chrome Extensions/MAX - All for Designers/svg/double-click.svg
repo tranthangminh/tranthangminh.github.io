@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0, .st1 {
+        fill: none;
+      }
+
+      .st1 {
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2px;
+      }
+
+      .st2 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <clipPath id="clippath">
+      <rect class="st0" width="24" height="24"/>
+    </clipPath>
+  </defs>
+  <g class="st2">
+    <g>
+      <g>
+        <path class="st1" d="M14.8,1h0c4.25,0,7.7,3.45,7.7,7.7v6.6c0,4.25-3.45,7.7-7.7,7.7h0c-4.25,0-7.7-3.45-7.7-7.7v-6.6c0-4.25,3.45-7.7,7.7-7.7Z"/>
+        <line class="st1" x1="14.8" y1="5.4" x2="14.8" y2="9.8"/>
+      </g>
+      <line class="st1" x1="1.5" y1="7" x2="4.5" y2="7"/>
+      <line class="st1" x1="3.5" y1="2" x2="5.62" y2="4.12"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAX Multi Chat - Multi-Channel Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="grid-card.css">
+  <link rel="stylesheet" href="welcome-guide.css">
+  <link rel="stylesheet" href="modals/main-group.css">
+  <link rel="stylesheet" href="modals/sub-group.css">
+  <link rel="stylesheet" href="modals/tab-link.css">
+  <link rel="stylesheet" href="modals/settings.css">
+  <link rel="stylesheet" href="modals/supportmax.css">
+  <link rel="stylesheet" href="ai-multichat/ai-multichat.css">
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    
+    <!-- Autohide Thin Bar (35px) visible only when autohide is active -->
+    <div class="autohide-bar" id="autohide-bar" style="display: none;">
+      <span class="icon-autohide-arrow"></span>
+    </div>
+
+    <!-- Wrapper to slide both sidebars together -->
+    <div class="sidebars-wrapper" id="sidebars-wrapper">
+      <!-- COLUMN 1: Main Groups Sidebar -->
+      <aside class="sidebar-main">
+        <div class="brand">
+          <span class="brand-logo">
+            <img src="svg/logo-MAX.svg" alt="MAX Logo" />
+          </span>
+        </div>
+        <div class="sidebar-main-top-actions">
+          <button type="button" id="btn-toggle-split-view" class="sidebar-btn" title="Toggle Split View">
+            <span class="icon-mask"></span>
+          </button>
+          <button type="button" id="btn-ai-multichat-group" class="group-item" title="AI Multi-Chat">
+            <span class="icon-mask"></span>
+          </button>
+        </div>
+        <!-- Main groups list rendered via JS -->
+        <div class="main-groups-list" id="main-groups-list">
+          <!-- Rendered dynamically -->
+        </div>
+        
+        <div class="sidebar-main-footer">
+          <!-- Collapse/Expand Sub Sidebar -->
+          <button type="button" id="btn-toggle-sub-sidebar" class="sidebar-btn" title="Collapse Sidebar">
+            <span class="icon-mask"></span>
+          </button>
+
+          <button type="button" id="btn-toggle-window-mode" class="sidebar-btn" title="Toggle Window Mode">
+            <span class="icon-mask"></span>
+          </button>
+
+          <button type="button" id="btn-toggle-autohide" class="sidebar-btn" title="Autohide Sidebars">
+            <span class="icon-mask"></span>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button id="theme-toggle-btn" class="sidebar-btn" title="Toggle Theme">
+            <span class="icon">🌙</span>
+          </button>
+
+          <!-- Settings & About Modal Button -->
+          <button type="button" id="btn-open-settings-modal" class="sidebar-btn" title="Settings & About">
+            <span class="icon-mask"></span>
+          </button>
+        </div>
+      </aside>
+      
+      <!-- COLUMN 2: Sub Groups & Tabs Sidebar -->
+      <aside class="sidebar-sub" id="sidebar-sub">
+        <div class="sidebar-sub-header">
+          <h2 id="active-main-group-title">Group</h2>
+          <button type="button" id="edit-main-group-btn" class="btn-icon-small edit-btn" title="Edit Main Group"><span class="icon-mask"></span></button>
+          <button type="button" id="clone-main-group-btn" class="btn-icon-small clone-btn" title="Clone Main Group"><span class="icon-mask"></span></button>
+          <button type="button" id="delete-main-group-btn" class="btn-icon-small delete-btn danger" title="Delete Main Group"><span class="icon-mask"></span></button>
+        </div>
+        
+        <!-- Sub groups and child tabs -->
+        <div class="sub-groups-container" id="sub-groups-container">
+          <!-- Sub groups list rendered via JS -->
+        </div>
+
+        <div class="sidebar-sub-footer">
+          <button type="button" id="add-sub-group-btn" class="btn btn-secondary btn-full">
+            <span class="icon-add"></span>
+            <span>Add Sub-group</span>
+          </button>
+        </div>
+      </aside>
+    </div>
+    
+    <!-- COLUMN 3: Right Iframe Panels -->
+    <main class="frame-container">
+      <!-- Dynamic persistent iframe panels will be injected here -->
+      <div class="frames-holder" id="frames-holder">
+        <!-- Left Pane -->
+        <div class="split-view-pane active-view-stroke" id="pane-left">
+          <div class="pane-header-bar" id="pane-left-header">
+            <div class="pane-header-left">
+              <button type="button" class="btn-icon-small" id="btn-open-external-left" title="Open in Chrome Tab">
+                <span class="icon-open-tab"></span>
+              </button>
+              <button type="button" class="btn-icon-small" id="btn-reload-left" title="Reload Frame">
+                <span class="icon-refresh"></span>
+              </button>
+              <span class="pane-header-title" id="pane-left-title">Left View</span>
+            </div>
+            <div class="pane-address-container">
+              <span class="lock-icon">🔒</span>
+              <input type="text" class="pane-address-input" id="address-bar-input-left" placeholder="Enter URL address..." />
+            </div>
+          </div>
+          <div class="pane-content" id="pane-left-content">
+            <!-- Welcome Intro Screen -->
+            <div class="welcome-screen" id="welcome-screen">
+              <!-- Rendered dynamically via welcome-guide.js -->
+            </div>
+            <!-- Left iframes will be injected here -->
+          </div>
+        </div>
+
+        <!-- Draggable Divider -->
+        <div class="split-divider" id="split-divider" style="display: none;">
+          <div class="split-divider-line"></div>
+        </div>
+
+        <!-- Right Pane (Hidden by default) -->
+        <div class="split-view-pane" id="pane-right" style="display: none;">
+          <div class="pane-header-bar" id="pane-right-header">
+            <div class="pane-header-left">
+              <button type="button" class="btn-icon-small" id="btn-open-external-right" title="Open in Chrome Tab">
+                <span class="icon-open-tab"></span>
+              </button>
+              <button type="button" class="btn-icon-small" id="btn-reload-right" title="Reload Frame">
+                <span class="icon-refresh"></span>
+              </button>
+              <span class="pane-header-title" id="pane-right-title">Right View</span>
+            </div>
+            <div class="pane-address-container">
+              <span class="lock-icon">🔒</span>
+              <input type="text" class="pane-address-input" id="address-bar-input-right" placeholder="Enter URL address..." />
+            </div>
+          </div>
+          <div class="pane-content" id="pane-right-content">
+            <!-- Right iframes will be injected here -->
+            <div class="pane-placeholder" id="pane-right-placeholder">
+              <span class="placeholder-icon">🌐</span>
+              <p class="placeholder-text">Select a channel from sidebar to load here, or drag and drop a tab here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Multi-Chat Workspace & Synchronized Input Bar -->
+      <div class="ai-workspace" id="ai-workspace" style="display: none;">
+        <!-- Dynamic AI panes injected here -->
+      </div>
+      <div class="ai-sync-input-bar" id="ai-sync-input-bar" style="display: none;">
+        <div class="ai-sync-input-wrapper">
+          <div class="ai-prompt-area-container">
+            <textarea id="ai-sync-prompt" placeholder="Ask all active AIs simultaneously..."></textarea>
+            <div class="ai-input-footer-hints">
+              <span class="ai-shortcut-badge"><kbd>Enter</kbd> to send &nbsp;•&nbsp; <kbd>Shift+Enter</kbd> for new line</span>
+            </div>
+          </div>
+          <button id="btn-ai-send" class="btn btn-primary btn-ai-send" title="Send Prompt to All Active AIs">
+            <span>Send to All</span>
+          </button>
+        </div>
+
+        <!-- Web Content Scale / Zoom % Control UI -->
+        <div class="ai-zoom-control-bar" id="ai-zoom-control-bar" title="Adjust Web Content Scale">
+          <button type="button" id="btn-zoom-out" class="btn-zoom-step" title="Zoom Out (-10%)">−</button>
+          <span id="zoom-level-text" class="zoom-level-text">100%</span>
+          <button type="button" id="btn-zoom-in" class="btn-zoom-step" title="Zoom In (+10%)">+</button>
+          <button type="button" id="btn-zoom-reset" class="btn-zoom-reset" title="Reset Zoom to 100%">↺</button>
+        </div>
+      </div>
+
+      <!-- Support MAX Floating Nudge Popup -->
+      <div id="donate-nudge" class="donate-nudge-popup hidden">
+        <div class="donate-card support-max-nudge-card">
+          <button class="donate-nudge-close-btn" id="donate-nudge-close" title="Close">✕</button>
+          <div class="support-max-header">
+            <span class="support-max-heart-icon" style="mask-image: url('svg/heart.svg'); -webkit-mask-image: url('svg/heart.svg'); display: inline-block; width: 16px; height: 16px; background-color: #fbbf24;"></span>
+            <span class="support-max-title" style="color: #fbbf24 !important;">Enjoying MAX?</span>
+          </div>
+          <p class="donate-desc">If MAX saves you time, consider buying me a coffee ☕ — it helps keep the tool free and updated!</p>
+          <div class="donate-nudge-celebrate">
+            <span>🥳</span>
+            <span>🎉</span>
+          </div>
+          <div class="donate-btn-wrapper" style="display: flex; justify-content: center; margin-top: 4px; width: 100%;">
+            <button class="donate-btn" id="donate-btn-nudge" style="width: 100%;">
+              <img src="svg/kofi.svg" class="donate-kofi-icon" alt="Ko-fi">
+              <span>Support on Ko-fi</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- ==================== MODALS / DIALOGS ==================== -->
+  
+  <!-- Modal 1: Add/Edit Main Group (Sidebar Icon) -->
+  <div class="modal-overlay" id="main-group-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="main-group-modal-title">Add Main Group</h3>
+        <span class="close-modal" id="close-main-group-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-main-group-id">
+        <div class="form-group">
+          <label for="main-group-name">Group Name:</label>
+          <input type="text" id="main-group-name" placeholder="e.g., Customer Care, Social Networks..." required>
+        </div>
+        <div class="form-group">
+          <label>Select Group Icon Emoji:</label>
+          <input type="hidden" id="main-group-emoji" value="💬">
+          <div class="emoji-selector" id="emoji-selector">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel-main-group-modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-main-group-btn">Save Group</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Add/Edit Sub Group -->
+  <div class="modal-overlay" id="sub-group-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="sub-group-modal-title">Add Sub-group</h3>
+        <span class="close-modal" id="close-sub-group-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-sub-group-id">
+        <div class="form-group">
+          <label for="sub-group-name">Sub-group Name:</label>
+          <input type="text" id="sub-group-name" placeholder="e.g., Chat Channels, E-commerce Tools...">
+        </div>
+        <!-- Bulk Delete Channels Container -->
+        <div class="form-group" id="sub-group-tabs-delete-container" style="display: none; margin-top: 16px;">
+          <label>Select channels to delete (Click to highlight in Red):</label>
+          <div class="sub-group-tabs-grid" id="sub-group-tabs-delete-grid">
+            <!-- Dynamic channel grid items injected via JS -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel-sub-group-modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-sub-group-btn">Save Sub-group</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Add/Edit Custom Tab (Iframe Link) -->
+  <div class="modal-overlay" id="tab-modal">
+    <div class="modal-content">
+      <div class="modal-header" id="tab-modal-header">
+        <div class="modal-header-top" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <h3 id="tab-modal-title">Add Channel / Web Link</h3>
+          <span class="close-modal" id="close-tab-modal">&times;</span>
+        </div>
+        <!-- Tab Switcher nằm dưới tiêu đề nhưng trên đường gạch ngang phân chia của header -->
+        <div class="modal-tab-switcher" id="modal-tab-switcher" style="margin-bottom: 0; width: 100%;">
+          <button type="button" class="modal-tab-btn active" data-target="tab-pane-custom">Custom Link</button>
+          <button type="button" class="modal-tab-btn" data-target="tab-pane-default">Default Channels</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="target-sub-group-id">
+        <input type="hidden" id="edit-tab-id">
+
+        <!-- PANE 1: Custom Link Form -->
+        <div class="modal-pane active" id="tab-pane-custom">
+          <!-- Hàng đầu: Display Name & Split Link Switch Toggle -->
+          <div style="display: flex; gap: 16px; width: 100%; align-items: flex-end; margin-bottom: 4px;">
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+              <label for="tab-name">Display Name:</label>
+              <input type="text" id="tab-name" placeholder="e.g., Dual Chat, Social Hub..." style="width: 100%;">
+            </div>
+            <div class="form-group toggle-container" style="flex-shrink: 0; margin-bottom: 4px; gap: 8px;">
+              <span class="toggle-label" style="font-size: 12px; color: var(--text-secondary);">Split Link</span>
+              <label class="switch">
+                <input type="checkbox" id="tab-is-split">
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Container chứa form chính (Có thể linh động 1 cột hoặc 2 cột) -->
+          <div class="split-link-form-container" id="split-link-form-container">
+            <!-- CỘT TRÁI (LEFT LINK) -->
+            <div class="split-form-column" id="split-col-left">
+              <div class="column-title" id="col-title-left" style="display: none;">Left Web Page</div>
+              
+              <div class="form-group" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <label for="tab-url" style="margin-bottom: 0;">URL Address:</label>
+                  <div class="toggle-container" style="gap: 6px;">
+                    <span class="toggle-label" style="font-size: 11px; color: var(--text-secondary);" title="Isolated Account Session">👤² Dual Acc</span>
+                    <label class="switch" style="transform: scale(0.85); transform-origin: right center;">
+                      <input type="checkbox" id="tab-is-dual-acc-1">
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                </div>
+                <input type="url" id="tab-url" placeholder="https://example.com" required style="width: 100%;">
+              </div>
+              
+              <!-- Icon Config Trái -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Icon Style & Preview</label>
+                <div class="icon-setup-wrapper">
+                  <div class="icon-preview-box">
+                    <div class="icon-preview-avatar" id="icon-preview-avatar">🌐</div>
+                    <span class="preview-label">Preview</span>
+                  </div>
+                  <div class="icon-options-panel">
+                    <div class="options-row">
+                      <label class="radio-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="tab-icon-type" value="favicon" checked />
+                        <span>Favicon</span>
+                      </label>
+                      <label class="radio-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="tab-icon-type" value="text" />
+                        <span>Custom Text</span>
+                      </label>
+                    </div>
+                    <div class="custom-icon-inputs hidden" id="custom-icon-inputs">
+                      <div class="text-input-row">
+                        <input type="text" id="tab-icon-text" placeholder="e.g. Hà, MAX Chat" maxlength="15" style="width: 100%;">
+                      </div>
+                      <div class="color-picker-row">
+                        <div class="color-swatches" id="color-swatches-left">
+                          <button type="button" class="swatch" data-color="#ef4444" style="background-color: #ef4444;"></button>
+                          <button type="button" class="swatch" data-color="#f97316" style="background-color: #f97316;"></button>
+                          <button type="button" class="swatch" data-color="#eab308" style="background-color: #eab308;"></button>
+                          <button type="button" class="swatch" data-color="#22c55e" style="background-color: #22c55e;"></button>
+                          <button type="button" class="swatch" data-color="#3b82f6" style="background-color: #3b82f6;"></button>
+                          <button type="button" class="swatch" data-color="#6366f1" style="background-color: #6366f1;"></button>
+                          <button type="button" class="swatch" data-color="#a855f7" style="background-color: #a855f7;"></button>
+                          <button type="button" class="swatch" data-color="#ffffff" style="background-color: #ffffff; border: 1px solid var(--border-color);"></button>
+                          <button type="button" class="swatch" data-color="#111827" style="background-color: #111827;"></button>
+                        </div>
+                        <input type="hidden" id="tab-icon-bg" value="#6366f1">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- THANH CHIA ĐÔI -->
+            <div class="split-form-divider" id="split-form-divider" style="display: none;"></div>
+
+            <!-- CỘT PHẢI (RIGHT LINK) -->
+            <div class="split-form-column" id="split-col-right" style="display: none;">
+              <div class="column-title">Right Web Page</div>
+              
+              <div class="form-group" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <label for="tab-url-right" style="margin-bottom: 0;">URL Address:</label>
+                  <div class="toggle-container" style="gap: 6px;">
+                    <span class="toggle-label" style="font-size: 11px; color: var(--text-secondary);" title="Isolated Account Session">👤² Dual Acc</span>
+                    <label class="switch" style="transform: scale(0.85); transform-origin: right center;">
+                      <input type="checkbox" id="tab-is-dual-acc-2">
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                </div>
+                <input type="url" id="tab-url-right" placeholder="https://example.com" style="width: 100%;">
+              </div>
+              
+              <!-- Icon Config Phải -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Icon Style & Preview</label>
+                <div class="icon-setup-wrapper">
+                  <div class="icon-preview-box">
+                    <div class="icon-preview-avatar" id="icon-preview-avatar-right">🌐</div>
+                    <span class="preview-label">Preview</span>
+                  </div>
+                  <div class="icon-options-panel">
+                    <div class="options-row">
+                      <label class="radio-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="tab-icon-type-right" value="favicon" checked />
+                        <span>Favicon</span>
+                      </label>
+                      <label class="radio-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="tab-icon-type-right" value="text" />
+                        <span>Custom Text</span>
+                      </label>
+                    </div>
+                    <div class="custom-icon-inputs hidden" id="custom-icon-inputs-right">
+                      <div class="text-input-row">
+                        <input type="text" id="tab-icon-text-right" placeholder="e.g. Hà, MAX Chat" maxlength="15" style="width: 100%;">
+                      </div>
+                      <div class="color-picker-row">
+                        <div class="color-swatches" id="color-swatches-right">
+                          <button type="button" class="swatch" data-color="#ef4444" style="background-color: #ef4444;"></button>
+                          <button type="button" class="swatch" data-color="#f97316" style="background-color: #f97316;"></button>
+                          <button type="button" class="swatch" data-color="#eab308" style="background-color: #eab308;"></button>
+                          <button type="button" class="swatch" data-color="#22c55e" style="background-color: #22c55e;"></button>
+                          <button type="button" class="swatch" data-color="#3b82f6" style="background-color: #3b82f6;"></button>
+                          <button type="button" class="swatch" data-color="#6366f1" style="background-color: #6366f1;"></button>
+                          <button type="button" class="swatch" data-color="#a855f7" style="background-color: #a855f7;"></button>
+                          <button type="button" class="swatch" data-color="#ffffff" style="background-color: #ffffff; border: 1px solid var(--border-color);"></button>
+                          <button type="button" class="swatch" data-color="#111827" style="background-color: #111827;"></button>
+                        </div>
+                        <input type="hidden" id="tab-icon-bg-right" value="#6366f1">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <small class="form-help" style="margin-top: 0;">System will dynamically bypass CSP and X-Frame-Options for both links.</small>
+        </div>
+
+        <!-- PANE 2: Default Channels Selector -->
+        <div class="modal-pane" id="tab-pane-default">
+          <p class="setup-subtitle" id="setup-subtitle">Select channels to add to this sub-group.</p>
+          
+          <div class="setup-tabs-row" id="setup-tabs-row"></div>
+          
+          <div class="setup-grid-container">
+            <div class="setup-channels-grid" id="setup-channels-grid" style="flex: 1;">
+              <!-- Rendered dynamically by JS containing default channels -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <!-- Trái: Setup actions (chỉ hiển thị ở tab default channels) -->
+        <div class="footer-left-actions" id="footer-left-actions" style="display: none; gap: 8px;">
+          <button type="button" id="btn-setup-select-all" class="btn btn-secondary btn-small" style="font-size: 11px; padding: 4px 10px; height: 28px;">Select All</button>
+          <button type="button" id="btn-setup-deselect-all" class="btn btn-secondary btn-small" style="font-size: 11px; padding: 4px 10px; height: 28px;">Deselect All</button>
+        </div>
+        
+        <!-- Phải: Các nút submit/cancel chính -->
+        <div class="footer-right-actions" style="display: flex; gap: 8px; margin-left: auto;">
+          <button type="button" class="btn btn-secondary" id="cancel-tab-modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="save-tab-btn">Save Channel</button>
+          <button type="button" id="btn-submit-setup" class="btn btn-primary" style="display: none;">Add to Sub-group</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: App Settings & Information & SupportMAX -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-content settings-modal-content">
+      <div class="modal-header">
+        <h3 id="settings-modal-title">Settings & About</h3>
+        <span class="close-modal" id="close-settings-modal">&times;</span>
+      </div>
+      <div class="modal-body settings-modal-body">
+        <div class="app-info-brand">
+          <img src="svg/logo-MAX.svg" class="app-info-logo" alt="MAX Multi Chat Logo">
+          <div class="app-info-meta">
+            <h2 class="app-info-title">MAX - Multi Chat</h2>
+            <span class="app-info-badge" id="app-info-version">v1.0.1</span>
+          </div>
+        </div>
+
+        <!-- Feature Visibility Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title">Feature Visibility</h4>
+          <div class="settings-toggles-grid">
+            <div class="settings-toggle-item">
+              <div class="settings-toggle-label">
+                <span class="icon-mask"></span>
+                <span>AI Multi-Chat</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggle-feat-ai" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <div class="settings-toggle-item">
+              <div class="settings-toggle-label">
+                <span class="icon-mask"></span>
+                <span>Split View</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggle-feat-split" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <div class="settings-toggle-item">
+              <div class="settings-toggle-label">
+                <span class="icon-mask"></span>
+                <span>Window Mode</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggle-feat-window" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <div class="settings-toggle-item">
+              <div class="settings-toggle-label">
+                <span class="icon-mask"></span>
+                <span>Autohide Sidebar</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggle-feat-autohide" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4 class="settings-section-title">Data & Sync Management</h4>
+          <div class="settings-data-grid">
+            <button type="button" class="btn btn-secondary settings-data-btn" id="btn-export-csv" title="Backup channel list to CSV file">
+              <span class="icon-mask"></span>
+              <span>Backup Data</span>
+            </button>
+            <button type="button" class="btn btn-secondary settings-data-btn" id="btn-import-csv" title="Restore channel list from CSV backup file">
+              <span class="icon-mask"></span>
+              <span>Restore Data</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sync-app" id="btn-sync-google-sheet" title="Update default channels and AI models from Google Sheet">
+              <span class="icon-mask"></span>
+              <span>Update App</span>
+            </button>
+            <div id="google-sheet-sync-status"></div>
+          </div>
+        </div>
+
+        <div class="donate-card support-max-nudge-card">
+          <div class="support-max-header">
+            <span class="support-max-heart-icon"></span>
+            <span class="support-max-title">Enjoying MAX?</span>
+          </div>
+          <p class="donate-desc">If MAX saves you time, consider buying me a coffee ☕ — it helps keep the tool free and updated!</p>
+          <div class="donate-nudge-celebrate">
+            <span>🥳</span>
+            <span>🎉</span>
+          </div>
+          <div class="donate-btn-wrapper">
+            <a href="https://ko-fi.com/maxiechen96" target="_blank" class="donate-btn" id="donate-btn-info-modal">
+              <img src="svg/kofi.svg" class="donate-kofi-icon" alt="Ko-fi">
+              <span>Support on Ko-fi</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer settings-modal-footer">
+        <button type="button" class="btn btn-primary" id="close-settings-modal-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="grid-card.js"></script>
+  <script src="welcome-guide.js"></script>
+  <script src="csv-exporter.js"></script>
+  <script src="google-sheet-sync.js"></script>
+  <script src="modals/main-group.js"></script>
+  <script src="modals/sub-group.js"></script>
+  <script src="modals/tab-link.js"></script>
+  <script src="modals/settings.js"></script>
+  <script src="ai-multichat/ai-multichat.js"></script>
+  <script src="dashboard.js"></script>
+  <script src="saveandsync/persistence.js"></script>
+  <script src="saveandsync/sync.js"></script>
+  <script src="modals/supportmax.js"></script>
+</body>
+</html>

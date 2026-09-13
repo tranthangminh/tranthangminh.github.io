@@ -1,0 +1,491 @@
+/* ==================== INTEGRATED ICON CONFIG & SWATCHES ==================== */
+.icon-setup-wrapper {
+  display: flex;
+  gap: 16px;
+  background-color: var(--bg-sidebar-main);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin-top: 6px;
+  height: 124px;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.icon-preview-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  background-color: var(--bg-sidebar-sub);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.icon-preview-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  box-sizing: border-box;
+  text-align: center;
+  word-break: break-word;
+  padding: 2px;
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.icon-preview-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.preview-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-top: 6px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.icon-options-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  height: 100px;
+}
+
+.options-row {
+  display: flex;
+  width: 100%;
+}
+
+.options-row .radio-label {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.custom-icon-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.custom-icon-inputs.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.text-input-row input {
+  width: 100%;
+  height: 32px !important;
+  font-size: 12px !important;
+  padding: 0 8px !important;
+  box-sizing: border-box;
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-swatches {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s, border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.swatch:hover {
+  transform: scale(1.15);
+}
+
+.swatch.selected {
+  border: 2px solid var(--text-primary) !important;
+  transform: scale(1.15);
+}
+
+/* ==================== TAB SWITCHER IN MODAL ==================== */
+.modal-tab-switcher {
+  display: flex;
+  background-color: var(--bg-primary);
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.modal-tab-btn {
+  flex: 1;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  outline: none;
+}
+
+.modal-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.modal-tab-btn.active {
+  background-color: var(--accent-glow);
+  color: var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--accent-primary);
+  font-weight: 600;
+}
+
+.modal-pane {
+  display: none;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.modal-pane.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== DEFAULT CHANNELS PANE ==================== */
+.setup-subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 0;
+  margin-bottom: 8px; /* Giảm margin để tiết kiệm không gian */
+  text-align: left;
+}
+
+.setup-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  height: 285px; /* Tăng chiều cao tối đa cho grid sau khi dọn dẹp các nút */
+}
+
+.setup-channels-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  justify-content: center;
+  align-content: start;
+  gap: 10px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+  background-color: var(--bg-sidebar-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar mỏng cho setup grid */
+.setup-channels-grid::-webkit-scrollbar {
+  width: 5px;
+}
+.setup-channels-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+.setup-channels-grid::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+.setup-grid-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 72px;
+  padding: 4px;
+  background-color: var(--bg-sidebar-sub);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  text-align: center;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.setup-grid-card:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--text-secondary);
+}
+
+.setup-grid-card.selected {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-glow);
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.25);
+}
+
+.setup-grid-card img.tab-favicon,
+.setup-grid-card span.tab-favicon {
+  width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.setup-grid-card span.tab-title {
+  flex: none !important;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: normal !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  line-height: 12px;
+  width: 100%;
+  color: var(--text-primary);
+  margin: 0 !important;
+}
+
+/* ==================== SETUP MODAL TABS ==================== */
+.setup-tabs-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.setup-tab {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.setup-tab:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.setup-tab.active {
+  background-color: var(--accent-glow);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+#tab-modal .modal-content {
+  width: 480px !important;
+  max-width: 95vw;
+  transition: width 0.25s ease, height 0.25s ease;
+}
+
+#tab-modal.split-active-modal .modal-content {
+  width: 850px !important;
+  max-width: 95vw;
+}
+
+#tab-modal .modal-body {
+  height: 385px; /* Chiều cao cố định ban đầu cho Custom và Default 1 cột */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  transition: height 0.25s ease;
+}
+
+#tab-modal.split-active-modal .modal-body {
+  height: 425px; /* Tăng chiều cao để chứa toàn bộ 2 cột URL Address & Icon Config không bị cuộn */
+}
+
+/* Đảm bảo các pane chiếm trọn chiều cao body */
+#tab-modal .modal-pane {
+  flex: 1;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#tab-modal.split-active-modal .modal-pane {
+  overflow: visible;
+}
+
+#tab-modal .modal-pane.active {
+  display: flex;
+}
+
+/* Custom form container cho tab custom link để lấp đầy không gian gọn gàng */
+#tab-pane-custom {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+/* Style cho header khi chứa các tab điều khiển */
+#tab-modal .modal-header.has-tabs {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+/* ==================== SPLIT LINK TOGGLE & LAYOUT ==================== */
+.toggle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.toggle-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  transition: .25s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-secondary);
+  transition: .25s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--accent-primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px);
+  background-color: #ffffff;
+}
+
+/* Split Form Layout */
+.split-link-form-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  flex: 1;
+  overflow: visible;
+}
+
+.split-form-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: visible;
+  box-sizing: border-box;
+}
+
+.split-form-column::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.split-form-divider {
+  width: 1px;
+  border-left: 3px solid var(--border-color);
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.column-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  border-left: 2px solid var(--accent-primary);
+  padding-left: 6px;
+}
+
