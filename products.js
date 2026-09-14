@@ -17,7 +17,7 @@ if (typeof initSharedPage === 'function') {
             options: {
                 pageClass: 'contact-page',
                 id: 'contactSection',
-                includeReveal: false,
+                includeReveal: true,
                 assetBase: ''
             }
         },
@@ -35,66 +35,21 @@ if (typeof initSharedPage === 'function') {
 }
 
 function initProductsTabs() {
-    var switchButtons = Array.prototype.slice.call(document.querySelectorAll('.products-switch-btn[data-product-tab]'));
-    var categorySections = Array.prototype.slice.call(document.querySelectorAll('.products-category-section[data-product-section]'));
-
-    if (!switchButtons.length || !categorySections.length) {
-        return;
+    if (window.sharedTabs && typeof window.sharedTabs.init === 'function') {
+        window.sharedTabs.init({
+            container: '.products-switch',
+            btnSelector: '.products-switch-btn',
+            indicatorSelector: '.products-switch-indicator',
+            activeLabelSelector: '.products-switch-active-label',
+            activeTextSelector: '.products-switch-active-text',
+            textSelector: '.products-switch-text',
+            targetSections: '.products-category-section',
+            tabDataAttr: 'data-product-tab',
+            sectionDataAttr: 'data-product-section',
+            urlParam: 'tab',
+            defaultTab: 'all'
+        });
     }
-
-    function setActiveTab(targetTab, updateUrl) {
-        var validTab = targetTab || 'all';
-
-        switchButtons.forEach(function (btn) {
-            var btnTab = btn.getAttribute('data-product-tab');
-            var isActive = btnTab === validTab;
-            btn.classList.toggle('is-active', isActive);
-            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-        });
-
-        categorySections.forEach(function (section) {
-            var sectionCategory = section.getAttribute('data-product-section');
-            var shouldShow = validTab === 'all' || sectionCategory === validTab;
-            section.classList.toggle('is-hidden', !shouldShow);
-        });
-
-        if (updateUrl) {
-            try {
-                var url = new URL(window.location.href);
-                if (validTab === 'all') {
-                    url.searchParams.delete('tab');
-                } else {
-                    url.searchParams.set('tab', validTab);
-                }
-                window.history.replaceState({}, '', url.toString());
-            } catch (error) {}
-        }
-    }
-
-    switchButtons.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var tab = btn.getAttribute('data-product-tab');
-            setActiveTab(tab, true);
-        });
-    });
-
-    // Initialize from URL search params or hash
-    var initialTab = 'all';
-    try {
-        var urlParams = new URLSearchParams(window.location.search);
-        var tabParam = urlParams.get('tab');
-        if (tabParam) {
-            initialTab = tabParam.toLowerCase();
-        } else if (window.location.hash) {
-            initialTab = window.location.hash.replace('#', '').toLowerCase();
-        }
-    } catch (error) {}
-
-    var hasMatchingTab = switchButtons.some(function (btn) {
-        return btn.getAttribute('data-product-tab') === initialTab;
-    });
-
-    setActiveTab(hasMatchingTab ? initialTab : 'all', false);
 }
 
 function initProductDownloadCounters() {

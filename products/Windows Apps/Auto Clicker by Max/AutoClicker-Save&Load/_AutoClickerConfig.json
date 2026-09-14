@@ -4,7 +4,7 @@
   "ShowMapOverlay": true,
   "FreeMouseMode": true,
   "SmoothMouseMove": true,
-  "HideRunningRing": true,
+  "HideRunningRing": false,
   "IsDarkTheme": true,
   "IsAdvancedTab": false,
   "SimpleProfiles": [

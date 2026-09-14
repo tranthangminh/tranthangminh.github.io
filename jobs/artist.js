@@ -32,7 +32,7 @@ if (typeof initSharedPage === 'function') {
             options: {
                 pageClass: 'contact-page',
                 id: 'contactSection',
-                includeReveal: false,
+                includeReveal: true,
                 assetBase: '../'
             }
         },

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 24">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0, .st1 {
+        fill: none;
+      }
+
+      .st2 {
+        opacity: .3;
+      }
+
+      .st2, .st3 {
+        isolation: isolate;
+      }
+
+      .st3 {
+        opacity: .5;
+      }
+
+      .st1 {
+        stroke: #000;
+        stroke-linecap: square;
+        stroke-miterlimit: 10;
+        stroke-width: 2px;
+      }
+    </style>
+  </defs>
+  <g>
+    <path class="st2" d="M22,20.29H2c-1.1,0-2-.9-2-2v3.71c0,1.1.9,2,2,2h20c1.1,0,2-.9,2-2v-3.71c0,1.1-.9,2-2,2Z"/>
+    <path class="st2" d="M22,16.01H2c-1.1,0-2-.9-2-2v4.29c0,1.1.9,2,2,2h20c1.1,0,2-.9,2-2v-4.29c0,1.1-.9,2-2,2Z"/>
+    <path class="st3" d="M22,16.01H2c-1.1,0-2-.9-2-2v4.29c0,1.1.9,2,2,2h20c1.1,0,2-.9,2-2v-4.29c0,1.1-.9,2-2,2Z"/>
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M3,8.01v-2.14c0-1.18.96-2.14,2.14-2.14s2.14.96,2.14,2.14v6.43"/>
+      <polyline class="st1" points="7.29 8.01 3 8.01 3 10.15 3 12.29"/>
+    </g>
+    <polyline class="st1" points="9.86 3.72 9.86 12.29 14.14 12.29"/>
+    <polyline class="st1" points="16.71 3.72 16.71 12.29 21 12.29"/>
+  </g>
+  <rect class="st0" width="24" height="16"/>
+</svg>

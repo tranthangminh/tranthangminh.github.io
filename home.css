@@ -1091,25 +1091,6 @@ a.skill-capsule-card:hover {
     grid-template-columns: 2fr 1fr;
 }
 
-.reveal-up {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    will-change: opacity, transform;
-}
-
-.reveal-up.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .reveal-up {
-        opacity: 1;
-        transform: none;
-        transition: none;
-    }
-}
 
 
 
