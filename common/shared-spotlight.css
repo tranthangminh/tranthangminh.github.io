@@ -1,0 +1,377 @@
+/**
+ * Shared Spotlight & Thumbnail Gallery Component (shared-spotlight.css)
+ * Hỗ trợ giao diện xem trước ảnh lớn (Spotlight) + dải thẻ ảnh nhỏ (Thumbnails)
+ * Khóa cứng tỷ lệ khung hình (Fixed Aspect-Ratio) triệt tiêu 100% hiện tượng giật nảy layout (Layout Shift)
+ * Tuân thủ 100% design tokens của common/theme.css
+ */
+
+/* ==========================================================================
+   1. Khung Bao Ngoài (Spotlight Hub)
+   ========================================================================== */
+.spotlight-hub,
+.actor-gallery-hub,
+.app-spotlight-hub {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: sticky;
+    top: calc(var(--header-h) + 18px);
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   2. Khung Ảnh Lớn Tiêu Điểm (Spotlight Display & Frame)
+   ========================================================================== */
+.spotlight-display,
+.actor-spotlight-display {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+}
+
+.spotlight-frame,
+.actor-spotlight-frame {
+    position: relative;
+    width: 100%;
+    /* Bắt buộc khóa cứng tỷ lệ khung hình để chống giật layout khi đổi ảnh */
+    aspect-ratio: var(--spotlight-ratio, 4 / 5);
+    max-height: var(--spotlight-max-h, 520px);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    cursor: zoom-in;
+}
+
+.spotlight-frame img,
+.actor-spotlight-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: var(--spotlight-fit, cover);
+    object-position: center top;
+    display: block;
+    transition: transform var(--transition-normal), opacity 0.2s ease;
+}
+
+.spotlight-frame:hover img,
+.actor-spotlight-frame:hover img {
+    transform: scale(1.02);
+}
+
+/* Nhãn chú thích bên dưới ảnh lớn */
+.spotlight-caption,
+.spotlight-embed-label {
+    font-size: var(--font-sm);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    text-align: center;
+    display: block;
+    user-select: none;
+}
+
+/* ==========================================================================
+   3. Dải Thẻ Ảnh Nhỏ (Gallery Strip & Thumbnails)
+   ========================================================================== */
+.spotlight-strip-wrapper,
+.actor-gallery-strip-wrapper {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    background: var(--bg-primary);
+    padding: 10px;
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    height: calc(var(--spotlight-thumb-height, 116px) + 22px);
+    max-height: calc(var(--spotlight-thumb-height, 116px) + 22px);
+}
+
+/* Kiểu dải cuộn ngang linh hoạt (cho danh sách nhiều ảnh) */
+.spotlight-strip,
+.actor-hero-gallery {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: var(--spotlight-thumb-width, 88px);
+    gap: 8px;
+    height: var(--spotlight-thumb-height, 116px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+    user-select: none;
+    touch-action: pan-y;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.spotlight-strip::-webkit-scrollbar,
+.actor-hero-gallery::-webkit-scrollbar {
+    display: none;
+}
+
+.spotlight-strip.dragging,
+.actor-hero-gallery.dragging {
+    cursor: grabbing;
+}
+
+/* Biến thể lưới (Grid) cố định số cột (ví dụ 2 cột cân xứng cho Simple/Asian) */
+.spotlight-strip--grid-2 {
+    display: grid !important;
+    grid-auto-flow: row !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    height: var(--spotlight-thumb-height, 116px) !important;
+    overflow: hidden !important;
+}
+
+.spotlight-strip--grid-3 {
+    display: grid !important;
+    grid-auto-flow: row !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    height: var(--spotlight-thumb-height, 116px) !important;
+    overflow: hidden !important;
+}
+
+/* ==========================================================================
+   4. Từng Thẻ Ảnh Nhỏ (Thumbnail Item)
+   ========================================================================== */
+.spotlight-item,
+.actor-item {
+    margin: 0;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    background: var(--bg-elevated);
+    border: 2px solid transparent;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.spotlight-item img,
+.actor-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Nhãn badge nhỏ góc dưới thumbnail (nếu có) */
+.spotlight-thumb-tag {
+    position: absolute;
+    bottom: 3px;
+    left: 4px;
+    background: var(--bg-overlay, rgba(15, 23, 42, 0.82));
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: var(--text-primary);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+    transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+.spotlight-item:hover,
+.actor-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-hover);
+}
+
+/* Trạng thái Active (được chọn) */
+.spotlight-item.active-thumb,
+.actor-item.active-thumb {
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 1px var(--accent-primary), var(--shadow-accent);
+    transform: translateY(-2px);
+}
+
+.spotlight-item.active-thumb .spotlight-thumb-tag {
+    background: var(--accent-primary);
+    color: var(--text-on-accent);
+}
+
+/* ==========================================================================
+   5. Modal Xem Trước Ảnh Phóng To (Spotlight Preview Modal)
+   ========================================================================== */
+.spotlight-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: var(--bg-overlay, rgba(15, 23, 42, 0.88));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.spotlight-modal.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.spotlight-modal-dialog {
+    position: relative;
+    width: min(96vw, 1200px);
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.spotlight-modal-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    max-height: calc(100vh - 120px);
+}
+
+.spotlight-modal-img {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100vh - 120px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.spotlight-modal-caption {
+    font-size: var(--font-sm);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    padding: 6px 16px;
+    border-radius: var(--border-radius-full);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.spotlight-modal-close,
+.spotlight-modal-nav {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal);
+    z-index: 10;
+}
+
+.spotlight-modal-close:hover,
+.spotlight-modal-nav:hover {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: var(--text-on-accent);
+    transform: scale(1.08);
+}
+
+.spotlight-modal-close {
+    position: absolute;
+    top: -10px;
+    right: 0;
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.spotlight-modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.spotlight-modal-prev {
+    left: -20px;
+}
+
+.spotlight-modal-next {
+    right: -20px;
+}
+
+/* ==========================================================================
+   6. Responsive Mobile (<= 680px)
+   ========================================================================== */
+@media (max-width: 680px) {
+    .spotlight-hub,
+    .actor-gallery-hub,
+    .app-spotlight-hub {
+        position: static;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+
+    .spotlight-frame,
+    .actor-spotlight-frame {
+        max-height: 420px;
+    }
+
+    .spotlight-modal {
+        padding: 10px;
+    }
+
+    .spotlight-modal-prev {
+        left: 4px;
+    }
+
+    .spotlight-modal-next {
+        right: 4px;
+    }
+
+    .spotlight-modal-close {
+        top: 4px;
+        right: 4px;
+    }
+}

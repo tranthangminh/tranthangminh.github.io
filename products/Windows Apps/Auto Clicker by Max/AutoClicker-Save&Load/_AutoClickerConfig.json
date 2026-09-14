@@ -4,9 +4,9 @@
   "ShowMapOverlay": true,
   "FreeMouseMode": true,
   "SmoothMouseMove": true,
-  "HideRunningRing": false,
+  "HideRunningRing": true,
   "IsDarkTheme": true,
-  "IsAdvancedTab": false,
+  "IsAdvancedTab": true,
   "SimpleProfiles": [
     {
       "TabIndex": 0,
@@ -33,17 +33,16 @@
       "SimpleTargetWindowTitle": "CPS Test Online – Click Speed Test for Gamers | Redragon – Redragonshop - Google Chrome",
       "SimpleRelativeToWindow": true,
       "Points": [
-        { "X": 166, "Y": 570 },
-        { "X": 235, "Y": 562 },
-        { "X": 349, "Y": 560 },
-        { "X": 414, "Y": 569 },
-        { "X": 620, "Y": 562 },
-        { "X": 715, "Y": 573 },
-        { "X": 672, "Y": 614 },
-        { "X": 387, "Y": 604 },
-        { "X": 305, "Y": 609 },
-        { "X": 232, "Y": 629 },
-        { "X": 103, "Y": 537 }
+        { "X": 730, "Y": 525 },
+        { "X": 613, "Y": 533 },
+        { "X": 541, "Y": 630 },
+        { "X": 584, "Y": 725 },
+        { "X": 463, "Y": 775 },
+        { "X": 774, "Y": 816 },
+        { "X": 861, "Y": 773 },
+        { "X": 960, "Y": 590 },
+        { "X": 1074, "Y": 613 },
+        { "X": 1092, "Y": 686 }
       ]
     },
     {
@@ -107,6 +106,30 @@
       "DefaultProcessName": "",
       "DefaultRelativeToWindow": false,
       "Steps": [
+        {
+          "Id": "27a854f13c134accada2cb08e2c7c8cb",
+          "Name": "Step",
+          "ActionType": 8,
+          "Enabled": true,
+          "IsChecked": true,
+          "StartX": 0,
+          "StartY": 0,
+          "EndX": 0,
+          "EndY": 0,
+          "HoldMs": 1,
+          "DelayMs": 240,
+          "RepeatCount": 1,
+          "ScrollStep": 0,
+          "KeyData": "Space",
+          "ColorHex": "#00FF00",
+          "Tolerance": 10,
+          "IfTrueStep": -2,
+          "IfFalseStep": 0,
+          "WindowTitle": "",
+          "ProcessName": "",
+          "RelativeToWindow": false,
+          "Note": ""
+        }
       ]
     }
   ]
