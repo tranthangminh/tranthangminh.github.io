@@ -127,6 +127,12 @@
             viewAction: 'Xem chi tiết',
             emptyNotice: 'Đang cập nhật thêm sản phẩm trong danh mục này...'
         },
+        productTabs: {
+            description: 'Mô Tả',
+            guide: 'Hướng Dẫn Sử Dụng',
+            limits: 'Cơ Chế & Giới Hạn',
+            requirements: 'Yêu Cầu Hệ Thống'
+        },
         welcome: {
             home: {
                 title: 'Xin chào!'

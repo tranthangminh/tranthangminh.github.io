@@ -1,0 +1,8 @@
+/* ==========================================================================
+   MAYA PLUGIN STYLESHEET (products/plugin-maya.css)
+   Dedicated styles for Maya Tools plugin page
+   Inherits full base layout from common/shared-product-detail.css
+   STRICTLY using theme tokens from theme.css
+   ========================================================================== */
+
+/* Maya tools utilizes the standard surface-card and tools-panel layout */

@@ -127,6 +127,12 @@
             viewAction: 'View Details',
             emptyNotice: 'More products in this category are coming soon...'
         },
+        productTabs: {
+            description: 'Description',
+            guide: 'User Guide',
+            limits: 'Mechanisms & Limits',
+            requirements: 'System Requirements'
+        },
         welcome: {
             home: {
                 title: 'Hello!'

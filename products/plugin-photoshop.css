@@ -1,0 +1,90 @@
+/* ==========================================================================
+   PHOTOSHOP PLUGIN STYLESHEET (products/plugin-photoshop.css)
+   Dedicated styles for Layer Export, Rename & Sort Photoshop Plugin
+   STRICTLY using theme tokens from theme.css
+   ========================================================================== */
+
+.tools-showcase {
+    display: grid;
+    grid-template-columns: 400px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.tools-embed {
+    display: grid;
+    gap: 10px;
+    justify-items: start;
+}
+
+.tools-embed-label {
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+}
+
+.tools-embed-frame {
+    width: min(100%, 400px);
+    height: 700px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--bg-elevated);
+    box-shadow: var(--shadow-lg);
+}
+
+.tools-detail {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+}
+
+.tools-support-content {
+    display: grid;
+    gap: 16px;
+}
+
+.tools-install-group {
+    display: grid;
+    gap: 8px;
+}
+
+.tools-install-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.tools-install-subtitle {
+    margin: 0;
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.tools-install-list {
+    margin: 0;
+    padding-left: 20px;
+    display: grid;
+    gap: 8px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .tools-showcase {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .tools-embed-frame {
+        width: min(100%, 400px);
+        height: 600px;
+    }
+
+    .tools-install-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}

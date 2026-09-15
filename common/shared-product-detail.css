@@ -1,0 +1,643 @@
+/* ==========================================================================
+   SHARED PRODUCT DETAIL STYLESHEET (common/shared-product-detail.css)
+   Base layout and shared UI components for product detail pages
+   STRICTLY using theme tokens from theme.css (100% pure CSS, no hardcoded colors)
+   ========================================================================== */
+
+/* Base Page Layout */
+body {
+    background: var(--bg-100);
+    background-color: var(--bg-100);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+.tools-page-main {
+    padding: calc(var(--header-h) + 18px) 0 24px;
+}
+
+.tools-hero {
+    display: grid;
+    gap: 14px;
+}
+
+/* ==========================================================================
+   Product Panel / Header Card
+   ========================================================================== */
+.tools-panels {
+    display: grid;
+}
+
+.tools-panel {
+    padding: 22px 20px;
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-lg);
+    display: none;
+    gap: 16px;
+}
+
+.tools-panel.is-active {
+    display: grid;
+}
+
+.tools-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* 3-Row Centered Layout for Product Header Card */
+.tools-panel-head--centered,
+.app-panel-head--centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.tools-panel-head--centered .tools-panel-title,
+.app-panel-head--centered .tools-panel-title {
+    text-align: center;
+    width: 100%;
+    margin: 0;
+}
+
+.tools-panel-head--centered .app-meta-pills,
+.app-panel-head--centered .app-meta-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+}
+
+.tools-panel-head--centered .tools-action-row,
+.app-panel-head--centered .tools-action-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.tools-section-title,
+.tools-panel-title {
+    margin: 0;
+    font-weight: 700;
+}
+
+.tools-panel-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--btn-height-sm);
+    padding: 6px 12px;
+    border-radius: var(--border-radius-full);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.84rem;
+}
+
+.tools-summary,
+.tools-panel-summary {
+    margin: 0;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.tools-panel-list {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 10px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Standard Download CTA Button & Action Row
+   ========================================================================== */
+.tools-support {
+    display: grid;
+    gap: 18px;
+    width: 100%;
+}
+
+.tools-action-row {
+    margin-top: 2px;
+    display: flex;
+    justify-content: center;
+}
+
+.tools-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: var(--btn-height-lg);
+    padding: 10px 18px;
+    border-radius: var(--border-radius-full);
+    background: var(--accent-primary);
+    color: var(--text-on-accent);
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-normal), background-color var(--transition-normal), box-shadow var(--transition-normal);
+    text-align: left;
+}
+
+.tools-download-btn:hover {
+    transform: translateY(-1px);
+    background: var(--accent-primary-hover);
+    box-shadow: var(--shadow-lg);
+}
+
+.tools-download-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tools-download-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.tools-download-label,
+.tools-download-text {
+    text-align: left;
+    display: inline-block;
+    line-height: 1.3;
+}
+
+.tools-download-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    margin-left: 6px;
+    border-radius: var(--border-radius-full);
+    background: var(--bg-overlay);
+    border: 1px solid var(--border-color);
+    font-size: var(--font-xs);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text-on-accent);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.tools-download-badge .product-download-count {
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+}
+
+.tools-download-badge-label {
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   App Presentation Components (Shared across Windows Apps & Tools)
+   ========================================================================== */
+.app-hero-showcase {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 24px;
+    align-items: start;
+}
+
+.app-hero-info {
+    display: grid;
+    gap: 16px;
+}
+
+/* Spotlight Preview Aspect Ratio Configuration */
+.app-spotlight-hub,
+.app-preview-wrap {
+    --spotlight-ratio: 4 / 5;
+    --spotlight-fit: contain;
+    --spotlight-max-h: 520px;
+}
+
+/* Meta Pills */
+.app-meta-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.app-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--btn-height-sm);
+    padding: 4px 12px;
+    border-radius: var(--border-radius-full);
+    font-size: var(--font-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.app-meta-pill--accent {
+    background: var(--accent-subtle);
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.app-meta-pill--green {
+    background: var(--c-green-bg);
+    color: var(--c-green);
+    border-color: var(--c-green);
+}
+
+.app-meta-pill--blue {
+    background: var(--c-blue-bg);
+    color: var(--c-blue);
+    border-color: var(--c-blue);
+}
+
+/* ==========================================================================
+   Feature & Hotkeys Tables
+   ========================================================================== */
+.app-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-sm);
+    margin: 8px 0;
+}
+
+.app-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: var(--font-md);
+}
+
+.app-table th {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-family: var(--font-secondary);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: var(--font-sm);
+}
+
+.app-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.app-table tr:last-child td {
+    border-bottom: none;
+}
+
+.app-table tr:hover td {
+    background: var(--bg-secondary);
+}
+
+.app-table .text-center {
+    text-align: center;
+}
+
+.app-table .badge-check {
+    color: var(--c-green);
+    font-weight: 700;
+    font-size: var(--font-lg);
+}
+
+.app-table .badge-dash {
+    color: var(--text-tertiary);
+    font-size: var(--font-lg);
+}
+
+/* ==========================================================================
+   Step Workflow Grid
+   ========================================================================== */
+.app-step-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 6px;
+}
+
+.app-step-card {
+    padding: 18px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    gap: 8px;
+}
+
+.app-step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--border-radius-full);
+    background: var(--accent-primary);
+    color: var(--text-on-accent);
+    font-weight: 800;
+    font-size: var(--font-sm);
+}
+
+.app-step-title {
+    margin: 0;
+    font-family: var(--font-secondary);
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.app-step-desc {
+    margin: 0;
+    font-size: var(--font-md);
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   Callouts, Tips, Code & Notices
+   ========================================================================== */
+.app-tip-card {
+    padding: 16px 20px;
+    border-radius: var(--border-radius-lg);
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--accent-primary);
+    border-top: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.app-tip-title {
+    margin: 0;
+    font-family: var(--font-secondary);
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-tip-desc {
+    margin: 0;
+    font-size: var(--font-md);
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.app-kbd {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: var(--font-xs);
+    font-weight: 700;
+    font-family: var(--font-primary);
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+}
+
+.app-code-block {
+    display: block;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    color: var(--text-primary);
+    font-family: Consolas, Monaco, monospace;
+    font-size: var(--font-sm);
+    overflow-x: auto;
+    line-height: 1.6;
+}
+
+.app-notice {
+    padding: 14px 18px;
+    border-radius: var(--border-radius-lg);
+    background: var(--c-yellow-bg);
+    border: 1px solid var(--c-yellow);
+    color: var(--text-primary);
+    display: grid;
+    gap: 6px;
+    margin: 10px 0;
+}
+
+.app-notice-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: var(--font-md);
+    color: var(--c-yellow);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-notice-desc {
+    margin: 0;
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+/* ==========================================================================
+   Privacy Guarantee Box (100% Local / Offline)
+   ========================================================================== */
+.app-privacy-box {
+    padding: 14px 18px;
+    border-radius: var(--border-radius-lg);
+    background: var(--c-green-bg);
+    border: 1px solid var(--c-green);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+}
+
+.app-privacy-icon {
+    font-size: 22px;
+    color: var(--c-green);
+    flex-shrink: 0;
+}
+
+.app-privacy-text {
+    margin: 0;
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.app-privacy-text strong {
+    color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Product Detail Tabs & Panes
+   ========================================================================== */
+.app-tab-pane {
+    display: none;
+}
+
+.app-tab-pane.is-active {
+    display: block;
+    animation: appTabFadeIn 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes appTabFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Standard Product Tab Icons */
+.segmented-tabs-icon--info {
+    mask-image: url('../svg/info.svg');
+    -webkit-mask-image: url('../svg/info.svg');
+}
+
+.segmented-tabs-icon--guide {
+    mask-image: url('../svg/guide.svg');
+    -webkit-mask-image: url('../svg/guide.svg');
+}
+
+.segmented-tabs-icon--warning {
+    mask-image: url('../svg/warning.svg');
+    -webkit-mask-image: url('../svg/warning.svg');
+}
+
+.segmented-tabs-icon--requirements {
+    mask-image: url('../svg/requirements.svg');
+    -webkit-mask-image: url('../svg/requirements.svg');
+}
+
+/* ==========================================================================
+   Generic Detail Section & Typography Scaling
+   ========================================================================== */
+.tools-detail-section {
+    display: grid;
+    gap: 8px;
+}
+
+.tools-detail-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+}
+
+.tools-detail-text {
+    margin: 0;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.tools-panel-summary,
+.tools-panel-list li,
+.tools-detail-text,
+.app-table th,
+.app-table td,
+.app-notice-desc,
+.app-privacy-text,
+.app-action-desc {
+    font-size: var(--font-md) !important;
+    line-height: 1.65 !important;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 900px) {
+    .app-hero-showcase {
+        grid-template-columns: 1fr;
+    }
+
+    .app-preview-wrap {
+        position: static;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .tools-page-main {
+        padding: calc(var(--header-h) + 16px) 0 18px;
+    }
+
+    .tools-panel {
+        padding: 18px 16px;
+    }
+
+    .tools-panel-head:not(.tools-panel-head--centered):not(.app-panel-head--centered) {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 680px) {
+    .tools-download-btn {
+        padding: 8px 14px;
+        gap: 8px;
+        max-width: 100%;
+    }
+
+    /* Khi màn hình mobile / nút hẹp: số lượt tải nằm ở trên, chữ lượt tải nằm ở dưới */
+    .tools-download-badge {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0;
+        padding: 3px 8px;
+        line-height: 1.15;
+    }
+
+    .tools-download-badge .product-download-count {
+        font-size: 0.85rem;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .tools-download-badge-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        white-space: nowrap;
+        line-height: 1.1;
+        opacity: 0.95;
+    }
+}

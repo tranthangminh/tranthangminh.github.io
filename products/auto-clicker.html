@@ -37,8 +37,8 @@
 <link rel="stylesheet" href="../common/shared-mobile-type-scale.css?v=20260903-3">
 <link rel="stylesheet" href="../common/shared-tabs.css?v=20260915-4">
 <link rel="stylesheet" href="../common/shared-spotlight.css?v=20260914-1">
-<link rel="stylesheet" href="plugins-detail.css?v=20260903-3">
-<link rel="stylesheet" href="app-detail.css?v=20260914-1">
+<link rel="stylesheet" href="../common/shared-product-detail.css?v=20260915-1">
+<link rel="stylesheet" href="auto-clicker.css?v=20260915-1">
 <script src="../common/shared-utils.js?v=20260903-3"></script>
 <script src="../common/shared-i18n.js?v=20260903-3"></script>
 <script src="../common/i18n-vi.js?v=20260904-1"></script>
@@ -70,8 +70,8 @@
         <section class="tools-panels">
             <article class="tools-panel surface-card is-active">
                 <!-- Head -->
-                <!-- Head (Tiêu đề, thẻ badge, nút tải - Căn giữa trang) -->
-                <div class="tools-panel-head app-panel-head--centered">
+                <!-- Head (Tiêu đề, thẻ badge, nút tải - Căn giữa trang 3 hàng) -->
+                <div class="tools-panel-head tools-panel-head--centered app-panel-head--centered">
                     <h1 class="tools-panel-title">Auto Clicker by Max v1.0</h1>
                     <div class="app-meta-pills">
                         <span class="app-meta-pill">Portable</span>
@@ -83,8 +83,8 @@
                             <span class="tools-download-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.29a1 1 0 1 1 1.4 1.41l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.41L11 12.59V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"/></svg>
                             </span>
-                            <span>Tải Auto Clicker by Max (.exe)</span>
-                            <span class="tools-download-badge"><span class="product-download-count">0</span> lượt tải</span>
+                            <span class="tools-download-label">Tải Auto Clicker by Max (.exe)</span>
+                            <span class="tools-download-badge"><span class="product-download-count">0</span> <span class="tools-download-badge-label">lượt tải</span></span>
                         </a>
                     </div>
                 </div>
@@ -96,23 +96,23 @@
                             <div class="segmented-tabs-indicator" aria-hidden="true"></div>
                             <button class="segmented-tabs-btn is-active" type="button" data-tab="description" aria-pressed="true" title="Mô Tả">
                                 <span class="segmented-tabs-icon segmented-tabs-icon--info" aria-hidden="true"></span>
-                                <span class="segmented-tabs-text">Mô Tả</span>
+                                <span class="segmented-tabs-text" data-i18n="productTabs.description">Mô Tả</span>
                             </button>
                             <button class="segmented-tabs-btn" type="button" data-tab="guide" aria-pressed="false" title="Hướng Dẫn Sử Dụng">
                                 <span class="segmented-tabs-icon segmented-tabs-icon--guide" aria-hidden="true"></span>
-                                <span class="segmented-tabs-text">Hướng Dẫn Sử Dụng</span>
+                                <span class="segmented-tabs-text" data-i18n="productTabs.guide">Hướng Dẫn Sử Dụng</span>
                             </button>
                             <button class="segmented-tabs-btn" type="button" data-tab="limits" aria-pressed="false" title="Cơ Chế &amp; Giới Hạn">
                                 <span class="segmented-tabs-icon segmented-tabs-icon--warning" aria-hidden="true"></span>
-                                <span class="segmented-tabs-text">Cơ Chế &amp; Giới Hạn</span>
+                                <span class="segmented-tabs-text" data-i18n="productTabs.limits">Cơ Chế &amp; Giới Hạn</span>
                             </button>
                             <button class="segmented-tabs-btn" type="button" data-tab="requirements" aria-pressed="false" title="Yêu Cầu Hệ Thống">
                                 <span class="segmented-tabs-icon segmented-tabs-icon--requirements" aria-hidden="true"></span>
-                                <span class="segmented-tabs-text">Yêu Cầu Hệ Thống</span>
+                                <span class="segmented-tabs-text" data-i18n="productTabs.requirements">Yêu Cầu Hệ Thống</span>
                             </button>
                         </div>
                         <div class="segmented-tabs-active-label" id="appDetailTabsActiveLabel" aria-live="polite">
-                            <span class="segmented-tabs-active-text">Mô Tả</span>
+                            <span class="segmented-tabs-active-text" data-i18n="productTabs.description">Mô Tả</span>
                         </div>
                     </div>
                 </div>
