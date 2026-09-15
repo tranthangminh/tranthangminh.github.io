@@ -39,6 +39,52 @@ body {
 }
 
 /* ==========================================================================
+   Sticky Products Switch Navigator
+   Cố định thanh điều hướng danh mục khi cuộn qua danh sách sản phẩm dài
+   ========================================================================== */
+.products-switch-container {
+    position: sticky;
+    top: var(--header-h, 56px);
+    z-index: 30;
+    background: var(--bg-100);
+    padding: 10px 0;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* ==========================================================================
+   Full-Width Products Switch Navigator (Chuẩn hóa theo auto-clicker.html)
+   Dàn đều 100% bề ngang, chia đều 5 cột danh mục sản phẩm trên Desktop
+   ========================================================================== */
+@media (min-width: 681px) {
+    .products-switch {
+        width: 100%;
+        max-width: 100%;
+        display: inline-flex;
+        box-sizing: border-box;
+    }
+
+    .products-switch-nav {
+        width: 100%;
+        display: inline-flex;
+        gap: 4px;
+    }
+
+    .products-switch-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
+        padding: 10px 14px;
+        font-size: var(--font-md);
+    }
+
+    .products-switch-text {
+        font-size: var(--font-md);
+    }
+}
+
+
+/* ==========================================================================
    Category Switch Icons (Product Specific SVG Masks)
    Component layout & interaction styles are handled by common/shared-tabs.css
    ========================================================================== */

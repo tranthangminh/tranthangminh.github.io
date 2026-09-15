@@ -383,7 +383,13 @@
    ========================================================================== */
 .app-detail-tabs-wrap {
     width: 100%;
-    margin: 28px 0 20px 0;
+    margin: 16px 0 20px 0;
+    position: sticky;
+    top: var(--header-h, 56px);
+    z-index: 30;
+    background: var(--bg-100);
+    padding: 8px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 @media (min-width: 681px) {
@@ -414,6 +420,11 @@
     }
 }
 
+.segmented-tabs-icon--info {
+    mask-image: url('../svg/info.svg');
+    -webkit-mask-image: url('../svg/info.svg');
+}
+
 .segmented-tabs-icon--guide {
     mask-image: url('../svg/guide.svg');
     -webkit-mask-image: url('../svg/guide.svg');
@@ -427,6 +438,30 @@
 .segmented-tabs-icon--requirements {
     mask-image: url('../svg/requirements.svg');
     -webkit-mask-image: url('../svg/requirements.svg');
+}
+
+/* Head Centered Layout (Tiêu đề, thẻ badge, nút tải căn giữa) */
+.app-panel-head--centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.app-panel-head--centered .tools-panel-title {
+    text-align: center;
+    margin: 0;
+}
+
+.app-panel-head--centered .app-meta-pills {
+    justify-content: center;
+}
+
+.app-panel-head--centered .tools-action-row {
+    justify-content: center;
+    margin-top: 4px;
 }
 
 /* ==========================================================================

@@ -271,8 +271,8 @@
     .products-switch-btn {
         flex: 1 1 0;
         min-width: 0;
-        min-height: 48px;
-        padding: 10px 4px;
+        min-height: 33px;
+        padding: 4px 4px;
         border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
         position: relative;
         z-index: 5;
@@ -305,10 +305,10 @@
 
     .segmented-tabs-icon,
     .products-switch-icon {
-        width: 22px;
-        height: 22px;
-        min-width: 22px;
-        min-height: 22px;
+        width: 18px;
+        height: 18px;
+        min-width: 18px;
+        min-height: 18px;
         position: relative;
         z-index: 5;
     }
@@ -320,12 +320,12 @@
         align-items: center;
         justify-content: center;
         width: 100%;
-        min-height: 48px;
-        padding: 10px 16px;
+        min-height: 33px;
+        padding: 4px 12px;
         background: var(--accent-primary);
         color: var(--text-on-accent);
         font-family: var(--font-primary);
-        font-size: var(--font-lg);
+        font-size: 13px;
         font-weight: 700;
         text-align: center;
         letter-spacing: 0.02em;
@@ -454,8 +454,8 @@
     .products-switch-btn {
         flex: 1 1 0;
         min-width: 0;
-        min-height: 48px;
-        padding: 10px 4px;
+        min-height: 33px;
+        padding: 4px 4px;
         border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
         position: relative;
         z-index: 5;
@@ -488,10 +488,10 @@
 
     .segmented-tabs-icon,
     .products-switch-icon {
-        width: 22px;
-        height: 22px;
-        min-width: 22px;
-        min-height: 22px;
+        width: 18px;
+        height: 18px;
+        min-width: 18px;
+        min-height: 18px;
         position: relative;
         z-index: 5;
     }
@@ -502,12 +502,12 @@
         align-items: center;
         justify-content: center;
         width: 100%;
-        min-height: 48px;
-        padding: 10px 16px;
+        min-height: 33px;
+        padding: 4px 12px;
         background: var(--accent-primary);
         color: var(--text-on-accent);
         font-family: var(--font-primary);
-        font-size: var(--font-lg);
+        font-size: 13px;
         font-weight: 700;
         text-align: center;
         letter-spacing: 0.02em;
@@ -561,23 +561,23 @@
 
     .segmented-tabs-btn,
     .products-switch-btn {
-        min-height: 42px;
-        padding: 8px 2px;
+        min-height: 33px;
+        padding: 4px 2px;
     }
 
     .segmented-tabs-icon,
     .products-switch-icon {
-        width: 20px;
-        height: 20px;
-        min-width: 20px;
-        min-height: 20px;
+        width: 18px;
+        height: 18px;
+        min-width: 18px;
+        min-height: 18px;
     }
 
     .segmented-tabs-active-label,
     .products-switch-active-label {
-        min-height: 44px;
-        font-size: var(--font-md);
-        padding: 8px 12px;
+        min-height: 33px;
+        font-size: 13px;
+        padding: 4px 10px;
     }
 }
 
@@ -636,4 +636,56 @@
         transform: none !important;
     }
 }
+
+/* ==========================================================================
+   Sticky Segmented Tabs Modifier (.segmented-tabs-container--sticky)
+   Cho phép thanh điều hướng tabs bám dính dưới Header khi cuộn trang
+   ========================================================================== */
+.segmented-tabs-container--sticky,
+.products-switch-container--sticky {
+    position: sticky;
+    top: var(--header-h, 56px);
+    z-index: 30;
+    background: var(--bg-100);
+    padding: 10px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* ==========================================================================
+   Full-Width Segmented Tabs (.segmented-tabs--full-width, .products-switch--full-width)
+   Dàn đều 100% bề ngang, chia đều cột cho các nút tab trên Desktop (> 680px)
+   Chuẩn hóa theo mẫu auto-clicker.html: padding: 10px 14px, font-size: var(--font-md)
+   ========================================================================== */
+@media (min-width: 681px) {
+    .segmented-tabs--full-width,
+    .products-switch--full-width {
+        width: 100%;
+        max-width: 100%;
+        display: inline-flex;
+        box-sizing: border-box;
+    }
+
+    .segmented-tabs--full-width .segmented-tabs-nav,
+    .products-switch--full-width .products-switch-nav {
+        width: 100%;
+        display: inline-flex;
+        gap: 4px;
+    }
+
+    .segmented-tabs--full-width .segmented-tabs-btn,
+    .products-switch--full-width .products-switch-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
+        padding: 10px 14px;
+        font-size: var(--font-md);
+    }
+
+    .segmented-tabs--full-width .segmented-tabs-text,
+    .products-switch--full-width .products-switch-text {
+        font-size: var(--font-md);
+    }
+}
+
+
 
