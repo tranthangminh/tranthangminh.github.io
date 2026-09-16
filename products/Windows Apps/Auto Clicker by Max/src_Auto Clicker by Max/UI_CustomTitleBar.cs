@@ -9,7 +9,7 @@ namespace ModernAutoClicker
     public class CustomTitleBar : Panel
     {
         private ThemeTokens _theme;
-        private string _titleText = "Auto Clicker by Max v1.0";
+        private string _titleText = AppInfo.Title;
         private bool _isHoverClose = false;
         private bool _isHoverMin = false;
         private bool _isRunning = false;
@@ -173,7 +173,7 @@ namespace ModernAutoClicker
             }
 
             // 3. Title Text (Vertically Centered across full bar height)
-            using (Font titleFont = new Font("Segoe UI", 9F, FontStyle.Bold))
+            using (Font titleFont = ThemeTokens.FontSegoe(12F, FontStyle.Bold))
             {
                 Rectangle textRect = new Rectangle(34, 0, this.Width - (BTN_WIDTH * 2 + 38), this.Height);
                 TextRenderer.DrawText(g, _titleText, titleFont, textRect, t.TextPrimary, 

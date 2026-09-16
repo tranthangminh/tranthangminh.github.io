@@ -21,6 +21,10 @@
      * @param {string} [options.sectionDataAttr] - Thuộc tính lấy category id từ section
      * @param {string} [options.urlParam] - Tên tham số URL để đồng bộ tab (mặc định: 'tab')
      * @param {string} [options.defaultTab] - Tab mặc định (mặc định: 'all')
+     * @param {boolean} [options.autoScroll] - Tự động nhảy lại đầu nội dung khi đổi tab (mặc định: true)
+     * @param {string} [options.scrollBehavior] - Kiểu cuộn: 'auto' (nhảy tức thì) hoặc 'smooth' (mặc định: 'auto')
+     * @param {boolean} [options.scrollOnlyIfScrolledPast] - Chỉ nhảy khi đã cuộn vượt qua đầu tab (mặc định: true)
+     * @param {number} [options.scrollOffset] - Bù trừ vị trí cuộn bổ sung (mặc định: 0)
      * @param {Function} [options.onTabChange] - Callback khi đổi tab: onTabChange(tabId, activeBtn)
      */
     function init(options) {
@@ -57,9 +61,47 @@
         var sectionDataAttr = opts.sectionDataAttr || null;
         var urlParam = opts.urlParam !== undefined ? opts.urlParam : 'tab';
         var defaultTab = opts.defaultTab || 'all';
+        var autoScroll = opts.autoScroll !== undefined ? opts.autoScroll : true;
+        var scrollBehavior = opts.scrollBehavior || 'auto';
+        var scrollOnlyIfScrolledPast = opts.scrollOnlyIfScrolledPast !== undefined ? opts.scrollOnlyIfScrolledPast : true;
+        var scrollOffset = typeof opts.scrollOffset === 'number' ? opts.scrollOffset : 0;
         var onTabChange = typeof opts.onTabChange === 'function' ? opts.onTabChange : null;
 
         var currentActiveIndex = 0;
+
+        function scrollToTabTop() {
+            if (!autoScroll) {
+                return;
+            }
+
+            var stickyElement = switchContainer.closest(
+                '.products-switch-container--sticky, .app-detail-tabs-wrap, .segmented-tabs-container, .products-switch-container'
+            ) || switchContainer;
+
+            // Đo vị trí document tự nhiên (natural top) trước khi áp dụng vị trí sticky
+            var prevPos = stickyElement.style.position;
+            stickyElement.style.position = 'static';
+            var currentScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+            var naturalTop = stickyElement.getBoundingClientRect().top + currentScrollY;
+            stickyElement.style.position = prevPos;
+
+            var headerEl = document.querySelector('.site-header, #sharedHeaderRoot header, header');
+            var headerH = headerEl ? headerEl.offsetHeight : 0;
+            if (!headerH || headerH <= 0) {
+                var cssH = parseFloat(window.getComputedStyle(document.documentElement).getPropertyValue('--header-h'));
+                headerH = !isNaN(cssH) && cssH > 0 ? cssH : 56;
+            }
+
+            var targetScrollY = Math.max(0, Math.round(naturalTop - headerH + scrollOffset));
+
+            // Chỉ cuộn khi người dùng đã cuộn qua vị trí đầu của tab
+            if (scrollOnlyIfScrolledPast ? currentScrollY > targetScrollY : currentScrollY !== targetScrollY) {
+                window.scrollTo({
+                    top: targetScrollY,
+                    behavior: scrollBehavior
+                });
+            }
+        }
 
         function getTabId(btn) {
             if (tabDataAttr && btn.hasAttribute(tabDataAttr)) {
@@ -94,7 +136,7 @@
             }
         }
 
-        function setActiveTab(targetTab, updateUrl, animateIndicator) {
+        function setActiveTab(targetTab, updateUrl, animateIndicator, shouldScroll) {
             var validTab = targetTab || defaultTab;
             var activeIndex = 0;
 
@@ -177,12 +219,18 @@
             if (onTabChange) {
                 onTabChange(validTab, activeBtn);
             }
+
+            if (shouldScroll) {
+                requestAnimationFrame(function () {
+                    scrollToTabTop();
+                });
+            }
         }
 
         switchButtons.forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var tab = getTabId(btn);
-                setActiveTab(tab, true, true);
+                setActiveTab(tab, true, true, true);
             });
         });
 
@@ -204,7 +252,7 @@
             return getTabId(btn) === initialTab;
         });
 
-        setActiveTab(hasMatchingTab ? initialTab : defaultTab, false, false);
+        setActiveTab(hasMatchingTab ? initialTab : defaultTab, false, false, false);
 
         requestAnimationFrame(function () {
             switchContainer.classList.add('is-ready');
@@ -240,6 +288,7 @@
 
         return {
             setActiveTab: setActiveTab,
+            scrollToTop: scrollToTabTop,
             getTabId: function () {
                 var activeBtn = switchButtons[currentActiveIndex];
                 return activeBtn ? getTabId(activeBtn) : defaultTab;

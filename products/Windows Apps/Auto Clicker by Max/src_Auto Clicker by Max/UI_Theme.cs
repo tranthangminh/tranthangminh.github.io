@@ -130,8 +130,19 @@ namespace ModernAutoClicker
             };
         }
 
-        // Cross-platform Monospace font resolver (Windows: Consolas/Cascadia, macOS: Menlo/SF Mono, Linux: DejaVu Sans Mono)
-        public static Font GetMonospaceFont(float size, FontStyle style = FontStyle.Regular)
+        // Pixel-locked font helpers to guarantee DPI immunity across 100%, 125%, 150%+ display scales
+        public static Font FontSegoe(float pixelSize, FontStyle style = FontStyle.Regular)
+        {
+            return new Font("Segoe UI", pixelSize, style, GraphicsUnit.Pixel);
+        }
+
+        public static Font FontSegoeSymbol(float pixelSize, FontStyle style = FontStyle.Regular)
+        {
+            return new Font("Segoe UI Symbol", pixelSize, style, GraphicsUnit.Pixel);
+        }
+
+        // Cross-platform Monospace font resolver with strict GraphicsUnit.Pixel
+        public static Font GetMonospaceFont(float pixelSize, FontStyle style = FontStyle.Regular)
         {
             string[] preferredFonts = new string[] {
                 "Consolas", "Menlo", "DejaVu Sans Mono", "Cascadia Mono", "SF Mono", "Liberation Mono", "Courier New"
@@ -141,11 +152,11 @@ namespace ModernAutoClicker
             {
                 try
                 {
-                    using (Font test = new Font(fontName, size, style))
+                    using (Font test = new Font(fontName, pixelSize, style, GraphicsUnit.Pixel))
                     {
                         if (string.Equals(test.Name, fontName, StringComparison.OrdinalIgnoreCase))
                         {
-                            return new Font(fontName, size, style);
+                            return new Font(fontName, pixelSize, style, GraphicsUnit.Pixel);
                         }
                     }
                 }
@@ -154,7 +165,7 @@ namespace ModernAutoClicker
                 }
             }
 
-            return new Font(FontFamily.GenericMonospace, size, style);
+            return new Font(FontFamily.GenericMonospace, pixelSize, style, GraphicsUnit.Pixel);
         }
     }
 

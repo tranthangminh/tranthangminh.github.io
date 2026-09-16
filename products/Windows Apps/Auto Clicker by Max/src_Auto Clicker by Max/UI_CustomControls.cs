@@ -357,7 +357,7 @@ namespace ModernAutoClicker
 
                     g.DrawString(this.Text, this.Font, textBrush, topRect, sf);
 
-                    using (Font subFont = new Font(this.Font.FontFamily, 8F, FontStyle.Regular))
+                    using (Font subFont = new Font(this.Font.FontFamily, 10.5F, FontStyle.Regular, GraphicsUnit.Pixel))
                     {
                         g.DrawString(_subtitle, subFont, textBrush, btmRect, sf);
                     }
@@ -489,7 +489,7 @@ namespace ModernAutoClicker
             Step = 1;
             AllowEmpty = false;
             this.TextAlign = HorizontalAlignment.Right;
-            this.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            this.Font = ThemeTokens.FontSegoe(13F, FontStyle.Bold);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -706,7 +706,7 @@ namespace ModernAutoClicker
             this.DoubleBuffered = true;
             this.Cursor = Cursors.Hand;
             this.Size = new Size(116, 22);
-            this.Font = new Font("Segoe UI", 8F, FontStyle.Regular);
+            this.Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular);
         }
 
         public void ApplyTheme(ThemeTokens t)
@@ -754,7 +754,7 @@ namespace ModernAutoClicker
             _popupMenu = new ContextMenuStrip();
             _popupMenu.Renderer = new ModernMenuRenderer(_theme);
             _popupMenu.ShowImageMargin = false;
-            _popupMenu.Font = new Font("Segoe UI", 8.5F, FontStyle.Regular);
+            _popupMenu.Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Regular);
             _popupMenu.AutoSize = true;
 
             for (int i = 0; i < _items.Count; i++)
@@ -909,7 +909,7 @@ namespace ModernAutoClicker
                           ControlStyles.SupportsTransparentBackColor, true);
             this.DoubleBuffered = true;
             this.Cursor = Cursors.Hand;
-            this.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+            this.Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold);
         }
 
         public void ApplyTheme(ThemeTokens t)

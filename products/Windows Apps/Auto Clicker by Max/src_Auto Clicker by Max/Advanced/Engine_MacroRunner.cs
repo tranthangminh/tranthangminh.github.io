@@ -162,16 +162,76 @@ namespace ModernAutoClicker.Advanced
             if (step.ActionType == MacroActionType.WaitColor)
             {
                 int tol = step.Tolerance > 0 ? step.Tolerance : 10;
+                bool isArea = (step.EndPoint != Point.Empty && step.EndPoint != step.StartPoint);
                 while (_isRunning)
                 {
-                    Point samplePt = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
-                    Color curr = NativeMethods.GetPixelColor(samplePt.X, samplePt.Y);
-                    if (ActionExecutor.MatchesColor(curr, step.TargetColor, tol))
+                    if (isArea)
                     {
-                        break;
+                        Point screenA = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
+                        Point screenB = ActionExecutor.ResolveActualScreenPoint(step, step.EndPoint);
+                        int ax = Math.Min(screenA.X, screenB.X);
+                        int ay = Math.Min(screenA.Y, screenB.Y);
+                        int aw = Math.Max(1, Math.Abs(screenB.X - screenA.X));
+                        int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
+                        Rectangle scanRect = new Rectangle(ax, ay, aw, ah);
+
+                        Point foundPt = ActionExecutor.FindMatchingPixelInArea(scanRect, step.TargetColor, tol);
+                        if (foundPt != Point.Empty)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        Point samplePt = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
+                        Color curr = NativeMethods.GetPixelColor(samplePt.X, samplePt.Y);
+                        if (ActionExecutor.MatchesColor(curr, step.TargetColor, tol))
+                        {
+                            break;
+                        }
                     }
                     Thread.Sleep(20);
                 }
+                int delay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
+                if (delay > 0 && _isRunning) Thread.Sleep(delay);
+                return;
+            }
+
+            // 3. WaitImage Condition
+            if (step.ActionType == MacroActionType.WaitImage)
+            {
+                Rectangle scanRect = SystemInformation.VirtualScreen;
+                bool isArea = (step.EndPoint != Point.Empty && step.EndPoint != step.StartPoint);
+                if (isArea)
+                {
+                    Point screenA = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
+                    Point screenB = ActionExecutor.ResolveActualScreenPoint(step, step.EndPoint);
+                    int ax = Math.Min(screenA.X, screenB.X);
+                    int ay = Math.Min(screenA.Y, screenB.Y);
+                    int aw = Math.Max(1, Math.Abs(screenB.X - screenA.X));
+                    int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
+                    scanRect = new Rectangle(ax, ay, aw, ah);
+                }
+
+                Bitmap template = step.GetTemplateBitmap();
+                int sim = step.Similarity > 0 ? step.Similarity : 90;
+                int timeoutMs = (step.TimeoutSec > 0 ? step.TimeoutSec : 10) * 1000;
+                long startTicks = Environment.TickCount;
+
+                while (_isRunning && template != null)
+                {
+                    Point foundCenter;
+                    if (ActionExecutor.FindTemplateInArea(scanRect, template, sim, out foundCenter))
+                    {
+                        break;
+                    }
+                    if (timeoutMs > 0 && (Environment.TickCount - startTicks) >= timeoutMs)
+                    {
+                        break;
+                    }
+                    Thread.Sleep(30);
+                }
+
                 int delay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
                 if (delay > 0 && _isRunning) Thread.Sleep(delay);
                 return;
@@ -204,8 +264,9 @@ namespace ModernAutoClicker.Advanced
                 int tol = step.Tolerance > 0 ? step.Tolerance : 10;
                 bool matched = false;
                 Point samplePt = Point.Empty;
+                bool isArea = (step.ActionType == MacroActionType.IfColorArea) || (step.EndPoint != Point.Empty && step.EndPoint != step.StartPoint);
 
-                if (step.ActionType == MacroActionType.IfColorArea)
+                if (isArea)
                 {
                     Point screenA = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
                     Point screenB = ActionExecutor.ResolveActualScreenPoint(step, step.EndPoint);
@@ -252,12 +313,18 @@ namespace ModernAutoClicker.Advanced
                         MacroStep clickStep = step.Clone();
                         clickStep.ActionType = MacroActionType.LeftClick;
                         clickStep.HoldMs = Math.Max(10, step.HoldMs);
+                        clickStep.EndPoint = Point.Empty; // Click at the exact found pixel point
 
-                        if (step.ActionType == MacroActionType.IfColorArea)
+                        if (isArea)
                         {
-                            if (step.RelativeToWindow && !string.IsNullOrEmpty(step.ProcessName))
+                            if (step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
                             {
-                                IntPtr hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                                IntPtr hWnd = step.WindowHwnd;
+                                if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
+                                {
+                                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                                    if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
+                                }
                                 if (hWnd != IntPtr.Zero)
                                 {
                                     NativeMethods.POINT np = new NativeMethods.POINT { X = samplePt.X, Y = samplePt.Y };
@@ -343,7 +410,119 @@ namespace ModernAutoClicker.Advanced
                 return;
             }
 
-            // 6. Standard Action Execution
+            // 6. IfImage Condition
+            if (step.ActionType == MacroActionType.IfImage)
+            {
+                Rectangle scanRect = SystemInformation.VirtualScreen;
+                bool isArea = (step.EndPoint != Point.Empty && step.EndPoint != step.StartPoint);
+                if (isArea)
+                {
+                    Point screenA = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
+                    Point screenB = ActionExecutor.ResolveActualScreenPoint(step, step.EndPoint);
+                    int ax = Math.Min(screenA.X, screenB.X);
+                    int ay = Math.Min(screenA.Y, screenB.Y);
+                    int aw = Math.Max(1, Math.Abs(screenB.X - screenA.X));
+                    int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
+                    scanRect = new Rectangle(ax, ay, aw, ah);
+                }
+
+                Bitmap template = step.GetTemplateBitmap();
+                int sim = step.Similarity > 0 ? step.Similarity : 90;
+                Point foundCenter = Point.Empty;
+                bool matched = false;
+
+                if (template != null)
+                {
+                    matched = ActionExecutor.FindTemplateInArea(scanRect, template, sim, out foundCenter);
+                }
+
+                int jumpAction = matched ? step.IfTrueStep : step.IfFalseStep;
+
+                if (jumpAction == -1)
+                {
+                    // Stop Script
+                    _isRunning = false;
+                    return;
+                }
+
+                int targetIdx;
+                if (jumpAction == -2)
+                {
+                    // Click Center of the matched template image
+                    if (matched && foundCenter != Point.Empty)
+                    {
+                        MacroStep clickStep = step.Clone();
+                        clickStep.ActionType = MacroActionType.LeftClick;
+                        clickStep.HoldMs = Math.Max(10, step.HoldMs);
+                        clickStep.EndPoint = Point.Empty;
+
+                        if (step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
+                        {
+                            IntPtr hWnd = step.WindowHwnd;
+                            if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
+                            {
+                                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                                if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
+                            }
+                            if (hWnd != IntPtr.Zero)
+                            {
+                                NativeMethods.POINT np = new NativeMethods.POINT { X = foundCenter.X, Y = foundCenter.Y };
+                                if (NativeMethods.ScreenToClient(hWnd, ref np))
+                                {
+                                    clickStep.StartPoint = new Point(np.X, np.Y);
+                                }
+                                else clickStep.StartPoint = foundCenter;
+                            }
+                            else clickStep.StartPoint = foundCenter;
+                        }
+                        else
+                        {
+                            clickStep.StartPoint = foundCenter;
+                        }
+
+                        ActionExecutor.Execute(clickStep, freeMouseMode, randIntervalMs, randJitterPx);
+                    }
+
+                    targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;
+                }
+                else if (jumpAction > 0)
+                {
+                    targetIdx = jumpAction - 1;
+                }
+                else
+                {
+                    // Next Step (jumpAction == 0)
+                    targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;
+                }
+
+                if (matched)
+                {
+                    int actualDelay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
+                    if (actualDelay > 0 && _isRunning)
+                    {
+                        Thread.Sleep(actualDelay);
+                    }
+                }
+                else
+                {
+                    if (targetIdx == 0 && _isRunning)
+                    {
+                        Thread.Sleep(1);
+                    }
+                }
+
+                if (targetIdx >= 0 && targetIdx < stepList.Count)
+                {
+                    i = targetIdx - 1;
+                }
+                else
+                {
+                    i = stepList.Count;
+                }
+                return;
+            }
+
+            // 7. Standard Action Execution
             int repeats = Math.Max(1, step.RepeatCount);
             for (int r = 0; r < repeats; r++)
             {

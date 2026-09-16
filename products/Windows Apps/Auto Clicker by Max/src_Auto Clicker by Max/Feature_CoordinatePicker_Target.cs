@@ -11,12 +11,16 @@ namespace ModernAutoClicker
         public event Action<Point, Color> OnPointAndColorPicked;
         public event Action<Point, Color, NativeMethods.WindowTargetInfo, Point> OnPointSelectedWithWindow; // screenPt, color, winInfo, clientPt
         public event Action<Point, Point, Color, NativeMethods.WindowTargetInfo, Point, Point> OnAreaSelectedWithWindow; // screenA, screenB, color, winInfo, clientA, clientB
+        public event Action<Point, Point, Color, NativeMethods.WindowTargetInfo, Point, Point, bool> OnTargetSelectedWithWindow; // screenA, screenB, color, winInfo, clientA, clientB, isArea
+        public event Action<Bitmap> OnImageCaptured;
 
         public bool IsAreaSelectionMode { get; set; }
+        public bool IsImageSnippingMode { get; set; }
 
         private Bitmap _screenBitmap;
         private Point _currentMouse = Point.Empty;
         private Color _currentColor = Color.Black;
+        private bool _isMouseDown = false;
         private bool _isDraggingArea = false;
         private Point _dragStartPoint = Point.Empty;
 
@@ -69,6 +73,16 @@ namespace ModernAutoClicker
             Point pt = new Point(this.Left + e.X, this.Top + e.Y);
             _currentMouse = pt;
 
+            if (_isMouseDown)
+            {
+                int dx = Math.Abs(pt.X - _dragStartPoint.X);
+                int dy = Math.Abs(pt.Y - _dragStartPoint.Y);
+                if (dx >= 5 || dy >= 5)
+                {
+                    _isDraggingArea = true;
+                }
+            }
+
             if (_screenBitmap != null && e.X >= 0 && e.X < _screenBitmap.Width && e.Y >= 0 && e.Y < _screenBitmap.Height)
             {
                 _currentColor = _screenBitmap.GetPixel(e.X, e.Y);
@@ -87,16 +101,10 @@ namespace ModernAutoClicker
             if (e.Button == MouseButtons.Left)
             {
                 Point pt = new Point(this.Left + e.X, this.Top + e.Y);
-                if (IsAreaSelectionMode)
-                {
-                    _isDraggingArea = true;
-                    _dragStartPoint = pt;
-                    this.Invalidate();
-                }
-                else
-                {
-                    ConfirmPoint(pt);
-                }
+                _isMouseDown = true;
+                _isDraggingArea = false;
+                _dragStartPoint = pt;
+                this.Invalidate();
             }
             else if (e.Button == MouseButtons.Right)
             {
@@ -107,18 +115,27 @@ namespace ModernAutoClicker
         protected override void OnMouseUp(MouseEventArgs e)
         {
             base.OnMouseUp(e);
-            if (IsAreaSelectionMode && _isDraggingArea && e.Button == MouseButtons.Left)
+            if (_isMouseDown && e.Button == MouseButtons.Left)
             {
-                _isDraggingArea = false;
+                _isMouseDown = false;
                 Point ptEnd = new Point(this.Left + e.X, this.Top + e.Y);
-                ConfirmArea(_dragStartPoint, ptEnd);
+
+                if (_isDraggingArea || IsAreaSelectionMode)
+                {
+                    _isDraggingArea = false;
+                    ConfirmArea(_dragStartPoint, ptEnd);
+                }
+                else
+                {
+                    ConfirmPoint(ptEnd);
+                }
             }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
-            if (e.KeyCode == Keys.Space || e.KeyCode == Keys.Enter)
+            if (e.KeyCode == Keys.Space)
             {
                 if (IsAreaSelectionMode)
                 {
@@ -138,6 +155,12 @@ namespace ModernAutoClicker
 
         private void ConfirmPoint(Point pt)
         {
+            if (IsImageSnippingMode)
+            {
+                ConfirmArea(new Point(pt.X - 25, pt.Y - 25), new Point(pt.X + 25, pt.Y + 25));
+                return;
+            }
+
             Color pickedColor = _currentColor;
             if (pickedColor == Color.Black)
             {
@@ -203,11 +226,45 @@ namespace ModernAutoClicker
             {
                 OnPointSelectedWithWindow(pt, pickedColor, winInfo, clientPt);
             }
+            if (OnTargetSelectedWithWindow != null)
+            {
+                OnTargetSelectedWithWindow(pt, Point.Empty, pickedColor, winInfo, clientPt, Point.Empty, false);
+            }
             ClosePicker();
         }
 
         private void ConfirmArea(Point ptA, Point ptB)
         {
+            if (IsImageSnippingMode)
+            {
+                if (_screenBitmap != null)
+                {
+                    Point clientStart = this.PointToClient(ptA);
+                    Point clientEnd = this.PointToClient(ptB);
+                    int cx = Math.Min(clientStart.X, clientEnd.X);
+                    int cy = Math.Min(clientStart.Y, clientEnd.Y);
+                    int cw = Math.Max(1, Math.Abs(clientEnd.X - clientStart.X));
+                    int ch = Math.Max(1, Math.Abs(clientEnd.Y - clientStart.Y));
+
+                    cx = Math.Max(0, Math.Min(_screenBitmap.Width - 1, cx));
+                    cy = Math.Max(0, Math.Min(_screenBitmap.Height - 1, cy));
+                    cw = Math.Max(1, Math.Min(cw, _screenBitmap.Width - cx));
+                    ch = Math.Max(1, Math.Min(ch, _screenBitmap.Height - cy));
+
+                    if (cw > 2 && ch > 2)
+                    {
+                        Rectangle cropRect = new Rectangle(cx, cy, cw, ch);
+                        Bitmap cropped = _screenBitmap.Clone(cropRect, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        if (OnImageCaptured != null)
+                        {
+                            OnImageCaptured(cropped);
+                        }
+                    }
+                }
+                ClosePicker();
+                return;
+            }
+
             Color pickedColor = _currentColor;
             if (pickedColor == Color.Black)
             {
@@ -225,16 +282,16 @@ namespace ModernAutoClicker
             Point normB = new Point(Math.Max(ptA.X, ptB.X), Math.Max(ptA.Y, ptB.Y));
 
             // Detect window under cursor
-            NativeMethods.POINT nativePtA = new NativeMethods.POINT { X = normA.X, Y = normA.Y };
-            NativeMethods.POINT nativePtB = new NativeMethods.POINT { X = normB.X, Y = normB.Y };
+            NativeMethods.POINT nativePtA = new NativeMethods.POINT { X = ptA.X, Y = ptA.Y };
+            NativeMethods.POINT nativePtB = new NativeMethods.POINT { X = ptB.X, Y = ptB.Y };
 
             IntPtr hWnd = NativeMethods.WindowFromPoint(nativePtA);
             if (hWnd == IntPtr.Zero) hWnd = NativeMethods.WindowFromPoint(nativePtB);
             if (hWnd != IntPtr.Zero) hWnd = NativeMethods.GetTopLevelWindow(hWnd);
 
             NativeMethods.WindowTargetInfo winInfo = null;
-            Point clientPtA = normA;
-            Point clientPtB = normB;
+            Point clientPtA = ptA;
+            Point clientPtB = ptB;
 
             if (hWnd != IntPtr.Zero)
             {
@@ -277,9 +334,16 @@ namespace ModernAutoClicker
                 }
             }
 
+            Point normClientA = new Point(Math.Min(clientPtA.X, clientPtB.X), Math.Min(clientPtA.Y, clientPtB.Y));
+            Point normClientB = new Point(Math.Max(clientPtA.X, clientPtB.X), Math.Max(clientPtA.Y, clientPtB.Y));
+
             if (OnAreaSelectedWithWindow != null)
             {
-                OnAreaSelectedWithWindow(normA, normB, pickedColor, winInfo, clientPtA, clientPtB);
+                OnAreaSelectedWithWindow(normA, normB, pickedColor, winInfo, normClientA, normClientB);
+            }
+            if (OnTargetSelectedWithWindow != null)
+            {
+                OnTargetSelectedWithWindow(ptA, ptB, pickedColor, winInfo, clientPtA, clientPtB, true);
             }
             ClosePicker();
         }
@@ -301,7 +365,7 @@ namespace ModernAutoClicker
             Point clientPt = this.PointToClient(_currentMouse);
 
             // Draw Area Drag Rectangle if currently selecting area
-            if (IsAreaSelectionMode && _isDraggingArea)
+            if (_isDraggingArea || ((IsAreaSelectionMode || IsImageSnippingMode) && _isMouseDown))
             {
                 Point clientStart = this.PointToClient(_dragStartPoint);
                 int rx = Math.Min(clientStart.X, clientPt.X);
@@ -310,8 +374,11 @@ namespace ModernAutoClicker
                 int rh = Math.Max(1, Math.Abs(clientPt.Y - clientStart.Y));
                 Rectangle dragRect = new Rectangle(rx, ry, rw, rh);
 
-                using (SolidBrush areaFill = new SolidBrush(Color.FromArgb(45, 59, 130, 246)))
-                using (Pen areaBorder = new Pen(Color.FromArgb(230, 59, 130, 246), 2))
+                Color fillColor = IsImageSnippingMode ? Color.FromArgb(50, 139, 92, 246) : Color.FromArgb(45, 59, 130, 246);
+                Color borderColor = IsImageSnippingMode ? Color.FromArgb(230, 139, 92, 246) : Color.FromArgb(230, 59, 130, 246);
+
+                using (SolidBrush areaFill = new SolidBrush(fillColor))
+                using (Pen areaBorder = new Pen(borderColor, 2))
                 {
                     areaBorder.DashStyle = DashStyle.Dash;
                     g.FillRectangle(areaFill, dragRect);
@@ -319,8 +386,8 @@ namespace ModernAutoClicker
                 }
 
                 // Draw size badge
-                string dimText = string.Format("Area: {0} x {1} px", rw, rh);
-                using (Font dimFont = new Font("Segoe UI", 9F, FontStyle.Bold))
+                string dimText = IsImageSnippingMode ? string.Format("Template: {0} x {1} px", rw, rh) : string.Format("Area: {0} x {1} px", rw, rh);
+                using (Font dimFont = ThemeTokens.FontSegoe(12F, FontStyle.Bold))
                 using (SolidBrush badgeBg = new SolidBrush(Color.FromArgb(200, 15, 23, 42)))
                 using (SolidBrush badgeText = new SolidBrush(Color.FromArgb(240, 240, 240)))
                 {
@@ -332,16 +399,22 @@ namespace ModernAutoClicker
                 }
             }
 
-            // Draw Coordinate + Real-time Color Swatch Tooltip Box next to the cursor
-            string hexStr = string.Format("#{0:X2}{1:X2}{2:X2}", _currentColor.R, _currentColor.G, _currentColor.B);
-            string text = IsAreaSelectionMode
-                ? string.Format("({0}, {1})   {2}\n[Drag mouse to Select Area | Esc Cancel]", _currentMouse.X, _currentMouse.Y, hexStr)
-                : string.Format("({0}, {1})   {2}\n[Click/Space to Pick | Esc Cancel]", _currentMouse.X, _currentMouse.Y, hexStr);
+            // Draw Coordinate + Real-time Info Box next to the cursor
+            string text;
+            if (IsImageSnippingMode)
+            {
+                text = string.Format("({0}, {1})\n[Drag: Crop Template | Esc: Cancel]", _currentMouse.X, _currentMouse.Y);
+            }
+            else
+            {
+                string hexStr = string.Format("#{0:X2}{1:X2}{2:X2}", _currentColor.R, _currentColor.G, _currentColor.B);
+                text = string.Format("({0}, {1})   {2}\n[Click: Point | Drag: Area | Esc Cancel]", _currentMouse.X, _currentMouse.Y, hexStr);
+            }
 
-            using (Font font = new Font("Segoe UI", 9F, FontStyle.Bold))
+            using (Font font = ThemeTokens.FontSegoe(12F, FontStyle.Bold))
             {
                 SizeF size = g.MeasureString(text, font);
-                float boxW = size.Width + 36;
+                float boxW = size.Width + (IsImageSnippingMode ? 16 : 36);
                 float boxH = size.Height + 8;
                 RectangleF boxRect = new RectangleF(clientPt.X + 18, clientPt.Y + 18, boxW, boxH);
 
@@ -357,18 +430,21 @@ namespace ModernAutoClicker
                     g.DrawRectangle(borderPen, boxRect.X, boxRect.Y, boxRect.Width, boxRect.Height);
                 }
 
-                // Draw live color swatch mini square
-                RectangleF swatchRect = new RectangleF(boxRect.X + 8, boxRect.Y + 6, 14, 14);
-                using (SolidBrush colorBrush = new SolidBrush(_currentColor))
-                using (Pen swatchBorder = new Pen(theme.BorderColor, 1))
+                if (!IsImageSnippingMode)
                 {
-                    g.FillRectangle(colorBrush, swatchRect);
-                    g.DrawRectangle(swatchBorder, swatchRect.X, swatchRect.Y, swatchRect.Width, swatchRect.Height);
+                    // Draw live color swatch mini square
+                    RectangleF swatchRect = new RectangleF(boxRect.X + 8, boxRect.Y + 6, 14, 14);
+                    using (SolidBrush colorBrush = new SolidBrush(_currentColor))
+                    using (Pen swatchBorder = new Pen(theme.BorderColor, 1))
+                    {
+                        g.FillRectangle(colorBrush, swatchRect);
+                        g.DrawRectangle(swatchBorder, swatchRect.X, swatchRect.Y, swatchRect.Width, swatchRect.Height);
+                    }
                 }
 
                 using (SolidBrush textBrush = new SolidBrush(theme.TextPrimary))
                 {
-                    g.DrawString(text, font, textBrush, boxRect.X + 28, boxRect.Y + 4);
+                    g.DrawString(text, font, textBrush, boxRect.X + (IsImageSnippingMode ? 8 : 28), boxRect.Y + 4);
                 }
             }
         }

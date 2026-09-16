@@ -113,6 +113,11 @@ body {
     -webkit-mask-image: url('svg/plugins.svg');
 }
 
+.products-switch-icon--web-apps {
+    mask-image: url('svg/web-apps.svg');
+    -webkit-mask-image: url('svg/web-apps.svg');
+}
+
 .products-sections {
     display: flex;
     flex-direction: column;

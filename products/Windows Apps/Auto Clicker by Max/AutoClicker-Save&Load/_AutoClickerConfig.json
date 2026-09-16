@@ -4,9 +4,10 @@
   "ShowMapOverlay": true,
   "FreeMouseMode": true,
   "SmoothMouseMove": true,
-  "HideRunningRing": false,
+  "MapOverlayOpacity": 60,
   "IsDarkTheme": true,
   "IsAdvancedTab": false,
+  "LastUpdateCheckDate": "2026-09-16",
   "SimpleProfiles": [
     {
       "TabIndex": 0,

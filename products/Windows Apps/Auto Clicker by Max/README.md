@@ -76,8 +76,8 @@ Named "Asian" because it's complex :) Full macro scripting for heavy automation 
 
 | Hotkey | Action |
 |---|---|
-| `F6` | Start / Resume |
-| `F7` or `Esc` | Stop |
+| `F6` | Start / Pause |
+| `F7` | Stop ALL |
 | `Space` | Capture current cursor position (while app is focused) |
 
 ---

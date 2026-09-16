@@ -29,7 +29,7 @@ namespace ModernAutoClicker.Simple
                 Text = "⚠ CAUTION",
                 Location = new Point(8, 12),
                 Size = new Size(152, 20),
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -39,7 +39,7 @@ namespace ModernAutoClicker.Simple
                 Text = "Follow Cursor Mode",
                 Location = new Point(8, 36),
                 Size = new Size(152, 20),
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -49,7 +49,7 @@ namespace ModernAutoClicker.Simple
                 Text = "Clicks continuously wherever your mouse moves.\n\nOnce started, clicking the Stop button with the mouse will be nearly impossible!",
                 Location = new Point(8, 62),
                 Size = new Size(152, 95),
-                Font = new Font("Segoe UI", 8F, FontStyle.Regular),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular),
                 TextAlign = ContentAlignment.TopLeft
             };
 
@@ -67,7 +67,7 @@ namespace ModernAutoClicker.Simple
                 Text = "KEEP F6 READY",
                 Location = new Point(4, 8),
                 Size = new Size(144, 18),
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -76,7 +76,7 @@ namespace ModernAutoClicker.Simple
                 Text = "Always press [F6] on your keyboard to Stop anytime.",
                 Location = new Point(6, 28),
                 Size = new Size(140, 36),
-                Font = new Font("Segoe UI", 7.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontSegoe(10F, FontStyle.Regular),
                 TextAlign = ContentAlignment.TopCenter
             };
 
@@ -88,7 +88,7 @@ namespace ModernAutoClicker.Simple
                 Text = "• Move mouse freely.\n• Interval timer applies.",
                 Location = new Point(8, 244),
                 Size = new Size(152, 48),
-                Font = new Font("Segoe UI", 7.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontSegoe(10F, FontStyle.Regular),
                 TextAlign = ContentAlignment.TopLeft
             };
 

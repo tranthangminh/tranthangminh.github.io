@@ -42,11 +42,11 @@ namespace ModernAutoClicker
                             IntPtr hwnd = p.MainWindowHandle;
                             if (hwnd == IntPtr.Zero)
                             {
-                                hwnd = FindWindow(null, "Auto Clicker by Max v1.0");
-                            }
-                            if (hwnd == IntPtr.Zero)
-                            {
-                                hwnd = FindWindow(null, "Auto Clicker");
+                                hwnd = FindWindow(null, AppInfo.Title);
+                                if (hwnd == IntPtr.Zero)
+                                {
+                                    hwnd = FindWindow(null, AppInfo.AppName);
+                                }
                             }
                             if (hwnd != IntPtr.Zero)
                             {

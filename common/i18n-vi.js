@@ -122,7 +122,8 @@
                 windowsApps: 'Windows Apps',
                 chromeExtension: 'Chrome Extensions',
                 books: 'Sách',
-                plugins: 'Plugins'
+                plugins: 'Plugins',
+                webApps: 'Web Apps'
             },
             viewAction: 'Xem chi tiết',
             emptyNotice: 'Đang cập nhật thêm sản phẩm trong danh mục này...'

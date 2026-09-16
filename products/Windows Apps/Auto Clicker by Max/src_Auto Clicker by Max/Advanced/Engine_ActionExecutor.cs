@@ -127,12 +127,237 @@ namespace ModernAutoClicker.Advanced
             return Point.Empty;
         }
 
+        public static bool FindTemplateInArea(Rectangle area, Bitmap templateBmp, int similarityPercent, out Point foundCenter)
+        {
+            foundCenter = Point.Empty;
+            if (templateBmp == null || templateBmp.Width <= 0 || templateBmp.Height <= 0) return false;
+
+            int minX = SystemInformation.VirtualScreen.Left;
+            int minY = SystemInformation.VirtualScreen.Top;
+            int maxX = SystemInformation.VirtualScreen.Right;
+            int maxY = SystemInformation.VirtualScreen.Bottom;
+
+            int left = Math.Max(minX, area.Left);
+            int top = Math.Max(minY, area.Top);
+            int right = Math.Min(maxX, area.Right);
+            int bottom = Math.Min(maxY, area.Bottom);
+
+            int scanW = right - left;
+            int scanH = bottom - top;
+
+            if (scanW < templateBmp.Width || scanH < templateBmp.Height) return false;
+
+            try
+            {
+                using (Bitmap screenBmp = new Bitmap(scanW, scanH, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+                {
+                    using (Graphics g = Graphics.FromImage(screenBmp))
+                    {
+                        g.CopyFromScreen(left, top, 0, 0, new Size(scanW, scanH), CopyPixelOperation.SourceCopy);
+                    }
+
+                    Point localCenter;
+                    if (FindTemplateInBitmap(screenBmp, templateBmp, similarityPercent, out localCenter))
+                    {
+                        foundCenter = new Point(left + localCenter.X, top + localCenter.Y);
+                        return true;
+                    }
+                }
+            }
+            catch { }
+
+            return false;
+        }
+
+        public static bool FindTemplateInBitmap(Bitmap sourceBmp, Bitmap templateBmp, int similarityPercent, out Point foundCenter)
+        {
+            foundCenter = Point.Empty;
+            if (sourceBmp == null || templateBmp == null || templateBmp.Width <= 0 || templateBmp.Height <= 0) return false;
+
+            similarityPercent = Math.Max(50, Math.Min(100, similarityPercent));
+
+            int scanW = sourceBmp.Width;
+            int scanH = sourceBmp.Height;
+            int tempW = templateBmp.Width;
+            int tempH = templateBmp.Height;
+
+            if (scanW < tempW || scanH < tempH) return false;
+
+            try
+            {
+                Bitmap normalizedSource = sourceBmp;
+                bool needDisposeSource = false;
+                if (sourceBmp.PixelFormat != System.Drawing.Imaging.PixelFormat.Format32bppArgb)
+                {
+                    normalizedSource = new Bitmap(scanW, scanH, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    using (Graphics sg = Graphics.FromImage(normalizedSource))
+                    {
+                        sg.DrawImage(sourceBmp, 0, 0, scanW, scanH);
+                    }
+                    needDisposeSource = true;
+                }
+
+                System.Drawing.Imaging.BitmapData screenData = normalizedSource.LockBits(
+                    new Rectangle(0, 0, scanW, scanH),
+                    System.Drawing.Imaging.ImageLockMode.ReadOnly,
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                Bitmap normalizedTemplate = templateBmp;
+                bool needDisposeNorm = false;
+                if (templateBmp.PixelFormat != System.Drawing.Imaging.PixelFormat.Format32bppArgb)
+                {
+                    normalizedTemplate = new Bitmap(tempW, tempH, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    using (Graphics tg = Graphics.FromImage(normalizedTemplate))
+                    {
+                        tg.DrawImage(templateBmp, 0, 0, tempW, tempH);
+                    }
+                    needDisposeNorm = true;
+                }
+
+                System.Drawing.Imaging.BitmapData tempData = normalizedTemplate.LockBits(
+                    new Rectangle(0, 0, tempW, tempH),
+                    System.Drawing.Imaging.ImageLockMode.ReadOnly,
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                try
+                {
+                    int screenStride = screenData.Stride;
+                    int tempStride = tempData.Stride;
+
+                    byte[] screenBytes = new byte[screenStride * scanH];
+                    Marshal.Copy(screenData.Scan0, screenBytes, 0, screenBytes.Length);
+
+                    byte[] tempBytes = new byte[tempStride * tempH];
+                    Marshal.Copy(tempData.Scan0, tempBytes, 0, tempBytes.Length);
+
+                    int activePixels = 0;
+                    for (int ty = 0; ty < tempH; ty++)
+                    {
+                        int rowOffset = ty * tempStride;
+                        for (int tx = 0; tx < tempW; tx++)
+                        {
+                            int idx = rowOffset + tx * 4;
+                            if (tempBytes[idx + 3] >= 50) activePixels++;
+                        }
+                    }
+                    if (activePixels == 0) return false;
+
+                    int[] anchorX = new int[] { tempW / 4, tempW * 3 / 4, tempW / 2, tempW / 4, tempW * 3 / 4 };
+                    int[] anchorY = new int[] { tempH / 4, tempH / 4, tempH / 2, tempH * 3 / 4, tempH * 3 / 4 };
+
+                    double maxErrPerPixel = ((100 - similarityPercent) / 100.0) * 765.0;
+                    double maxTotalError = maxErrPerPixel * activePixels;
+                    int anchorTolerance = (int)(maxErrPerPixel * 1.5) + 35;
+
+                    int maxScanX = scanW - tempW;
+                    int maxScanY = scanH - tempH;
+
+                    long bestTotalError = (long)maxTotalError + 1;
+                    Point bestFound = Point.Empty;
+                    bool foundAny = false;
+
+                    for (int sy = 0; sy <= maxScanY; sy++)
+                    {
+                        for (int sx = 0; sx <= maxScanX; sx++)
+                        {
+                            // Fast anchor check
+                            bool anchorFailed = false;
+                            for (int a = 0; a < 5; a++)
+                            {
+                                int ax = anchorX[a];
+                                int ay = anchorY[a];
+                                int tIdx = ay * tempStride + ax * 4;
+                                if (tempBytes[tIdx + 3] < 50) continue;
+
+                                int sIdx = (sy + ay) * screenStride + (sx + ax) * 4;
+                                int diff = Math.Abs((int)screenBytes[sIdx] - (int)tempBytes[tIdx]) +
+                                           Math.Abs((int)screenBytes[sIdx + 1] - (int)tempBytes[tIdx + 1]) +
+                                           Math.Abs((int)screenBytes[sIdx + 2] - (int)tempBytes[tIdx + 2]);
+
+                                if (diff > anchorTolerance)
+                                {
+                                    anchorFailed = true;
+                                    break;
+                                }
+                            }
+                            if (anchorFailed) continue;
+
+                            // Full template comparison with early exit against current bestTotalError
+                            long currentTotalError = 0;
+                            bool matched = true;
+
+                            for (int ty = 0; ty < tempH; ty++)
+                            {
+                                int sRowOffset = (sy + ty) * screenStride + sx * 4;
+                                int tRowOffset = ty * tempStride;
+
+                                for (int tx = 0; tx < tempW; tx++)
+                                {
+                                    int tIdx = tRowOffset + tx * 4;
+                                    if (tempBytes[tIdx + 3] < 50) continue;
+
+                                    int sIdx = sRowOffset + tx * 4;
+                                    int diff = Math.Abs((int)screenBytes[sIdx] - (int)tempBytes[tIdx]) +
+                                               Math.Abs((int)screenBytes[sIdx + 1] - (int)tempBytes[tIdx + 1]) +
+                                               Math.Abs((int)screenBytes[sIdx + 2] - (int)tempBytes[tIdx + 2]);
+
+                                    currentTotalError += diff;
+                                    if (currentTotalError >= bestTotalError)
+                                    {
+                                        matched = false;
+                                        break;
+                                    }
+                                }
+                                if (!matched) break;
+                            }
+
+                            if (matched && currentTotalError < bestTotalError)
+                            {
+                                bestTotalError = currentTotalError;
+                                bestFound = new Point(sx + tempW / 2, sy + tempH / 2);
+                                foundAny = true;
+
+                                // If exact match found (zero error), exit immediately!
+                                if (bestTotalError == 0)
+                                {
+                                    foundCenter = bestFound;
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+
+                    if (foundAny)
+                    {
+                        foundCenter = bestFound;
+                        return true;
+                    }
+                }
+                finally
+                {
+                    normalizedTemplate.UnlockBits(tempData);
+                    if (needDisposeNorm) normalizedTemplate.Dispose();
+                    normalizedSource.UnlockBits(screenData);
+                    if (needDisposeSource) normalizedSource.Dispose();
+                }
+            }
+            catch { }
+
+            return false;
+        }
+
         public static Point ResolveActualScreenPoint(MacroStep step, Point localPt)
         {
             if (localPt == Point.Empty) return Point.Empty;
-            if (step == null || !step.RelativeToWindow || string.IsNullOrEmpty(step.ProcessName)) return localPt;
+            if (step == null || !step.RelativeToWindow || (step.WindowHwnd == IntPtr.Zero && string.IsNullOrEmpty(step.ProcessName))) return localPt;
 
-            IntPtr hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+            IntPtr hWnd = step.WindowHwnd;
+            if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
+            {
+                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
+            }
+
             if (hWnd != IntPtr.Zero)
             {
                 NativeMethods.POINT origin = new NativeMethods.POINT { X = 0, Y = 0 };
@@ -143,6 +368,34 @@ namespace ModernAutoClicker.Advanced
             }
 
             return localPt;
+        }
+
+        public static Point GetTargetClickPoint(MacroStep step, int randJitterPx, out Point rawClickPt)
+        {
+            if (step == null)
+            {
+                rawClickPt = Point.Empty;
+                return Point.Empty;
+            }
+
+            // If Area Target is configured (EndPoint is defined and not equal to StartPoint)
+            if (step.EndPoint != Point.Empty && step.EndPoint != step.StartPoint)
+            {
+                int minX = Math.Min(step.StartPoint.X, step.EndPoint.X);
+                int maxX = Math.Max(step.StartPoint.X, step.EndPoint.X);
+                int minY = Math.Min(step.StartPoint.Y, step.EndPoint.Y);
+                int maxY = Math.Max(step.StartPoint.Y, step.EndPoint.Y);
+
+                int randX = Rng.Next(minX, maxX + 1);
+                int randY = Rng.Next(minY, maxY + 1);
+                rawClickPt = ApplyJitter(new Point(randX, randY), randJitterPx);
+            }
+            else
+            {
+                rawClickPt = ApplyJitter(step.StartPoint, randJitterPx);
+            }
+
+            return ResolveActualScreenPoint(step, rawClickPt);
         }
 
         public static void Execute(MacroStep step, bool freeMouseMode, int randIntervalMs = 0, int randJitterPx = 0)
@@ -156,44 +409,52 @@ namespace ModernAutoClicker.Advanced
             Point startPt = ResolveActualScreenPoint(step, rawStart);
             Point endPt = ResolveActualScreenPoint(step, rawEnd);
 
+            Point rawClickPt;
+            Point clickPt = GetTargetClickPoint(step, randJitterPx, out rawClickPt);
+
             IntPtr directHwnd = IntPtr.Zero;
-            if (freeMouseMode && step.RelativeToWindow && !string.IsNullOrEmpty(step.ProcessName))
+            if (freeMouseMode && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
             {
-                directHwnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                directHwnd = step.WindowHwnd;
+                if (!NativeMethods.IsValidWindowHandle(directHwnd, step.ProcessName))
+                {
+                    directHwnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                    if (directHwnd != IntPtr.Zero) step.WindowHwnd = directHwnd;
+                }
             }
 
             switch (step.ActionType)
             {
                 case MacroActionType.LeftClick:
-                    if (directHwnd != IntPtr.Zero && rawStart != Point.Empty)
-                        PerformClickDirectToWindow(directHwnd, rawStart, 0, hold);
+                    if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
+                        PerformClickDirectToWindow(directHwnd, rawClickPt, 0, hold);
                     else
-                        PerformClick(startPt, 0, hold, freeMouseMode);
+                        PerformClick(clickPt, 0, hold, freeMouseMode);
                     break;
 
                 case MacroActionType.RightClick:
-                    if (directHwnd != IntPtr.Zero && rawStart != Point.Empty)
-                        PerformClickDirectToWindow(directHwnd, rawStart, 1, hold);
+                    if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
+                        PerformClickDirectToWindow(directHwnd, rawClickPt, 1, hold);
                     else
-                        PerformClick(startPt, 1, hold, freeMouseMode);
+                        PerformClick(clickPt, 1, hold, freeMouseMode);
                     break;
 
                 case MacroActionType.MiddleClick:
-                    PerformMiddleScroll(startPt, step.ScrollStep, hold, freeMouseMode);
+                    PerformMiddleScroll(clickPt, step.ScrollStep, hold, freeMouseMode);
                     break;
 
                 case MacroActionType.DoubleClick:
-                    if (directHwnd != IntPtr.Zero && rawStart != Point.Empty)
+                    if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
                     {
-                        PerformClickDirectToWindow(directHwnd, rawStart, 0, hold);
+                        PerformClickDirectToWindow(directHwnd, rawClickPt, 0, hold);
                         Thread.Sleep(Math.Max(20, System.Windows.Forms.SystemInformation.DoubleClickTime / 3));
-                        PerformClickDirectToWindow(directHwnd, rawStart, 0, hold);
+                        PerformClickDirectToWindow(directHwnd, rawClickPt, 0, hold);
                     }
                     else
                     {
-                        PerformClick(startPt, 0, hold, freeMouseMode);
+                        PerformClick(clickPt, 0, hold, freeMouseMode);
                         Thread.Sleep(Math.Max(20, System.Windows.Forms.SystemInformation.DoubleClickTime / 3));
-                        PerformClick(startPt, 0, hold, freeMouseMode);
+                        PerformClick(clickPt, 0, hold, freeMouseMode);
                     }
                     break;
 

@@ -19,6 +19,8 @@ namespace ModernAutoClicker.Info
         private Label lblSupportTitle;
         private LinkLabel linkSupport;
         private Panel picLogo;
+        private RoundedButton btnCheckUpdates;
+        private Label lblUpdateStatus;
 
         public InfoTabPanel()
         {
@@ -36,7 +38,7 @@ namespace ModernAutoClicker.Info
             pnlInfoCard = new RoundedPanel
             {
                 Location = new Point(0, 0),
-                Size = new Size(388, 532),
+                Size = new Size(388, 508),
                 BorderRadius = _theme.RadiusMd,
                 BorderSize = 1
             };
@@ -61,10 +63,10 @@ namespace ModernAutoClicker.Info
 
             lblInfoTitle = new Label
             {
-                Text = "Auto Clicker by Max v1.0",
+                Text = AppInfo.Title,
                 Location = new Point(48, 16),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 12.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(16F, FontStyle.Bold),
                 ForeColor = _theme.AccentPrimary
             };
 
@@ -73,7 +75,7 @@ namespace ModernAutoClicker.Info
                 Text = "This product is developed by Trần Thắng Minh (Max).",
                 Location = new Point(20, 46),
                 Size = new Size(348, 20),
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Regular),
                 ForeColor = _theme.TextPrimary
             };
 
@@ -82,7 +84,7 @@ namespace ModernAutoClicker.Info
                 Text = "For feedback, feature requests, or support:",
                 Location = new Point(20, 70),
                 Size = new Size(348, 18),
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Regular),
                 ForeColor = _theme.TextSecondary
             };
 
@@ -91,7 +93,7 @@ namespace ModernAutoClicker.Info
                 Text = "• Facebook:",
                 Location = new Point(20, 92),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 ForeColor = _theme.TextSecondary
             };
 
@@ -100,7 +102,7 @@ namespace ModernAutoClicker.Info
                 Text = "fb.me/maxiechen",
                 Location = new Point(126, 92),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 LinkColor = _theme.AccentPrimary,
                 ActiveLinkColor = _theme.AccentPrimaryHover,
                 VisitedLinkColor = _theme.AccentPrimary,
@@ -116,7 +118,7 @@ namespace ModernAutoClicker.Info
                 Text = "• More Products:",
                 Location = new Point(20, 114),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 ForeColor = _theme.TextSecondary
             };
 
@@ -125,7 +127,7 @@ namespace ModernAutoClicker.Info
                 Text = "tranthangminh.github.io/products",
                 Location = new Point(126, 114),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 LinkColor = _theme.AccentPrimary,
                 ActiveLinkColor = _theme.AccentPrimaryHover,
                 VisitedLinkColor = _theme.AccentPrimary,
@@ -141,7 +143,7 @@ namespace ModernAutoClicker.Info
                 Text = "• Support me:",
                 Location = new Point(20, 136),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 ForeColor = _theme.TextSecondary
             };
 
@@ -150,7 +152,7 @@ namespace ModernAutoClicker.Info
                 Text = "ko-fi.com/maxiechen96",
                 Location = new Point(126, 136),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 LinkColor = _theme.AccentPrimary,
                 ActiveLinkColor = _theme.AccentPrimaryHover,
                 VisitedLinkColor = _theme.AccentPrimary,
@@ -175,11 +177,63 @@ namespace ModernAutoClicker.Info
                 }
             };
 
+            btnCheckUpdates = new RoundedButton
+            {
+                Text = "Check for Updates",
+                Location = new Point((388 - 180) / 2, 336),
+                Size = new Size(180, 32),
+                BorderRadius = _theme.RadiusMd,
+                NormalColor = _theme.AccentPrimary,
+                HoverColor = _theme.AccentPrimaryHover,
+                ForeColor = Color.White,
+                Font = ThemeTokens.FontSegoe(10F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnCheckUpdates.Click += (s, e) =>
+            {
+                btnCheckUpdates.Enabled = false;
+                lblUpdateStatus.ForeColor = _theme.TextSecondary;
+                lblUpdateStatus.Text = "Checking for updates...";
+                UpdateChecker.CheckForUpdatesAsync(true, this.FindForm(), (res) =>
+                {
+                    btnCheckUpdates.Enabled = true;
+                    if (res.Success)
+                    {
+                        if (res.HasUpdate)
+                        {
+                            lblUpdateStatus.ForeColor = _theme.CYellow;
+                            lblUpdateStatus.Text = string.Format("New version available: v{0}!", res.RemoteVersion);
+                        }
+                        else
+                        {
+                            lblUpdateStatus.ForeColor = _theme.CGreen;
+                            lblUpdateStatus.Text = string.Format("You have the latest version (v{0}).", AppInfo.Version);
+                        }
+                    }
+                    else
+                    {
+                        lblUpdateStatus.ForeColor = _theme.Danger;
+                        lblUpdateStatus.Text = "Check failed. No internet connection.";
+                    }
+                });
+            };
+
+            lblUpdateStatus = new Label
+            {
+                Text = "Click above to check for updates",
+                Location = new Point(20, 374),
+                Size = new Size(348, 20),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Regular),
+                ForeColor = _theme.TextSecondary
+            };
+
             pnlInfoCard.Controls.AddRange(new Control[] {
                 picAppIcon, lblInfoTitle, lblInfoAuthor, lblInfoContact,
                 lblFbTitle, linkFb, lblWebTitle, linkWeb,
                 lblSupportTitle, linkSupport,
-                picLogo
+                picLogo,
+                btnCheckUpdates, lblUpdateStatus
             });
 
             this.Controls.Add(pnlInfoCard);
@@ -228,6 +282,17 @@ namespace ModernAutoClicker.Info
             }
 
             if (picLogo != null) picLogo.Invalidate();
+
+            if (btnCheckUpdates != null)
+            {
+                btnCheckUpdates.NormalColor = t.AccentPrimary;
+                btnCheckUpdates.HoverColor = t.AccentPrimaryHover;
+                btnCheckUpdates.BorderRadius = t.RadiusMd;
+            }
+            if (lblUpdateStatus != null)
+            {
+                lblUpdateStatus.ForeColor = t.TextSecondary;
+            }
         }
     }
 }

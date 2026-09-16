@@ -65,7 +65,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "HEX Color Code:",
                 Location = new Point(102, 14),
                 Size = new Size(200, 16),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 ForeColor = _theme.TextSecondary
             };
 
@@ -74,7 +74,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(102, 32),
                 Size = new Size(200, 24),
                 Text = this.ColorHex,
-                Font = ThemeTokens.GetMonospaceFont(9F),
+                Font = ThemeTokens.GetMonospaceFont(12F),
                 PlaceholderText = "#RRGGBB"
             };
             txtHex.ApplyTheme(_theme);
@@ -103,7 +103,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Tolerance (± 0..255):",
                 Location = new Point(102, 60),
                 Size = new Size(200, 16),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 ForeColor = _theme.TextSecondary
             };
 
@@ -114,7 +114,7 @@ namespace ModernAutoClicker.Advanced
                 Minimum = 0,
                 Maximum = 255,
                 Value = _tolerance,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold)
             };
             numTolerance.ApplyTheme(_theme);
             numTolerance.TextChanged += (s, e) =>
@@ -128,7 +128,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Quick Palette:",
                 Location = new Point(16, 108),
                 Size = new Size(286, 16),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 ForeColor = _theme.TextSecondary
             };
 
@@ -186,7 +186,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(16, 164),
                 Size = new Size(138, 30),
                 BorderRadius = _theme.RadiusMd,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 NormalColor = _theme.AccentPrimary,
                 HoverColor = _theme.AccentPrimaryHover,
                 ForeColor = Color.White
@@ -218,7 +218,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(164, 164),
                 Size = new Size(138, 30),
                 BorderRadius = _theme.RadiusMd,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 NormalColor = _theme.BgElevated,
                 HoverColor = _theme.BgTertiary,
                 ForeColor = _theme.TextPrimary
@@ -245,7 +245,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(16, 218),
                 Size = new Size(138, 32),
                 BorderRadius = _theme.RadiusMd,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
                 NormalColor = _theme.CGreen,
                 HoverColor = Color.FromArgb(Math.Min(255, _theme.CGreen.R + 20), Math.Min(255, _theme.CGreen.G + 20), Math.Min(255, _theme.CGreen.B + 20)),
                 ForeColor = Color.White
@@ -263,7 +263,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(164, 218),
                 Size = new Size(138, 32),
                 BorderRadius = _theme.RadiusMd,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
                 NormalColor = _theme.BgElevated,
                 HoverColor = _theme.BgTertiary,
                 ForeColor = _theme.TextSecondary

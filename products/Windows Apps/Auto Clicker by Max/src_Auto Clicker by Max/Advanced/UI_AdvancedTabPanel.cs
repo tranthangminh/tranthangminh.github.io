@@ -129,7 +129,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Template",
                 Location = new Point(8 + 574 - 86, 6),
                 Size = new Size(86, 28),
-                Font = new Font("Segoe UI", 7.5F, FontStyle.Bold)
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnTemplate.Click += (s, e) => ShowTemplateMenu();
 
@@ -139,8 +139,8 @@ namespace ModernAutoClicker.Advanced
             {
                 Text = "➕ Add Step",
                 Location = new Point(x, 36),
-                Size = new Size(88, 24),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold)
+                Size = new Size(92, 24),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnAddStep.Click += (s, e) =>
             {
@@ -158,55 +158,55 @@ namespace ModernAutoClicker.Advanced
                 tableControl.AddStep(step);
                 UpdateStatus();
             };
-            x += 92;
+            x += 96;
 
             btnCloneSelected = new RoundedButton
             {
                 Text = "Clone",
                 Location = new Point(x, 36),
-                Size = new Size(54, 24),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold)
+                Size = new Size(56, 24),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnCloneSelected.Click += (s, e) =>
             {
                 tableControl.DuplicateSelectedSteps();
                 UpdateStatus();
             };
-            x += 58;
+            x += 60;
 
             btnSaveProfile = new RoundedButton
             {
                 Text = "Save",
                 Location = new Point(x, 36),
-                Size = new Size(48, 24),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold)
+                Size = new Size(50, 24),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnSaveProfile.Click += (s, e) => SaveProfile();
-            x += 52;
+            x += 54;
 
             btnLoadProfile = new RoundedButton
             {
                 Text = "Load",
                 Location = new Point(x, 36),
-                Size = new Size(48, 24),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold)
+                Size = new Size(50, 24),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnLoadProfile.Click += (s, e) => LoadProfile();
-            x += 52;
+            x += 54;
 
             btnClearAll = new RoundedButton
             {
                 Text = "Clear",
                 Location = new Point(x, 36),
-                Size = new Size(48, 24),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold)
+                Size = new Size(50, 24),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnClearAll.Click += (s, e) =>
             {
                 tableControl.ClearAll();
                 UpdateStatus();
             };
-            x += 52;
+            x += 54;
 
             // 3. Shared Macro Table Control (Y = 64, Height = 382)
             tableControl = new MacroTableControl
@@ -216,8 +216,11 @@ namespace ModernAutoClicker.Advanced
             };
             tableControl.OnTableDataChanged += () =>
             {
-                UpdateStatus();
-                if (OnActiveScriptChanged != null) OnActiveScriptChanged();
+                if (!_isLoadingUI)
+                {
+                    UpdateStatus();
+                    if (OnActiveScriptChanged != null) OnActiveScriptChanged();
+                }
             };
             tableControl.OnDefaultWindowBatchChanged += (rel, proc, title) =>
             {
@@ -235,7 +238,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Loop:",
                 Location = new Point(8, 454),
                 Size = new Size(36, 20),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
@@ -248,7 +251,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 1,
                 AllowEmpty = true,
                 Value = 0,
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -259,7 +262,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "(0=∞)",
                 Location = new Point(92, 454),
                 Size = new Size(42, 20),
-                Font = new Font("Segoe UI", 7.5F),
+                Font = ThemeTokens.FontSegoe(10F),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
@@ -268,7 +271,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Jitter: ±",
                 Location = new Point(148, 454),
                 Size = new Size(52, 20),
-                Font = new Font("Segoe UI", 8F),
+                Font = ThemeTokens.FontSegoe(11F),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
@@ -281,7 +284,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 1,
                 AllowEmpty = true,
                 Value = 0,
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -296,7 +299,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "px",
                 Location = new Point(240, 454),
                 Size = new Size(20, 20),
-                Font = new Font("Segoe UI", 8F),
+                Font = ThemeTokens.FontSegoe(11F),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
@@ -305,7 +308,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Interval: ±",
                 Location = new Point(272, 454),
                 Size = new Size(62, 20),
-                Font = new Font("Segoe UI", 8F),
+                Font = ThemeTokens.FontSegoe(11F),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
@@ -318,7 +321,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 5,
                 AllowEmpty = true,
                 Value = 0,
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -329,7 +332,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "ms",
                 Location = new Point(376, 454),
                 Size = new Size(22, 20),
-                Font = new Font("Segoe UI", 8F),
+                Font = ThemeTokens.FontSegoe(11F),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
@@ -381,11 +384,12 @@ namespace ModernAutoClicker.Advanced
         private void LoadProfileToUI(MacroProfile p)
         {
             if (p == null) return;
+            bool wasLoading = _isLoadingUI;
             _isLoadingUI = true;
             try
             {
-                tableControl.SetAvailableScripts(GetAvailableScriptNames(_activeProfileIndex));
                 tableControl.LoadProfile(p);
+                tableControl.SetAvailableScripts(GetAvailableScriptNames(_activeProfileIndex));
 
                 if (numLoop != null) numLoop.Value = p.LoopCount;
                 if (numRandJitter != null) numRandJitter.Value = p.RandomJitterPx;
@@ -395,7 +399,7 @@ namespace ModernAutoClicker.Advanced
             }
             finally
             {
-                _isLoadingUI = false;
+                _isLoadingUI = wasLoading;
             }
         }
 
@@ -404,9 +408,17 @@ namespace ModernAutoClicker.Advanced
             if (newIdx < 0 || newIdx >= _profiles.Count || newIdx == _activeProfileIndex) return;
 
             FlushCurrentProfileFromUI();
-            _activeProfileIndex = newIdx;
-            profileTabBar.SetActiveIndex(_activeProfileIndex);
-            LoadProfileToUI(_profiles[_activeProfileIndex]);
+            _isLoadingUI = true;
+            try
+            {
+                _activeProfileIndex = newIdx;
+                profileTabBar.SetActiveIndex(_activeProfileIndex);
+                LoadProfileToUI(_profiles[_activeProfileIndex]);
+            }
+            finally
+            {
+                _isLoadingUI = false;
+            }
 
             if (OnActiveScriptChanged != null) OnActiveScriptChanged();
         }
@@ -568,10 +580,13 @@ namespace ModernAutoClicker.Advanced
                 EnsureProfileExists();
                 MacroProfile p = (_activeProfileIndex >= 0 && _activeProfileIndex < _profiles.Count) ? _profiles[_activeProfileIndex] : _profiles[0];
 
-                p.Steps = tableControl.GetSteps();
-                p.LoopCount = numLoop != null ? numLoop.Value : 0;
-                p.RandomJitterPx = numRandJitter != null ? numRandJitter.Value : 0;
-                p.RandomIntervalMs = numRandInterval != null ? numRandInterval.Value : 0;
+                if (!_isLoadingUI)
+                {
+                    p.Steps = tableControl.GetSteps();
+                    p.LoopCount = numLoop != null ? numLoop.Value : 0;
+                    p.RandomJitterPx = numRandJitter != null ? numRandJitter.Value : 0;
+                    p.RandomIntervalMs = numRandInterval != null ? numRandInterval.Value : 0;
+                }
 
                 int cycleMs = p.CalculateEstimatedCycleMs(_profiles);
                 string loopStr = p.LoopCount <= 0 ? "Loop: Infinite" : string.Format("Loop: {0} {1}", p.LoopCount, p.LoopCount == 1 ? "time" : "times");

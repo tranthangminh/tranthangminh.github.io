@@ -6,11 +6,11 @@ namespace ModernAutoClicker
 {
     public static class NativeMethods
     {
+        public const int WM_SETREDRAW = 0x000B;
         public const int WM_HOTKEY = 0x0312;
 
         public const int HOTKEY_START_ID = 9001;    // F6 / Start or Toggle Active Tab
         public const int HOTKEY_STOP_ALL_ID = 9002; // F7 / Stop ALL
-        public const int HOTKEY_SPACE_ID = 9003;    // SPACE / Add Point or Step
 
         public const int INPUT_MOUSE = 0;
         public const int INPUT_KEYBOARD = 1;
@@ -464,14 +464,24 @@ namespace ModernAutoClicker
             public string ClassName { get; set; }
             public Image AppIcon { get; set; }
 
+            public int WindowIndex { get; set; }
+
             public override string ToString()
             {
                 string appName = !string.IsNullOrEmpty(FriendlyAppName) ? FriendlyAppName : ProcessName;
+                string baseDisplay;
                 if (string.IsNullOrEmpty(Title) || string.Equals(Title, appName, StringComparison.OrdinalIgnoreCase))
-                    return string.Format("{0}", appName);
-                if (Title.Length > 35)
-                    return string.Format("{0} - {1}...", appName, Title.Substring(0, 32));
-                return string.Format("{0} - {1}", appName, Title);
+                    baseDisplay = string.Format("{0}", appName);
+                else if (Title.Length > 35)
+                    baseDisplay = string.Format("{0} - {1}...", appName, Title.Substring(0, 32));
+                else
+                    baseDisplay = string.Format("{0} - {1}", appName, Title);
+
+                if (WindowIndex > 0)
+                {
+                    return string.Format("{0} ({1})", baseDisplay, WindowIndex);
+                }
+                return baseDisplay;
             }
         }
 
@@ -576,8 +586,8 @@ namespace ModernAutoClicker
                 }
                 catch { }
 
-                // 8. Deduplicate identical window entries by (ProcessId + ProcessName + Title)
-                string dedupKey = string.Format("{0}_{1}_{2}", pid, procName, title);
+                // 8. Deduplicate identical window entries by hWnd
+                string dedupKey = hWnd.ToInt64().ToString();
                 if (seenKeys.Contains(dedupKey))
                 {
                     return true;
@@ -603,7 +613,60 @@ namespace ModernAutoClicker
                 return true;
             }, IntPtr.Zero);
 
+            // Differentiate windows that share the exact same ProcessName and Title
+            var titleCounts = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in list)
+            {
+                string key = string.Format("{0}|{1}", item.ProcessName, item.Title);
+                int cnt;
+                titleCounts.TryGetValue(key, out cnt);
+                titleCounts[key] = cnt + 1;
+            }
+
+            var titleIndices = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in list)
+            {
+                string key = string.Format("{0}|{1}", item.ProcessName, item.Title);
+                if (titleCounts[key] > 1)
+                {
+                    int idx;
+                    titleIndices.TryGetValue(key, out idx);
+                    idx++;
+                    titleIndices[key] = idx;
+                    item.WindowIndex = idx;
+                }
+            }
+
             return list;
+        }
+
+        public static bool IsValidWindowHandle(IntPtr hWnd, string procName = null)
+        {
+            if (hWnd == IntPtr.Zero) return false;
+            if (!IsWindow(hWnd) || !IsWindowVisible(hWnd) || IsIconic(hWnd)) return false;
+            if (!string.IsNullOrEmpty(procName))
+            {
+                uint pid;
+                GetWindowThreadProcessId(hWnd, out pid);
+                if (pid == 0) return false;
+                try
+                {
+                    var p = System.Diagnostics.Process.GetProcessById((int)pid);
+                    string clean = procName.Trim();
+                    if (clean.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        clean = clean.Substring(0, clean.Length - 4);
+                    }
+                    bool match = string.Equals(p.ProcessName, clean, StringComparison.OrdinalIgnoreCase);
+                    p.Dispose();
+                    return match;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private class TargetWindowCacheEntry

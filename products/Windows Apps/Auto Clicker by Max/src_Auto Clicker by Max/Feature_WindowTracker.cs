@@ -23,6 +23,7 @@ namespace ModernAutoClicker
 
         // Simple tab context
         public Func<bool> SimpleRelativeToWindow { get; set; }
+        public Func<IntPtr> SimpleTargetHwnd { get; set; }
         public Func<string> SimpleTargetProcessName { get; set; }
         public Func<string> SimpleTargetWindowTitle { get; set; }
 
@@ -92,11 +93,16 @@ namespace ModernAutoClicker
                 bool relToWin = SimpleRelativeToWindow != null && SimpleRelativeToWindow();
                 string procName = SimpleTargetProcessName != null ? SimpleTargetProcessName() : "";
                 string winTitle = SimpleTargetWindowTitle != null ? SimpleTargetWindowTitle() : "";
+                IntPtr targetHwnd = SimpleTargetHwnd != null ? SimpleTargetHwnd() : IntPtr.Zero;
 
-                if (!relToWin || string.IsNullOrEmpty(procName))
+                if (!relToWin || (targetHwnd == IntPtr.Zero && string.IsNullOrEmpty(procName)))
                     return "Desktop";
 
-                IntPtr hWnd = NativeMethods.FindWindowByTarget(procName, winTitle);
+                IntPtr hWnd = targetHwnd;
+                if (!NativeMethods.IsValidWindowHandle(hWnd, procName))
+                {
+                    hWnd = NativeMethods.FindWindowByTarget(procName, winTitle);
+                }
                 if (hWnd == IntPtr.Zero) return "NotFound";
                 NativeMethods.POINT origin = new NativeMethods.POINT { X = 0, Y = 0 };
                 NativeMethods.ClientToScreen(hWnd, ref origin);
@@ -114,12 +120,17 @@ namespace ModernAutoClicker
 
                 foreach (var st in steps)
                 {
-                    if (st.RelativeToWindow && !string.IsNullOrEmpty(st.ProcessName))
+                    if (st.RelativeToWindow && (st.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(st.ProcessName)))
                     {
-                        string targetKey = string.Format("{0}|{1}", st.ProcessName, st.WindowTitle ?? "");
+                        string targetKey = (st.WindowHwnd != IntPtr.Zero) ? st.WindowHwnd.ToString() : string.Format("{0}|{1}", st.ProcessName, st.WindowTitle ?? "");
                         if (checkedTargets.Add(targetKey))
                         {
-                            IntPtr hWnd = NativeMethods.FindWindowByTarget(st.ProcessName, st.WindowTitle);
+                            IntPtr hWnd = st.WindowHwnd;
+                            if (!NativeMethods.IsValidWindowHandle(hWnd, st.ProcessName))
+                            {
+                                hWnd = NativeMethods.FindWindowByTarget(st.ProcessName, st.WindowTitle);
+                                if (hWnd != IntPtr.Zero) st.WindowHwnd = hWnd;
+                            }
                             NativeMethods.POINT origin = new NativeMethods.POINT { X = 0, Y = 0 };
                             if (hWnd != IntPtr.Zero)
                             {

@@ -62,10 +62,11 @@ namespace ModernAutoClicker
         public bool ShowMapOverlay { get; set; }
         public bool FreeMouseMode { get; set; }
         public bool SmoothMouseMove { get; set; }
-        public bool HideRunningRing { get; set; }
+        public int MapOverlayOpacity { get; set; }
         public bool IsDarkTheme { get; set; }
         public bool IsAdvancedTab { get; set; }
         public string AdvancedProfileJson { get; set; }
+        public string LastUpdateCheckDate { get; set; }
 
         public int ActiveSimpleTabIndex { get; set; }
         public List<SimpleProfileConfig> SimpleProfiles { get; set; }
@@ -133,7 +134,7 @@ namespace ModernAutoClicker
             ShowMapOverlay = true;
             FreeMouseMode = true;
             SmoothMouseMove = true;
-            HideRunningRing = false;
+            MapOverlayOpacity = 60;
             IsDarkTheme = true;
             IsAdvancedTab = false;
             AdvancedProfileJson = null;
@@ -182,10 +183,11 @@ namespace ModernAutoClicker
                 settings.ShowMapOverlay = GetBool(json, "ShowMapOverlay", true);
                 settings.FreeMouseMode = GetBool(json, "FreeMouseMode", true);
                 settings.SmoothMouseMove = GetBool(json, "SmoothMouseMove", true);
-                settings.HideRunningRing = GetBool(json, "HideRunningRing", false);
+                settings.MapOverlayOpacity = Math.Max(10, Math.Min(100, GetInt(json, "MapOverlayOpacity", 60)));
                 settings.IsDarkTheme = GetBool(json, "IsDarkTheme", true);
                 settings.IsAdvancedTab = GetBool(json, "IsAdvancedTab", false);
                 settings.ActiveSimpleTabIndex = Math.Max(0, Math.Min(4, GetInt(json, "ActiveSimpleTabIndex", 0)));
+                settings.LastUpdateCheckDate = GetString(json, "LastUpdateCheckDate", "");
 
                 // Try parsing SimpleProfiles array
                 int spIdx = json.IndexOf("\"SimpleProfiles\"", StringComparison.OrdinalIgnoreCase);
@@ -346,9 +348,10 @@ namespace ModernAutoClicker
                 sb.AppendLine(string.Format("  \"ShowMapOverlay\": {0},", settings.ShowMapOverlay.ToString().ToLower()));
                 sb.AppendLine(string.Format("  \"FreeMouseMode\": {0},", settings.FreeMouseMode.ToString().ToLower()));
                 sb.AppendLine(string.Format("  \"SmoothMouseMove\": {0},", settings.SmoothMouseMove.ToString().ToLower()));
-                sb.AppendLine(string.Format("  \"HideRunningRing\": {0},", settings.HideRunningRing.ToString().ToLower()));
+                sb.AppendLine(string.Format("  \"MapOverlayOpacity\": {0},", settings.MapOverlayOpacity));
                 sb.AppendLine(string.Format("  \"IsDarkTheme\": {0},", settings.IsDarkTheme.ToString().ToLower()));
                 sb.AppendLine(string.Format("  \"IsAdvancedTab\": {0},", settings.IsAdvancedTab.ToString().ToLower()));
+                sb.AppendLine(string.Format("  \"LastUpdateCheckDate\": \"{0}\",", EscapeJson(settings.LastUpdateCheckDate ?? "")));
 
                 // Save 5 SimpleProfiles
                 sb.AppendLine("  \"SimpleProfiles\": [");

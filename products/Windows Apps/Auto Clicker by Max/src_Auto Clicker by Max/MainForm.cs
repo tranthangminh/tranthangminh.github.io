@@ -80,6 +80,7 @@ namespace ModernAutoClicker
         private ThemeTokens currentTheme;
         private List<Point> pointList { get { return lstPoints != null ? lstPoints.GetPoints() : new List<Point>(); } }
         private OverlayForm overlayForm;
+        private int _mapOverlayOpacity = 60;
 
         private const int WM_ACTIVATE = 0x0006;
         private const int WM_ACTIVATEAPP = 0x001C;
@@ -90,6 +91,12 @@ namespace ModernAutoClicker
         private string _simpleTargetProcessName = "";
         private string _simpleTargetWindowTitle = "";
         private bool _simpleRelativeToWindow = false;
+        private IntPtr[] _simpleTargetHwnds = new IntPtr[5];
+        private IntPtr _simpleTargetHwnd
+        {
+            get { return (_simpleTabIndex >= 0 && _simpleTabIndex < 5) ? _simpleTargetHwnds[_simpleTabIndex] : IntPtr.Zero; }
+            set { if (_simpleTabIndex >= 0 && _simpleTabIndex < 5) _simpleTargetHwnds[_simpleTabIndex] = value; }
+        }
         private WindowTracker _windowTracker;
         private UnfocusClickFilter _unfocusFilter;
         private ToolTip _startToolTip;
@@ -126,6 +133,22 @@ namespace ModernAutoClicker
                 AutoPopDelay = 6000,
                 ShowAlways = true
             };
+
+            if (btnMapOpacity != null)
+            {
+                btnMapOpacity.Click += (s, e) => ShowOpacityMenu();
+                _startToolTip.SetToolTip(btnMapOpacity, "Overlay Map Opacity (Click to change, or Right-click Show Map)");
+            }
+            if (chkShowMap != null)
+            {
+                chkShowMap.MouseUp += (s, e) =>
+                {
+                    if (e.Button == MouseButtons.Right)
+                    {
+                        ShowOpacityMenu(Cursor.Position);
+                    }
+                };
+            }
 
             LoadSettings();
 
@@ -217,6 +240,7 @@ namespace ModernAutoClicker
             _windowTracker.IsBasicTab = () => _currentTabIndex == 1;
             _windowTracker.IsOverlayInteracting = () => overlayForm != null && overlayForm.IsInteracting;
             _windowTracker.SimpleRelativeToWindow = () => _simpleRelativeToWindow;
+            _windowTracker.SimpleTargetHwnd = () => _simpleTargetHwnd;
             _windowTracker.SimpleTargetProcessName = () => _simpleTargetProcessName;
             _windowTracker.SimpleTargetWindowTitle = () => _simpleTargetWindowTitle;
             _windowTracker.GetAdvancedSteps = () => (pnlTabAdvanced != null && pnlTabAdvanced.Table != null) ? pnlTabAdvanced.Table.GetSteps() : null;
@@ -239,6 +263,16 @@ namespace ModernAutoClicker
             SyncOverlay();
             UpdateTabStatus(_isBasicTab);
             UpdateStartButtonState();
+
+            // Background automatic update check (Runs after 2.5s, checks at most once a day, never blocks UI)
+            System.Windows.Forms.Timer autoUpdateTimer = new System.Windows.Forms.Timer { Interval = 2500 };
+            autoUpdateTimer.Tick += (s, args) =>
+            {
+                autoUpdateTimer.Stop();
+                autoUpdateTimer.Dispose();
+                UpdateChecker.CheckForUpdatesAsync(false, this);
+            };
+            autoUpdateTimer.Start();
         }
 
         public void UpdateFormRegion()
@@ -453,9 +487,14 @@ namespace ModernAutoClicker
                 if (_isBasicTab)
                 {
                     Point finalPt = screenPt;
-                    if (_simpleRelativeToWindow && (!string.IsNullOrEmpty(_simpleTargetProcessName) || !string.IsNullOrEmpty(_simpleTargetWindowTitle)))
+                    if (_simpleRelativeToWindow && (_simpleTargetHwnd != IntPtr.Zero || !string.IsNullOrEmpty(_simpleTargetProcessName) || !string.IsNullOrEmpty(_simpleTargetWindowTitle)))
                     {
-                        IntPtr hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                        IntPtr hWnd = _simpleTargetHwnd;
+                        if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
+                        {
+                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                            if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
+                        }
                         if (hWnd != IntPtr.Zero)
                         {
                             NativeMethods.RECT clientRect;
@@ -577,6 +616,7 @@ namespace ModernAutoClicker
             itemDesktop.Click += (s, e) =>
             {
                 _simpleRelativeToWindow = false;
+                _simpleTargetHwnd = IntPtr.Zero;
                 _simpleTargetProcessName = "";
                 _simpleTargetWindowTitle = "";
                 UpdateSimpleTargetWindowButtonDisplay();
@@ -604,6 +644,7 @@ namespace ModernAutoClicker
                     itemWin.Click += (s, e) =>
                     {
                         _simpleRelativeToWindow = true;
+                        _simpleTargetHwnd = targetWin.Hwnd;
                         _simpleTargetProcessName = targetWin.ProcessName;
                         _simpleTargetWindowTitle = targetWin.Title;
                         if (targetWin.AppIcon != null)
@@ -690,9 +731,26 @@ namespace ModernAutoClicker
             picker.OnPointSelectedWithWindow += (screenPt, color, winInfo, clientPt) =>
             {
                 Point finalPt = screenPt;
-                if (_simpleRelativeToWindow && (!string.IsNullOrEmpty(_simpleTargetProcessName) || !string.IsNullOrEmpty(_simpleTargetWindowTitle)))
+                if (_simpleRelativeToWindow)
                 {
-                    IntPtr hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                    IntPtr hWnd = _simpleTargetHwnd;
+                    if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
+                    {
+                        if (winInfo != null && winInfo.Hwnd != IntPtr.Zero && NativeMethods.IsValidWindowHandle(winInfo.Hwnd, winInfo.ProcessName))
+                        {
+                            hWnd = winInfo.Hwnd;
+                            _simpleTargetHwnd = hWnd;
+                            _simpleTargetProcessName = winInfo.ProcessName;
+                            _simpleTargetWindowTitle = winInfo.Title;
+                            UpdateSimpleTargetWindowButtonDisplay();
+                        }
+                        else
+                        {
+                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                            if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
+                        }
+                    }
+
                     if (hWnd != IntPtr.Zero)
                     {
                         NativeMethods.POINT np = new NativeMethods.POINT { X = screenPt.X, Y = screenPt.Y };
@@ -766,6 +824,7 @@ namespace ModernAutoClicker
             if (overlayForm != null && !overlayForm.IsDisposed) return;
 
             overlayForm = new OverlayForm();
+            overlayForm.SetMapOpacity(_mapOverlayOpacity);
             if (this.IsHandleCreated)
             {
                 overlayForm.Owner = this;
@@ -806,7 +865,12 @@ namespace ModernAutoClicker
                             Point savePt = newPt;
                             if (_isBasicTab && _simpleRelativeToWindow)
                             {
-                                IntPtr hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                                IntPtr hWnd = _simpleTargetHwnd;
+                                if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
+                                {
+                                    hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                                    if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
+                                }
                                 if (hWnd != IntPtr.Zero)
                                 {
                                     NativeMethods.POINT np = new NativeMethods.POINT { X = newPt.X, Y = newPt.Y };
@@ -835,9 +899,14 @@ namespace ModernAutoClicker
                             if (steps != null && stepIdx >= 0 && stepIdx < steps.Count)
                             {
                                 var s = steps[stepIdx];
-                                if (s.RelativeToWindow && !string.IsNullOrEmpty(s.ProcessName))
+                                if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
                                 {
-                                    IntPtr hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                    IntPtr hWnd = s.WindowHwnd;
+                                    if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
+                                    {
+                                        hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                        if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
+                                    }
                                     if (hWnd != IntPtr.Zero)
                                     {
                                         NativeMethods.POINT np = new NativeMethods.POINT { X = newPt.X, Y = newPt.Y };
@@ -869,9 +938,14 @@ namespace ModernAutoClicker
                             if (steps != null && stepIdx >= 0 && stepIdx < steps.Count)
                             {
                                 var s = steps[stepIdx];
-                                if (s.RelativeToWindow && !string.IsNullOrEmpty(s.ProcessName))
+                                if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
                                 {
-                                    IntPtr hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                    IntPtr hWnd = s.WindowHwnd;
+                                    if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
+                                    {
+                                        hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                        if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
+                                    }
                                     if (hWnd != IntPtr.Zero)
                                     {
                                         NativeMethods.POINT npA = new NativeMethods.POINT { X = startPt.X, Y = startPt.Y };
@@ -906,6 +980,62 @@ namespace ModernAutoClicker
             overlayForm.ShowOverlay();
         }
 
+        private void SetMapOverlayOpacity(int percent)
+        {
+            _mapOverlayOpacity = Math.Max(10, Math.Min(100, percent));
+            if (btnMapOpacity != null)
+            {
+                btnMapOpacity.Text = _mapOverlayOpacity + "% ▾";
+            }
+            InitOverlayForm();
+            if (overlayForm != null)
+            {
+                overlayForm.SetMapOpacity(_mapOverlayOpacity);
+            }
+            if (chkShowMap != null && !chkShowMap.Checked)
+            {
+                chkShowMap.Checked = true;
+            }
+            else
+            {
+                SyncOverlay();
+            }
+            SaveSettings();
+        }
+
+        private void ShowOpacityMenu(Point? screenPos = null)
+        {
+            if (btnMapOpacity == null) return;
+
+            ContextMenuStrip menu = new ContextMenuStrip();
+            menu.Renderer = new ModernMenuRenderer(currentTheme);
+            menu.ShowImageMargin = false;
+            menu.Closed += (s, e) => { btnMapOpacity.BeginInvoke((Action)(() => menu.Dispose())); };
+
+            int[] presets = new int[] { 100, 80, 60, 40, 20 };
+
+            for (int i = 0; i < presets.Length; i++)
+            {
+                int val = presets[i];
+                string lbl = (val == _mapOverlayOpacity) ? "● " + val + "%" : "   " + val + "%";
+
+                ToolStripMenuItem item = new ToolStripMenuItem(lbl);
+                if (val == _mapOverlayOpacity)
+                {
+                    item.Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold);
+                }
+                int chosenVal = val;
+                item.Click += (s, e) =>
+                {
+                    SetMapOverlayOpacity(chosenVal);
+                };
+                menu.Items.Add(item);
+            }
+
+            Point pt = screenPos.HasValue ? screenPos.Value : btnMapOpacity.PointToScreen(new Point(0, btnMapOpacity.Height + 2));
+            menu.Show(pt);
+        }
+
         private void SyncOverlay()
         {
             InitOverlayForm();
@@ -936,7 +1066,12 @@ namespace ModernAutoClicker
                     if (pts != null && _simpleRelativeToWindow)
                     {
                         List<Point> screenPts = new List<Point>();
-                        IntPtr hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                        IntPtr hWnd = _simpleTargetHwnd;
+                        if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
+                        {
+                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                            if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
+                        }
                         foreach (var p in pts)
                         {
                             if (hWnd != IntPtr.Zero)
@@ -970,9 +1105,14 @@ namespace ModernAutoClicker
                             foreach (var s in rawSteps)
                             {
                                 var clone = s.Clone();
-                                if (s.RelativeToWindow && !string.IsNullOrEmpty(s.ProcessName))
+                                if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
                                 {
-                                    IntPtr hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                    IntPtr hWnd = s.WindowHwnd;
+                                    if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
+                                    {
+                                        hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                        if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
+                                    }
                                     if (hWnd != IntPtr.Zero)
                                     {
                                         if (clone.StartPoint != Point.Empty)
@@ -1241,8 +1381,6 @@ namespace ModernAutoClicker
             if (overlayForm != null)
             {
                 overlayForm.SetClickThrough(true);
-                bool showRing = (chkHideRunningRing == null || !chkHideRunningRing.Checked);
-                overlayForm.SetRunningMode(showRing, currentTheme.AccentPrimary);
             }
 
             UpdateRunningState();
@@ -1265,7 +1403,6 @@ namespace ModernAutoClicker
             {
                 if (overlayForm != null)
                 {
-                    overlayForm.SetRunningMode(false, currentTheme.AccentPrimary);
                     overlayForm.SetClickThrough(false);
                 }
                 if (titleBar != null) titleBar.IsRunning = false;
@@ -1286,6 +1423,16 @@ namespace ModernAutoClicker
             SimpleProfileConfig prof = config.GetProfile(tabIndex);
 
             int clickMode = prof.SimpleClickMode;
+            IntPtr tabHwnd = (tabIndex >= 0 && tabIndex < 5) ? _simpleTargetHwnds[tabIndex] : IntPtr.Zero;
+            if (prof.SimpleRelativeToWindow && !NativeMethods.IsValidWindowHandle(tabHwnd, prof.SimpleTargetProcessName))
+            {
+                tabHwnd = NativeMethods.FindWindowByTarget(prof.SimpleTargetProcessName, prof.SimpleTargetWindowTitle);
+                if (tabHwnd != IntPtr.Zero && tabIndex >= 0 && tabIndex < 5)
+                {
+                    _simpleTargetHwnds[tabIndex] = tabHwnd;
+                }
+            }
+
             ClickConfig clickConfig = new ClickConfig
             {
                 IntervalMs = Math.Max(1, prof.IntervalMs),
@@ -1295,6 +1442,7 @@ namespace ModernAutoClicker
                 ClickMode = clickMode,
                 FreeMouseMode = forceFreeMouse,
                 SmoothMouseMove = (chkSmoothMove != null && chkSmoothMove.Checked),
+                TargetHwnd = tabHwnd,
                 TargetProcessName = prof.SimpleTargetProcessName,
                 TargetWindowTitle = prof.SimpleTargetWindowTitle,
                 RelativeToWindow = prof.SimpleRelativeToWindow,
@@ -1330,7 +1478,6 @@ namespace ModernAutoClicker
                 {
                     overlayForm.SetExecutingIndex(-1);
                     overlayForm.SetClickThrough(false);
-                    overlayForm.SetRunningMode(false, currentTheme.AccentPrimary);
                 }
                 if (titleBar != null) titleBar.IsRunning = false;
                 HandleWindowFocusChanged(true);
@@ -1435,7 +1582,6 @@ namespace ModernAutoClicker
                 {
                     overlayForm.SetExecutingIndex(-1);
                     overlayForm.SetClickThrough(false);
-                    overlayForm.SetRunningMode(false, currentTheme.AccentPrimary);
                 }
                 if (titleBar != null) titleBar.IsRunning = false;
                 HandleWindowFocusChanged(true);
@@ -1482,7 +1628,6 @@ namespace ModernAutoClicker
 
             if (overlayForm != null)
             {
-                overlayForm.SetRunningMode(false, currentTheme.AccentPrimary);
                 overlayForm.SetClickThrough(false);
                 overlayForm.SetExecutingIndex(-1);
             }
@@ -1681,6 +1826,13 @@ namespace ModernAutoClicker
                 _simpleTargetProcessName = prof.SimpleTargetProcessName ?? "";
                 _simpleTargetWindowTitle = prof.SimpleTargetWindowTitle ?? "";
                 _simpleRelativeToWindow = prof.SimpleRelativeToWindow;
+                if (_simpleRelativeToWindow && index >= 0 && index < 5)
+                {
+                    if (!NativeMethods.IsValidWindowHandle(_simpleTargetHwnds[index], _simpleTargetProcessName))
+                    {
+                        _simpleTargetHwnds[index] = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                    }
+                }
                 UpdateSimpleTargetWindowButtonDisplay();
 
                 if (lstPoints != null)
@@ -1794,9 +1946,17 @@ namespace ModernAutoClicker
             this.TopMost = config.AlwaysOnTop;
 
             chkShowMap.Checked = config.ShowMapOverlay;
+            _mapOverlayOpacity = Math.Max(10, Math.Min(100, config.MapOverlayOpacity));
+            if (btnMapOpacity != null)
+            {
+                btnMapOpacity.Text = _mapOverlayOpacity + "% ▾";
+            }
+            if (overlayForm != null)
+            {
+                overlayForm.SetMapOpacity(_mapOverlayOpacity);
+            }
             if (chkFreeMouse != null) chkFreeMouse.Checked = config.FreeMouseMode;
             if (chkSmoothMove != null) chkSmoothMove.Checked = config.SmoothMouseMove;
-            if (chkHideRunningRing != null) chkHideRunningRing.Checked = config.HideRunningRing;
 
             if (!config.IsDarkTheme)
             {
@@ -1841,9 +2001,9 @@ namespace ModernAutoClicker
             config.ActiveSimpleTabIndex = _simpleTabIndex;
             config.AlwaysOnTop = chkAlwaysOnTop.Checked;
             config.ShowMapOverlay = chkShowMap.Checked;
+            config.MapOverlayOpacity = _mapOverlayOpacity;
             config.FreeMouseMode = (chkFreeMouse != null && chkFreeMouse.Checked);
             config.SmoothMouseMove = (chkSmoothMove != null && chkSmoothMove.Checked);
-            config.HideRunningRing = (chkHideRunningRing != null && chkHideRunningRing.Checked);
             config.IsDarkTheme = currentTheme.IsDark;
             config.IsAdvancedTab = !_isBasicTab;
             config.AdvancedProfileJson = (pnlTabAdvanced != null) ? ModernAutoClicker.Advanced.MacroStorage.ProjectToJson(pnlTabAdvanced.GetAllProfiles(), pnlTabAdvanced.ActiveProfileIndex) : null;

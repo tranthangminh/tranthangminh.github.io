@@ -16,9 +16,6 @@ namespace ModernAutoClicker
         private int _executingIndex = -1;
         private int _jitterRadius = 0;
         private Color _accentColor = ThemeTokens.DarkTheme().AccentPrimary;
-        private bool _isRunningMode = false;
-        private Point _lastCursorPos = Point.Empty;
-        private System.Windows.Forms.Timer _cursorTrackerTimer;
 
         // Extensibility slot for future custom crosshair/marker icons
         public Image CustomCrosshairIcon { get; set; }
@@ -55,6 +52,19 @@ namespace ModernAutoClicker
             get { return _isDragging; }
         }
 
+        private int _mapOpacity = 60;
+        public int MapOpacity
+        {
+            get { return _mapOpacity; }
+            set { SetMapOpacity(value); }
+        }
+
+        public void SetMapOpacity(int percent)
+        {
+            _mapOpacity = Math.Max(10, Math.Min(100, percent));
+            this.Opacity = _mapOpacity / 100.0;
+        }
+
         public OverlayForm()
         {
             this.FormBorderStyle = FormBorderStyle.None;
@@ -65,7 +75,7 @@ namespace ModernAutoClicker
             this.Size = SystemInformation.VirtualScreen.Size;
             this.BackColor = Color.Magenta;
             this.TransparencyKey = Color.Magenta;
-            this.Opacity = 0.60;
+            this.Opacity = _mapOpacity / 100.0;
             this.DoubleBuffered = true;
 
             this.SetStyle(ControlStyles.UserPaint |
@@ -193,35 +203,41 @@ namespace ModernAutoClicker
                             }
                         }
                     }
-                    else if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea)
+                    else
                     {
-                        if (s.StartPoint != Point.Empty && s.EndPoint != Point.Empty)
-                        {
-                            string text = string.Format("{0}: If Area", i + 1);
-                            Rectangle hitMarker = GetMarkerHitRectangle(s.StartPoint, text);
-                            int rx = Math.Min(s.StartPoint.X, s.EndPoint.X);
-                            int ry = Math.Min(s.StartPoint.Y, s.EndPoint.Y);
-                            int rw = Math.Max(1, Math.Abs(s.EndPoint.X - s.StartPoint.X));
-                            int rh = Math.Max(1, Math.Abs(s.EndPoint.Y - s.StartPoint.Y));
-                            Rectangle areaRect = new Rectangle(rx, ry, rw, rh);
+                        bool isArea = (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea) ||
+                                      (s.EndPoint != Point.Empty && s.EndPoint != s.StartPoint);
 
-                            if (hitMarker.Contains(p) || areaRect.Contains(p))
+                        if (isArea)
+                        {
+                            if (s.StartPoint != Point.Empty && s.EndPoint != Point.Empty)
                             {
-                                isStartPoint = true;
-                                return i;
+                                string text = GetAdvancedStepLabel(s, i, true);
+                                Rectangle hitMarker = GetMarkerHitRectangle(s.StartPoint, text);
+                                int rx = Math.Min(s.StartPoint.X, s.EndPoint.X);
+                                int ry = Math.Min(s.StartPoint.Y, s.EndPoint.Y);
+                                int rw = Math.Max(1, Math.Abs(s.EndPoint.X - s.StartPoint.X));
+                                int rh = Math.Max(1, Math.Abs(s.EndPoint.Y - s.StartPoint.Y));
+                                Rectangle areaRect = new Rectangle(rx, ry, rw, rh);
+
+                                if (hitMarker.Contains(p) || areaRect.Contains(p))
+                                {
+                                    isStartPoint = true;
+                                    return i;
+                                }
                             }
                         }
-                    }
-                    else if (HasCoordinates(s.ActionType))
-                    {
-                        if (s.StartPoint != Point.Empty)
+                        else if (HasCoordinates(s.ActionType))
                         {
-                            string text = GetAdvancedStepLabel(s, i, true);
-                            Rectangle hitRect = GetMarkerHitRectangle(s.StartPoint, text);
-                            if (hitRect.Contains(p))
+                            if (s.StartPoint != Point.Empty)
                             {
-                                isStartPoint = true;
-                                return i;
+                                string text = GetAdvancedStepLabel(s, i, true);
+                                Rectangle hitRect = GetMarkerHitRectangle(s.StartPoint, text);
+                                if (hitRect.Contains(p))
+                                {
+                                    isStartPoint = true;
+                                    return i;
+                                }
                             }
                         }
                     }
@@ -264,7 +280,9 @@ namespace ModernAutoClicker
                     if (_isAdvancedMode)
                     {
                         var hitStep = _advancedSteps[hitIdx];
-                        if (hitStep.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea)
+                        bool isArea = (hitStep.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea) ||
+                                      (hitStep.ActionType != ModernAutoClicker.Advanced.MacroActionType.DragDrop && hitStep.EndPoint != Point.Empty && hitStep.EndPoint != hitStep.StartPoint);
+                        if (isArea)
                         {
                             targetPt = hitStep.StartPoint;
                             _dragAreaOffset = new Point(hitStep.EndPoint.X - hitStep.StartPoint.X, hitStep.EndPoint.Y - hitStep.StartPoint.Y);
@@ -301,7 +319,9 @@ namespace ModernAutoClicker
                 if (_isAdvancedMode && _draggedPointIndex < _advancedSteps.Count)
                 {
                     var s = _advancedSteps[_draggedPointIndex];
-                    if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea)
+                    bool isArea = (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea) ||
+                                  (s.ActionType != ModernAutoClicker.Advanced.MacroActionType.DragDrop && s.EndPoint != Point.Empty && s.EndPoint != s.StartPoint);
+                    if (isArea)
                     {
                         s.StartPoint = newPt;
                         s.EndPoint = new Point(newPt.X + _dragAreaOffset.X, newPt.Y + _dragAreaOffset.Y);
@@ -414,62 +434,6 @@ namespace ModernAutoClicker
             this.Invalidate();
         }
 
-        public void SetRunningMode(bool running, Color accentColor)
-        {
-            _isRunningMode = running;
-            _accentColor = accentColor;
-
-            if (_isRunningMode)
-            {
-                SetClickThrough(true);
-                if (_cursorTrackerTimer == null)
-                {
-                    _cursorTrackerTimer = new System.Windows.Forms.Timer { Interval = 16 }; // ~60 FPS
-                    _cursorTrackerTimer.Tick += (s, e) =>
-                    {
-                        if (!_isRunningMode || !this.IsHandleCreated || this.IsDisposed)
-                        {
-                            if (_cursorTrackerTimer != null) _cursorTrackerTimer.Stop();
-                            return;
-                        }
-
-                        NativeMethods.POINT p;
-                        if (NativeMethods.GetCursorPos(out p))
-                        {
-                            Point curScreenPt = new Point(p.X, p.Y);
-                            Point clientPt = this.PointToClient(curScreenPt);
-
-                            if (clientPt != _lastCursorPos)
-                            {
-                                Rectangle oldRect = new Rectangle(_lastCursorPos.X - 22, _lastCursorPos.Y - 22, 44, 44);
-                                Rectangle newRect = new Rectangle(clientPt.X - 22, clientPt.Y - 22, 44, 44);
-                                _lastCursorPos = clientPt;
-
-                                if (oldRect.Width > 0 && oldRect.Height > 0) this.Invalidate(oldRect);
-                                if (newRect.Width > 0 && newRect.Height > 0) this.Invalidate(newRect);
-                            }
-                        }
-                    };
-                }
-                _cursorTrackerTimer.Start();
-                ShowOverlay();
-            }
-            else
-            {
-                if (_cursorTrackerTimer != null)
-                {
-                    _cursorTrackerTimer.Stop();
-                }
-                if (_lastCursorPos != Point.Empty)
-                {
-                    Rectangle oldRect = new Rectangle(_lastCursorPos.X - 22, _lastCursorPos.Y - 22, 44, 44);
-                    _lastCursorPos = Point.Empty;
-                    this.Invalidate(oldRect);
-                }
-            }
-            this.Invalidate();
-        }
-
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
@@ -488,21 +452,6 @@ namespace ModernAutoClicker
                     DrawBasicOverlay(e.Graphics);
                 }
             }
-
-            // Draw 2px Accent Primary Cursor Ring when Running
-            if (_isRunningMode && _lastCursorPos != Point.Empty)
-            {
-                DrawCursorRing(e.Graphics, _lastCursorPos);
-            }
-        }
-
-        private void DrawCursorRing(Graphics g, Point pt)
-        {
-            g.SmoothingMode = SmoothingMode.None; // Zero magenta fringing
-            using (Pen pen = new Pen(_accentColor, 2f))
-            {
-                g.DrawEllipse(pen, pt.X - 16, pt.Y - 16, 32, 32);
-            }
         }
 
         private void DrawBasicOverlay(Graphics g)
@@ -515,7 +464,7 @@ namespace ModernAutoClicker
             using (SolidBrush blackBrush = new SolidBrush(Color.Black))
             using (SolidBrush whiteBrush = new SolidBrush(Color.White))
             using (SolidBrush highlightBrush = new SolidBrush(_accentColor))
-            using (Font numFont = new Font("Tahoma", 8.5F, FontStyle.Bold))
+            using (Font numFont = new Font("Tahoma", 11.5F, FontStyle.Bold, GraphicsUnit.Pixel))
             {
                 for (int i = 0; i < _points.Count; i++)
                 {
@@ -630,7 +579,8 @@ namespace ModernAutoClicker
                             }
                         }
                     }
-                    else if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea)
+                    else if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea ||
+                            (s.EndPoint != Point.Empty && s.EndPoint != s.StartPoint))
                     {
                         if (s.StartPoint != Point.Empty && s.EndPoint != Point.Empty)
                         {
@@ -656,7 +606,7 @@ namespace ModernAutoClicker
             using (SolidBrush blackBrush = new SolidBrush(Color.Black))
             using (SolidBrush whiteBrush = new SolidBrush(Color.White))
             using (SolidBrush highlightBrush = new SolidBrush(selectBlue))
-            using (Font numFont = new Font("Tahoma", 8.5F, FontStyle.Bold))
+            using (Font numFont = new Font("Tahoma", 11.5F, FontStyle.Bold, GraphicsUnit.Pixel))
             {
                 for (int i = 0; i < _advancedSteps.Count; i++)
                 {
@@ -675,13 +625,6 @@ namespace ModernAutoClicker
                         if (s.EndPoint != Point.Empty)
                         {
                             DrawSingleMarker(g, s.EndPoint, GetAdvancedStepLabel(s, i, false), isSelected, isExecuting, blackBrush, whiteBrush, highlightBrush, numFont);
-                        }
-                    }
-                    else if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea)
-                    {
-                        if (s.StartPoint != Point.Empty)
-                        {
-                            DrawSingleMarker(g, s.StartPoint, string.Format("{0}: If Area", i + 1), isSelected, isExecuting, blackBrush, whiteBrush, highlightBrush, numFont);
                         }
                     }
                     else if (HasCoordinates(s.ActionType))
@@ -819,9 +762,21 @@ namespace ModernAutoClicker
                 case ModernAutoClicker.Advanced.MacroActionType.WaitChange:
                     typeName = "Wait Change";
                     break;
+                case ModernAutoClicker.Advanced.MacroActionType.WaitImage:
+                    typeName = "Wait Image";
+                    break;
+                case ModernAutoClicker.Advanced.MacroActionType.IfImage:
+                    typeName = "If Image";
+                    break;
                 default:
                     typeName = "Click";
                     break;
+            }
+
+            if (s.ActionType != ModernAutoClicker.Advanced.MacroActionType.DragDrop &&
+                s.EndPoint != Point.Empty && s.EndPoint != s.StartPoint)
+            {
+                typeName += " (Area)";
             }
 
             return string.Format("{0}: {1}", num, typeName);

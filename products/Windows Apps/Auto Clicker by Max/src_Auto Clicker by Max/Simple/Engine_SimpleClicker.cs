@@ -14,6 +14,7 @@ namespace ModernAutoClicker
         public int JitterPx { get; set; } // 0 = no jitter, > 0 = ± N px random offset
         public bool FreeMouseMode { get; set; }
         public bool SmoothMouseMove { get; set; }
+        public IntPtr TargetHwnd { get; set; }
         public string TargetProcessName { get; set; }
         public string TargetWindowTitle { get; set; }
         public bool RelativeToWindow { get; set; }
@@ -43,12 +44,17 @@ namespace ModernAutoClicker
             return new Point(pt.X + dx, pt.Y + dy);
         }
 
-        private Point ResolveActualPoint(Point localPt, string procName, string winTitle, bool relativeToWin)
+        private Point ResolveActualPoint(Point localPt, IntPtr targetHwnd, string procName, string winTitle, bool relativeToWin)
         {
-            if (!relativeToWin || (string.IsNullOrEmpty(procName) && string.IsNullOrEmpty(winTitle)))
+            if (!relativeToWin || (targetHwnd == IntPtr.Zero && string.IsNullOrEmpty(procName) && string.IsNullOrEmpty(winTitle)))
                 return localPt;
 
-            IntPtr hWnd = NativeMethods.FindWindowByTarget(procName, winTitle);
+            IntPtr hWnd = targetHwnd;
+            if (!NativeMethods.IsValidWindowHandle(hWnd, procName))
+            {
+                hWnd = NativeMethods.FindWindowByTarget(procName, winTitle);
+            }
+
             if (hWnd != IntPtr.Zero)
             {
                 NativeMethods.POINT pt = new NativeMethods.POINT { X = localPt.X, Y = localPt.Y };
@@ -90,14 +96,23 @@ namespace ModernAutoClicker
 
                             Point rawPt = config.PointsList[currIdx];
                             Point pt = ApplyJitter(rawPt, config.JitterPx);
-                            IntPtr targetHwnd = config.RelativeToWindow ? NativeMethods.FindWindowByTarget(config.TargetProcessName, config.TargetWindowTitle) : IntPtr.Zero;
+                            IntPtr targetHwnd = config.RelativeToWindow ? config.TargetHwnd : IntPtr.Zero;
+                            if (config.RelativeToWindow && !NativeMethods.IsValidWindowHandle(targetHwnd, config.TargetProcessName))
+                            {
+                                targetHwnd = NativeMethods.FindWindowByTarget(config.TargetProcessName, config.TargetWindowTitle);
+                                if (targetHwnd != IntPtr.Zero)
+                                {
+                                    config.TargetHwnd = targetHwnd;
+                                }
+                            }
+
                             if (targetHwnd != IntPtr.Zero)
                             {
                                 NativeMethods.PerformClickDirectToWindow(targetHwnd, pt.X, pt.Y, config.MouseButton, holdMs);
                             }
                             else
                             {
-                                Point actPt = ResolveActualPoint(pt, config.TargetProcessName, config.TargetWindowTitle, config.RelativeToWindow);
+                                Point actPt = ResolveActualPoint(pt, targetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.RelativeToWindow);
                                 NativeMethods.SendBackgroundClick(actPt.X, actPt.Y, config.MouseButton, holdMs);
                             }
                             pointIndex++;
@@ -127,7 +142,7 @@ namespace ModernAutoClicker
 
                             Point rawPt = config.PointsList[currIdx];
                             Point pt = ApplyJitter(rawPt, config.JitterPx);
-                            Point actPt = ResolveActualPoint(pt, config.TargetProcessName, config.TargetWindowTitle, config.RelativeToWindow);
+                            Point actPt = ResolveActualPoint(pt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.RelativeToWindow);
                             NativeMethods.SetCursorPos(actPt.X, actPt.Y);
                             pointIndex++;
                             if (pointIndex % config.PointsList.Count == 0)
@@ -181,7 +196,7 @@ namespace ModernAutoClicker
                         {
                             int nextIdx = pointIndex % config.PointsList.Count;
                             Point nextPt = config.PointsList[nextIdx];
-                            Point actNextPt = ResolveActualPoint(nextPt, config.TargetProcessName, config.TargetWindowTitle, config.RelativeToWindow);
+                            Point actNextPt = ResolveActualPoint(nextPt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.RelativeToWindow);
                             MouseMovementSimulator.MoveSmoothly(Point.Empty, actNextPt, restMs, () => _isRunning);
                         }
                         else

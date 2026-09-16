@@ -122,7 +122,8 @@
                 windowsApps: 'Windows Apps',
                 chromeExtension: 'Chrome Extensions',
                 books: 'Books',
-                plugins: 'Plugins'
+                plugins: 'Plugins',
+                webApps: 'Web Apps'
             },
             viewAction: 'View Details',
             emptyNotice: 'More products in this category are coming soon...'

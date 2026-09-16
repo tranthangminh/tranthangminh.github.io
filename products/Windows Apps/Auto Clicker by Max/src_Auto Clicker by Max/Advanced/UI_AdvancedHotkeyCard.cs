@@ -21,21 +21,21 @@ namespace ModernAutoClicker.Advanced
             theme = theme ?? ThemeTokens.DarkTheme();
             this.BorderRadius = theme.RadiusMd;
             this.BorderSize = 0;
-            this.Size = new Size(418, 78);
+            this.Size = new Size(408, 74);
 
             // Left Section: Hotkeys
             lblHelp1 = CreateKeyLabel("[F6]", 10, 8);
-            lblHelpVal1 = CreateTextLabel(": Start / Stop", 46, 8, 8F);
+            lblHelpVal1 = CreateTextLabel(": Start / Stop", 46, 8);
 
             lblHelp2 = CreateKeyLabel("[F7]", 10, 30);
-            lblHelpVal2 = CreateTextLabel(": Stop ALL", 46, 30, 8F);
+            lblHelpVal2 = CreateTextLabel(": Stop ALL", 46, 30);
 
             lblHelp3 = CreateKeyLabel("[SPACE]", 10, 52);
-            lblHelpVal3 = CreateTextLabel(": Add Step", 58, 52, 8F);
+            lblHelpVal3 = CreateTextLabel(": Add Step", 58, 52);
 
             // Right Section: Usage Tips
-            lblTip1 = CreateTextLabel("• Multi-select: Hold Ctrl or Shift to select rows", 146, 16, 8F);
-            lblTip2 = CreateTextLabel("• Batch edit: Click column header to edit rows", 146, 42, 8F);
+            lblTip1 = CreateTextLabel("• Multi-select: Hold Ctrl or Shift to select rows", 146, 15);
+            lblTip2 = CreateTextLabel("• Batch edit: Click column header to edit rows", 146, 41);
 
             this.Controls.AddRange(new Control[] {
                 lblHelp1, lblHelpVal1,
@@ -54,7 +54,7 @@ namespace ModernAutoClicker.Advanced
             Color divColor = Color.FromArgb(40, 255, 255, 255);
             using (Pen pen = new Pen(divColor, 1))
             {
-                e.Graphics.DrawLine(pen, 136, 8, 136, 70);
+                e.Graphics.DrawLine(pen, 136, 8, 136, 66);
             }
         }
 
@@ -65,18 +65,18 @@ namespace ModernAutoClicker.Advanced
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold)
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold)
             };
         }
 
-        private Label CreateTextLabel(string text, int x, int y, float fontSize)
+        private Label CreateTextLabel(string text, int x, int y, float pixelSize = 11F)
         {
             return new Label
             {
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = new Font("Segoe UI", fontSize, FontStyle.Regular)
+                Font = ThemeTokens.FontSegoe(pixelSize, FontStyle.Regular)
             };
         }
 

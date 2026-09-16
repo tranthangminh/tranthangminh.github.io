@@ -18,7 +18,7 @@ namespace ModernAutoClicker
             theme = theme ?? ThemeTokens.DarkTheme();
             this.BorderRadius = theme.RadiusMd;
             this.BorderSize = 0;
-            this.Size = new Size(224, 78);
+            this.Size = new Size(224, 74);
 
             lblHelp1 = CreateKeyLabel("[F6]", 8, 8);
             lblHelpVal1 = CreateTextLabel(": Start / Stop (Active)", 54, 8);
@@ -45,7 +45,7 @@ namespace ModernAutoClicker
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold)
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold)
             };
         }
 
@@ -56,7 +56,7 @@ namespace ModernAutoClicker
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8.25F, FontStyle.Regular)
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular)
             };
         }
 

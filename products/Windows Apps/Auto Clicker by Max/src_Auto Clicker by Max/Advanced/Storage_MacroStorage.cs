@@ -63,6 +63,9 @@ namespace ModernAutoClicker.Advanced
                     sb.AppendLine(string.Format("      \"WindowTitle\": \"{0}\",", Escape(s.WindowTitle)));
                     sb.AppendLine(string.Format("      \"ProcessName\": \"{0}\",", Escape(s.ProcessName)));
                     sb.AppendLine(string.Format("      \"RelativeToWindow\": {0},", s.RelativeToWindow ? "true" : "false"));
+                    sb.AppendLine(string.Format("      \"ImageBase64\": \"{0}\",", Escape(s.ImageBase64)));
+                    sb.AppendLine(string.Format("      \"Similarity\": {0},", s.Similarity > 0 ? s.Similarity : 90));
+                    sb.AppendLine(string.Format("      \"TimeoutSec\": {0},", s.TimeoutSec > 0 ? s.TimeoutSec : 10));
                     sb.AppendLine(string.Format("      \"Note\": \"{0}\"", Escape(s.Note)));
                     sb.AppendLine(i < profile.Steps.Count - 1 ? "    }," : "    }");
                 }
@@ -123,6 +126,9 @@ namespace ModernAutoClicker.Advanced
                         sb.AppendLine(string.Format("          \"WindowTitle\": \"{0}\",", Escape(s.WindowTitle)));
                         sb.AppendLine(string.Format("          \"ProcessName\": \"{0}\",", Escape(s.ProcessName)));
                         sb.AppendLine(string.Format("          \"RelativeToWindow\": {0},", s.RelativeToWindow ? "true" : "false"));
+                        sb.AppendLine(string.Format("          \"ImageBase64\": \"{0}\",", Escape(s.ImageBase64)));
+                        sb.AppendLine(string.Format("          \"Similarity\": {0},", s.Similarity > 0 ? s.Similarity : 90));
+                        sb.AppendLine(string.Format("          \"TimeoutSec\": {0},", s.TimeoutSec > 0 ? s.TimeoutSec : 10));
                         sb.AppendLine(string.Format("          \"Note\": \"{0}\"", Escape(s.Note)));
                         sb.AppendLine(i < profile.Steps.Count - 1 ? "        }," : "        }");
                     }
@@ -257,6 +263,17 @@ namespace ModernAutoClicker.Advanced
 
                         bool relToWin;
                         if (ExtractBool(block, "\"RelativeToWindow\"", out relToWin)) s.RelativeToWindow = relToWin;
+
+                        string imgB64 = ExtractString(block, "\"ImageBase64\"");
+                        if (!string.IsNullOrEmpty(imgB64)) s.ImageBase64 = imgB64;
+
+                        int sim;
+                        if (ExtractInt(block, "\"Similarity\"", out sim)) s.Similarity = sim;
+                        else s.Similarity = 90;
+
+                        int timeoutSec;
+                        if (ExtractInt(block, "\"TimeoutSec\"", out timeoutSec)) s.TimeoutSec = timeoutSec;
+                        else s.TimeoutSec = 10;
 
                         s.Note = ExtractString(block, "\"Note\"") ?? "";
 

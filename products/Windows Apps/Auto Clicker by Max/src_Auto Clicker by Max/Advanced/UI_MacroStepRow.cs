@@ -27,6 +27,9 @@ namespace ModernAutoClicker.Advanced
         private NumberInput numScroll;
         private ModernTextBox txtKeyData;
         private Panel pnlColorSwatch;
+        private Panel pnlImageThumb;
+        private NumberInput numSimilarity;
+        private NumberInput numTimeout;
         private NumberInput numHold;
         private NumberInput numDelay;
         private NumberInput numRepeat;
@@ -201,62 +204,101 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
+        private static readonly MacroActionType[] ActionTypeDisplayList = new MacroActionType[]
+        {
+            MacroActionType.LeftClick,
+            MacroActionType.RightClick,
+            MacroActionType.MiddleClick,
+            MacroActionType.DoubleClick,
+            MacroActionType.DragDrop,
+            MacroActionType.KeyPress,
+            MacroActionType.TypeText,
+            MacroActionType.Delay,
+            MacroActionType.WaitColor,
+            MacroActionType.IfColor,
+            MacroActionType.WaitImage,
+            MacroActionType.IfImage,
+            MacroActionType.WaitChange,
+            MacroActionType.RunScript
+        };
+
+        private static int GetActionTypeIndex(MacroActionType actionType)
+        {
+            if (actionType == MacroActionType.IfColorArea) return 9; // Map to IfColor
+            for (int i = 0; i < ActionTypeDisplayList.Length; i++)
+            {
+                if (ActionTypeDisplayList[i] == actionType) return i;
+            }
+            return 0;
+        }
+
+        private static MacroActionType GetActionTypeFromIndex(int index)
+        {
+            if (index >= 0 && index < ActionTypeDisplayList.Length)
+            {
+                return ActionTypeDisplayList[index];
+            }
+            return MacroActionType.LeftClick;
+        }
+
         private void InitializeRow()
         {
-            int x = 2;
+            this.SuspendLayout();
 
-            // 1. Index (No prefix #, wider for numbers >= 10)
+            int x = 6;
+
+            // 1. Reorder Handle / Step Index Label (Width = 42px)
             lblIndex = new Label
             {
                 Text = (_index + 1).ToString(),
-                Location = new Point(x, 8),
-                Size = new Size(28, 18),
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Location = new Point(x, 6),
+                Size = new Size(42, 22),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
                 Cursor = Cursors.SizeAll
             };
-            lblIndex.MouseDown += Row_MouseDown;
-            lblIndex.MouseMove += Row_MouseMove;
-            lblIndex.MouseUp += Row_MouseUp;
-            x += 30;
+            lblIndex.MouseDown += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left && OnDragStarted != null)
+                {
+                    OnDragStarted(this);
+                }
+            };
+            x += 44;
 
-            // 2. Checkbox (Enable / Disable Step)
+            // 2. Enable/Disable Step CheckBox (Width = 18px)
             chkSelect = new CheckBox
             {
-                Checked = _step != null ? _step.Enabled : true,
-                Location = new Point(x, 8),
-                Size = new Size(18, 18)
+                Checked = _step.Enabled,
+                Location = new Point(x, 9),
+                Size = new Size(18, 18),
+                Cursor = Cursors.Hand
             };
             chkSelect.CheckedChanged += (s, e) =>
             {
-                if (_step != null)
-                {
-                    _step.Enabled = chkSelect.Checked;
-                    _step.IsChecked = chkSelect.Checked;
-                }
-                if (!_isBinding && OnStepChanged != null) OnStepChanged();
+                if (_isBinding) return;
+                _step.Enabled = chkSelect.Checked;
+                if (OnStepChanged != null) OnStepChanged();
             };
             x += 20;
 
-            // 3. Window Icon (Win)
+            // 3. Process / Window Icon Indicator (Width = 22px)
             lblWindowIcon = new Label
             {
                 Location = new Point(x, 6),
-                Size = new Size(24, 22),
-                Font = new Font("Segoe UI Emoji", 9F),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Cursor = Cursors.Hand
+                Size = new Size(20, 20),
+                Cursor = Cursors.Hand,
+                TextAlign = ContentAlignment.MiddleCenter
             };
-            UpdateWindowIconDisplay();
             lblWindowIcon.Click += (s, e) => ShowWindowSelectMenu(lblWindowIcon);
-            x += 26;
+            x += 22;
 
-            // 4. Action Type Dropdown
+            // 4. Action Type Dropdown (Width = 116px)
             cboActionType = new ModernDropdown
             {
                 Location = new Point(x, 6),
                 Size = new Size(116, 22),
-                Font = new Font("Segoe UI", 8F, FontStyle.Regular)
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular)
             };
             cboActionType.Items.AddRange(new string[] {
                 "Left Click",
@@ -269,17 +311,18 @@ namespace ModernAutoClicker.Advanced
                 "Delay",
                 "Wait Color",
                 "If Color",
-                "If Color Area",
+                "Wait Image",
+                "If Image",
                 "Wait Change",
                 "Run Script"
             });
-            cboActionType.ItemColorProvider = (idx) => GetActionTypeColor((MacroActionType)idx, _theme);
-            cboActionType.SelectedIndex = (int)_step.ActionType;
+            cboActionType.ItemColorProvider = (idx) => GetActionTypeColor(GetActionTypeFromIndex(idx), _theme);
+            cboActionType.SelectedIndex = GetActionTypeIndex(_step.ActionType);
             cboActionType.SelectedIndexChanged += (s, e) =>
             {
                 if (_isBinding) return;
                 MacroActionType oldType = _step.ActionType;
-                MacroActionType newType = (MacroActionType)cboActionType.SelectedIndex;
+                MacroActionType newType = GetActionTypeFromIndex(cboActionType.SelectedIndex);
                 _step.ActionType = newType;
 
                 if (newType == MacroActionType.RunScript)
@@ -328,7 +371,7 @@ namespace ModernAutoClicker.Advanced
                     _step.DelayMs = 250;
                     if (numDelay != null) numDelay.Value = 250;
                 }
-                else if (newType == MacroActionType.WaitColor || newType == MacroActionType.IfColor || newType == MacroActionType.IfColorArea || newType == MacroActionType.WaitChange)
+                else if (newType == MacroActionType.WaitColor || newType == MacroActionType.IfColor || newType == MacroActionType.IfColorArea || newType == MacroActionType.WaitChange || newType == MacroActionType.WaitImage || newType == MacroActionType.IfImage)
                 {
                     _step.HoldMs = 0;
                     if (numHold != null) numHold.Value = 0;
@@ -337,10 +380,20 @@ namespace ModernAutoClicker.Advanced
                         _step.DelayMs = 100;
                         if (numDelay != null) numDelay.Value = 100;
                     }
-                    if (newType == MacroActionType.IfColor || newType == MacroActionType.IfColorArea)
+                    if (newType == MacroActionType.IfColor || newType == MacroActionType.IfColorArea || newType == MacroActionType.IfImage)
                     {
                         if (_step.IfTrueStep == 0) _step.IfTrueStep = -2; // Click Target
                         // _step.IfFalseStep = 0; // Next Step
+                    }
+                    if (newType == MacroActionType.WaitImage)
+                    {
+                        if (_step.TimeoutSec <= 0) _step.TimeoutSec = 10;
+                        if (numTimeout != null) numTimeout.Value = _step.TimeoutSec;
+                    }
+                    if (newType == MacroActionType.WaitImage || newType == MacroActionType.IfImage)
+                    {
+                        if (_step.Similarity <= 0) _step.Similarity = 90;
+                        if (numSimilarity != null) numSimilarity.Value = _step.Similarity;
                     }
                 }
                 else
@@ -370,12 +423,20 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(x, 8),
                 Size = new Size(72, 18),
-                Font = ThemeTokens.GetMonospaceFont(7.5F),
+                Font = ThemeTokens.GetMonospaceFont(10.5F),
                 TextAlign = ContentAlignment.MiddleRight,
                 Cursor = Cursors.Hand
             };
             lblCoord.MouseDown += (s, e) =>
             {
+                if (e.Button == MouseButtons.Right && (_step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage))
+                {
+                    _step.StartPoint = Point.Empty;
+                    _step.EndPoint = Point.Empty;
+                    RefreshDisplay();
+                    if (OnStepChanged != null) OnStepChanged();
+                    return;
+                }
                 bool isShift = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
                 bool isCtrl = (Control.ModifierKeys & Keys.Control) == Keys.Control;
                 if (isShift || isCtrl)
@@ -398,7 +459,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "🎯",
                 Location = new Point(x + 74, 6),
                 Size = new Size(22, 22),
-                Font = new Font("Segoe UI Symbol", 8F)
+                Font = ThemeTokens.FontSegoeSymbol(11F)
             };
             btnPickCoord.Click += (s, e) => PickCoordinate();
 
@@ -410,7 +471,7 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 99,
                 Step = 1,
                 Value = _step.ScrollStep,
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 Visible = false
             };
             numScroll.TextChanged += (s, e) =>
@@ -425,7 +486,7 @@ namespace ModernAutoClicker.Advanced
                 Text = _step.KeyData,
                 Location = new Point(x + 2, 6),
                 Size = new Size(114, 22),
-                Font = new Font("Segoe UI", 8F),
+                Font = ThemeTokens.FontSegoe(11F),
                 Visible = false
             };
             txtKeyData.KeyDown += (s, e) =>
@@ -503,7 +564,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(x + 2, 6),
                 Size = new Size(114, 22),
-                Font = new Font("Segoe UI", 8F, FontStyle.Regular),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular),
                 Visible = false
             };
             cboTargetScript.SelectedIndexChanged += (s, e) =>
@@ -548,6 +609,58 @@ namespace ModernAutoClicker.Advanced
                     }
                 }
             };
+
+            // Image Thumbnail Box (Click to crop, right-click for options)
+            pnlImageThumb = new Panel
+            {
+                Location = new Point(x + 2, 7),
+                Size = new Size(32, 20),
+                Cursor = Cursors.Hand,
+                Visible = false
+            };
+            pnlImageThumb.Paint += (s, e) =>
+            {
+                Graphics g = e.Graphics;
+                Bitmap bmp = _step != null ? _step.GetTemplateBitmap() : null;
+                if (bmp != null)
+                {
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    float scale = Math.Min(30f / bmp.Width, 18f / bmp.Height);
+                    int dw = Math.Max(1, (int)(bmp.Width * scale));
+                    int dh = Math.Max(1, (int)(bmp.Height * scale));
+                    int dx = (32 - dw) / 2;
+                    int dy = (20 - dh) / 2;
+                    g.DrawImage(bmp, dx, dy, dw, dh);
+                    using (Pen borderPen = new Pen(_theme.CPurple, 1))
+                    {
+                        g.DrawRectangle(borderPen, 0, 0, 31, 19);
+                    }
+                }
+                else
+                {
+                    using (Pen dashedPen = new Pen(_theme.TextTertiary, 1))
+                    {
+                        dashedPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+                        g.DrawRectangle(dashedPen, 0, 0, 31, 19);
+                    }
+                    using (Font symFont = ThemeTokens.FontSegoeSymbol(8.5F))
+                    using (SolidBrush symBrush = new SolidBrush(_theme.TextTertiary))
+                    {
+                        g.DrawString("📷", symFont, symBrush, 5, 2);
+                    }
+                }
+            };
+            pnlImageThumb.MouseDown += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    ShowImageContextMenu(pnlImageThumb, e.Location);
+                }
+                else if (e.Button == MouseButtons.Left)
+                {
+                    PickImageSnipping();
+                }
+            };
             x += 120;
 
             // 6. Hold Duration (Hold ms)
@@ -559,12 +672,31 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 999999,
                 Step = 10,
                 Value = Math.Max(1, _step.HoldMs),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold)
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             numHold.TextChanged += (s, e) =>
             {
                 if (_isBinding) return;
                 _step.HoldMs = Math.Max(1, numHold.Value);
+                if (OnStepChanged != null) OnStepChanged();
+            };
+
+            // Image Similarity Input (50 - 100%)
+            numSimilarity = new NumberInput
+            {
+                Location = new Point(x + 2, 6),
+                Width = 46,
+                Minimum = 50,
+                Maximum = 100,
+                Step = 1,
+                Value = _step.Similarity > 0 ? _step.Similarity : 90,
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Visible = false
+            };
+            numSimilarity.TextChanged += (s, e) =>
+            {
+                if (_isBinding) return;
+                _step.Similarity = Math.Max(50, Math.Min(100, numSimilarity.Value));
                 if (OnStepChanged != null) OnStepChanged();
             };
             x += 50;
@@ -578,7 +710,7 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 999999,
                 Step = 10,
                 Value = Math.Max(0, _step.DelayMs),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold)
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             numDelay.TextChanged += (s, e) =>
             {
@@ -594,7 +726,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Match:",
                 Location = new Point(80, 34),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 ForeColor = _theme.CGreen,
                 Visible = false
             };
@@ -603,7 +735,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(124, 31),
                 Size = new Size(96, 22),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 CustomBackColor = Color.FromArgb(40, 22, 101, 52),
                 CustomBorderColor = Color.FromArgb(140, 34, 197, 94),
                 Visible = false
@@ -621,10 +753,10 @@ namespace ModernAutoClicker.Advanced
             cboIfTrue.SelectedIndexChanged += (s, e) =>
             {
                 if (_isBinding || _isPopulatingJumps) return;
-                if ((_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea) && cboIfTrue.SelectedItem != null)
+                if ((_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage) && cboIfTrue.SelectedItem != null)
                 {
                     string sel = cboIfTrue.SelectedItem;
-                    if (sel == "Click Target") _step.IfTrueStep = -2;
+                    if (sel == "Click Target" || sel == "Click Center") _step.IfTrueStep = -2;
                     else if (sel == "Next Step") _step.IfTrueStep = 0;
                     else if (sel == "Stop") _step.IfTrueStep = -1;
                     else if (sel.StartsWith("Step "))
@@ -641,7 +773,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Unmatch:",
                 Location = new Point(228, 34),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 ForeColor = _theme.Danger,
                 Visible = false
             };
@@ -650,7 +782,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(286, 31),
                 Size = new Size(96, 22),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 CustomBackColor = Color.FromArgb(45, 127, 29, 29),
                 CustomBorderColor = Color.FromArgb(140, 239, 68, 68),
                 Visible = false
@@ -660,7 +792,7 @@ namespace ModernAutoClicker.Advanced
                 if (idx >= 0 && idx < cboIfFalse.Items.Count)
                 {
                     string text = cboIfFalse.Items[idx];
-                    if (text == "Click Target" || text == "Next Step") return _theme.CGreen;
+                    if (text == "Click Target" || text == "Click Center" || text == "Next Step") return _theme.CGreen;
                     if (text == "Stop") return _theme.Danger;
                 }
                 return _theme.TextPrimary;
@@ -668,10 +800,10 @@ namespace ModernAutoClicker.Advanced
             cboIfFalse.SelectedIndexChanged += (s, e) =>
             {
                 if (_isBinding || _isPopulatingJumps) return;
-                if ((_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea) && cboIfFalse.SelectedItem != null)
+                if ((_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage) && cboIfFalse.SelectedItem != null)
                 {
                     string sel = cboIfFalse.SelectedItem;
-                    if (sel == "Click Target") _step.IfFalseStep = -2;
+                    if (sel == "Click Target" || sel == "Click Center") _step.IfFalseStep = -2;
                     else if (sel == "Next Step") _step.IfFalseStep = 0;
                     else if (sel == "Stop") _step.IfFalseStep = -1;
                     else if (sel.StartsWith("Step "))
@@ -692,12 +824,31 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 9999,
                 Step = 1,
                 Value = Math.Max(1, _step.RepeatCount),
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold)
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             numRepeat.TextChanged += (s, e) =>
             {
                 if (_isBinding) return;
                 _step.RepeatCount = Math.Max(1, numRepeat.Value);
+                if (OnStepChanged != null) OnStepChanged();
+            };
+
+            // Image Timeout Input (seconds)
+            numTimeout = new NumberInput
+            {
+                Location = new Point(x + 2, 6),
+                Width = 28,
+                Minimum = 0,
+                Maximum = 9999,
+                Step = 1,
+                Value = _step.TimeoutSec > 0 ? _step.TimeoutSec : 10,
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Visible = false
+            };
+            numTimeout.TextChanged += (s, e) =>
+            {
+                if (_isBinding) return;
+                _step.TimeoutSec = Math.Max(0, numTimeout.Value);
                 if (OnStepChanged != null) OnStepChanged();
             };
             x += 32;
@@ -708,7 +859,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "✕",
                 Location = new Point(x + 1, 5),
                 Size = new Size(24, 24),
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
                 Cursor = Cursors.Hand,
                 ForeColor = _theme.Danger
@@ -727,7 +878,7 @@ namespace ModernAutoClicker.Advanced
                 Text = _step.Note ?? "",
                 Location = new Point(x + 2, 6),
                 Size = new Size(96, 22),
-                Font = new Font("Segoe UI", 8F),
+                Font = ThemeTokens.FontSegoe(11F),
                 MaxLength = 50
             };
             txtNote.TextChanged += (s, e) =>
@@ -739,11 +890,12 @@ namespace ModernAutoClicker.Advanced
 
             this.Controls.AddRange(new Control[] {
                 lblIndex, chkSelect, lblWindowIcon, cboActionType,
-                cboTargetScript, pnlColorSwatch, lblCoord, btnPickCoord, numScroll, txtKeyData,
-                numHold, numDelay, numRepeat, lblIfMatch, cboIfTrue, lblIfUnmatch, cboIfFalse, btnDelete, txtNote
+                cboTargetScript, pnlColorSwatch, pnlImageThumb, lblCoord, btnPickCoord, numScroll, txtKeyData,
+                numHold, numSimilarity, numDelay, numRepeat, numTimeout, lblIfMatch, cboIfTrue, lblIfUnmatch, cboIfFalse, btnDelete, txtNote
             });
 
             HookRowSelectionRecursively(this);
+            UpdateWindowIconDisplay();
             UpdateDynamicFields();
             UpdateRowTooltips();
         }
@@ -771,7 +923,6 @@ namespace ModernAutoClicker.Advanced
         {
             RowToolTipManager.SetToolTip(lblIndex, string.Format("Step #{0}:\nDrag the ≡ handle to reorder steps. Click to select row.", _index + 1));
             RowToolTipManager.SetToolTip(chkSelect, string.Format("Enable / Disable Step #{0}:\nWhen unchecked, this step will not run during execution and will not show on the map overlay.", _index + 1));
-            UpdateWindowIconDisplay();
 
             if (cboActionType != null)
                 RowToolTipManager.SetToolTip(cboActionType, MacroDescriptions.GetActionTypeDescription(_step.ActionType));
@@ -783,6 +934,19 @@ namespace ModernAutoClicker.Advanced
             if (txtKeyData != null) RowToolTipManager.SetToolTip(txtKeyData, targetDesc);
             if (cboTargetScript != null) RowToolTipManager.SetToolTip(cboTargetScript, targetDesc);
             if (pnlColorSwatch != null) RowToolTipManager.SetToolTip(pnlColorSwatch, targetDesc);
+            if (pnlImageThumb != null)
+            {
+                string imgDesc = (_step != null && !string.IsNullOrEmpty(_step.ImageBase64))
+                    ? "Template Image:\nLeft-click: Capture new image from screen.\nRight-click: Import / Export / Preview / Clear."
+                    : "Template Image:\nLeft-click to capture template image from screen.\nRight-click for options.";
+                RowToolTipManager.SetToolTip(pnlImageThumb, imgDesc);
+            }
+
+            if (numSimilarity != null)
+                RowToolTipManager.SetToolTip(numSimilarity, "Similarity (%):\nAcceptable match threshold (50% - 100%, Default: 90%).");
+
+            if (numTimeout != null)
+                RowToolTipManager.SetToolTip(numTimeout, "Timeout (seconds):\nMaximum duration to wait for the template image to appear. 0 = wait indefinitely.");
 
             if (numHold != null)
                 RowToolTipManager.SetToolTip(numHold, MacroDescriptions.GetHoldDescription(_step.ActionType));
@@ -794,16 +958,41 @@ namespace ModernAutoClicker.Advanced
                 RowToolTipManager.SetToolTip(numRepeat, MacroDescriptions.GetRepeatDescription(_step.ActionType));
 
             if (cboIfTrue != null)
-                RowToolTipManager.SetToolTip(cboIfTrue, "Match Condition (Jump Destination):\n" +
-                                                       "If the pixel color at (X, Y) MATCHES the target color:\n" +
-                                                       "• Jump to your selected step # to execute next.\n" +
-                                                       "• [Stop]: Immediately stop script execution.");
+            {
+                if (_step.ActionType == MacroActionType.IfImage)
+                {
+                    RowToolTipManager.SetToolTip(cboIfTrue, "If Found (Action when template image is found):\n" +
+                                                           "• [Click Center]: Click at the center of the found image.\n" +
+                                                           "• [Next Step]: Continue to the next step.\n" +
+                                                           "• Jump to your selected step # to execute next.\n" +
+                                                           "• [Stop]: Immediately stop script execution.");
+                }
+                else
+                {
+                    RowToolTipManager.SetToolTip(cboIfTrue, "Match Condition (Jump Destination):\n" +
+                                                           "If the pixel color at (X, Y) MATCHES the target color:\n" +
+                                                           "• Jump to your selected step # to execute next.\n" +
+                                                           "• [Stop]: Immediately stop script execution.");
+                }
+            }
 
             if (cboIfFalse != null)
-                RowToolTipManager.SetToolTip(cboIfFalse, "Unmatch Condition (Jump Destination):\n" +
-                                                        "If the pixel color at (X, Y) does NOT match the target color:\n" +
-                                                        "• Jump to your selected step # to execute next.\n" +
-                                                        "• [Stop]: Immediately stop script execution.");
+            {
+                if (_step.ActionType == MacroActionType.IfImage)
+                {
+                    RowToolTipManager.SetToolTip(cboIfFalse, "If Not Found (Action when template image is missing):\n" +
+                                                            "• [Next Step]: Continue to the next step.\n" +
+                                                            "• Jump to your selected step # to execute next.\n" +
+                                                            "• [Stop]: Immediately stop script execution.");
+                }
+                else
+                {
+                    RowToolTipManager.SetToolTip(cboIfFalse, "Unmatch Condition (Jump Destination):\n" +
+                                                            "If the pixel color at (X, Y) does NOT match the target color:\n" +
+                                                            "• Jump to your selected step # to execute next.\n" +
+                                                            "• [Stop]: Immediately stop script execution.");
+                }
+            }
 
             if (btnDelete != null)
                 RowToolTipManager.SetToolTip(btnDelete, string.Format("Delete Step #{0}:\nRemoves this step from the current script.", _index + 1));
@@ -823,6 +1012,7 @@ namespace ModernAutoClicker.Advanced
             itemDesktop.Click += (s, e) =>
             {
                 _step.RelativeToWindow = false;
+                _step.WindowHwnd = IntPtr.Zero;
                 _step.ProcessName = "";
                 _step.WindowTitle = "";
                 UpdateWindowIconDisplay();
@@ -849,6 +1039,7 @@ namespace ModernAutoClicker.Advanced
                     itemWin.Click += (s, e) =>
                     {
                         _step.RelativeToWindow = true;
+                        _step.WindowHwnd = targetWin.Hwnd;
                         _step.ProcessName = targetWin.ProcessName;
                         _step.WindowTitle = targetWin.Title;
                         if (targetWin.AppIcon != null)
@@ -874,16 +1065,19 @@ namespace ModernAutoClicker.Advanced
                 _index = index;
                 if (lblIndex != null) lblIndex.Text = (_index + 1).ToString();
                 if (chkSelect != null) chkSelect.Checked = _step.Enabled;
-                if (cboActionType != null && cboActionType.SelectedIndex != (int)_step.ActionType)
+                if (cboActionType != null && cboActionType.SelectedIndex != GetActionTypeIndex(_step.ActionType))
                 {
-                    cboActionType.SelectedIndex = (int)_step.ActionType;
+                    cboActionType.SelectedIndex = GetActionTypeIndex(_step.ActionType);
                 }
                 if (numHold != null) numHold.Value = _step.HoldMs;
+                if (numSimilarity != null) numSimilarity.Value = _step.Similarity > 0 ? _step.Similarity : 90;
                 if (numDelay != null) numDelay.Value = _step.DelayMs;
                 if (numRepeat != null) numRepeat.Value = _step.RepeatCount;
+                if (numTimeout != null) numTimeout.Value = _step.TimeoutSec > 0 ? _step.TimeoutSec : 10;
                 if (numScroll != null) numScroll.Value = _step.ScrollStep;
                 if (txtKeyData != null) txtKeyData.Text = _step.KeyData ?? "";
                 if (txtNote != null) txtNote.Text = _step.Note ?? "";
+                if (pnlImageThumb != null) pnlImageThumb.Invalidate();
                 
                 UpdateWindowIconDisplay();
                 UpdateDynamicFields();
@@ -899,15 +1093,56 @@ namespace ModernAutoClicker.Advanced
         public void RefreshDisplay()
         {
             if (numHold != null && numHold.Value != _step.HoldMs) numHold.Value = _step.HoldMs;
+            if (numSimilarity != null && numSimilarity.Value != _step.Similarity) numSimilarity.Value = _step.Similarity > 0 ? _step.Similarity : 90;
             if (numDelay != null && numDelay.Value != _step.DelayMs) numDelay.Value = _step.DelayMs;
             if (numRepeat != null && numRepeat.Value != _step.RepeatCount) numRepeat.Value = _step.RepeatCount;
+            if (numTimeout != null && numTimeout.Value != _step.TimeoutSec) numTimeout.Value = _step.TimeoutSec > 0 ? _step.TimeoutSec : 10;
             if (numScroll != null && numScroll.Value != _step.ScrollStep) numScroll.Value = _step.ScrollStep;
             if (txtKeyData != null && txtKeyData.Text != _step.KeyData) txtKeyData.Text = _step.KeyData ?? "";
             if (txtNote != null && txtNote.Text != _step.Note) txtNote.Text = _step.Note ?? "";
+            if (pnlImageThumb != null) pnlImageThumb.Invalidate();
             UpdateWindowIconDisplay();
             UpdateDynamicFields();
             UpdateRowTooltips();
             this.Invalidate();
+        }
+
+        private string GetCoordDisplayText(bool compactForColorSwatch = false)
+        {
+            if (_step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage)
+            {
+                bool isAreaImg = (_step.EndPoint != Point.Empty && _step.EndPoint != _step.StartPoint);
+                if (isAreaImg)
+                {
+                    int w = Math.Abs(_step.EndPoint.X - _step.StartPoint.X);
+                    int h = Math.Abs(_step.EndPoint.Y - _step.StartPoint.Y);
+                    return string.Format("⛶ {0}×{1}", w, h);
+                }
+                if (_step.StartPoint != Point.Empty)
+                {
+                    return string.Format("({0},{1})", _step.StartPoint.X, _step.StartPoint.Y);
+                }
+                return "Full Screen";
+            }
+
+            if (_step.ActionType == MacroActionType.DragDrop)
+            {
+                return string.Format("A:{0},{1}\nB:{2},{3}", _step.StartPoint.X, _step.StartPoint.Y, _step.EndPoint.X, _step.EndPoint.Y);
+            }
+
+            bool isArea = (_step.EndPoint != Point.Empty && _step.EndPoint != _step.StartPoint);
+            if (isArea)
+            {
+                int w = Math.Abs(_step.EndPoint.X - _step.StartPoint.X);
+                int h = Math.Abs(_step.EndPoint.Y - _step.StartPoint.Y);
+                return string.Format("⛶ {0}×{1}", w, h);
+            }
+
+            if (_step.StartPoint == Point.Empty)
+            {
+                return compactForColorSwatch ? "(0,0)" : "(0, 0)";
+            }
+            return compactForColorSwatch ? string.Format("({0},{1})", _step.StartPoint.X, _step.StartPoint.Y) : string.Format("({0}, {1})", _step.StartPoint.X, _step.StartPoint.Y);
         }
 
         private void UpdateDynamicFields()
@@ -917,6 +1152,11 @@ namespace ModernAutoClicker.Advanced
 
             if (cboIfTrue != null) cboIfTrue.Visible = false;
             if (cboIfFalse != null) cboIfFalse.Visible = false;
+            if (lblIfMatch != null) lblIfMatch.Visible = false;
+            if (lblIfUnmatch != null) lblIfUnmatch.Visible = false;
+            if (pnlImageThumb != null) pnlImageThumb.Visible = false;
+            if (numSimilarity != null) numSimilarity.Visible = false;
+            if (numTimeout != null) numTimeout.Visible = false;
 
             if (_step.ActionType == MacroActionType.RunScript)
             {
@@ -977,7 +1217,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Size = new Size(90, 30);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(6.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
-                lblCoord.Text = string.Format("A: {0},{1}\nB: {2},{3}", _step.StartPoint.X, _step.StartPoint.Y, _step.EndPoint.X, _step.EndPoint.Y);
+                lblCoord.Text = GetCoordDisplayText();
 
                 btnPickCoord.Location = new Point(colX + 94, 6);
                 btnPickCoord.Size = new Size(22, 22);
@@ -1005,7 +1245,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Size = new Size(54, 18);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(7F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
-                lblCoord.Text = (_step.StartPoint == Point.Empty) ? "(0,0)" : string.Format("({0},{1})", _step.StartPoint.X, _step.StartPoint.Y);
+                lblCoord.Text = GetCoordDisplayText(true);
 
                 btnPickCoord.Location = new Point(colX + 94, 6);
                 btnPickCoord.Size = new Size(22, 22);
@@ -1028,22 +1268,11 @@ namespace ModernAutoClicker.Advanced
                 // Coordinate Text + Pick Button aligned to Right
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
-                if (_step.ActionType == MacroActionType.IfColorArea)
-                {
-                    lblCoord.Location = new Point(colX + 18, 2);
-                    lblCoord.Size = new Size(74, 30);
-                    lblCoord.Font = ThemeTokens.GetMonospaceFont(6.5F);
-                    lblCoord.TextAlign = ContentAlignment.MiddleRight;
-                    lblCoord.Text = string.Format("A:{0},{1}\nB:{2},{3}", _step.StartPoint.X, _step.StartPoint.Y, _step.EndPoint.X, _step.EndPoint.Y);
-                }
-                else
-                {
-                    lblCoord.Location = new Point(colX + 20, 8);
-                    lblCoord.Size = new Size(72, 18);
-                    lblCoord.Font = ThemeTokens.GetMonospaceFont(7.5F);
-                    lblCoord.TextAlign = ContentAlignment.MiddleRight;
-                    lblCoord.Text = (_step.StartPoint == Point.Empty) ? "(0, 0)" : string.Format("({0}, {1})", _step.StartPoint.X, _step.StartPoint.Y);
-                }
+                lblCoord.Location = new Point(colX + 20, 8);
+                lblCoord.Size = new Size(72, 18);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(7.5F);
+                lblCoord.TextAlign = ContentAlignment.MiddleRight;
+                lblCoord.Text = GetCoordDisplayText(true);
 
                 btnPickCoord.Location = new Point(colX + 94, 6);
                 btnPickCoord.Size = new Size(22, 22);
@@ -1077,7 +1306,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Size = new Size(72, 18);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(7.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
-                lblCoord.Text = (_step.StartPoint == Point.Empty) ? "(0, 0)" : string.Format("({0}, {1})", _step.StartPoint.X, _step.StartPoint.Y);
+                lblCoord.Text = GetCoordDisplayText(true);
 
                 btnPickCoord.Location = new Point(colX + 94, 6);
                 btnPickCoord.Size = new Size(22, 22);
@@ -1093,6 +1322,87 @@ namespace ModernAutoClicker.Advanced
                 if (cboIfTrue != null) cboIfTrue.Visible = false;
                 if (lblIfUnmatch != null) lblIfUnmatch.Visible = false;
                 if (cboIfFalse != null) cboIfFalse.Visible = false;
+            }
+            else if (_step.ActionType == MacroActionType.WaitImage)
+            {
+                this.Height = 34;
+                pnlColorSwatch.Visible = false;
+
+                pnlImageThumb.Location = new Point(colX + 2, 7);
+                pnlImageThumb.Visible = true;
+                pnlImageThumb.Invalidate();
+
+                lblCoord.Visible = true;
+                lblCoord.Cursor = Cursors.Hand;
+                lblCoord.Location = new Point(colX + 36, 8);
+                lblCoord.Size = new Size(56, 18);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(7F);
+                lblCoord.TextAlign = ContentAlignment.MiddleRight;
+                lblCoord.Text = GetCoordDisplayText(true);
+
+                btnPickCoord.Location = new Point(colX + 94, 6);
+                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Visible = true;
+
+                numScroll.Visible = false;
+                txtKeyData.Visible = false;
+
+                numHold.Visible = false;
+                numSimilarity.Location = new Point(numHold.Location.X, 6);
+                numSimilarity.Value = _step.Similarity > 0 ? _step.Similarity : 90;
+                numSimilarity.Visible = true;
+
+                numDelay.Visible = true;
+
+                numRepeat.Visible = false;
+                numTimeout.Location = new Point(numRepeat.Location.X, 6);
+                numTimeout.Value = _step.TimeoutSec > 0 ? _step.TimeoutSec : 10;
+                numTimeout.Visible = true;
+
+                if (lblIfMatch != null) lblIfMatch.Visible = false;
+                if (cboIfTrue != null) cboIfTrue.Visible = false;
+                if (lblIfUnmatch != null) lblIfUnmatch.Visible = false;
+                if (cboIfFalse != null) cboIfFalse.Visible = false;
+            }
+            else if (_step.ActionType == MacroActionType.IfImage)
+            {
+                this.Height = 58;
+                pnlColorSwatch.Visible = false;
+
+                pnlImageThumb.Location = new Point(colX + 2, 7);
+                pnlImageThumb.Visible = true;
+                pnlImageThumb.Invalidate();
+
+                lblCoord.Visible = true;
+                lblCoord.Cursor = Cursors.Hand;
+                lblCoord.Location = new Point(colX + 36, 8);
+                lblCoord.Size = new Size(56, 18);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(7F);
+                lblCoord.TextAlign = ContentAlignment.MiddleRight;
+                lblCoord.Text = GetCoordDisplayText(true);
+
+                btnPickCoord.Location = new Point(colX + 94, 6);
+                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Visible = true;
+
+                numScroll.Visible = false;
+                txtKeyData.Visible = false;
+
+                numHold.Visible = false;
+                numSimilarity.Location = new Point(numHold.Location.X, 6);
+                numSimilarity.Value = _step.Similarity > 0 ? _step.Similarity : 90;
+                numSimilarity.Visible = true;
+
+                numDelay.Visible = true;
+
+                numRepeat.Visible = false;
+                numTimeout.Visible = false;
+
+                if (lblIfMatch != null) lblIfMatch.Visible = true;
+                if (cboIfTrue != null) cboIfTrue.Visible = true;
+                if (lblIfUnmatch != null) lblIfUnmatch.Visible = true;
+                if (cboIfFalse != null) cboIfFalse.Visible = true;
+                PopulateIfJumpLists();
             }
             else if (_step.ActionType == MacroActionType.WaitChange)
             {
@@ -1135,7 +1445,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Size = new Size(90, 18);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(7.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
-                lblCoord.Text = (_step.StartPoint == Point.Empty) ? "(0, 0)" : string.Format("({0}, {1})", _step.StartPoint.X, _step.StartPoint.Y);
+                lblCoord.Text = GetCoordDisplayText(false);
 
                 btnPickCoord.Location = new Point(colX + 94, 6);
                 btnPickCoord.Size = new Size(22, 22);
@@ -1160,7 +1470,7 @@ namespace ModernAutoClicker.Advanced
         {
             if (_totalStepCount == count) return;
             _totalStepCount = count;
-            if (_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea)
+            if (_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage)
             {
                 PopulateIfJumpLists();
             }
@@ -1174,18 +1484,44 @@ namespace ModernAutoClicker.Advanced
             _isPopulatingJumps = true;
             try
             {
+                if (_step.ActionType == MacroActionType.IfImage)
+                {
+                    lblIfMatch.Text = "If Found:";
+                    lblIfMatch.Location = new Point(68, 34);
+                    cboIfTrue.Location = new Point(134, 31);
+                    cboIfTrue.Size = new Size(106, 22);
+
+                    lblIfUnmatch.Text = "If Missing:";
+                    lblIfUnmatch.Location = new Point(248, 34);
+                    cboIfFalse.Location = new Point(320, 31);
+                    cboIfFalse.Size = new Size(106, 22);
+                }
+                else
+                {
+                    lblIfMatch.Text = "Match:";
+                    lblIfMatch.Location = new Point(80, 34);
+                    cboIfTrue.Location = new Point(124, 31);
+                    cboIfTrue.Size = new Size(96, 22);
+
+                    lblIfUnmatch.Text = "Unmatch:";
+                    lblIfUnmatch.Location = new Point(228, 34);
+                    cboIfFalse.Location = new Point(286, 31);
+                    cboIfFalse.Size = new Size(96, 22);
+                }
+
                 int currentRow = _index + 1;
                 int maxStepNeeded = Math.Max(1, _totalStepCount);
                 if (_step.IfTrueStep > maxStepNeeded) maxStepNeeded = _step.IfTrueStep;
                 if (_step.IfFalseStep > maxStepNeeded) maxStepNeeded = _step.IfFalseStep;
 
-                // 1. Populate items (Click Target, Next Step, Step 1..maxStepNeeded, Stop)
+                // 1. Populate items (Click Target / Click Center, Next Step, Step 1..maxStepNeeded, Stop)
                 cboIfTrue.Items.Clear();
                 cboIfFalse.Items.Clear();
 
-                cboIfTrue.Items.Add("Click Target");
+                string clickActionLabel = (_step.ActionType == MacroActionType.IfImage) ? "Click Center" : "Click Target";
+                cboIfTrue.Items.Add(clickActionLabel);
                 cboIfTrue.Items.Add("Next Step");
-                cboIfFalse.Items.Add("Click Target");
+                cboIfFalse.Items.Add(clickActionLabel);
                 cboIfFalse.Items.Add("Next Step");
 
                 for (int i = 1; i <= maxStepNeeded; i++)
@@ -1197,11 +1533,11 @@ namespace ModernAutoClicker.Advanced
                 cboIfTrue.Items.Add("Stop");
                 cboIfFalse.Items.Add("Stop");
 
-                // 2. Resolve True selection (Default: Click Target, value = -2)
+                // 2. Resolve True selection (Default: Click Target / Click Center, value = -2)
                 string trueTarget;
                 if (_step.IfTrueStep == -2)
                 {
-                    trueTarget = "Click Target";
+                    trueTarget = clickActionLabel;
                 }
                 else if (_step.IfTrueStep == 0)
                 {
@@ -1217,8 +1553,8 @@ namespace ModernAutoClicker.Advanced
                 }
                 else
                 {
-                    // Brand new step: default to Click Target (-2)
-                    trueTarget = "Click Target";
+                    // Brand new step: default to Click Target / Click Center (-2)
+                    trueTarget = clickActionLabel;
                     _step.IfTrueStep = -2;
                 }
 
@@ -1229,7 +1565,7 @@ namespace ModernAutoClicker.Advanced
                 string falseTarget;
                 if (_step.IfFalseStep == -2)
                 {
-                    falseTarget = "Click Target";
+                    falseTarget = clickActionLabel;
                 }
                 else if (_step.IfFalseStep == 0)
                 {
@@ -1268,49 +1604,58 @@ namespace ModernAutoClicker.Advanced
         private void PopulateScriptList()
         {
             if (cboTargetScript == null) return;
-            cboTargetScript.Items.Clear();
-
-            if (_availableScripts == null || _availableScripts.Count == 0)
+            bool prevBinding = _isBinding;
+            _isBinding = true;
+            try
             {
-                if (!string.IsNullOrEmpty(_step.KeyData))
+                cboTargetScript.Items.Clear();
+
+                if (_availableScripts == null || _availableScripts.Count == 0)
                 {
-                    cboTargetScript.Items.Add(_step.KeyData);
+                    if (!string.IsNullOrEmpty(_step.KeyData))
+                    {
+                        cboTargetScript.Items.Add(_step.KeyData);
+                        cboTargetScript.SelectedIndex = 0;
+                        cboTargetScript.Enabled = true;
+                    }
+                    else
+                    {
+                        cboTargetScript.Items.Add("(No other scripts)");
+                        cboTargetScript.SelectedIndex = 0;
+                        cboTargetScript.Enabled = false;
+                    }
+                    return;
+                }
+
+                cboTargetScript.Enabled = true;
+                int selectedIdx = -1;
+                for (int i = 0; i < _availableScripts.Count; i++)
+                {
+                    cboTargetScript.Items.Add(_availableScripts[i]);
+                    if (string.Equals(_availableScripts[i], _step.KeyData, StringComparison.OrdinalIgnoreCase))
+                    {
+                        selectedIdx = i;
+                    }
+                }
+
+                if (selectedIdx >= 0)
+                {
+                    cboTargetScript.SelectedIndex = selectedIdx;
+                }
+                else if (!string.IsNullOrEmpty(_step.KeyData))
+                {
+                    cboTargetScript.Items.Insert(0, _step.KeyData);
                     cboTargetScript.SelectedIndex = 0;
-                    cboTargetScript.Enabled = true;
                 }
-                else
+                else if (cboTargetScript.Items.Count > 0)
                 {
-                    cboTargetScript.Items.Add("(No other scripts)");
                     cboTargetScript.SelectedIndex = 0;
-                    cboTargetScript.Enabled = false;
-                }
-                return;
-            }
-
-            cboTargetScript.Enabled = true;
-            int selectedIdx = -1;
-            for (int i = 0; i < _availableScripts.Count; i++)
-            {
-                cboTargetScript.Items.Add(_availableScripts[i]);
-                if (string.Equals(_availableScripts[i], _step.KeyData, StringComparison.OrdinalIgnoreCase))
-                {
-                    selectedIdx = i;
+                    _step.KeyData = cboTargetScript.SelectedItem;
                 }
             }
-
-            if (selectedIdx >= 0)
+            finally
             {
-                cboTargetScript.SelectedIndex = selectedIdx;
-            }
-            else if (!string.IsNullOrEmpty(_step.KeyData))
-            {
-                cboTargetScript.Items.Insert(0, _step.KeyData);
-                cboTargetScript.SelectedIndex = 0;
-            }
-            else if (cboTargetScript.Items.Count > 0)
-            {
-                cboTargetScript.SelectedIndex = 0;
-                _step.KeyData = cboTargetScript.SelectedItem;
+                _isBinding = prevBinding;
             }
         }
 
@@ -1329,6 +1674,9 @@ namespace ModernAutoClicker.Advanced
                 case MacroActionType.IfColorArea:
                 case MacroActionType.WaitChange:
                     return theme.CBlue;
+                case MacroActionType.WaitImage:
+                case MacroActionType.IfImage:
+                    return theme.CPurple;
                 case MacroActionType.RunScript:
                     return theme.CYellow;
                 default:
@@ -1338,7 +1686,7 @@ namespace ModernAutoClicker.Advanced
 
         private void HookRowSelectionRecursively(Control c)
         {
-            if (c != btnDelete && c != chkSelect && c != this && c != lblIndex && c != lblCoord)
+            if (c != btnDelete && c != chkSelect && c != this && c != lblIndex && c != lblCoord && c != pnlImageThumb)
             {
                 c.MouseDown += Row_MouseDown;
             }
@@ -1346,6 +1694,99 @@ namespace ModernAutoClicker.Advanced
             {
                 HookRowSelectionRecursively(child);
             }
+        }
+
+        private void ApplyPickedCoordinates(Point screenA, Point screenB, Color color, NativeMethods.WindowTargetInfo winInfo, Point clientPtA, Point clientPtB, bool isArea)
+        {
+            Point finalA = screenA;
+            Point finalB = screenB;
+
+            if (_step.RelativeToWindow)
+            {
+                IntPtr hWnd = _step.WindowHwnd;
+                if (!NativeMethods.IsValidWindowHandle(hWnd, _step.ProcessName))
+                {
+                    if (winInfo != null && winInfo.Hwnd != IntPtr.Zero && NativeMethods.IsValidWindowHandle(winInfo.Hwnd, winInfo.ProcessName))
+                    {
+                        hWnd = winInfo.Hwnd;
+                        _step.WindowHwnd = hWnd;
+                        _step.ProcessName = winInfo.ProcessName;
+                        _step.WindowTitle = winInfo.Title;
+                    }
+                    else
+                    {
+                        hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle);
+                        if (hWnd != IntPtr.Zero) _step.WindowHwnd = hWnd;
+                    }
+                }
+
+                if (hWnd != IntPtr.Zero)
+                {
+                    NativeMethods.POINT npA = new NativeMethods.POINT { X = screenA.X, Y = screenA.Y };
+                    if (NativeMethods.ScreenToClient(hWnd, ref npA))
+                    {
+                        finalA = new Point(npA.X, npA.Y);
+                    }
+                    else finalA = screenA;
+
+                    if (isArea || _step.ActionType == MacroActionType.DragDrop)
+                    {
+                        NativeMethods.POINT npB = new NativeMethods.POINT { X = screenB.X, Y = screenB.Y };
+                        if (NativeMethods.ScreenToClient(hWnd, ref npB))
+                        {
+                            finalB = new Point(npB.X, npB.Y);
+                        }
+                        else finalB = screenB;
+                    }
+                }
+                else if (winInfo != null)
+                {
+                    finalA = clientPtA;
+                    finalB = clientPtB;
+                    _step.WindowHwnd = winInfo.Hwnd;
+                    _step.ProcessName = winInfo.ProcessName;
+                    _step.WindowTitle = winInfo.Title;
+                }
+                else
+                {
+                    finalA = screenA;
+                    finalB = screenB;
+                }
+            }
+            else if (winInfo != null && !string.IsNullOrEmpty(winInfo.ProcessName))
+            {
+                _step.RelativeToWindow = true;
+                _step.WindowHwnd = winInfo.Hwnd;
+                _step.ProcessName = winInfo.ProcessName;
+                _step.WindowTitle = winInfo.Title;
+                finalA = clientPtA;
+                finalB = clientPtB;
+            }
+            else
+            {
+                _step.WindowHwnd = IntPtr.Zero;
+                finalA = screenA;
+                finalB = screenB;
+            }
+
+            _step.StartPoint = finalA;
+            if (_step.ActionType == MacroActionType.DragDrop || isArea)
+            {
+                _step.EndPoint = finalB;
+            }
+            else
+            {
+                _step.EndPoint = Point.Empty;
+            }
+
+            if (_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea)
+            {
+                _step.TargetColor = color;
+                _step.ColorHex = string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
+            }
+
+            RefreshDisplay();
+            if (OnStepChanged != null) OnStepChanged();
         }
 
         private void PickCoordinate()
@@ -1358,218 +1799,27 @@ namespace ModernAutoClicker.Advanced
             }
 
             CoordinatePicker picker = new CoordinatePicker();
-            if (_step.ActionType == MacroActionType.DragDrop)
+            picker.OnTargetSelectedWithWindow += (screenA, screenB, color, winInfo, clientPtA, clientPtB, isArea) =>
             {
-                picker.OnPointSelectedWithWindow += (ptA, colorA, winInfoA, clientPtA) =>
+                if (_step.ActionType == MacroActionType.DragDrop && !isArea)
                 {
-                    if (_step.RelativeToWindow && !string.IsNullOrEmpty(_step.ProcessName))
-                    {
-                        IntPtr hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle);
-                        if (hWnd != IntPtr.Zero)
-                        {
-                            NativeMethods.POINT np = new NativeMethods.POINT { X = ptA.X, Y = ptA.Y };
-                            if (NativeMethods.ScreenToClient(hWnd, ref np))
-                            {
-                                _step.StartPoint = new Point(np.X, np.Y);
-                            }
-                            else _step.StartPoint = ptA;
-                        }
-                        else if (winInfoA != null)
-                        {
-                            _step.StartPoint = clientPtA;
-                            _step.ProcessName = winInfoA.ProcessName;
-                            _step.WindowTitle = winInfoA.Title;
-                        }
-                        else _step.StartPoint = ptA;
-                    }
-                    else if (winInfoA != null && !string.IsNullOrEmpty(winInfoA.ProcessName))
-                    {
-                        _step.RelativeToWindow = true;
-                        _step.ProcessName = winInfoA.ProcessName;
-                        _step.WindowTitle = winInfoA.Title;
-                        _step.StartPoint = clientPtA;
-                    }
-                    else
-                    {
-                        _step.StartPoint = ptA;
-                    }
-                    RefreshDisplay();
-                    if (OnStepChanged != null) OnStepChanged();
+                    // User clicked once for DragDrop: record Point A and open picker for Point B
+                    ApplyPickedCoordinates(screenA, Point.Empty, color, winInfo, clientPtA, Point.Empty, false);
 
-                    // Open picker for End Point B
                     CoordinatePicker pickerB = new CoordinatePicker();
-                    pickerB.OnPointSelectedWithWindow += (ptB, colorB, winInfoB, clientPtB) =>
+                    pickerB.OnTargetSelectedWithWindow += (sA2, sB2, color2, winInfo2, cPtA2, cPtB2, isArea2) =>
                     {
-                        if (_step.RelativeToWindow && !string.IsNullOrEmpty(_step.ProcessName))
-                        {
-                            IntPtr hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle);
-                            if (hWnd != IntPtr.Zero)
-                            {
-                                NativeMethods.POINT np = new NativeMethods.POINT { X = ptB.X, Y = ptB.Y };
-                                if (NativeMethods.ScreenToClient(hWnd, ref np))
-                                {
-                                    _step.EndPoint = new Point(np.X, np.Y);
-                                }
-                                else _step.EndPoint = ptB;
-                            }
-                            else if (winInfoB != null)
-                            {
-                                _step.EndPoint = clientPtB;
-                            }
-                            else _step.EndPoint = ptB;
-                        }
-                        else if (winInfoB != null && !string.IsNullOrEmpty(winInfoB.ProcessName))
-                        {
-                            _step.EndPoint = clientPtB;
-                        }
-                        else
-                        {
-                            _step.EndPoint = ptB;
-                        }
-                        RefreshDisplay();
-                        if (OnStepChanged != null) OnStepChanged();
+                        Point endScreen = isArea2 ? sB2 : sA2;
+                        Point endClient = isArea2 ? cPtB2 : cPtA2;
+                        ApplyPickedCoordinates(_step.StartPoint, endScreen, color2, winInfo2, _step.StartPoint, endClient, true);
                     };
                     pickerB.Show();
-                };
-                picker.Show();
-            }
-            else if (_step.ActionType == MacroActionType.IfColorArea)
-            {
-                picker.IsAreaSelectionMode = true;
-                picker.OnAreaSelectedWithWindow += (screenA, screenB, color, winInfo, clientA, clientB) =>
-                {
-                    if (_step.RelativeToWindow && !string.IsNullOrEmpty(_step.ProcessName))
-                    {
-                        IntPtr hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle);
-                        if (hWnd != IntPtr.Zero)
-                        {
-                            NativeMethods.POINT npA = new NativeMethods.POINT { X = screenA.X, Y = screenA.Y };
-                            NativeMethods.POINT npB = new NativeMethods.POINT { X = screenB.X, Y = screenB.Y };
-                            if (NativeMethods.ScreenToClient(hWnd, ref npA) && NativeMethods.ScreenToClient(hWnd, ref npB))
-                            {
-                                _step.StartPoint = new Point(npA.X, npA.Y);
-                                _step.EndPoint = new Point(npB.X, npB.Y);
-                            }
-                            else
-                            {
-                                _step.StartPoint = screenA;
-                                _step.EndPoint = screenB;
-                            }
-                        }
-                        else if (winInfo != null)
-                        {
-                            _step.StartPoint = clientA;
-                            _step.EndPoint = clientB;
-                        }
-                        else
-                        {
-                            _step.StartPoint = screenA;
-                            _step.EndPoint = screenB;
-                        }
-                    }
-                    else if (winInfo != null && !string.IsNullOrEmpty(winInfo.ProcessName))
-                    {
-                        _step.RelativeToWindow = true;
-                        _step.ProcessName = winInfo.ProcessName;
-                        _step.WindowTitle = winInfo.Title;
-                        _step.StartPoint = clientA;
-                        _step.EndPoint = clientB;
-                    }
-                    else
-                    {
-                        _step.StartPoint = screenA;
-                        _step.EndPoint = screenB;
-                    }
+                    return;
+                }
 
-                    _step.TargetColor = color;
-                    _step.ColorHex = string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
-                    RefreshDisplay();
-                    if (OnStepChanged != null) OnStepChanged();
-                };
-                picker.Show();
-            }
-            else if (_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor)
-            {
-                picker.OnPointSelectedWithWindow += (pt, color, winInfo, clientPt) =>
-                {
-                    if (_step.RelativeToWindow && !string.IsNullOrEmpty(_step.ProcessName))
-                    {
-                        IntPtr hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle);
-                        if (hWnd != IntPtr.Zero)
-                        {
-                            NativeMethods.POINT np = new NativeMethods.POINT { X = pt.X, Y = pt.Y };
-                            if (NativeMethods.ScreenToClient(hWnd, ref np))
-                            {
-                                _step.StartPoint = new Point(np.X, np.Y);
-                            }
-                            else _step.StartPoint = pt;
-                        }
-                        else if (winInfo != null)
-                        {
-                            _step.StartPoint = clientPt;
-                            _step.ProcessName = winInfo.ProcessName;
-                            _step.WindowTitle = winInfo.Title;
-                        }
-                        else _step.StartPoint = pt;
-                    }
-                    else if (winInfo != null && !string.IsNullOrEmpty(winInfo.ProcessName))
-                    {
-                        _step.RelativeToWindow = true;
-                        _step.ProcessName = winInfo.ProcessName;
-                        _step.WindowTitle = winInfo.Title;
-                        _step.StartPoint = clientPt;
-                    }
-                    else
-                    {
-                        _step.StartPoint = pt;
-                    }
-                    _step.TargetColor = color;
-                    _step.ColorHex = string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
-                    RefreshDisplay();
-                    if (OnStepChanged != null) OnStepChanged();
-                };
-                picker.Show();
-            }
-            else
-            {
-                picker.OnPointSelectedWithWindow += (pt, color, winInfo, clientPt) =>
-                {
-                    if (_step.RelativeToWindow && !string.IsNullOrEmpty(_step.ProcessName))
-                    {
-                        IntPtr hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle);
-                        if (hWnd != IntPtr.Zero)
-                        {
-                            NativeMethods.POINT np = new NativeMethods.POINT { X = pt.X, Y = pt.Y };
-                            if (NativeMethods.ScreenToClient(hWnd, ref np))
-                            {
-                                _step.StartPoint = new Point(np.X, np.Y);
-                            }
-                            else _step.StartPoint = pt;
-                        }
-                        else if (winInfo != null)
-                        {
-                            _step.StartPoint = clientPt;
-                            _step.ProcessName = winInfo.ProcessName;
-                            _step.WindowTitle = winInfo.Title;
-                        }
-                        else _step.StartPoint = pt;
-                    }
-                    else if (winInfo != null && !string.IsNullOrEmpty(winInfo.ProcessName))
-                    {
-                        _step.RelativeToWindow = true;
-                        _step.ProcessName = winInfo.ProcessName;
-                        _step.WindowTitle = winInfo.Title;
-                        _step.StartPoint = clientPt;
-                    }
-                    else
-                    {
-                        _step.StartPoint = pt;
-                    }
-                    RefreshDisplay();
-                    if (OnStepChanged != null) OnStepChanged();
-                };
-                picker.Show();
-            }
+                ApplyPickedCoordinates(screenA, screenB, color, winInfo, clientPtA, clientPtB, isArea);
+            };
+            picker.Show();
         }
 
         private void UpdateRowBackground()
@@ -1697,14 +1947,15 @@ namespace ModernAutoClicker.Advanced
             _step.ActionType = type;
             if (cboActionType != null)
             {
-                cboActionType.SelectedIndex = (int)type;
+                cboActionType.SelectedIndex = GetActionTypeIndex(type);
             }
             UpdateDynamicFields();
         }
 
-        public void SetTargetWindowDirect(bool rel, string proc, string title)
+        public void SetTargetWindowDirect(bool rel, string proc, string title, IntPtr hwnd = default(IntPtr))
         {
             _step.RelativeToWindow = rel;
+            _step.WindowHwnd = hwnd;
             _step.ProcessName = proc ?? "";
             _step.WindowTitle = title ?? "";
             UpdateWindowIconDisplay();
@@ -1733,14 +1984,28 @@ namespace ModernAutoClicker.Advanced
             _step.StartPoint = pt;
             if (lblCoord != null)
             {
-                if (_step.ActionType == MacroActionType.DragDrop)
-                {
-                    lblCoord.Text = string.Format("A: {0},{1}", _step.StartPoint.X, _step.StartPoint.Y);
-                }
-                else
-                {
-                    lblCoord.Text = string.Format("{0}, {1}", _step.StartPoint.X, _step.StartPoint.Y);
-                }
+                lblCoord.Text = GetCoordDisplayText(_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.MiddleClick);
+            }
+            this.Invalidate();
+        }
+
+        public void UpdateEndPoint(Point pt)
+        {
+            _step.EndPoint = pt;
+            if (lblCoord != null)
+            {
+                lblCoord.Text = GetCoordDisplayText(_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.MiddleClick);
+            }
+            this.Invalidate();
+        }
+
+        public void UpdateArea(Point ptA, Point ptB)
+        {
+            _step.StartPoint = ptA;
+            _step.EndPoint = ptB;
+            if (lblCoord != null)
+            {
+                lblCoord.Text = GetCoordDisplayText(_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.MiddleClick);
             }
             this.Invalidate();
         }
@@ -1805,9 +2070,193 @@ namespace ModernAutoClicker.Advanced
                 cboIfFalse.CustomBorderColor = Color.FromArgb(140, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B);
                 cboIfFalse.ApplyTheme(_theme);
             }
+            if (numSimilarity != null) numSimilarity.ApplyTheme(_theme);
+            if (numTimeout != null) numTimeout.ApplyTheme(_theme);
             if (txtNote != null) txtNote.ApplyTheme(_theme);
             if (btnDelete != null) btnDelete.ForeColor = _theme.Danger;
             UpdateWindowIconDisplay();
+        }
+
+        private void ShowImageContextMenu(Control parent, Point pt)
+        {
+            ContextMenuStrip menu = new ContextMenuStrip();
+            menu.Renderer = new ModernMenuRenderer(_theme);
+            menu.ShowImageMargin = false;
+
+            ToolStripMenuItem itemCapture = new ToolStripMenuItem("Capture from Screen");
+            itemCapture.Click += (s, e) => PickImageSnipping();
+            menu.Items.Add(itemCapture);
+
+            ToolStripMenuItem itemImport = new ToolStripMenuItem("Import Image from File...");
+            itemImport.Click += (s, e) => ImportImageFromFile();
+            menu.Items.Add(itemImport);
+
+            menu.Items.Add(new ToolStripSeparator());
+
+            bool hasImg = _step != null && !string.IsNullOrEmpty(_step.ImageBase64);
+
+            ToolStripMenuItem itemPreview = new ToolStripMenuItem("Preview Full Size");
+            itemPreview.Enabled = hasImg;
+            itemPreview.Click += (s, e) => PreviewTemplateImage();
+            menu.Items.Add(itemPreview);
+
+            ToolStripMenuItem itemExport = new ToolStripMenuItem("Export Image to File...");
+            itemExport.Enabled = hasImg;
+            itemExport.Click += (s, e) => ExportImageToFile();
+            menu.Items.Add(itemExport);
+
+            menu.Items.Add(new ToolStripSeparator());
+
+            ToolStripMenuItem itemClear = new ToolStripMenuItem("Clear Template Image");
+            itemClear.Enabled = hasImg;
+            itemClear.ForeColor = _theme.Danger;
+            itemClear.Click += (s, e) =>
+            {
+                if (_step != null)
+                {
+                    _step.ImageBase64 = null;
+                    _step.InvalidateImageCache();
+                    pnlImageThumb.Invalidate();
+                    UpdateRowTooltips();
+                    if (OnStepChanged != null) OnStepChanged();
+                }
+            };
+            menu.Items.Add(itemClear);
+
+            menu.Show(parent, pt);
+        }
+
+        private void PickImageSnipping()
+        {
+            CoordinatePicker picker = new CoordinatePicker();
+            picker.IsImageSnippingMode = true;
+            picker.OnImageCaptured += (bmp) =>
+            {
+                if (bmp != null && _step != null)
+                {
+                    _step.SetTemplateBitmap(bmp);
+                    pnlImageThumb.Invalidate();
+                    UpdateRowTooltips();
+                    if (OnStepChanged != null) OnStepChanged();
+                }
+            };
+            picker.Show();
+        }
+
+        private void ImportImageFromFile()
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Title = "Import Template Image";
+                ofd.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp|All Files (*.*)|*.*";
+                if (ofd.ShowDialog(this.FindForm()) == DialogResult.OK)
+                {
+                    try
+                    {
+                        using (Image loaded = Image.FromFile(ofd.FileName))
+                        {
+                            Bitmap bmp = new Bitmap(loaded);
+                            if (_step != null)
+                            {
+                                _step.SetTemplateBitmap(bmp);
+                                pnlImageThumb.Invalidate();
+                                UpdateRowTooltips();
+                                if (OnStepChanged != null) OnStepChanged();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Failed to load image file:\n" + ex.Message, "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        private void ExportImageToFile()
+        {
+            if (_step == null) return;
+            Bitmap bmp = _step.GetTemplateBitmap();
+            if (bmp == null) return;
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Title = "Export Template Image";
+                sfd.Filter = "PNG Image (*.png)|*.png|All Files (*.*)|*.*";
+                sfd.FileName = string.Format("Template_Step_{0}.png", _index + 1);
+                if (sfd.ShowDialog(this.FindForm()) == DialogResult.OK)
+                {
+                    try
+                    {
+                        bmp.Save(sfd.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Failed to export image file:\n" + ex.Message, "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        private void PreviewTemplateImage()
+        {
+            if (_step == null) return;
+            Bitmap bmp = _step.GetTemplateBitmap();
+            if (bmp == null) return;
+
+            using (Form previewForm = new Form())
+            {
+                previewForm.Text = string.Format("Template Image Preview - Step #{0} ({1}×{2} px)", _index + 1, bmp.Width, bmp.Height);
+                previewForm.FormBorderStyle = FormBorderStyle.Sizable;
+                previewForm.StartPosition = FormStartPosition.CenterParent;
+                previewForm.BackColor = _theme.BgPrimary;
+                previewForm.ForeColor = _theme.TextPrimary;
+                previewForm.ShowInTaskbar = false;
+                previewForm.KeyPreview = true;
+                previewForm.KeyDown += (s, e) =>
+                {
+                    if (e.KeyCode == Keys.Escape) previewForm.Close();
+                };
+
+                int margin = 32;
+                int maxW = Math.Min(1000, Screen.PrimaryScreen.WorkingArea.Width - 100);
+                int maxH = Math.Min(800, Screen.PrimaryScreen.WorkingArea.Height - 100);
+                int targetW = Math.Max(240, Math.Min(maxW, bmp.Width + margin * 2));
+                int targetH = Math.Max(180, Math.Min(maxH, bmp.Height + margin * 2 + 30));
+                previewForm.ClientSize = new Size(targetW, targetH);
+
+                PictureBox pb = new PictureBox
+                {
+                    Dock = DockStyle.Fill,
+                    SizeMode = (bmp.Width > previewForm.ClientSize.Width - 20 || bmp.Height > previewForm.ClientSize.Height - 40) ? PictureBoxSizeMode.Zoom : PictureBoxSizeMode.CenterImage,
+                    Image = bmp,
+                    BackColor = Color.FromArgb(24, 24, 28)
+                };
+                pb.Click += (s, e) => previewForm.Close();
+
+                Panel pnlBottom = new Panel
+                {
+                    Dock = DockStyle.Bottom,
+                    Height = 32,
+                    BackColor = _theme.BgSecondary
+                };
+
+                Label lblDim = new Label
+                {
+                    Text = string.Format("Size: {0} × {1} px  |  Click anywhere or press ESC to close", bmp.Width, bmp.Height),
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Regular),
+                    ForeColor = _theme.TextSecondary
+                };
+                lblDim.Click += (s, e) => previewForm.Close();
+                pnlBottom.Controls.Add(lblDim);
+
+                previewForm.Controls.Add(pb);
+                previewForm.Controls.Add(pnlBottom);
+
+                previewForm.ShowDialog(this.FindForm());
+            }
         }
     }
 }

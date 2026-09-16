@@ -16,6 +16,8 @@ namespace ModernAutoClicker.Advanced
         IfColor = 9,
         IfColorArea = 10,
         WaitChange = 11,
-        RunScript = 12
+        RunScript = 12,
+        IfImage = 13,
+        WaitImage = 14
     }
 }

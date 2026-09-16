@@ -18,6 +18,7 @@ namespace ModernAutoClicker.Advanced
         private int _dropTargetIndex = -1;
         private bool _dropBelow = false;
         private List<MacroRowControl> _rows = new List<MacroRowControl>();
+        private List<MacroRowControl> _rowPool = new List<MacroRowControl>();
         private List<string> _availableScripts = new List<string>();
         private ThemeTokens _theme;
         private ToolTip _headerToolTip;
@@ -55,9 +56,18 @@ namespace ModernAutoClicker.Advanced
         public void SetAvailableScripts(List<string> scriptNames)
         {
             _availableScripts = scriptNames ?? new List<string>();
-            foreach (MacroRowControl r in _rows)
+            bool prevLoading = _isLoading;
+            _isLoading = true;
+            try
             {
-                r.SetAvailableScripts(_availableScripts);
+                foreach (MacroRowControl r in _rows)
+                {
+                    r.SetAvailableScripts(_availableScripts);
+                }
+            }
+            finally
+            {
+                _isLoading = prevLoading;
             }
         }
 
@@ -228,7 +238,7 @@ namespace ModernAutoClicker.Advanced
                 Text = text,
                 Location = new Point(x, 2),
                 Size = new Size(width, 18),
-                Font = new Font("Segoe UI", 7.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(10.5F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
                 ForeColor = defaultColor,
                 Tag = interactive
@@ -308,7 +318,7 @@ namespace ModernAutoClicker.Advanced
             {
                 foreach (MacroRowControl r in targets)
                 {
-                    r.SetTargetWindowDirect(false, "", "");
+                    r.SetTargetWindowDirect(false, "", "", IntPtr.Zero);
                 }
                 if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(false, "", "");
                 if (OnTableDataChanged != null) OnTableDataChanged();
@@ -338,7 +348,7 @@ namespace ModernAutoClicker.Advanced
                         }
                         foreach (MacroRowControl r in targets)
                         {
-                            r.SetTargetWindowDirect(true, targetWin.ProcessName, targetWin.Title);
+                            r.SetTargetWindowDirect(true, targetWin.ProcessName, targetWin.Title, targetWin.Hwnd);
                         }
                         if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(true, targetWin.ProcessName, targetWin.Title);
                         if (OnTableDataChanged != null) OnTableDataChanged();
@@ -433,9 +443,25 @@ namespace ModernAutoClicker.Advanced
                 foreach (MacroRowControl r in targets)
                 {
                     Point finalPt = screenPt;
-                    if (r.Step.RelativeToWindow && !string.IsNullOrEmpty(r.Step.ProcessName))
+                    if (r.Step.RelativeToWindow)
                     {
-                        IntPtr hWnd = NativeMethods.FindWindowByTarget(r.Step.ProcessName, r.Step.WindowTitle);
+                        IntPtr hWnd = r.Step.WindowHwnd;
+                        if (!NativeMethods.IsValidWindowHandle(hWnd, r.Step.ProcessName))
+                        {
+                            if (winInfo != null && winInfo.Hwnd != IntPtr.Zero && NativeMethods.IsValidWindowHandle(winInfo.Hwnd, winInfo.ProcessName))
+                            {
+                                hWnd = winInfo.Hwnd;
+                                r.Step.WindowHwnd = hWnd;
+                                r.Step.ProcessName = winInfo.ProcessName;
+                                r.Step.WindowTitle = winInfo.Title;
+                            }
+                            else
+                            {
+                                hWnd = NativeMethods.FindWindowByTarget(r.Step.ProcessName, r.Step.WindowTitle);
+                                if (hWnd != IntPtr.Zero) r.Step.WindowHwnd = hWnd;
+                            }
+                        }
+
                         if (hWnd != IntPtr.Zero)
                         {
                             NativeMethods.POINT np = new NativeMethods.POINT { X = screenPt.X, Y = screenPt.Y };
@@ -443,6 +469,13 @@ namespace ModernAutoClicker.Advanced
                             {
                                 finalPt = new Point(np.X, np.Y);
                             }
+                        }
+                        else if (winInfo != null)
+                        {
+                            finalPt = clientPt;
+                            r.Step.WindowHwnd = winInfo.Hwnd;
+                            r.Step.ProcessName = winInfo.ProcessName;
+                            r.Step.WindowTitle = winInfo.Title;
                         }
                     }
                     r.UpdateStartPoint(finalPt);
@@ -509,26 +542,17 @@ namespace ModernAutoClicker.Advanced
             try
             {
                 List<MacroRowControl> newRows = new List<MacroRowControl>();
+                List<Control> newlyCreatedControls = new List<Control>();
                 for (int i = 0; i < stepsToClone.Count; i++)
                 {
                     MacroStep s = stepsToClone[i];
-                    MacroRowControl row = new MacroRowControl(s, insertIndex + i, _theme);
-                    row.SetAvailableScripts(_availableScripts);
-                    row.Width = pnlContent.Width;
-                    row.AllowDrop = true;
-                    row.OnDeleteRequested += (r) => RemoveRow(r);
-                    row.OnRowClicked += (r, isShift, isCtrl) => HandleRowClicked(r, isShift, isCtrl);
-                    row.OnRowClickConfirmed += (r) =>
-                    {
-                        if (_selectedIndices.Count > 1) SelectOnly(r.Index);
-                    };
-                    row.OnDragStarted += (r) => StartRowDrag(r.Index);
-                    row.OnStepChanged += () =>
-                    {
-                        if (!_isLoading && OnTableDataChanged != null) OnTableDataChanged();
-                    };
-                    HookMouseWheelRecursively(row);
+                    bool isNewlyCreated;
+                    MacroRowControl row = GetOrCreateRow(s, insertIndex + i, out isNewlyCreated);
                     newRows.Add(row);
+                    if (isNewlyCreated)
+                    {
+                        newlyCreatedControls.Add(row);
+                    }
                 }
 
                 if (insertIndex >= _rows.Count)
@@ -536,7 +560,6 @@ namespace ModernAutoClicker.Advanced
                     foreach (var row in newRows)
                     {
                         _rows.Add(row);
-                        pnlContent.Controls.Add(row);
                     }
                 }
                 else
@@ -544,8 +567,12 @@ namespace ModernAutoClicker.Advanced
                     for (int k = 0; k < newRows.Count; k++)
                     {
                         _rows.Insert(insertIndex + k, newRows[k]);
-                        pnlContent.Controls.Add(newRows[k]);
                     }
+                }
+
+                if (newlyCreatedControls.Count > 0)
+                {
+                    pnlContent.Controls.AddRange(newlyCreatedControls.ToArray());
                 }
 
                 ReorderRows();
@@ -570,16 +597,10 @@ namespace ModernAutoClicker.Advanced
             if (OnTableDataChanged != null) OnTableDataChanged();
         }
 
-        private void AddStepInternal(MacroStep step)
+        private MacroRowControl CreateRowControl(MacroStep step, int index)
         {
-            if (step == null)
-            {
-                step = new MacroStep { Name = string.Format("Step {0}", _rows.Count + 1) };
-            }
-
-            MacroRowControl row = new MacroRowControl(step, _rows.Count, _theme);
+            MacroRowControl row = new MacroRowControl(step, index, _theme);
             row.SetAvailableScripts(_availableScripts);
-            row.Location = new Point(0, _rows.Count * 38);
             row.Width = pnlContent.Width;
             row.AllowDrop = true;
             row.OnDeleteRequested += (r) => RemoveRow(r);
@@ -598,9 +619,45 @@ namespace ModernAutoClicker.Advanced
                 }
             };
             HookMouseWheelRecursively(row);
+            return row;
+        }
 
+        private MacroRowControl GetOrCreateRow(MacroStep step, int index, out bool isNewlyCreated)
+        {
+            if (_rowPool.Count > 0)
+            {
+                int poolLastIdx = _rowPool.Count - 1;
+                MacroRowControl row = _rowPool[poolLastIdx];
+                _rowPool.RemoveAt(poolLastIdx);
+                row.Visible = true;
+                row.Width = pnlContent.Width;
+                row.BindStep(step, index);
+                row.SetAvailableScripts(_availableScripts);
+                isNewlyCreated = false;
+                return row;
+            }
+            else
+            {
+                MacroRowControl row = CreateRowControl(step, index);
+                isNewlyCreated = true;
+                return row;
+            }
+        }
+
+        private void AddStepInternal(MacroStep step)
+        {
+            if (step == null)
+            {
+                step = new MacroStep { Name = string.Format("Step {0}", _rows.Count + 1) };
+            }
+
+            bool isNewlyCreated;
+            MacroRowControl row = GetOrCreateRow(step, _rows.Count, out isNewlyCreated);
             _rows.Add(row);
-            pnlContent.Controls.Add(row);
+            if (isNewlyCreated)
+            {
+                pnlContent.Controls.Add(row);
+            }
         }
 
         private void HookMouseWheelRecursively(Control c)
@@ -1002,8 +1059,9 @@ namespace ModernAutoClicker.Advanced
             {
                 int removedIdx = _rows.IndexOf(row);
                 _rows.Remove(row);
-                pnlContent.Controls.Remove(row);
-                row.Dispose();
+                row.Visible = false;
+                row.Location = new Point(-2000, -2000);
+                _rowPool.Add(row);
                 ReorderRows();
 
                 _selectedIndices.Remove(removedIdx);
@@ -1045,9 +1103,12 @@ namespace ModernAutoClicker.Advanced
             {
                 foreach (MacroRowControl row in targets)
                 {
-                    _rows.Remove(row);
-                    pnlContent.Controls.Remove(row);
-                    row.Dispose();
+                    if (_rows.Remove(row))
+                    {
+                        row.Visible = false;
+                        row.Location = new Point(-2000, -2000);
+                        _rowPool.Add(row);
+                    }
                 }
                 ReorderRows();
                 ClearSelection();
@@ -1088,16 +1149,16 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
-        public void SetDefaultWindowForAllSteps(string procName, string winTitle)
+        public void SetDefaultWindowForAllSteps(string procName, string winTitle, IntPtr hwnd = default(IntPtr))
         {
             if (_rows == null || _rows.Count == 0) return;
-            bool isRel = !string.IsNullOrEmpty(procName);
+            bool isRel = (hwnd != IntPtr.Zero) || !string.IsNullOrEmpty(procName);
             pnlContent.SuspendLayout();
             try
             {
                 foreach (var row in _rows)
                 {
-                    row.SetTargetWindowDirect(isRel, procName, winTitle);
+                    row.SetTargetWindowDirect(isRel, procName, winTitle, hwnd);
                 }
             }
             finally
@@ -1112,8 +1173,9 @@ namespace ModernAutoClicker.Advanced
             pnlContent.SuspendLayout();
             foreach (MacroRowControl r in _rows)
             {
-                pnlContent.Controls.Remove(r);
-                r.Dispose();
+                r.Visible = false;
+                r.Location = new Point(-2000, -2000);
+                _rowPool.Add(r);
             }
             _rows.Clear();
             pnlContent.ResumeLayout();
@@ -1126,6 +1188,11 @@ namespace ModernAutoClicker.Advanced
         public void LoadProfile(MacroProfile profile)
         {
             _isLoading = true;
+            bool handleCreated = pnlContent.IsHandleCreated;
+            if (handleCreated)
+            {
+                NativeMethods.SendMessage(pnlContent.Handle, NativeMethods.WM_SETREDRAW, (IntPtr)0, IntPtr.Zero);
+            }
             pnlContent.SuspendLayout();
             try
             {
@@ -1133,56 +1200,44 @@ namespace ModernAutoClicker.Advanced
                 int targetCount = stepsToLoad.Count;
                 int currentCount = _rows.Count;
 
-                // 1. In-place re-use and bind existing rows (ultra-fast 0ms!)
+                // 1. In-place re-use and bind existing active rows (ultra-fast 0-7ms!)
                 int reuseCount = Math.Min(currentCount, targetCount);
                 for (int i = 0; i < reuseCount; i++)
                 {
+                    _rows[i].Visible = true;
                     _rows[i].BindStep(stepsToLoad[i], i);
                     _rows[i].SetAvailableScripts(_availableScripts);
                 }
 
-                // 2. If target profile has more steps, create only the delta
+                // 2. If target profile has more steps: first take from _rowPool, then create new only if pool empty
                 if (targetCount > currentCount)
                 {
-                    List<Control> newControls = new List<Control>();
+                    List<Control> newlyCreatedControls = new List<Control>();
                     for (int i = currentCount; i < targetCount; i++)
                     {
-                        MacroRowControl row = new MacroRowControl(stepsToLoad[i], _rows.Count, _theme);
-                        row.SetAvailableScripts(_availableScripts);
-                        row.Width = pnlContent.Width;
-                        row.AllowDrop = true;
-                        row.OnDeleteRequested += (r) => RemoveRow(r);
-                        row.OnRowClicked += (r, isShift, isCtrl) => HandleRowClicked(r, isShift, isCtrl);
-                        row.OnRowClickConfirmed += (r) =>
-                        {
-                            if (_selectedIndices.Count > 1) SelectOnly(r.Index);
-                        };
-                        row.OnDragStarted += (r) => StartRowDrag(r.Index);
-                        row.OnStepChanged += () =>
-                        {
-                            if (!_isLoading)
-                            {
-                                ReorderRows();
-                                if (OnTableDataChanged != null) OnTableDataChanged();
-                            }
-                        };
+                        bool isNewlyCreated;
+                        MacroRowControl row = GetOrCreateRow(stepsToLoad[i], i, out isNewlyCreated);
                         _rows.Add(row);
-                        newControls.Add(row);
+                        if (isNewlyCreated)
+                        {
+                            newlyCreatedControls.Add(row);
+                        }
                     }
-                    if (newControls.Count > 0)
+                    if (newlyCreatedControls.Count > 0)
                     {
-                        pnlContent.Controls.AddRange(newControls.ToArray());
+                        pnlContent.Controls.AddRange(newlyCreatedControls.ToArray());
                     }
                 }
-                // 3. If target profile has fewer steps, remove excess rows
+                // 3. If target profile has fewer steps, recycle excess rows into _rowPool (never Dispose!)
                 else if (targetCount < currentCount)
                 {
                     for (int i = currentCount - 1; i >= targetCount; i--)
                     {
                         MacroRowControl r = _rows[i];
                         _rows.RemoveAt(i);
-                        pnlContent.Controls.Remove(r);
-                        r.Dispose();
+                        r.Visible = false;
+                        r.Location = new Point(-2000, -2000);
+                        _rowPool.Add(r);
                     }
                 }
 
@@ -1192,6 +1247,11 @@ namespace ModernAutoClicker.Advanced
             finally
             {
                 pnlContent.ResumeLayout();
+                if (handleCreated)
+                {
+                    NativeMethods.SendMessage(pnlContent.Handle, NativeMethods.WM_SETREDRAW, (IntPtr)1, IntPtr.Zero);
+                    pnlContent.Invalidate(true);
+                }
                 _isLoading = false;
             }
         }
@@ -1338,6 +1398,40 @@ namespace ModernAutoClicker.Advanced
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_dragFilter != null)
+                {
+                    try { Application.RemoveMessageFilter(_dragFilter); } catch { }
+                    _dragFilter = null;
+                }
+                if (_headerToolTip != null)
+                {
+                    try { _headerToolTip.Dispose(); } catch { }
+                    _headerToolTip = null;
+                }
+                if (_rows != null)
+                {
+                    foreach (var row in _rows)
+                    {
+                        try { row.Dispose(); } catch { }
+                    }
+                    _rows.Clear();
+                }
+                if (_rowPool != null)
+                {
+                    foreach (var row in _rowPool)
+                    {
+                        try { row.Dispose(); } catch { }
+                    }
+                    _rowPool.Clear();
+                }
+            }
+            base.Dispose(disposing);
+        }
     }
 
     public class BatchNumberInputDialog : Form
@@ -1365,7 +1459,7 @@ namespace ModernAutoClicker.Advanced
                 Text = fieldLabel,
                 Location = new Point(20, 16),
                 Size = new Size(224, 20),
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
                 ForeColor = theme.AccentPrimary
             };
 
@@ -1379,7 +1473,7 @@ namespace ModernAutoClicker.Advanced
                 Value = defaultVal,
                 BackColor = theme.BgTertiary,
                 ForeColor = theme.TextPrimary,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold)
+                Font = ThemeTokens.FontSegoe(13.5F, FontStyle.Bold)
             };
 
             btnApply = new RoundedButton
@@ -1388,7 +1482,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(20, 78),
                 Size = new Size(108, 28),
                 BorderRadius = theme.RadiusMd,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 NormalColor = theme.AccentPrimary,
                 HoverColor = theme.AccentPrimaryHover,
                 ForeColor = Color.White
@@ -1413,7 +1507,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(136, 78),
                 Size = new Size(108, 28),
                 BorderRadius = theme.RadiusMd,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 NormalColor = theme.BgElevated,
                 HoverColor = theme.BgTertiary,
                 ForeColor = theme.TextSecondary
@@ -1462,7 +1556,7 @@ namespace ModernAutoClicker.Advanced
                 Text = fieldLabel,
                 Location = new Point(20, 16),
                 Size = new Size(264, 20),
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
                 ForeColor = theme.AccentPrimary
             };
 
@@ -1473,7 +1567,7 @@ namespace ModernAutoClicker.Advanced
                 Text = defaultVal ?? "",
                 BackColor = theme.BgTertiary,
                 ForeColor = theme.TextPrimary,
-                Font = new Font("Segoe UI", 9.5F)
+                Font = ThemeTokens.FontSegoe(12.5F)
             };
 
             btnApply = new RoundedButton
@@ -1482,7 +1576,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(20, 78),
                 Size = new Size(128, 28),
                 BorderRadius = theme.RadiusMd,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 NormalColor = theme.AccentPrimary,
                 HoverColor = theme.AccentPrimaryHover,
                 ForeColor = Color.White
@@ -1500,7 +1594,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(156, 78),
                 Size = new Size(128, 28),
                 BorderRadius = theme.RadiusMd,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
                 NormalColor = theme.BgElevated,
                 HoverColor = theme.BgTertiary,
                 ForeColor = theme.TextSecondary
