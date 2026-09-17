@@ -1,0 +1,163 @@
+/* ==========================================================================
+   UNIVERSAL DESIGN SYSTEM - THEME TOKENS MASTER (theme.css)
+   Cross-Project Production Ready Theme Tokens & Color Palette Matrix
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CONSTANT DESIGN TOKENS (Sizing, Radius, Typography, Motion)
+   (Các giá trị số cố định - KHÔNG THAY ĐỔI khi đổi Dark/Light mode)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Sizing & Button Heights */
+  --btn-height-sm: 28px;
+  --btn-height-md: 34px;
+  --btn-height-lg: 40px;
+
+  /* Border Radius Scale Matrix (Universal Standard) */
+  --border-radius-sm: 2px;
+  --border-radius-md: 4px;
+  --border-radius: 6px;
+  --border-radius-lg: 8px;
+  --border-radius-full: 9999px;
+
+  /* Typography Font Families */
+  --font-primary:   'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-secondary: 'Barlow Condensed', 'Montserrat', sans-serif;
+  --font-serif:     'Playfair Display', Georgia, serif;
+  --font-script:    'Dancing Script', 'Pacifico', 'Patrick Hand', cursive;
+
+  /* Typography Font Sizes (Chuẩn Design System) */
+  --font-xs:  11px;  /* Micro text: badge, tag cực nhỏ */
+  --font-sm:  12px;  /* Small text: nút bấm sản phẩm, ghi chú phụ */
+  --font-md:  14px;  /* Normal text: chữ đọc mô tả, link điều hướng */
+  --font-lg:  16px;  /* Large text: text nổi bật, body lớn */
+  --font-xl:  18px;  /* Sub-heading: tiêu đề 4 cột Sản Phẩm */
+  --font-2xl: 24px;  /* Section heading: CÔNG VIỆC, SẢN PHẨM */
+  --font-3xl: 32px;  /* Display heading: tiêu đề Hero / Trang */
+
+  /* Motion & Animation Transitions */
+  --transition-speed: 0.2s;
+  --transition-fast: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. DYNAMIC COLOR TOKENS - GLOWCODE PASTEL SKY BLUE (Default & Light Theme)
+   Tone màu theo Ảnh 3: GLOWCODE (Sky Blue, Ice Cyan, Pure White, Deep Navy)
+   -------------------------------------------------------------------------- */
+:root,
+:root[data-theme="light"],
+:root[data-theme="glowcode"] {
+  /* ------------------------------------------------------------------------
+     BẢNG MÀU RAINBOW ACCENTS (GLOWCODE AESTHETIC)
+     ------------------------------------------------------------------------ */
+  --c-red:          #f43f5e; /* Hồng đỏ: Điểm nhấn yêu thích */
+  --c-orange:       #f97316; /* Cam đào: Năng lượng */
+  --c-yellow:       #f59e0b; /* Vàng hổ phách: Nổi bật */
+  --c-green:        #10b981; /* Lục ngọc: Trực tuyến, Sẵn sàng */
+  --c-cyan:         #38bdf8; /* Lam sáng: Highlight GLOWCODE */
+  --c-blue:         #0284c7; /* Xanh da trời: Điểm nhấn chính */
+  --c-purple:       #8b5cf6; /* Tím nhạt: Sáng tạo */
+
+  /* Mức nền trong suốt tương ứng cho các thẻ badge */
+  --c-red-bg:       color-mix(in srgb, var(--c-red)    14%, transparent);
+  --c-orange-bg:    color-mix(in srgb, var(--c-orange) 14%, transparent);
+  --c-yellow-bg:    color-mix(in srgb, var(--c-yellow) 14%, transparent);
+  --c-green-bg:     color-mix(in srgb, var(--c-green)  14%, transparent);
+  --c-cyan-bg:      color-mix(in srgb, var(--c-cyan)   16%, transparent);
+  --c-blue-bg:      color-mix(in srgb, var(--c-blue)   14%, transparent);
+  --c-purple-bg:    color-mix(in srgb, var(--c-purple) 14%, transparent);
+
+  /* Color Palette - Backgrounds (Ảnh 3 GLOWCODE) */
+  --bg-100:         #ffffff;
+  --bg-primary:     #f4fafe; /* Sương lam pastel cực kỳ tinh khôi */
+  --bg-secondary:   #eaf4fc; /* Khối nền card dịu nhẹ */
+  --bg-tertiary:    #dcedf9; /* Khối viền / pill nền */
+  --bg-elevated:    #ffffff;
+  --bg-card:        rgba(255, 255, 255, 0.92);
+  --bg-glass:       rgba(244, 250, 254, 0.78);
+  --bg-overlay:     rgba(240, 248, 254, 0.92);
+
+  /* Color Palette - Typography */
+  --text-primary:   #0c2338; /* Xanh navy đại dương đậm - sắc nét, sang trọng */
+  --text-secondary: #2d4e6d; /* Xanh phiến thạch cân đối */
+  --text-tertiary:  #5c82a4; /* Xanh xám nhạt cho chú thích */
+  --text-disabled:  #9bb8d3;
+  --text-on-accent: #ffffff;
+
+  /* 🎯 GLOWCODE SEMANTIC ACCENT TOKENS */
+  --accent-primary:         #0284c7; /* Xanh đại dương tươi tắn */
+  --accent-primary-hover:   #0369a1;
+  --accent-secondary:       #38bdf8; /* Xanh cyan phát sáng */
+  --accent-secondary-hover: #0ea5e9;
+  --accent-subtle:          rgba(14, 165, 233, 0.12);
+  --accent-glow:            rgba(56, 189, 248, 0.38);
+
+  /* Gradients */
+  --accent-gradient:        linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  --accent-gradient-hover:  linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+  --accent-gradient-soft:   linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  --hero-mesh-gradient:     radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.18) 0%, rgba(224, 242, 254, 0.45) 35%, rgba(244, 250, 254, 0) 70%);
+
+  /* Semantic State Tokens */
+  --accent-warning:         var(--c-yellow);
+  --accent-danger:          var(--c-red);
+
+  /* Borders & Outlines */
+  --border-color:           #d0e7f7;
+  --border-hover:           #7dd3fc;
+  --border-active:          var(--accent-primary);
+
+  /* Shadows & Elevation */
+  --shadow-sm:              0 1px 3px 0 rgba(12, 35, 56, 0.05);
+  --shadow-md:              0 8px 24px -2px rgba(2, 132, 199, 0.08), 0 2px 6px -1px rgba(12, 35, 56, 0.04);
+  --shadow-lg:              0 18px 38px -4px rgba(2, 132, 199, 0.14), 0 6px 14px -2px rgba(12, 35, 56, 0.06);
+  --shadow-accent:          0 0 22px rgba(56, 189, 248, 0.38);
+}
+
+/* --------------------------------------------------------------------------
+   3. DYNAMIC COLOR TOKENS - MIDNIGHT OCEAN (Dark Theme Override)
+   -------------------------------------------------------------------------- */
+:root[data-theme="dark"] {
+  /* Color Palette - Dark Ocean Backgrounds */
+  --bg-100:         #061320;
+  --bg-primary:     #091b2c;
+  --bg-secondary:   #0f2842;
+  --bg-tertiary:    #163657;
+  --bg-elevated:    #1e476f;
+  --bg-card:        rgba(15, 40, 66, 0.88);
+  --bg-glass:       rgba(9, 27, 44, 0.82);
+  --bg-overlay:     rgba(6, 19, 32, 0.94);
+
+  /* Color Palette - Typography */
+  --text-primary:   #f0f8ff;
+  --text-secondary: #b8d5ee;
+  --text-tertiary:  #7ea7ca;
+  --text-disabled:  #476f92;
+  --text-on-accent: #0c2338;
+
+  /* Accent Tokens in Dark Mode */
+  --accent-primary:         #38bdf8;
+  --accent-primary-hover:   #7dd3fc;
+  --accent-secondary:       #0ea5e9;
+  --accent-secondary-hover: #38bdf8;
+  --accent-subtle:          rgba(56, 189, 248, 0.18);
+  --accent-glow:            rgba(56, 189, 248, 0.48);
+
+  /* Gradients */
+  --accent-gradient:        linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+  --accent-gradient-hover:  linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%);
+  --accent-gradient-soft:   linear-gradient(135deg, #0f2842 0%, #163657 100%);
+  --hero-mesh-gradient:     radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.25) 0%, rgba(15, 40, 66, 0.45) 40%, rgba(9, 27, 44, 0) 70%);
+
+  /* Borders & Outlines */
+  --border-color:           #1a3d60;
+  --border-hover:           #38bdf8;
+  --border-active:          var(--accent-primary);
+
+  /* Shadows & Elevation */
+  --shadow-sm:              0 1px 3px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md:              0 8px 24px -2px rgba(0, 0, 0, 0.6);
+  --shadow-lg:              0 20px 42px -4px rgba(0, 0, 0, 0.7);
+  --shadow-accent:          0 0 24px rgba(56, 189, 248, 0.45);
+}

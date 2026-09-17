@@ -1,6 +1,6 @@
-# RULES & MASTER PROTOCOL FOR WEB APPS (tranthangminh.github.io/products/Web Apps/)
+# RULES & MASTER PROTOCOL FOR WEB APPS (tranthangminh.github.io/products/web-apps/)
 
-> **Mục đích:** File hiến pháp quy chuẩn chung áp dụng chuyên biệt cho TOÀN BỘ các ứng dụng Web App nằm trong thư mục `products/Web Apps/` (`lucky-wheel`, `tinhtiennhanh`, `52-cards-tracker` và mọi Web App được phát triển trong tương lai).
+> **Mục đích:** File hiến pháp quy chuẩn chung áp dụng chuyên biệt cho TOÀN BỘ các ứng dụng Web App nằm trong thư mục `products/web-apps/` (`lucky-wheel`, `tinhtiennhanh`, `52-cards-tracker` và mọi Web App được phát triển trong tương lai).
 > AI Agent bắt buộc phải tuân thủ nghiêm ngặt mọi điều khoản bên dưới trước và trong khi thực thi bất kỳ task nào.
 
 ---
@@ -16,7 +16,7 @@ Nhằm đảm bảo tính độc lập tuyệt đối giữa các Web App và tr
    - Khi người dùng đổi sang Tiếng Anh/Tiếng Việt ở trang chủ hoặc ở một Web App bất kỳ, toàn bộ các Web App khác khi mở ra sẽ **tự động hiển thị đúng ngôn ngữ đó**.
 2. **Từ điển nằm riêng trong từng Web App (App-Scoped Dictionaries):**
    - Mỗi Web App tự quản lý từ điển của riêng mình đặt trong thư mục của app đó:
-     `products/Web Apps/[app-name]/[app-name]-i18n.js` (hoặc khai báo bên trong controller của app nếu từ vựng ngắn gọn < 50 dòng theo KISS).
+     `products/web-apps/[app-name]/[app-name]-i18n.js` (hoặc khai báo bên trong controller của app nếu từ vựng ngắn gọn < 50 dòng theo KISS).
    - **TUYỆT ĐỐI CẤM** nhét từ vựng đặc thù của Web App vào `common/i18n-vi.js` hay `common/i18n-en.js` của website portfolio chính.
 3. **Engine dịch chuẩn hóa (Attribute-Driven Engine):**
    - Quét và gán bản dịch tự động thông qua thuộc tính `data-i18n="key"` trên các phần tử DOM.
@@ -59,9 +59,9 @@ Nhằm đảm bảo tính độc lập tuyệt đối giữa các Web App và tr
 # 3. CẤU TRÚC THƯ MỤC & PHÂN TÁCH MODULE (MODULAR ARCHITECTURE)
 
 ## 3.1 Mô Hình "File Ngoài - Thư Mục Trong" (Strict Directory Layout)
-Toàn bộ ứng dụng trong `products/Web Apps/` phải tuân theo cấu trúc mô-đun hóa:
+Toàn bộ ứng dụng trong `products/web-apps/` phải tuân theo cấu trúc mô-đun hóa:
 ```text
-products/Web Apps/
+products/web-apps/
 ├── _RULE-web-apps.md                  # File quy chuẩn này
 ├── [app-name].html                    # File khởi chạy HTML duy nhất ở ngoài
 └── [app-name]/                        # Thư mục chứa toàn bộ logic, style của riêng app đó
@@ -216,7 +216,7 @@ Khi mất mạng hoặc chưa đăng nhập: Web App **phải tự động fallb
 
 Khi tạo một Web App mới, AI Agent hãy sao chép trực tiếp khung mẫu này để đảm bảo tuân thủ 100% hiến pháp:
 
-### `products/Web Apps/[app-name].html`
+### `products/web-apps/[app-name].html`
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -278,13 +278,32 @@ Khi tạo một Web App mới, AI Agent hãy sao chép trực tiếp khung mẫu
 
 ---
 
-# 8. QUY CHUẨN HIỂN THỊ TRÊN TRANG SẢN PHẨM (`products.html`)
+# 9. QUY CHUẨN HIỂN THỊ TRÊN TRANG SẢN PHẨM (`products.html`)
 
-## 8.1 Thẻ Sản Phẩm Tinh Gọn (Title-Only Cards)
+## 9.1 Thẻ Sản Phẩm Tinh Gọn (Title-Only Cards)
 - Khi trưng bày các Web App lên trang danh mục `products.html` (thuộc section `web-apps`), thẻ sản phẩm **chỉ hiển thị tên ứng dụng (`.product-card-title`) và tag phân loại (`.product-card-tag`), KHÔNG ghi đoạn văn mô tả (`.product-card-desc`)**.
 
-## 8.2 Danh Sách Loại Trừ Tuyệt Đối (Strictly Excluded Apps)
+## 9.2 Danh Sách Loại Trừ Tuyệt Đối (Strictly Excluded Apps)
 - **`tinhtiennhanh.html` (Tính Tiền Nhanh):**
   - **Lý do loại trừ:** Ứng dụng nghiệp vụ / nội bộ riêng biệt.
   - **Quy tắc bất di bất dịch:** Bất kỳ AI Agent hay lập trình viên nào khi quét hoặc cập nhật danh mục `products.html` **TUYỆT ĐỐI CẤM** thêm `tinhtiennhanh.html` vào trang danh mục.
+
+---
+
+# 10. QUY TRÌNH THỰC THI & NGHIỆM THU TINH GỌN (FAST-TRACK VERIFICATION & REPORTING)
+
+Nhằm tối ưu hóa tốc độ phản hồi, tiết kiệm thời gian chờ đợi và tránh làm treo tiến trình chat:
+
+## 10.1 Cấm Tuyệt Đối Các Bước Kiểm Thử Nặng & Rườm Rà (No Heavy DevTools/Browser QA)
+Sau khi chỉnh sửa hoặc tạo mới code Web App, AI Agent **TUYỆT ĐỐI KHÔNG TỰ Ý CHẠY** các công đoạn sau:
+1. **Không mở trình duyệt ngầm (No Headless Chrome / DevTools):** Không mở browser ngầm để load page, soi console log hay đợi network request.
+2. **Không chụp ảnh màn hình (No Headless Screenshots):** Không dùng tool để chụp ảnh màn hình giao diện app trong môi trường ảo.
+3. **Không mô phỏng click/tương tác bằng script (No Automated UI Scripting):** Không chạy script tự động click tab, click nút hay mô phỏng thao tác người dùng qua DevTools.
+4. **Không chạy các lệnh hệ thống dễ treo / timeout (No Hanging Terminal Commands):** Tuyệt đối không chạy các lệnh như `git status`, `git diff`... khi công cụ không chắc chắn có sẵn trong biến môi trường PATH hoặc có nguy cơ làm đứng terminal.
+
+## 10.2 Quy Trình Nghiệm Thu Chuẩn Tinh Gọn (Fast-Track Flow)
+Quy trình bàn giao chỉ gồm đúng các bước nhanh - gọn - chuẩn:
+1. **Kiểm tra cú pháp tĩnh (Static Syntax Check):** Nếu cần thiết, chỉ chạy nhanh lệnh kiểm tra cú pháp file JS (ví dụ: `node -c <file.js>`) trong vòng < 2 giây.
+2. **Cập nhật báo cáo (Update Walkthrough / Report):** Ghi tóm tắt ngắn gọn, trực quan các file đã thay đổi và logic vào artifact báo cáo (`walkthrough.md`).
+3. **Bàn giao ngay cho người dùng:** Trả lời trực tiếp trong khung chat để người dùng tự mở trình duyệt thật trải nghiệm và phản hồi thực tế.
 

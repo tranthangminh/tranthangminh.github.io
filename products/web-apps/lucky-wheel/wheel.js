@@ -11,7 +11,7 @@ class LuckyWheelEngine {
         this.pointerCtx = this.pointerCanvas ? this.pointerCanvas.getContext('2d') : null;
 
         this.slices = [];
-        this.sizingMode = options.sizingMode || 'equal'; // 'equal' or 'weighted'
+        this.sizingMode = options.sizingMode || 'weighted'; // 'weighted' | 'equal' | 'equal_weighted'
         this.spinDuration = options.spinDuration || 5000; // ms
 
         // Rotation angles in radians
@@ -19,8 +19,8 @@ class LuckyWheelEngine {
         this.startAngle = 0;
         this.targetAngle = 0;
 
-        // Pointer configuration (12 o'clock / Top)
-        this.pointerAngle = -Math.PI / 2; // -90 deg
+        // Pointer configuration (3 o'clock / Right side)
+        this.pointerAngle = 0; // 0 rad = 3 o'clock (Right)
 
         // Pointer dynamic kickback wobble physics
         this.pointerDeflection = 0;
@@ -47,6 +47,12 @@ class LuckyWheelEngine {
         const dpr = window.devicePixelRatio || 1;
         const size = Math.max(260, Math.floor(Math.min(wRect.width || 480, wRect.height || 480)));
 
+        // Skip redundant buffer re-allocation and redraw if dimensions have not changed
+        if (this.width === size && this._lastDpr === dpr) {
+            return;
+        }
+        this._lastDpr = dpr;
+
         this.canvas.width = size * dpr;
         this.canvas.height = size * dpr;
         this.canvas.style.width = `${size}px`;
@@ -62,12 +68,12 @@ class LuckyWheelEngine {
 
         if (this.pointerCanvas) {
             const pRect = this.pointerCanvas.getBoundingClientRect();
-            this.pointerCanvas.width = (pRect.width || 44) * dpr;
-            this.pointerCanvas.height = (pRect.height || 48) * dpr;
+            this.pointerCanvas.width = (pRect.width || 64) * dpr;
+            this.pointerCanvas.height = (pRect.height || 56) * dpr;
             this.pointerCtx.setTransform(1, 0, 0, 1, 0, 0);
             this.pointerCtx.scale(dpr, dpr);
-            this.pWidth = pRect.width || 44;
-            this.pHeight = pRect.height || 48;
+            this.pWidth = pRect.width || 64;
+            this.pHeight = pRect.height || 56;
         }
 
         this.draw();
@@ -126,7 +132,7 @@ class LuckyWheelEngine {
         // Pick winner index
         let winnerIdx = forcedWinnerIndex;
         if (winnerIdx === null || winnerIdx < 0 || winnerIdx >= this.slices.length) {
-            if (this.sizingMode === 'weighted') {
+            if (this.sizingMode === 'weighted' || this.sizingMode === 'equal_weighted') {
                 const totalWeight = this.slices.reduce((sum, s) => sum + Math.max(1, Number(s.weight) || 1), 0);
                 let rnd = Math.random() * totalWeight;
                 for (let i = 0; i < this.slices.length; i++) {
@@ -145,11 +151,24 @@ class LuckyWheelEngine {
 
         const winningSlice = this.slices[winnerIdx];
 
-        // Safe landing angle within middle 70% of winning slice (avoids edge boundary ambiguity)
-        const offsetInSlice = winningSlice.startAngle + winningSlice.span * (0.15 + Math.random() * 0.70);
+        // Suspenseful dramatic landings: often landing "mé mé" near the slice boundary pegs!
+        // Ratio varies from 0.04 (barely crossed into the slice) to 0.96 (almost ticked into next slice)
+        let ratio;
+        const flavor = Math.random();
+        if (flavor < 0.35) {
+            // 35% chance: Dramatic close-call near start edge (barely made it past the peg into the slice!)
+            ratio = 0.04 + Math.random() * 0.10; // 0.04 to 0.14
+        } else if (flavor < 0.70) {
+            // 35% chance: Dramatic cliffhanger near end edge (almost ticked into the next slice!)
+            ratio = 0.86 + Math.random() * 0.10; // 0.86 to 0.96
+        } else {
+            // 30% chance: Natural landing across the body of the slice
+            ratio = 0.18 + Math.random() * 0.64; // 0.18 to 0.82
+        }
 
-        // Calculate targetAngle so that winning point rotates to pointer angle (-Math.PI / 2)
-        // pointerAngle = (offsetInSlice + targetAngle) mod 2PI => targetAngle = pointerAngle - offsetInSlice + 2PI * k
+        const offsetInSlice = winningSlice.startAngle + winningSlice.span * ratio;
+
+        // Calculate targetAngle so that winning point rotates to pointer angle (0 rad at 3 o'clock)
         const fullSpins = 5 + Math.floor(Math.random() * 3); // 5 to 7 full revolutions
         let rawTarget = this.pointerAngle - offsetInSlice;
         
@@ -240,8 +259,8 @@ class LuckyWheelEngine {
         if (currentSliceIdx !== this.lastPegPassed) {
             this.lastPegPassed = currentSliceIdx;
 
-            // Trigger physical kickback deflection on pointer
-            this.pointerDeflection = 0.28 * Math.min(speedFactor + 0.35, 1.0);
+            // Trigger physical kickback deflection on pointer (downwards for clockwise spin at 3 o'clock)
+            this.pointerDeflection = -0.28 * Math.min(speedFactor + 0.35, 1.0);
 
             // Play synthesized tick
             if (this.onTick) {
@@ -455,7 +474,7 @@ class LuckyWheelEngine {
     }
 
     /**
-     * Draw pointer indicator at 12 o'clock with wobble kickback
+     * Draw pointer indicator on Right side (3 o'clock) with wobble kickback
      */
     drawPointer() {
         const pCanvas = this.pointerCanvas;
@@ -467,39 +486,52 @@ class LuckyWheelEngine {
         ctx.clearRect(0, 0, w, h);
         ctx.save();
 
-        // Pivot point at top center of pointer
-        ctx.translate(w / 2, 8);
+        // Pivot point near right edge of pointer canvas (attached outside the right rim)
+        ctx.translate(w - 10, h / 2);
         ctx.rotate(this.pointerDeflection);
 
-        // Draw physical needle/peg
+        // Draw physical needle/peg pointing LEFT into the wheel center
         ctx.beginPath();
-        ctx.moveTo(-10, 0);
-        ctx.lineTo(10, 0);
-        ctx.lineTo(0, h - 12);
+        ctx.moveTo(0, -14);
+        ctx.lineTo(0, 14);
+        ctx.lineTo(-(w - 16), 0);
         ctx.closePath();
 
-        // Needle gradient
-        const needleGrad = ctx.createLinearGradient(-10, 0, 10, 0);
-        needleGrad.addColorStop(0, '#ef4444');
-        needleGrad.addColorStop(0.5, '#f87171');
-        needleGrad.addColorStop(1, '#b91c1c');
+        // Needle gradient (vertical rich red gradient)
+        const needleGrad = ctx.createLinearGradient(0, -14, 0, 14);
+        needleGrad.addColorStop(0, '#f87171');
+        needleGrad.addColorStop(0.35, '#ef4444');
+        needleGrad.addColorStop(0.7, '#dc2626');
+        needleGrad.addColorStop(1, '#991b1b');
         ctx.fillStyle = needleGrad;
-        ctx.shadowColor = 'rgba(239, 68, 68, 0.6)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 2;
+        ctx.shadowColor = 'rgba(239, 68, 68, 0.65)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = -2;
         ctx.fill();
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.8;
         ctx.strokeStyle = '#ffffff';
         ctx.stroke();
 
-        // Needle top pivot cap
+        // Needle right pivot metallic cap
         ctx.beginPath();
-        ctx.arc(0, 0, 6, 0, Math.PI * 2);
-        ctx.fillStyle = '#e2e8f0';
+        ctx.arc(0, 0, 8.5, 0, Math.PI * 2);
+        const capGrad = ctx.createRadialGradient(-2, -2, 1, 0, 0, 9);
+        capGrad.addColorStop(0, '#ffffff');
+        capGrad.addColorStop(0.5, '#cbd5e1');
+        capGrad.addColorStop(1, '#475569');
+        ctx.fillStyle = capGrad;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = 4;
         ctx.fill();
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.5;
         ctx.strokeStyle = '#0f172a';
         ctx.stroke();
+
+        // Inner rivet
+        ctx.beginPath();
+        ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#1e293b';
+        ctx.fill();
 
         ctx.restore();
     }

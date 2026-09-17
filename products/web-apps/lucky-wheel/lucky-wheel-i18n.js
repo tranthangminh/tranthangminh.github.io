@@ -10,43 +10,64 @@
     const TRANSLATIONS = {
         'en': {
             brand: {
-                title: 'Lucky Wheel',
-                subtitle: 'Random Picker & Decision Maker'
+                title: 'Lucky Wheel'
             },
             tabs: {
                 slices: 'Slices',
                 settings: 'Settings',
+                slicesAndSettings: 'Slices & Settings',
                 history: 'History'
             },
             actions: {
                 spin: 'SPIN',
                 shuffle: 'Shuffle',
-                reset: 'Reset',
                 toggleSound: 'Toggle Sound',
-                toggleFullscreen: 'Toggle Fullscreen',
-                toggleLang: 'Chuyển sang Tiếng Việt'
+                toggleLang: 'Chuyển sang Tiếng Việt',
+                toggleHistory: 'Toggle History Panel',
+                toggleControls: 'Toggle Settings Panel',
+                hideHistory: 'Hide History',
+                showHistory: 'Show History',
+                hideControls: 'Hide Settings',
+                showControls: 'Show Settings'
             },
             slices: {
-                quickPreset: '⚡ Load Preset Template...',
+                quickPreset: '⚡ Preset...',
+                sortPlaceholder: '🔃 Sort...',
+                sortAZ: '🔤 A → Z',
+                sortZA: '🔤 Z → A',
+                sortWeightDesc: '⚖️ Weight ↓',
+                sortWeightAsc: '⚖️ Weight ↑',
                 bulkEdit: 'Bulk Edit',
                 placeholder: 'Enter slice name...',
+                newPlaceholder: '+ Type to add new slice...',
                 add: '+ Add',
-                hint: '💡 Double-click any slice name to rename it directly.'
+                toggleAll: 'Toggle All Slices Visibility',
+                showAll: 'Show All',
+                hideAll: 'Hide All',
+                colorLocked: 'Auto Rainbow is active (color locked)',
+                changeColor: 'Change color',
+                newColor: 'New slice color',
+                dragHint: 'Drag to reorder'
             },
             settings: {
+                sectionTitle: '⚙️ Wheel Settings',
                 presets: 'Preset Templates',
                 presetsDesc: 'Quickly load curated slice lists',
                 presetsPlaceholder: 'Select Preset...',
                 elimination: 'Elimination Mode',
-                eliminationDesc: 'Auto-remove slice after winning',
+                eliminationDesc: 'Auto-hide slice after winning',
+                rainbow: 'Auto Rainbow Colors',
+                rainbowDesc: 'Spread rainbow colors evenly from red to magenta',
                 sizing: 'Slice Sizing',
                 sizingDesc: 'Equal distribution vs weights',
                 equal: 'Equal',
                 weighted: 'Weighted',
+                equalWeighted: 'Weighted (Equal)',
                 duration: 'Spin Duration',
                 durationDesc: 'How long the wheel decelerates'
             },
             history: {
+                panelTitle: 'History',
                 title: 'Recent Winning Results',
                 clear: 'Clear History',
                 empty: 'No spins yet. Give it a spin!'
@@ -55,7 +76,8 @@
                 heading: 'Result',
                 subtitle: 'WE HAVE A WINNER!',
                 spinAgain: 'Spin Again',
-                remove: 'Remove This Winner'
+                remove: 'Hide This Slice from Wheel',
+                hide: 'Hide This Slice from Wheel'
             },
             bulk: {
                 heading: 'Bulk Edit Slices',
@@ -74,43 +96,64 @@
         },
         'vi': {
             brand: {
-                title: 'Vòng Xoay May Mắn',
-                subtitle: 'Quay Số Ngẫu Nhiên & Ra Quyết Định'
+                title: 'Vòng Xoay May Mắn'
             },
             tabs: {
                 slices: 'Ô Quay',
                 settings: 'Cài Đặt',
+                slicesAndSettings: 'Ô Quay & Cài Đặt',
                 history: 'Lịch Sử'
             },
             actions: {
                 spin: 'QUAY',
                 shuffle: 'Xáo Trộn',
-                reset: 'Mặc Định',
                 toggleSound: 'Bật/Tắt Âm Thanh',
-                toggleFullscreen: 'Toàn Màn Hình',
-                toggleLang: 'Switch to English'
+                toggleLang: 'Switch to English',
+                toggleHistory: 'Ẩn/Hiện Lịch Sử',
+                toggleControls: 'Ẩn/Hiện Cài Đặt',
+                hideHistory: 'Ẩn Lịch Sử',
+                showHistory: 'Hiện Lịch Sử',
+                hideControls: 'Ẩn Cài Đặt',
+                showControls: 'Hiện Cài Đặt'
             },
             slices: {
-                quickPreset: '⚡ Nạp danh sách mẫu...',
+                quickPreset: '⚡ Mẫu có sẵn...',
+                sortPlaceholder: '🔃 Sắp xếp...',
+                sortAZ: '🔤 A → Z',
+                sortZA: '🔤 Z → A',
+                sortWeightDesc: '⚖️ Trọng số ↓',
+                sortWeightAsc: '⚖️ Trọng số ↑',
                 bulkEdit: 'Sửa Hàng Loạt',
                 placeholder: 'Nhập tên ô mới...',
+                newPlaceholder: '+ Nhập để thêm ô mới...',
                 add: '+ Thêm',
-                hint: '💡 Nhấp đúp vào tên ô bất kỳ để đổi tên trực tiếp.'
+                toggleAll: 'Bật/Tắt hiển thị tất cả các ô',
+                showAll: 'Hiện Hết',
+                hideAll: 'Ẩn Hết',
+                colorLocked: 'Màu Tự Động đang bật (không thể sửa màu)',
+                changeColor: 'Đổi màu ô',
+                newColor: 'Màu ô mới',
+                dragHint: 'Nắm kéo để đổi thứ tự'
             },
             settings: {
+                sectionTitle: '⚙️ Cài Đặt Vòng Xoay',
                 presets: 'Danh Sách Mẫu',
                 presetsDesc: 'Nạp nhanh các bộ danh sách phổ biến',
                 presetsPlaceholder: 'Chọn danh sách mẫu...',
                 elimination: 'Chế Độ Loại Trừ',
-                eliminationDesc: 'Tự động xóa ô vừa trúng thưởng',
+                eliminationDesc: 'Tự động ẩn ô vừa trúng thưởng',
+                rainbow: 'Màu Tự Động',
+                rainbowDesc: 'Chia đều dải màu cầu vồng từ đỏ tới tím hồng',
                 sizing: 'Tỷ Lệ Lát Cắt',
                 sizingDesc: 'Chia đều góc hoặc theo trọng số',
                 equal: 'Chia Đều',
                 weighted: 'Trọng Số',
+                equalWeighted: 'Trọng Số (Chia Đều)',
                 duration: 'Thời Gian Quay',
                 durationDesc: 'Thời gian vòng xoay giảm tốc'
             },
             history: {
+                panelTitle: 'Lịch Sử',
                 title: 'Kết Quả Trúng Thưởng Gần Đây',
                 clear: 'Xóa Lịch Sử',
                 empty: 'Chưa có lượt quay nào. Hãy thử quay ngay!'
@@ -119,7 +162,8 @@
                 heading: 'Kết Quả',
                 subtitle: 'CHÚC MỪNG CHIẾN THẮNG!',
                 spinAgain: 'Quay Tiếp',
-                remove: 'Xóa Ô Này Khỏi Vòng'
+                remove: 'Ẩn Ô Này Khỏi Vòng',
+                hide: 'Ẩn Ô Này Khỏi Vòng'
             },
             bulk: {
                 heading: 'Chỉnh Sửa Hàng Loạt',

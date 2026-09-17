@@ -1,6 +1,6 @@
 /**
  * Universal Shared Single Sign-On (SSO) & Cloud Sync Engine for Web Apps
- * tranthangminh.github.io/products/Web Apps/
+ * tranthangminh.github.io/products/web-apps/
  *
  * Isolated from other legacy apps by using dedicated named Firebase App: 'sharedWebApps'
  */

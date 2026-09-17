@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title data-i18n="brand.title">Lucky Wheel - Random Picker &amp; Decision Maker</title>
+    <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Universal Theme System Token Master -->
+    <link rel="stylesheet" href="../../common/theme.css">
+    <!-- Shared SSO Authentication & Cloud Sync Styles -->
+    <link rel="stylesheet" href="../../common/shared-auth.css">
+    <!-- Lucky Wheel Custom Component Styles -->
+    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel.css">
+</head>
+<body>
+    <!-- Confetti Overlay Canvas -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Top App Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <h1 class="brand-title" data-i18n="brand.title">Vòng Xoay May Mắn</h1>
+        </div>
+        <div class="header-actions">
+            <!-- Shared SSO Auth Slot -->
+            <div id="sharedAuthSlot"></div>
+            <!-- Language Toggle Button -->
+            <button type="button" class="icon-btn lang-toggle-btn" id="langToggleBtn" title="Change Language" aria-label="Change Language">🇻🇳 VI</button>
+            <button type="button" class="icon-btn" id="soundToggleBtn" title="Toggle Sound" aria-label="Toggle Sound" data-i18n-title="actions.toggleSound">🔊</button>
+        </div>
+    </header>
+
+    <!-- Main Layout: 1. History, 2. Wheel Stage, 3. Slices & Settings -->
+    <main class="app-layout">
+        <!-- Column 1 (Left): Spin History Panel -->
+        <aside class="history-panel card" id="historyPanel" aria-label="Spin History">
+            <div id="historyCardContent" class="history-card-inner">
+                <div class="history-panel-header">
+                    <div class="history-header-title">
+                        <span>📜</span> <span data-i18n="history.panelTitle">Lịch Sử</span>
+                        <span class="badge" id="historyCountBadge">0</span>
+                    </div>
+                    <button type="button" class="btn btn-ghost btn-sm" id="clearHistoryBtn" data-i18n="history.clear">Clear History</button>
+                </div>
+                <div class="history-list-wrapper">
+                    <ul class="history-list" id="historyList">
+                        <!-- Dynamically populated -->
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Column 2 (Center): Wheel Stage -->
+        <section class="wheel-stage" aria-label="Wheel Stage">
+            <div class="wheel-wrapper" id="wheelWrapper">
+                <!-- Pointer / Needle on Right Side (3 o'clock) -->
+                <div class="wheel-pointer-container">
+                    <canvas id="pointerCanvas" width="64" height="56"></canvas>
+                </div>
+                <!-- Wheel Canvas -->
+                <canvas id="wheelCanvas" width="520" height="520" aria-label="Lucky Wheel Interactive Canvas"></canvas>
+                <!-- Center Clickable Spin Button Overlay -->
+                <button type="button" class="wheel-center-btn" id="centerSpinBtn" title="Click to Spin" aria-label="Spin Wheel"></button>
+            </div>
+
+            <!-- Quick Action Bar Below Wheel with Sidebars Toggle Controls -->
+            <div class="wheel-controls">
+                <button type="button" class="btn btn-secondary btn-lg" id="toggleHistoryBtn" title="Ẩn/Hiện Lịch Sử" aria-label="Toggle History" data-i18n-title="actions.toggleHistory">
+                    <span>📜</span> <span data-i18n="history.panelTitle">Lịch Sử</span>
+                </button>
+                <button type="button" class="btn btn-primary btn-lg" id="mainSpinBtn">
+                    <span>⚡</span> <span data-i18n="actions.spin">SPIN</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-lg" id="shuffleBtn" title="Shuffle slice order">
+                    <span>🔀</span> <span data-i18n="actions.shuffle">Shuffle</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-lg" id="toggleControlsBtn" title="Ẩn/Hiện Cài Đặt" aria-label="Toggle Settings" data-i18n-title="actions.toggleControls">
+                    <span>⚙️</span> <span data-i18n="tabs.settings">Cài Đặt</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Column 3 (Right): Slices & Settings -->
+        <aside class="control-panels card" id="controlPanels" aria-label="Configuration & Controls">
+            <!-- Tablet & Mobile Unified Tab Bar (Hidden on Desktop) -->
+            <div class="unified-panel-tabs" id="unifiedTabs" role="tablist">
+                <button type="button" class="unified-tab-btn is-active" id="tabBtnSlices" role="tab" aria-selected="true">
+                    <span>🎯</span> <span data-i18n="tabs.slicesAndSettings">Ô Quay &amp; Cài Đặt</span>
+                    <span class="badge" id="tabSliceCountBadge">0</span>
+                </button>
+                <button type="button" class="unified-tab-btn" id="tabBtnHistory" role="tab" aria-selected="false">
+                    <span>📜</span> <span data-i18n="history.panelTitle">Lịch Sử</span>
+                    <span class="badge" id="tabHistoryCountBadge">0</span>
+                </button>
+            </div>
+
+            <!-- Desktop Single Header (Hidden when Unified Tab Bar is visible) -->
+            <div class="control-panel-header">
+                <div class="panel-header-title">
+                    <span>🎯</span> <span data-i18n="tabs.slicesAndSettings">Slices &amp; Settings</span>
+                    <span class="badge" id="sliceCountBadge">0</span>
+                </div>
+            </div>
+
+            <!-- Tab Pane 1: Slices & Settings -->
+            <div class="tab-pane is-active" id="tabPaneSlices">
+                <!-- Quick Bar: Preset Selector (Row 1), Sort, Bulk Edit & Show/Hide All (Row 2) -->
+                <div class="slices-quick-bar">
+                    <select class="form-select preset-quick-select" id="presetSelect" aria-label="Quick Load Preset">
+                        <option value="" data-i18n="slices.quickPreset">⚡ Load Preset Template...</option>
+                        <option value="food" data-i18n="presetsList.food">🍕 Food Picker</option>
+                        <option value="decision" data-i18n="presetsList.decision">🤔 Decision Maker (Yes / No)</option>
+                        <option value="numbers" data-i18n="presetsList.numbers">🔢 Lucky Numbers 1-10</option>
+                        <option value="standup" data-i18n="presetsList.standup">👥 Team Standup</option>
+                        <option value="dice" data-i18n="presetsList.dice">🎲 Dice Roll (1-6)</option>
+                    </select>
+                    <div class="slices-action-row">
+                        <select class="form-select sort-quick-select" id="sortSelect" aria-label="Sort Slices">
+                            <option value="" data-i18n="slices.sortPlaceholder">🔃 Sort...</option>
+                            <option value="az" data-i18n="slices.sortAZ">🔤 A → Z</option>
+                            <option value="za" data-i18n="slices.sortZA">🔤 Z → A</option>
+                            <option value="weight-desc" data-i18n="slices.sortWeightDesc">⚖️ Weight ↓</option>
+                            <option value="weight-asc" data-i18n="slices.sortWeightAsc">⚖️ Weight ↑</option>
+                        </select>
+                        <button type="button" class="btn btn-secondary btn-sm" id="bulkEditOpenBtn" title="Bulk edit slices via text">
+                            <span>📋</span> <span data-i18n="slices.bulkEdit">Bulk Edit</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="toggleAllSlicesBtn" title="Bật/Tắt hiển thị tất cả các ô" data-i18n-title="slices.toggleAll">
+                            <span id="toggleAllIcon">👁️</span> <span id="toggleAllText" data-i18n="slices.showAll">Hiện Hết</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Slices Scrollable List with bottom inline auto-add row -->
+                <div class="slices-list-wrapper">
+                    <ul class="slices-list" id="slicesList">
+                        <!-- Dynamically populated including bottom auto-add row -->
+                    </ul>
+                </div>
+
+
+                <!-- Wheel Settings Section (Below Slices) -->
+                <div class="settings-section-divider">
+                    <span class="settings-section-title" data-i18n="settings.sectionTitle">⚙️ Wheel Settings</span>
+                </div>
+
+                <div class="settings-group">
+                    <!-- Auto Rainbow Color Toggle -->
+                    <div class="setting-row">
+                        <div class="setting-label" data-i18n="settings.rainbow">Màu Tự Động</div>
+                        <label class="switch" title="Bật/Tắt Màu Cầu Vồng Tự Động">
+                            <input type="checkbox" id="rainbowToggle" checked>
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- Elimination Mode Toggle -->
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label" data-i18n="settings.elimination">Elimination Mode</div>
+                            <div class="setting-desc" data-i18n="settings.eliminationDesc">Auto-hide slice after winning</div>
+                        </div>
+                        <label class="switch" title="Toggle Elimination Mode">
+                            <input type="checkbox" id="eliminationToggle">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- Sizing Mode Radio (3 Modes) -->
+                    <div class="setting-row setting-row-stack">
+                        <div class="setting-label" data-i18n="settings.sizing">Slice Sizing</div>
+                        <div class="segmented-control segmented-control-3" role="group" aria-label="Slice Sizing Mode">
+                            <button type="button" class="segmented-btn" id="btnModeEqual" data-i18n="settings.equal" title="Tất cả đều trọng số 1 (chia đều góc và xác suất bằng nhau)">Chia Đều</button>
+                            <button type="button" class="segmented-btn is-active" id="btnModeWeighted" data-i18n="settings.weighted" title="Lát cắt to nhỏ và xác suất quay theo đúng trọng số">Trọng Số</button>
+                            <button type="button" class="segmented-btn" id="btnModeEqualWeighted" data-i18n="settings.equalWeighted" title="Lát cắt chia đều trên vòng quay, nhưng xác suất quay tính theo trọng số">Trọng Số (Chia Đều)</button>
+                        </div>
+                    </div>
+
+                    <!-- Spin Duration Slider -->
+                    <div class="setting-row">
+                        <div class="setting-label" data-i18n="settings.duration">Spin Duration</div>
+                        <div class="range-wrapper">
+                            <input type="range" class="range-slider" id="durationSlider" min="3" max="12" step="1" value="5">
+                            <span class="range-val" id="durationVal">5s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Pane 2: History (Tablet & Mobile Unified Slot) -->
+            <div class="tab-pane" id="tabPaneHistory" style="display: none;">
+                <div id="tabHistorySlot" class="tab-history-slot"></div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Modal: Winner Announcement -->
+    <div class="modal-backdrop" id="winnerModal" role="dialog" aria-modal="true" aria-labelledby="winnerHeading">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="modal-title" id="winnerHeading" data-i18n="winner.heading">🏆 Result</span>
+                <button type="button" class="modal-close-btn" id="winnerModalCloseBtn" aria-label="Close Modal">&times;</button>
+            </div>
+            <div class="winner-content">
+                <div class="winner-trophy">🎉</div>
+                <div class="winner-subtitle" data-i18n="winner.subtitle">WE HAVE A WINNER!</div>
+                <div class="winner-name" id="winnerName">Prize Name</div>
+            </div>
+            <div class="winner-actions">
+                <button type="button" class="btn btn-primary btn-lg" id="modalSpinAgainBtn">
+                    <span>⚡</span> <span data-i18n="winner.spinAgain">Spin Again</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="modalRemoveWinnerBtn">
+                    <span>🚫</span> <span data-i18n="winner.hide">Hide This Slice from Wheel</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Bulk Edit -->
+    <div class="modal-backdrop" id="bulkEditModal" role="dialog" aria-modal="true" aria-labelledby="bulkEditHeading">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="bulkEditHeading" data-i18n="bulk.heading">Bulk Edit Slices</h3>
+                <button type="button" class="modal-close-btn" id="bulkEditCloseBtn" aria-label="Close Modal">&times;</button>
+            </div>
+            <textarea class="bulk-textarea" id="bulkEditTextarea" placeholder="Enter one slice per line&#10;Optionally specify weight: Item Name : 2" data-i18n-placeholder="bulk.placeholder" spellcheck="false"></textarea>
+            <p class="bulk-hint" data-i18n="bulk.hint">Tip: Format as <code>Name</code> or <code>Name : Weight</code> (one item per line).</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" id="bulkEditCancelBtn" data-i18n="bulk.cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="bulkEditApplyBtn" data-i18n="bulk.apply">Apply Slices</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs for Shared SSO Auth & Cloud Sync -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <!-- Universal Shared SSO Auth Engine -->
+    <script src="../../common/shared-auth-config.js"></script>
+    <script src="../../common/shared-auth.js"></script>
+
+    <!-- Lucky Wheel Core Scripts -->
+    <script src="./lucky-wheel/audio.js"></script>
+    <script src="./lucky-wheel/wheel.js"></script>
+    <script src="./lucky-wheel/lucky-wheel-i18n.js"></script>
+    <script src="./lucky-wheel/app.js"></script>
+</body>
+</html>

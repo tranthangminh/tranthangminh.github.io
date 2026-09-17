@@ -7,7 +7,7 @@
   "MapOverlayOpacity": 60,
   "IsDarkTheme": true,
   "IsAdvancedTab": false,
-  "LastUpdateCheckDate": "2026-09-16",
+  "LastUpdateCheckDate": "2026-09-17",
   "SimpleProfiles": [
     {
       "TabIndex": 0,
@@ -20,30 +20,24 @@
       "SimpleTargetWindowTitle": "Building Portable Auto Cl...",
       "SimpleRelativeToWindow": true,
       "Points": [
-        { "X": 765, "Y": 869 }
+        { "X": 710, "Y": 872 }
       ]
     },
     {
       "TabIndex": 1,
-      "IntervalMs": 10,
+      "IntervalMs": 500,
       "SimpleLoops": 0,
       "SimpleJitterPx": 0,
       "MouseButton": 0,
       "SimpleClickMode": 0,
-      "SimpleTargetProcessName": "chrome",
-      "SimpleTargetWindowTitle": "CPS Test Online – Click Speed Test for Gamers | Redragon – Redragonshop - Google Chrome",
+      "SimpleTargetProcessName": "Antigravity",
+      "SimpleTargetWindowTitle": "Lucky Wheel Implementatio...",
       "SimpleRelativeToWindow": true,
       "Points": [
-        { "X": 730, "Y": 525 },
-        { "X": 613, "Y": 533 },
-        { "X": 541, "Y": 630 },
-        { "X": 584, "Y": 725 },
-        { "X": 463, "Y": 775 },
-        { "X": 774, "Y": 816 },
-        { "X": 861, "Y": 773 },
-        { "X": 960, "Y": 590 },
-        { "X": 1074, "Y": 613 },
-        { "X": 1092, "Y": 686 }
+        { "X": 108, "Y": 243 },
+        { "X": 735, "Y": 867 },
+        { "X": 101, "Y": 290 },
+        { "X": 736, "Y": 867 }
       ]
     },
     {
@@ -92,7 +86,7 @@
   "SimpleTargetWindowTitle": "Building Portable Auto Cl...",
   "SimpleRelativeToWindow": true,
   "Points": [
-    { "X": 765, "Y": 869 }
+    { "X": 710, "Y": 872 }
   ],
   "AdvancedProfile": {
   "ActiveIndex": 0,
