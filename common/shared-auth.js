@@ -54,6 +54,10 @@
             this.initFirebase();
             this.renderUI();
             this.injectModal();
+
+            window.addEventListener('app-lang-changed', () => {
+                this.renderUI();
+            });
         }
 
         /**
@@ -298,12 +302,15 @@
             if (!config) {
                 container.innerHTML = `
                     <div class="shared-auth-container">
-                        <button type="button" class="btn-setup-cloud" id="btnSharedAuthSetup" title="Configure Firebase Cloud Sync">
-                            <span>☁️</span> Setup Cloud
+                        <button type="button" class="btn-setup-cloud" id="btnSharedAuthSetup">
+                            <span>☁️</span> <span data-i18n="auth.setup">Setup Cloud</span>
                         </button>
                     </div>
                 `;
                 document.getElementById('btnSharedAuthSetup').addEventListener('click', () => this.openConfigModal());
+                if (window.LuckyWheelI18n && typeof window.LuckyWheelI18n.applyTranslations === 'function') {
+                    window.LuckyWheelI18n.applyTranslations();
+                }
                 return;
             }
 
@@ -311,13 +318,16 @@
             if (!this.currentUser) {
                 container.innerHTML = `
                     <div class="shared-auth-container">
-                        <button type="button" class="btn-google-auth" id="btnSharedGoogleLogin" title="Sign in with Google to sync settings">
+                        <button type="button" class="btn-google-auth" id="btnSharedGoogleLogin">
                             ${GOOGLE_ICON_SVG}
-                            <span>Sign in</span>
+                            <span data-i18n="auth.signIn">Sign in</span>
                         </button>
                     </div>
                 `;
                 document.getElementById('btnSharedGoogleLogin').addEventListener('click', () => this.signIn());
+                if (window.LuckyWheelI18n && typeof window.LuckyWheelI18n.applyTranslations === 'function') {
+                    window.LuckyWheelI18n.applyTranslations();
+                }
                 return;
             }
 
@@ -331,10 +341,10 @@
 
             container.innerHTML = `
                 <div class="shared-auth-container">
-                    <div class="user-profile-pill" id="sharedUserProfilePill" title="Account & Sync">
+                    <div class="user-profile-pill" id="sharedUserProfilePill">
                         ${avatarHtml}
                         <span class="user-name-text">${escapeHtml(name)}</span>
-                        <span class="sync-status-indicator" id="sharedAuthSyncStatus" title="All changes saved to cloud">☁️</span>
+                        <span class="sync-status-indicator" id="sharedAuthSyncStatus">☁️</span>
                     </div>
 
                     <div class="user-dropdown-menu" id="sharedUserDropdownMenu">
@@ -343,17 +353,20 @@
                             <div class="dropdown-user-email">${escapeHtml(user.email || '')}</div>
                         </div>
                         <button type="button" class="dropdown-action-btn" id="btnDropdownSyncNow">
-                            <span>🔄</span> Sync Now
+                            <span>🔄</span> <span data-i18n="auth.syncNow">Sync Now</span>
                         </button>
                         <button type="button" class="dropdown-action-btn" id="btnDropdownCloudConfig">
-                            <span>⚙️</span> Cloud Setup
+                            <span>⚙️</span> <span data-i18n="auth.cloudSetup">Cloud Setup</span>
                         </button>
                         <button type="button" class="dropdown-action-btn btn-signout" id="btnDropdownSignOut">
-                            <span>🚪</span> Sign Out
+                            <span>🚪</span> <span data-i18n="auth.signOut">Sign Out</span>
                         </button>
                     </div>
                 </div>
             `;
+            if (window.LuckyWheelI18n && typeof window.LuckyWheelI18n.applyTranslations === 'function') {
+                window.LuckyWheelI18n.applyTranslations();
+            }
 
             // Bind dropdown toggle
             const pill = document.getElementById('sharedUserProfilePill');

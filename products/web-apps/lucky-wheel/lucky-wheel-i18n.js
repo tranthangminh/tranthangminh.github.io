@@ -10,7 +10,15 @@
     const TRANSLATIONS = {
         'en': {
             brand: {
-                title: 'Lucky Wheel'
+                title: 'Lucky Wheel',
+                documentTitle: 'Lucky Wheel - Random Picker & Decision Maker'
+            },
+            auth: {
+                signIn: 'Sign in',
+                setup: 'Setup Sync',
+                syncNow: 'Sync Now',
+                cloudSetup: 'Cloud Setup',
+                signOut: 'Sign Out'
             },
             tabs: {
                 slices: 'Slices',
@@ -20,18 +28,10 @@
             },
             actions: {
                 spin: 'SPIN',
-                shuffle: 'Shuffle',
-                toggleSound: 'Toggle Sound',
-                toggleLang: 'Chuyển sang Tiếng Việt',
-                toggleHistory: 'Toggle History Panel',
-                toggleControls: 'Toggle Settings Panel',
-                hideHistory: 'Hide History',
-                showHistory: 'Show History',
-                hideControls: 'Hide Settings',
-                showControls: 'Show Settings'
+                shuffle: 'Shuffle'
             },
             slices: {
-                quickPreset: '⚡ Preset...',
+                quickPreset: '⚡ Preset Template...',
                 sortPlaceholder: '🔃 Sort...',
                 sortAZ: '🔤 A → Z',
                 sortZA: '🔤 Z → A',
@@ -41,13 +41,8 @@
                 placeholder: 'Enter slice name...',
                 newPlaceholder: '+ Type to add new slice...',
                 add: '+ Add',
-                toggleAll: 'Toggle All Slices Visibility',
                 showAll: 'Show All',
-                hideAll: 'Hide All',
-                colorLocked: 'Auto Rainbow is active (color locked)',
-                changeColor: 'Change color',
-                newColor: 'New slice color',
-                dragHint: 'Drag to reorder'
+                hideAll: 'Hide All'
             },
             settings: {
                 sectionTitle: '⚙️ Wheel Settings',
@@ -58,6 +53,10 @@
                 eliminationDesc: 'Auto-hide slice after winning',
                 rainbow: 'Auto Rainbow Colors',
                 rainbowDesc: 'Spread rainbow colors evenly from red to magenta',
+                displayMode: 'Display Mode',
+                mode2D: '2D Flat',
+                mode3DTilt: '3D Tilt',
+                mode3DCylinder: '3D Cylinder',
                 sizing: 'Slice Sizing',
                 sizingDesc: 'Equal distribution vs weights',
                 equal: 'Equal',
@@ -70,6 +69,7 @@
                 panelTitle: 'History',
                 title: 'Recent Winning Results',
                 clear: 'Clear History',
+                clearConfirm: 'Are you sure you want to clear all spin history?',
                 empty: 'No spins yet. Give it a spin!'
             },
             winner: {
@@ -84,7 +84,12 @@
                 placeholder: 'Enter one slice per line\nOptionally specify weight: Item Name : 2',
                 hint: 'Tip: Format as Name or Name : Weight (one item per line).',
                 cancel: 'Cancel',
-                apply: 'Apply Slices'
+                apply: 'Apply Slices',
+                emptyAlert: 'Please enter at least one item.',
+                minAlert: 'Please provide at least 2 items.'
+            },
+            alerts: {
+                minSlices: 'Please add at least 2 active slices to spin the wheel!'
             },
             presetsList: {
                 food: '🍕 Food Picker',
@@ -96,7 +101,15 @@
         },
         'vi': {
             brand: {
-                title: 'Vòng Xoay May Mắn'
+                title: 'Vòng Xoay May Mắn',
+                documentTitle: 'Vòng Xoay May Mắn - Vòng Quay Ngẫu Nhiên & Quyết Định'
+            },
+            auth: {
+                signIn: 'Đăng nhập',
+                setup: 'Cấu hình Cloud',
+                syncNow: 'Đồng bộ ngay',
+                cloudSetup: 'Cài đặt Cloud',
+                signOut: 'Đăng xuất'
             },
             tabs: {
                 slices: 'Ô Quay',
@@ -106,15 +119,7 @@
             },
             actions: {
                 spin: 'QUAY',
-                shuffle: 'Xáo Trộn',
-                toggleSound: 'Bật/Tắt Âm Thanh',
-                toggleLang: 'Switch to English',
-                toggleHistory: 'Ẩn/Hiện Lịch Sử',
-                toggleControls: 'Ẩn/Hiện Cài Đặt',
-                hideHistory: 'Ẩn Lịch Sử',
-                showHistory: 'Hiện Lịch Sử',
-                hideControls: 'Ẩn Cài Đặt',
-                showControls: 'Hiện Cài Đặt'
+                shuffle: 'Xáo Trộn'
             },
             slices: {
                 quickPreset: '⚡ Mẫu có sẵn...',
@@ -127,13 +132,8 @@
                 placeholder: 'Nhập tên ô mới...',
                 newPlaceholder: '+ Nhập để thêm ô mới...',
                 add: '+ Thêm',
-                toggleAll: 'Bật/Tắt hiển thị tất cả các ô',
                 showAll: 'Hiện Hết',
-                hideAll: 'Ẩn Hết',
-                colorLocked: 'Màu Tự Động đang bật (không thể sửa màu)',
-                changeColor: 'Đổi màu ô',
-                newColor: 'Màu ô mới',
-                dragHint: 'Nắm kéo để đổi thứ tự'
+                hideAll: 'Ẩn Hết'
             },
             settings: {
                 sectionTitle: '⚙️ Cài Đặt Vòng Xoay',
@@ -144,6 +144,10 @@
                 eliminationDesc: 'Tự động ẩn ô vừa trúng thưởng',
                 rainbow: 'Màu Tự Động',
                 rainbowDesc: 'Chia đều dải màu cầu vồng từ đỏ tới tím hồng',
+                displayMode: 'Chế Độ Hiển Thị',
+                mode2D: '2D Phẳng',
+                mode3DTilt: '3D Nghiêng',
+                mode3DCylinder: '3D Khối Trụ',
                 sizing: 'Tỷ Lệ Lát Cắt',
                 sizingDesc: 'Chia đều góc hoặc theo trọng số',
                 equal: 'Chia Đều',
@@ -156,6 +160,7 @@
                 panelTitle: 'Lịch Sử',
                 title: 'Kết Quả Trúng Thưởng Gần Đây',
                 clear: 'Xóa Lịch Sử',
+                clearConfirm: 'Bạn có chắc chắn muốn xóa toàn bộ lịch sử quay?',
                 empty: 'Chưa có lượt quay nào. Hãy thử quay ngay!'
             },
             winner: {
@@ -170,7 +175,12 @@
                 placeholder: 'Nhập mỗi ô một dòng\nCó thể thêm trọng số: Tên ô : 2',
                 hint: 'Gợi ý: Định dạng Tên hoặc Tên : Trọng_số (mỗi ô một dòng).',
                 cancel: 'Hủy',
-                apply: 'Áp Dụng'
+                apply: 'Áp Dụng',
+                emptyAlert: 'Vui lòng nhập ít nhất một dòng.',
+                minAlert: 'Vui lòng nhập ít nhất 2 ô.'
+            },
+            alerts: {
+                minSlices: 'Vui lòng bật ít nhất 2 ô để có thể quay vòng!'
             },
             presetsList: {
                 food: '🍕 Hôm Nay Ăn Gì',
@@ -184,37 +194,54 @@
 
     class LuckyWheelI18n {
         constructor() {
+            this.translations = TRANSLATIONS;
             this.lang = this.getStoredLang();
+            if (typeof document !== 'undefined') {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        this.applyTranslations();
+                    });
+                } else {
+                    this.applyTranslations();
+                }
+            }
         }
 
         getStoredLang() {
             try {
                 const stored = localStorage.getItem(STORAGE_KEY);
-                return stored === 'vi' ? 'vi' : 'en';
+                return stored === 'en' ? 'en' : 'vi'; // Default to Vietnamese per _RULE-website.md
             } catch (e) {
-                return 'en';
+                return 'vi';
             }
         }
 
+        getLang() {
+            return this.lang;
+        }
+
         setLang(newLang) {
-            this.lang = newLang === 'vi' ? 'vi' : 'en';
+            this.lang = newLang === 'en' ? 'en' : 'vi';
             try {
                 localStorage.setItem(STORAGE_KEY, this.lang);
             } catch (e) {}
 
             this.applyTranslations();
-            window.dispatchEvent(new CustomEvent('app-lang-changed', { detail: { lang: this.lang } }));
+            if (typeof window !== 'undefined' && window.dispatchEvent) {
+                window.dispatchEvent(new CustomEvent('app-lang-changed', { detail: { lang: this.lang } }));
+            }
         }
 
         toggleLang() {
-            const target = this.lang === 'en' ? 'vi' : 'en';
+            const target = this.lang === 'vi' ? 'en' : 'vi';
             this.setLang(target);
             return this.lang;
         }
 
         t(keyPath) {
+            if (!keyPath) return '';
             const parts = keyPath.split('.');
-            let obj = TRANSLATIONS[this.lang] || TRANSLATIONS['en'];
+            let obj = TRANSLATIONS[this.lang] || TRANSLATIONS['vi'];
             for (const p of parts) {
                 if (!obj || typeof obj !== 'object') return keyPath;
                 obj = obj[p];
@@ -223,6 +250,7 @@
         }
 
         applyTranslations() {
+            if (typeof document === 'undefined') return;
             // Translate text content
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.dataset.i18n;
@@ -241,14 +269,11 @@
                 }
             });
 
-            // Translate title tooltip
-            document.querySelectorAll('[data-i18n-title]').forEach(el => {
-                const key = el.dataset.i18nTitle;
-                const translated = this.t(key);
-                if (translated && translated !== key) {
-                    el.title = translated;
-                }
-            });
+            // Update document title
+            const docTitle = this.t('brand.documentTitle');
+            if (docTitle && docTitle !== 'brand.documentTitle') {
+                document.title = docTitle;
+            }
 
             // Update html lang attribute
             document.documentElement.lang = this.lang;

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title data-i18n="brand.title">Lucky Wheel - Random Picker &amp; Decision Maker</title>
+    <title data-i18n="brand.documentTitle">Vòng Xoay May Mắn - Vòng Quay Ngẫu Nhiên &amp; Quyết Định</title>
     <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="../../common/shared-auth.css">
     <!-- Lucky Wheel Custom Component Styles -->
     <link rel="stylesheet" href="./lucky-wheel/lucky-wheel.css">
+    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel-wheel.css">
+    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel-slices.css">
+    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel-modals.css">
 </head>
 <body>
     <!-- Confetti Overlay Canvas -->
@@ -26,11 +29,17 @@
             <h1 class="brand-title" data-i18n="brand.title">Vòng Xoay May Mắn</h1>
         </div>
         <div class="header-actions">
-            <!-- Shared SSO Auth Slot -->
+            <!-- Sound Toggle Button -->
+            <button type="button" class="icon-btn" id="soundToggleBtn" aria-label="Toggle Sound">🔊</button>
+            <!-- Language Toggle Button (Sticky Header Flag Style) -->
+            <div class="lang-switch">
+                <button type="button" class="lang-btn lang-btn--toggle" id="langToggleBtn" data-lang="en" aria-label="Chuyển sang Tiếng Anh">
+                    <span class="lang-flag lang-flag--en" aria-hidden="true"></span>
+                    <span class="lang-code">EN</span>
+                </button>
+            </div>
+            <!-- Shared SSO Auth Slot (Rightmost) -->
             <div id="sharedAuthSlot"></div>
-            <!-- Language Toggle Button -->
-            <button type="button" class="icon-btn lang-toggle-btn" id="langToggleBtn" title="Change Language" aria-label="Change Language">🇻🇳 VI</button>
-            <button type="button" class="icon-btn" id="soundToggleBtn" title="Toggle Sound" aria-label="Toggle Sound" data-i18n-title="actions.toggleSound">🔊</button>
         </div>
     </header>
 
@@ -44,7 +53,7 @@
                         <span>📜</span> <span data-i18n="history.panelTitle">Lịch Sử</span>
                         <span class="badge" id="historyCountBadge">0</span>
                     </div>
-                    <button type="button" class="btn btn-ghost btn-sm" id="clearHistoryBtn" data-i18n="history.clear">Clear History</button>
+                    <button type="button" class="btn btn-ghost btn-sm" id="clearHistoryBtn" data-i18n="history.clear">Xóa Lịch Sử</button>
                 </div>
                 <div class="history-list-wrapper">
                     <ul class="history-list" id="historyList">
@@ -55,8 +64,10 @@
         </aside>
 
         <!-- Column 2 (Center): Wheel Stage -->
-        <section class="wheel-stage" aria-label="Wheel Stage">
+        <section class="wheel-stage mode-2d" id="wheelStage" aria-label="Wheel Stage">
             <div class="wheel-wrapper" id="wheelWrapper">
+                <!-- Ground Shadow for 3D Modes -->
+                <div class="wheel-ground-shadow" id="wheelGroundShadow" aria-hidden="true"></div>
                 <!-- Pointer / Needle on Right Side (3 o'clock) -->
                 <div class="wheel-pointer-container">
                     <canvas id="pointerCanvas" width="64" height="56"></canvas>
@@ -64,21 +75,21 @@
                 <!-- Wheel Canvas -->
                 <canvas id="wheelCanvas" width="520" height="520" aria-label="Lucky Wheel Interactive Canvas"></canvas>
                 <!-- Center Clickable Spin Button Overlay -->
-                <button type="button" class="wheel-center-btn" id="centerSpinBtn" title="Click to Spin" aria-label="Spin Wheel"></button>
+                <button type="button" class="wheel-center-btn" id="centerSpinBtn" aria-label="Spin Wheel"></button>
             </div>
 
             <!-- Quick Action Bar Below Wheel with Sidebars Toggle Controls -->
             <div class="wheel-controls">
-                <button type="button" class="btn btn-secondary btn-lg" id="toggleHistoryBtn" title="Ẩn/Hiện Lịch Sử" aria-label="Toggle History" data-i18n-title="actions.toggleHistory">
+                <button type="button" class="btn btn-secondary btn-lg" id="toggleHistoryBtn" aria-label="Toggle History">
                     <span>📜</span> <span data-i18n="history.panelTitle">Lịch Sử</span>
                 </button>
-                <button type="button" class="btn btn-primary btn-lg" id="mainSpinBtn">
-                    <span>⚡</span> <span data-i18n="actions.spin">SPIN</span>
+                <button type="button" class="btn btn-primary btn-lg" id="mainSpinBtn" aria-label="Spin Wheel">
+                    <span>⚡</span> <span data-i18n="actions.spin">QUAY</span>
                 </button>
-                <button type="button" class="btn btn-secondary btn-lg" id="shuffleBtn" title="Shuffle slice order">
-                    <span>🔀</span> <span data-i18n="actions.shuffle">Shuffle</span>
+                <button type="button" class="btn btn-secondary btn-lg" id="shuffleBtn" aria-label="Shuffle Slices">
+                    <span>🔀</span> <span data-i18n="actions.shuffle">Xáo Trộn</span>
                 </button>
-                <button type="button" class="btn btn-secondary btn-lg" id="toggleControlsBtn" title="Ẩn/Hiện Cài Đặt" aria-label="Toggle Settings" data-i18n-title="actions.toggleControls">
+                <button type="button" class="btn btn-secondary btn-lg" id="toggleControlsBtn" aria-label="Toggle Settings">
                     <span>⚙️</span> <span data-i18n="tabs.settings">Cài Đặt</span>
                 </button>
             </div>
@@ -101,7 +112,7 @@
             <!-- Desktop Single Header (Hidden when Unified Tab Bar is visible) -->
             <div class="control-panel-header">
                 <div class="panel-header-title">
-                    <span>🎯</span> <span data-i18n="tabs.slicesAndSettings">Slices &amp; Settings</span>
+                    <span>🎯</span> <span data-i18n="tabs.slicesAndSettings">Ô Quay &amp; Cài Đặt</span>
                     <span class="badge" id="sliceCountBadge">0</span>
                 </div>
             </div>
@@ -111,25 +122,25 @@
                 <!-- Quick Bar: Preset Selector (Row 1), Sort, Bulk Edit & Show/Hide All (Row 2) -->
                 <div class="slices-quick-bar">
                     <select class="form-select preset-quick-select" id="presetSelect" aria-label="Quick Load Preset">
-                        <option value="" data-i18n="slices.quickPreset">⚡ Load Preset Template...</option>
-                        <option value="food" data-i18n="presetsList.food">🍕 Food Picker</option>
-                        <option value="decision" data-i18n="presetsList.decision">🤔 Decision Maker (Yes / No)</option>
-                        <option value="numbers" data-i18n="presetsList.numbers">🔢 Lucky Numbers 1-10</option>
-                        <option value="standup" data-i18n="presetsList.standup">👥 Team Standup</option>
-                        <option value="dice" data-i18n="presetsList.dice">🎲 Dice Roll (1-6)</option>
+                        <option value="" data-i18n="slices.quickPreset">⚡ Mẫu có sẵn...</option>
+                        <option value="food" data-i18n="presetsList.food">🍕 Hôm Nay Ăn Gì</option>
+                        <option value="decision" data-i18n="presetsList.decision">🤔 Chọn Lựa (Có / Không)</option>
+                        <option value="numbers" data-i18n="presetsList.numbers">🔢 Số May Mắn 1-10</option>
+                        <option value="standup" data-i18n="presetsList.standup">👥 Chọn Người Báo Cáo</option>
+                        <option value="dice" data-i18n="presetsList.dice">🎲 Xúc Xắc (1-6)</option>
                     </select>
                     <div class="slices-action-row">
                         <select class="form-select sort-quick-select" id="sortSelect" aria-label="Sort Slices">
-                            <option value="" data-i18n="slices.sortPlaceholder">🔃 Sort...</option>
+                            <option value="" data-i18n="slices.sortPlaceholder">🔃 Sắp xếp...</option>
                             <option value="az" data-i18n="slices.sortAZ">🔤 A → Z</option>
                             <option value="za" data-i18n="slices.sortZA">🔤 Z → A</option>
-                            <option value="weight-desc" data-i18n="slices.sortWeightDesc">⚖️ Weight ↓</option>
-                            <option value="weight-asc" data-i18n="slices.sortWeightAsc">⚖️ Weight ↑</option>
+                            <option value="weight-desc" data-i18n="slices.sortWeightDesc">⚖️ Trọng số ↓</option>
+                            <option value="weight-asc" data-i18n="slices.sortWeightAsc">⚖️ Trọng số ↑</option>
                         </select>
-                        <button type="button" class="btn btn-secondary btn-sm" id="bulkEditOpenBtn" title="Bulk edit slices via text">
-                            <span>📋</span> <span data-i18n="slices.bulkEdit">Bulk Edit</span>
+                        <button type="button" class="btn btn-secondary btn-sm" id="bulkEditOpenBtn">
+                            <span>📋</span> <span data-i18n="slices.bulkEdit">Sửa Hàng Loạt</span>
                         </button>
-                        <button type="button" class="btn btn-secondary btn-sm" id="toggleAllSlicesBtn" title="Bật/Tắt hiển thị tất cả các ô" data-i18n-title="slices.toggleAll">
+                        <button type="button" class="btn btn-secondary btn-sm" id="toggleAllSlicesBtn">
                             <span id="toggleAllIcon">👁️</span> <span id="toggleAllText" data-i18n="slices.showAll">Hiện Hết</span>
                         </button>
                     </div>
@@ -145,14 +156,14 @@
 
                 <!-- Wheel Settings Section (Below Slices) -->
                 <div class="settings-section-divider">
-                    <span class="settings-section-title" data-i18n="settings.sectionTitle">⚙️ Wheel Settings</span>
+                    <span class="settings-section-title" data-i18n="settings.sectionTitle">⚙️ Cài Đặt Vòng Xoay</span>
                 </div>
 
                 <div class="settings-group">
                     <!-- Auto Rainbow Color Toggle -->
                     <div class="setting-row">
                         <div class="setting-label" data-i18n="settings.rainbow">Màu Tự Động</div>
-                        <label class="switch" title="Bật/Tắt Màu Cầu Vồng Tự Động">
+                        <label class="switch">
                             <input type="checkbox" id="rainbowToggle" checked>
                             <span class="switch-slider"></span>
                         </label>
@@ -161,28 +172,38 @@
                     <!-- Elimination Mode Toggle -->
                     <div class="setting-row">
                         <div>
-                            <div class="setting-label" data-i18n="settings.elimination">Elimination Mode</div>
-                            <div class="setting-desc" data-i18n="settings.eliminationDesc">Auto-hide slice after winning</div>
+                            <div class="setting-label" data-i18n="settings.elimination">Chế Độ Loại Trừ</div>
+                            <div class="setting-desc" data-i18n="settings.eliminationDesc">Tự động ẩn ô vừa trúng thưởng</div>
                         </div>
-                        <label class="switch" title="Toggle Elimination Mode">
+                        <label class="switch">
                             <input type="checkbox" id="eliminationToggle">
                             <span class="switch-slider"></span>
                         </label>
                     </div>
 
+                    <!-- Display Mode (3 Modes: 2D, 3D Tilt, 3D Cylinder) -->
+                    <div class="setting-row setting-row-stack">
+                        <div class="setting-label" data-i18n="settings.displayMode">Chế Độ Hiển Thị</div>
+                        <div class="segmented-control segmented-control-3" role="group" aria-label="Wheel Display Mode">
+                            <button type="button" class="segmented-btn is-active" id="btnDisplay2D" data-i18n="settings.mode2D">2D Phẳng</button>
+                            <button type="button" class="segmented-btn" id="btnDisplay3DTilt" data-i18n="settings.mode3DTilt">3D Nghiêng</button>
+                            <button type="button" class="segmented-btn" id="btnDisplay3DCylinder" data-i18n="settings.mode3DCylinder">3D Khối Trụ</button>
+                        </div>
+                    </div>
+
                     <!-- Sizing Mode Radio (3 Modes) -->
                     <div class="setting-row setting-row-stack">
-                        <div class="setting-label" data-i18n="settings.sizing">Slice Sizing</div>
+                        <div class="setting-label" data-i18n="settings.sizing">Tỷ Lệ Lát Cắt</div>
                         <div class="segmented-control segmented-control-3" role="group" aria-label="Slice Sizing Mode">
-                            <button type="button" class="segmented-btn" id="btnModeEqual" data-i18n="settings.equal" title="Tất cả đều trọng số 1 (chia đều góc và xác suất bằng nhau)">Chia Đều</button>
-                            <button type="button" class="segmented-btn is-active" id="btnModeWeighted" data-i18n="settings.weighted" title="Lát cắt to nhỏ và xác suất quay theo đúng trọng số">Trọng Số</button>
-                            <button type="button" class="segmented-btn" id="btnModeEqualWeighted" data-i18n="settings.equalWeighted" title="Lát cắt chia đều trên vòng quay, nhưng xác suất quay tính theo trọng số">Trọng Số (Chia Đều)</button>
+                            <button type="button" class="segmented-btn" id="btnModeEqual" data-i18n="settings.equal">Chia Đều</button>
+                            <button type="button" class="segmented-btn is-active" id="btnModeWeighted" data-i18n="settings.weighted">Trọng Số</button>
+                            <button type="button" class="segmented-btn" id="btnModeEqualWeighted" data-i18n="settings.equalWeighted">Trọng Số (Chia Đều)</button>
                         </div>
                     </div>
 
                     <!-- Spin Duration Slider -->
                     <div class="setting-row">
-                        <div class="setting-label" data-i18n="settings.duration">Spin Duration</div>
+                        <div class="setting-label" data-i18n="settings.duration">Thời Gian Quay</div>
                         <div class="range-wrapper">
                             <input type="range" class="range-slider" id="durationSlider" min="3" max="12" step="1" value="5">
                             <span class="range-val" id="durationVal">5s</span>
@@ -202,20 +223,20 @@
     <div class="modal-backdrop" id="winnerModal" role="dialog" aria-modal="true" aria-labelledby="winnerHeading">
         <div class="modal-card">
             <div class="modal-header">
-                <span class="modal-title" id="winnerHeading" data-i18n="winner.heading">🏆 Result</span>
+                <span class="modal-title" id="winnerHeading" data-i18n="winner.heading">🏆 Kết Quả</span>
                 <button type="button" class="modal-close-btn" id="winnerModalCloseBtn" aria-label="Close Modal">&times;</button>
             </div>
             <div class="winner-content">
                 <div class="winner-trophy">🎉</div>
-                <div class="winner-subtitle" data-i18n="winner.subtitle">WE HAVE A WINNER!</div>
+                <div class="winner-subtitle" data-i18n="winner.subtitle">CHÚC MỪNG CHIẾN THẮNG!</div>
                 <div class="winner-name" id="winnerName">Prize Name</div>
             </div>
             <div class="winner-actions">
                 <button type="button" class="btn btn-primary btn-lg" id="modalSpinAgainBtn">
-                    <span>⚡</span> <span data-i18n="winner.spinAgain">Spin Again</span>
+                    <span>⚡</span> <span data-i18n="winner.spinAgain">Quay Tiếp</span>
                 </button>
                 <button type="button" class="btn btn-secondary" id="modalRemoveWinnerBtn">
-                    <span>🚫</span> <span data-i18n="winner.hide">Hide This Slice from Wheel</span>
+                    <span>🚫</span> <span data-i18n="winner.hide">Ẩn Ô Này Khỏi Vòng</span>
                 </button>
             </div>
         </div>
@@ -225,14 +246,14 @@
     <div class="modal-backdrop" id="bulkEditModal" role="dialog" aria-modal="true" aria-labelledby="bulkEditHeading">
         <div class="modal-card">
             <div class="modal-header">
-                <h3 class="modal-title" id="bulkEditHeading" data-i18n="bulk.heading">Bulk Edit Slices</h3>
+                <h3 class="modal-title" id="bulkEditHeading" data-i18n="bulk.heading">Chỉnh Sửa Hàng Loạt</h3>
                 <button type="button" class="modal-close-btn" id="bulkEditCloseBtn" aria-label="Close Modal">&times;</button>
             </div>
-            <textarea class="bulk-textarea" id="bulkEditTextarea" placeholder="Enter one slice per line&#10;Optionally specify weight: Item Name : 2" data-i18n-placeholder="bulk.placeholder" spellcheck="false"></textarea>
-            <p class="bulk-hint" data-i18n="bulk.hint">Tip: Format as <code>Name</code> or <code>Name : Weight</code> (one item per line).</p>
+            <textarea class="bulk-textarea" id="bulkEditTextarea" placeholder="Nhập mỗi ô một dòng&#10;Có thể thêm trọng số: Tên ô : 2" data-i18n-placeholder="bulk.placeholder" spellcheck="false"></textarea>
+            <p class="bulk-hint" data-i18n="bulk.hint">Gợi ý: Định dạng <code>Tên</code> hoặc <code>Tên : Trọng_số</code> (mỗi ô một dòng).</p>
             <div class="modal-actions">
-                <button type="button" class="btn btn-ghost" id="bulkEditCancelBtn" data-i18n="bulk.cancel">Cancel</button>
-                <button type="button" class="btn btn-primary" id="bulkEditApplyBtn" data-i18n="bulk.apply">Apply Slices</button>
+                <button type="button" class="btn btn-ghost" id="bulkEditCancelBtn" data-i18n="bulk.cancel">Hủy</button>
+                <button type="button" class="btn btn-primary" id="bulkEditApplyBtn" data-i18n="bulk.apply">Áp Dụng</button>
             </div>
         </div>
     </div>
@@ -250,6 +271,10 @@
     <script src="./lucky-wheel/audio.js"></script>
     <script src="./lucky-wheel/wheel.js"></script>
     <script src="./lucky-wheel/lucky-wheel-i18n.js"></script>
+    <script src="./lucky-wheel/presets.js"></script>
+    <script src="./lucky-wheel/history.js"></script>
+    <script src="./lucky-wheel/slices.js"></script>
+    <script src="./lucky-wheel/winner-modal.js"></script>
     <script src="./lucky-wheel/app.js"></script>
 </body>
 </html>

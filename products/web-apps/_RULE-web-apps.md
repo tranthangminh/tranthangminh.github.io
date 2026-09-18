@@ -20,7 +20,7 @@ Nhằm đảm bảo tính độc lập tuyệt đối giữa các Web App và tr
    - **TUYỆT ĐỐI CẤM** nhét từ vựng đặc thù của Web App vào `common/i18n-vi.js` hay `common/i18n-en.js` của website portfolio chính.
 3. **Engine dịch chuẩn hóa (Attribute-Driven Engine):**
    - Quét và gán bản dịch tự động thông qua thuộc tính `data-i18n="key"` trên các phần tử DOM.
-   - Hỗ trợ cả placeholder (`data-i18n-placeholder`) và tooltip (`data-i18n-title`).
+   - Hỗ trợ placeholder (`data-i18n-placeholder`).
 
 ## 1.2 Quy Tắc Bảo Vệ Đa Ngôn Ngữ (i18n) Khi Kết Hợp Icon Và Text
 - Khi một nút (`<button>`) hoặc liên kết (`<a>`) chứa cả biểu tượng (icon) và văn bản, phần text **BẮT BUỘC** phải được bọc trong một thẻ `<span>` riêng biệt mang thuộc tính `data-i18n`:
@@ -40,6 +40,94 @@ Nhằm đảm bảo tính độc lập tuyệt đối giữa các Web App và tr
   - Tên file, tên biến (variables), tên hàm (functions), thuộc tính, class CSS, ID DOM, comment kỹ thuật trong code và commit messages **PHẢI 100% sử dụng Tiếng Anh (English)**.
 - **Giao tiếp & Lên kế hoạch (Chat & Planning):**
   - Toàn bộ kế hoạch (plan), giải thích kỹ thuật và phản hồi trong khung chat sử dụng **Tiếng Việt** (xưng *"tao"* - gọi *"mày"*).
+
+## 1.4 Quy Chuẩn Nút Chuyển Đổi Ngôn Ngữ (Language Switcher UI Standard)
+Nhằm đảm bảo tính nhận diện thương hiệu và đồng bộ 100% với phong cách toàn bộ website portfolio:
+1. **Dùng chuẩn thiết kế từ Sticky Header trang `index.html`:**
+   - Mọi Web App trên thanh Header bắt buộc phải sử dụng cụm nút chuyển đổi ngôn ngữ chuẩn với cấu trúc cờ CSS và mã ngôn ngữ xếp dọc (`.lang-switch`, `.lang-btn`, `.lang-flag`, `.lang-code`).
+2. **Tuyệt đối CẤM dùng Emoji cờ hệ điều hành:**
+   - Không được dùng emoji cờ như `🇬🇧`, `🇻🇳`,... vì bị phụ thuộc font hệ điều hành (Windows, macOS, Android hiển thị khác nhau, có thể bị lỗi ô vuông hoặc biến dạng layout).
+   - Toàn bộ icon cờ được vẽ bằng **CSS thuần (Pure CSS Flag)** cực kỳ sắc nét, nhẹ và độc lập tuyệt đối (`clip-path: polygon` cho ngôi sao vàng Việt Nam, `repeating-linear-gradient` cho sọc cờ Mỹ).
+3. **Quy tắc hiển thị trạng thái ngôn ngữ:**
+   - Khi đang ở **Tiếng Việt**: Hiển thị cờ Mỹ (`.lang-flag--en`) + chữ `EN` in hoa ở dưới (bấm vào để chuyển sang Tiếng Anh).
+   - Khi đang ở **Tiếng Anh**: Hiển thị cờ Việt Nam (`.lang-flag--vi`) + chữ `VN` in hoa ở dưới (bấm vào để chuyển sang Tiếng Việt).
+4. **Cấu trúc HTML chuẩn:**
+   ```html
+   <div class="lang-switch">
+       <button type="button" class="lang-btn lang-btn--toggle" id="langToggleBtn" data-lang="en" aria-label="Chuyển sang Tiếng Anh">
+           <span class="lang-flag lang-flag--en" aria-hidden="true"></span>
+           <span class="lang-code">EN</span>
+       </button>
+   </div>
+   ```
+5. **CSS chuẩn tái sử dụng (kế thừa hoặc nhúng vào CSS của app):**
+   ```css
+   .lang-switch {
+       display: inline-flex;
+       align-items: center;
+   }
+   .lang-btn {
+       border: none;
+       background: transparent;
+       color: var(--text-primary, #ffffff);
+       padding: 0 4px;
+       min-width: var(--btn-height-sm, 28px);
+       display: inline-flex;
+       flex-direction: column;
+       align-items: center;
+       gap: 4px;
+       font-size: var(--font-xs, 11px);
+       font-weight: 700;
+       line-height: 1;
+       letter-spacing: 0.08em;
+       cursor: pointer;
+       opacity: 0.85;
+       transition: opacity var(--transition-normal, 0.2s ease), color var(--transition-normal, 0.2s ease);
+   }
+   .lang-btn:hover { opacity: 1; }
+   .lang-btn--toggle { opacity: 1; }
+   .lang-code { display: block; }
+   .lang-flag {
+       position: relative;
+       display: block;
+       width: 20px;
+       height: 13px;
+       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+       overflow: hidden;
+   }
+   .lang-flag--vi, .lang-flag--vn { background: #d62828; }
+   .lang-flag--vi::before, .lang-flag--vn::before {
+       content: "";
+       position: absolute;
+       left: 50%; top: 50%;
+       width: 8px; height: 8px;
+       background: #f4d35e;
+       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+       transform: translate(-50%, -50%);
+   }
+   .lang-flag--en, .lang-flag--us {
+       background: repeating-linear-gradient(to bottom, #b22234 0px, #b22234 1px, #ffffff 1px, #ffffff 2px);
+   }
+   .lang-flag--en::before, .lang-flag--us::before {
+       content: "";
+       position: absolute;
+       left: 0; top: 0;
+       width: 9px; height: 7px;
+       background: #3c3b6e;
+   }
+   ```
+6. **Vị trí trên thanh Header (.header-actions):**
+   - Cụm `.lang-switch` bắt buộc nằm ngay bên trái của nút `Sign in` (`#sharedAuthSlot`) theo quy chuẩn thứ tự từ phải qua trái:
+     `[Sign in (Góc phải cùng)]` ➔ `[Ngôn ngữ]` ➔ `[Âm thanh / Nút phụ]`
+
+## 1.5 Quy Định Tuyệt Đối Không Tự Ý Thêm Text Chú Thích Phụ (No Unsolicited Tooltips / Title Annotations)
+- **CẤM TUYỆT ĐỐI** tự ý thêm thuộc tính `title="..."` hoặc popup/tooltip chú thích hover vào bất kỳ nút bấm, nhãn dán, trường nhập liệu hay biểu tượng nào trên giao diện nếu **người dùng không yêu cầu một cách tường minh**.
+- **Lý do & Mục đích:**
+  - Giữ cho giao diện tối giản, thanh thoát, hiện đại, không bị các popup chữ vàng/đen mặc định của trình duyệt che khuất tầm nhìn hay gây rối mắt khi di chuột qua lại.
+  - Tránh làm cồng kềnh bộ từ điển i18n với hàng chục key chú thích thừa thãi.
+- **Quy tắc thực thi:**
+  - Chỉ sử dụng `aria-label` cho mục đích hỗ trợ thiết bị trợ năng (screen reader) nếu cần thiết, tuyệt đối không gán thuộc tính `title`.
+  - Chỉ chừng nào người dùng chủ động yêu cầu thêm chú thích/tooltip cho một thành phần cụ thể, AI Agent mới được phép bổ sung cho đúng thành phần đó.
 
 ---
 
@@ -162,10 +250,24 @@ Trong file HTML của Web App:
 <script src="../../common/shared-auth.js"></script>
 ```
 
-Trên thanh Header:
+Trên thanh Header (`.header-actions`):
+Thứ tự các phần tử trên thanh Header bắt buộc xếp **từ phải qua trái (Right-to-Left)**:
+`[Sign in / User Avatar (Góc phải cùng)]` ➔ `[Ngôn ngữ]` ➔ `[Âm thanh / Nút phụ]`
+
+Cấu trúc DOM chuẩn:
 ```html
 <div class="header-actions">
-    <div id="sharedAuthSlot"></div> <!-- Tự động render nút Google Sign-In hoặc Avatar -->
+    <!-- Nút âm thanh / Nút phụ -->
+    <button type="button" class="icon-btn" id="soundToggleBtn" title="Bật/Tắt Âm Thanh">🔊</button>
+    <!-- Cụm chuyển đổi ngôn ngữ chuẩn -->
+    <div class="lang-switch">
+        <button type="button" class="lang-btn lang-btn--toggle" id="langToggleBtn" data-lang="en" aria-label="Chuyển sang Tiếng Anh" title="Chuyển sang Tiếng Anh">
+            <span class="lang-flag lang-flag--en" aria-hidden="true"></span>
+            <span class="lang-code">EN</span>
+        </button>
+    </div>
+    <!-- Shared SSO Auth Slot (Bắt buộc nằm ở góc ngoài cùng bên phải) -->
+    <div id="sharedAuthSlot"></div>
 </div>
 ```
 
@@ -219,7 +321,7 @@ Khi tạo một Web App mới, AI Agent hãy sao chép trực tiếp khung mẫu
 ### `products/web-apps/[app-name].html`
 ```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -244,8 +346,17 @@ Khi tạo một Web App mới, AI Agent hãy sao chép trực tiếp khung mẫu
             </div>
         </div>
         <div class="header-actions">
-            <div id="sharedAuthSlot"></div>
+            <!-- Nút công cụ phụ / Âm thanh -->
             <button type="button" class="icon-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
+            <!-- Cụm nút chuyển đổi ngôn ngữ chuẩn (CSS Flag + EN/VN) -->
+            <div class="lang-switch">
+                <button type="button" class="lang-btn lang-btn--toggle" id="langToggleBtn" data-lang="en" aria-label="Chuyển sang Tiếng Anh" title="Chuyển sang Tiếng Anh">
+                    <span class="lang-flag lang-flag--en" aria-hidden="true"></span>
+                    <span class="lang-code">EN</span>
+                </button>
+            </div>
+            <!-- Shared SSO Auth Slot (Góc ngoài cùng bên phải) -->
+            <div id="sharedAuthSlot"></div>
         </div>
     </header>
 

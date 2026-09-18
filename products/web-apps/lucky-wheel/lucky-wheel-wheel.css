@@ -1,0 +1,169 @@
+/* Right Column: Wheel Stage */
+.wheel-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(30, 41, 59, 0.4) 0%, transparent 72%);
+    border-radius: var(--border-radius-lg, 8px);
+    padding: 8px 12px;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    transition: background 0.4s ease;
+}
+
+.wheel-wrapper {
+    position: relative;
+    width: auto;
+    max-width: 100%;
+    height: calc(100% - 60px);
+    max-height: calc(100vh - 140px);
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: perspective 0.4s ease;
+}
+
+#wheelCanvas {
+    display: block;
+    cursor: pointer;
+    touch-action: none;
+    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.6));
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.45s ease;
+    transform-origin: center center;
+}
+
+/* Ground Shadow for 3D Modes */
+.wheel-ground-shadow {
+    position: absolute;
+    bottom: 2%;
+    left: 50%;
+    transform: translateX(-50%) rotateX(68deg);
+    width: 88%;
+    height: 36%;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.3) 52%, transparent 76%);
+    filter: blur(14px);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+/* Pointer Needle on Right Side (3 o'clock) */
+.wheel-pointer-container {
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 64px;
+    height: 56px;
+    pointer-events: none;
+    z-index: 10;
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), right 0.45s ease, top 0.45s ease;
+}
+
+#pointerCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Center Clickable Spin Button Overlay */
+.wheel-center-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: var(--border-radius-full, 9999px);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 5;
+    outline: none;
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.45s ease;
+}
+
+.wheel-center-btn:focus-visible {
+    box-shadow: 0 0 0 3px var(--accent-primary, #e50914);
+}
+
+/* ==========================================================================
+   DISPLAY MODES (2D Flat, 3D Tilt, 3D Cylinder)
+   ========================================================================== */
+
+/* Mode 1: 2D Phẳng (Default) */
+.wheel-stage.mode-2d #wheelCanvas {
+    transform: none;
+    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.6));
+}
+.wheel-stage.mode-2d .wheel-ground-shadow {
+    opacity: 0;
+}
+.wheel-stage.mode-2d .wheel-pointer-container {
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.wheel-stage.mode-2d .wheel-center-btn {
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Mode 2: 3D Nghiêng (Perspective Tilt) */
+.wheel-stage.mode-3d-tilt {
+    background: radial-gradient(circle at 50% 40%, rgba(30, 58, 100, 0.25) 0%, rgba(15, 23, 42, 0.5) 60%, transparent 80%);
+}
+.wheel-stage.mode-3d-tilt .wheel-wrapper {
+    perspective: 1100px;
+    perspective-origin: 50% 36%;
+}
+.wheel-stage.mode-3d-tilt #wheelCanvas {
+    transform: rotateX(40deg);
+    filter: drop-shadow(0 22px 38px rgba(0, 0, 0, 0.75));
+}
+.wheel-stage.mode-3d-tilt .wheel-ground-shadow {
+    opacity: 1;
+    bottom: 4%;
+    transform: translateX(-50%) rotateX(72deg) scale(1.05);
+}
+.wheel-stage.mode-3d-tilt .wheel-pointer-container {
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%) rotateX(40deg);
+    transform-origin: center right;
+}
+.wheel-stage.mode-3d-tilt .wheel-center-btn {
+    top: 50%;
+    transform: translate(-50%, -50%) rotateX(40deg);
+}
+
+/* Mode 3: 3D Khối Trụ (Volumetric Cylinder) */
+.wheel-stage.mode-3d-cylinder {
+    background: radial-gradient(ellipse at 50% 45%, rgba(45, 55, 72, 0.35) 0%, rgba(15, 23, 42, 0.6) 70%, transparent 85%);
+}
+.wheel-stage.mode-3d-cylinder .wheel-wrapper {
+    perspective: none;
+}
+.wheel-stage.mode-3d-cylinder #wheelCanvas {
+    transform: none;
+    filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.7));
+}
+.wheel-stage.mode-3d-cylinder .wheel-ground-shadow {
+    opacity: 0.55;
+    bottom: 3%;
+    transform: translateX(-50%) scale(0.95);
+}
+.wheel-stage.mode-3d-cylinder .wheel-pointer-container {
+    right: -10px;
+    top: calc(50% - 15px);
+    transform: translateY(-50%);
+}
+.wheel-stage.mode-3d-cylinder .wheel-center-btn {
+    top: calc(50% - 15px);
+    transform: translate(-50%, -50%);
+}
