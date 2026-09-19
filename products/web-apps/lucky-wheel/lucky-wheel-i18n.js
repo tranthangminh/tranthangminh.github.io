@@ -28,7 +28,8 @@
             },
             actions: {
                 spin: 'SPIN',
-                shuffle: 'Shuffle'
+                shuffle: 'Shuffle',
+                togglePanel: 'Control Panel'
             },
             slices: {
                 quickPreset: '⚡ Preset Template...',
@@ -49,7 +50,7 @@
                 presets: 'Preset Templates',
                 presetsDesc: 'Quickly load curated slice lists',
                 presetsPlaceholder: 'Select Preset...',
-                elimination: 'Elimination Mode',
+                elimination: 'Hide After Won',
                 eliminationDesc: 'Auto-hide slice after winning',
                 rainbow: 'Auto Rainbow Colors',
                 rainbowDesc: 'Spread rainbow colors evenly from red to magenta',
@@ -70,7 +71,9 @@
                 title: 'Recent Winning Results',
                 clear: 'Clear History',
                 clearConfirm: 'Are you sure you want to clear all spin history?',
-                empty: 'No spins yet. Give it a spin!'
+                clearConfirmPreset: 'Are you sure you want to clear spin history for this preset?',
+                forPreset: 'Preset: ',
+                empty: 'No spins yet for this preset. Give it a spin!'
             },
             winner: {
                 heading: 'Result',
@@ -92,11 +95,33 @@
                 minSlices: 'Please add at least 2 active slices to spin the wheel!'
             },
             presetsList: {
+                prizes: '🎁 Prize Draw (Weighted)',
                 food: '🍕 Food Picker',
                 decision: '🤔 Decision Maker (Yes / No)',
                 numbers: '🔢 Lucky Numbers 1-10',
                 standup: '👥 Team Standup',
                 dice: '🎲 Dice Roll (1-6)'
+            },
+            presets: {
+                newPreset: 'Save Preset',
+                editPreset: 'Rename / Manage',
+                customGroup: 'Your Presets',
+                defaultGroup: 'Default Presets',
+                modalCreateHeading: '💾 Save Current Slices as New Preset',
+                modalEditHeading: '✏️ Rename / Manage Preset',
+                nameLabel: 'Preset Name:',
+                namePlaceholder: 'e.g. Office Lunch, Raffle...',
+                slicesWillSave: 'current slices will be saved into this preset.',
+                quotaLabel: 'Quota used:',
+                quotaMax: '(Max 10 presets per account)',
+                save: 'Save Preset',
+                update: 'Update Name',
+                cancel: 'Cancel',
+                delete: 'Delete Preset',
+                deleteConfirm: 'Are you sure you want to delete this preset?',
+                limitReached: 'You have reached the maximum limit of 10 presets. Please delete an older preset to save a new one!',
+                nameRequired: 'Please enter a name for the preset!',
+                selectCustomToEdit: 'Please select one of your custom presets from the list to rename or delete.'
             }
         },
         'vi': {
@@ -119,7 +144,8 @@
             },
             actions: {
                 spin: 'QUAY',
-                shuffle: 'Xáo Trộn'
+                shuffle: 'Xáo Trộn',
+                togglePanel: 'Bảng Điều Khiển'
             },
             slices: {
                 quickPreset: '⚡ Mẫu có sẵn...',
@@ -140,7 +166,7 @@
                 presets: 'Danh Sách Mẫu',
                 presetsDesc: 'Nạp nhanh các bộ danh sách phổ biến',
                 presetsPlaceholder: 'Chọn danh sách mẫu...',
-                elimination: 'Chế Độ Loại Trừ',
+                elimination: 'Ẩn sau khi trúng',
                 eliminationDesc: 'Tự động ẩn ô vừa trúng thưởng',
                 rainbow: 'Màu Tự Động',
                 rainbowDesc: 'Chia đều dải màu cầu vồng từ đỏ tới tím hồng',
@@ -161,7 +187,9 @@
                 title: 'Kết Quả Trúng Thưởng Gần Đây',
                 clear: 'Xóa Lịch Sử',
                 clearConfirm: 'Bạn có chắc chắn muốn xóa toàn bộ lịch sử quay?',
-                empty: 'Chưa có lượt quay nào. Hãy thử quay ngay!'
+                clearConfirmPreset: 'Bạn có chắc chắn muốn xóa lịch sử quay của mẫu này không?',
+                forPreset: 'Mẫu: ',
+                empty: 'Chưa có lượt quay nào cho mẫu này. Hãy thử quay ngay!'
             },
             winner: {
                 heading: 'Kết Quả',
@@ -183,11 +211,33 @@
                 minSlices: 'Vui lòng bật ít nhất 2 ô để có thể quay vòng!'
             },
             presetsList: {
+                prizes: '🎁 Vòng Quay Trúng Thưởng',
                 food: '🍕 Hôm Nay Ăn Gì',
                 decision: '🤔 Chọn Lựa (Có / Không)',
                 numbers: '🔢 Số May Mắn 1-10',
                 standup: '👥 Chọn Người Báo Cáo',
                 dice: '🎲 Xúc Xắc (1-6)'
+            },
+            presets: {
+                newPreset: 'Lưu Mẫu',
+                editPreset: 'Sửa / Đổi Tên',
+                customGroup: 'Mẫu Của Bạn',
+                defaultGroup: 'Mẫu Mặc Định',
+                modalCreateHeading: '💾 Lưu Các Ô Hiện Tại Thành Mẫu Mới',
+                modalEditHeading: '✏️ Đổi Tên / Quản Lý Mẫu',
+                nameLabel: 'Tên Mẫu:',
+                namePlaceholder: 'Ví dụ: Ăn trưa văn phòng, Bốc thăm...',
+                slicesWillSave: 'ô hiện tại sẽ được lưu vào mẫu này.',
+                quotaLabel: 'Đã dùng:',
+                quotaMax: '(Tối đa 10 mẫu / tài khoản)',
+                save: 'Lưu Mẫu',
+                update: 'Cập Nhật Tên',
+                cancel: 'Hủy',
+                delete: 'Xóa Mẫu',
+                deleteConfirm: 'Bạn có chắc chắn muốn xóa mẫu này không?',
+                limitReached: 'Bạn đã đạt giới hạn tối đa 10 mẫu. Vui lòng xóa bớt mẫu cũ để lưu mẫu mới!',
+                nameRequired: 'Vui lòng nhập tên cho mẫu!',
+                selectCustomToEdit: 'Vui lòng chọn một mẫu tự tạo từ danh sách để sửa hoặc xóa.'
             }
         }
     };
@@ -266,6 +316,15 @@
                 const translated = this.t(key);
                 if (translated && translated !== key) {
                     el.placeholder = translated;
+                }
+            });
+
+            // Translate optgroup / label attributes
+            document.querySelectorAll('[data-i18n-label]').forEach(el => {
+                const key = el.dataset.i18nLabel;
+                const translated = this.t(key);
+                if (translated && translated !== key) {
+                    el.label = translated;
                 }
             });
 

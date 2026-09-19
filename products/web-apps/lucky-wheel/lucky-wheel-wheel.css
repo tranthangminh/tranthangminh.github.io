@@ -1,22 +1,26 @@
-/* Right Column: Wheel Stage */
+/* ==========================================================================
+   LUCKY WHEEL - WHEEL STAGE & 3D DISPLAY MODES
+   Isolated module for canvas stage, 3D perspective transforms, and pointer
+   ========================================================================== */
+
+/* Wheel Stage Container (Center Section) */
 .wheel-stage {
+    flex: 1 1 calc(100vh - 140px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at center, rgba(30, 41, 59, 0.4) 0%, transparent 72%);
-    border-radius: var(--border-radius-lg, 8px);
-    padding: 8px 12px;
-    height: 100%;
-    min-height: 0;
-    min-width: 0;
+    padding: var(--spacing-md, 16px);
+    position: relative;
     overflow: hidden;
-    transition: background 0.4s ease;
+    background: var(--bg-primary, #191919);
+    transition: background 0.5s ease;
 }
 
+/* Wheel Canvas Wrapper (Cụm máy 3D nguyên khối) */
 .wheel-wrapper {
     position: relative;
-    width: auto;
+    width: 100%;
     max-width: 100%;
     height: calc(100% - 60px);
     max-height: calc(100vh - 140px);
@@ -24,45 +28,168 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: perspective 0.4s ease;
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 #wheelCanvas {
+    position: relative;
+    z-index: 3;
     display: block;
     cursor: pointer;
     touch-action: none;
     filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.6));
-    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.45s ease;
+    transform: none;
+    transition: filter 0.45s ease;
     transform-origin: center center;
 }
 
-/* Ground Shadow for 3D Modes */
+/* Casino Vegas Light Ring (Vành đèn chớp sòng bạc phong cách Vegas) */
+.casino-lights-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(var(--wheel-size, 520px) + 20px);
+    height: calc(var(--wheel-size, 520px) + 20px);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 4;
+}
+
+.casino-lights-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.casino-bulb {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+/* Colors & Glow Tokens */
+.bulb-gold {
+    fill: #ffe066;
+    --bulb-glow: #f59e0b;
+    --bulb-bright: #fbbf24;
+}
+
+.bulb-ruby {
+    fill: #ff4d6d;
+    --bulb-glow: #e11d48;
+    --bulb-bright: #f43f5e;
+}
+
+.bulb-cyan {
+    fill: #38bdf8;
+    --bulb-glow: #0284c7;
+    --bulb-bright: #38bdf8;
+}
+
+.bulb-amber {
+    fill: #fb923c;
+    --bulb-glow: #d97706;
+    --bulb-bright: #f59e0b;
+}
+
+/* Idle State: Chasing marquee alternation */
+.bulb-even {
+    animation: casinoBlinkEven 1.0s infinite ease-in-out;
+}
+
+.bulb-odd {
+    animation: casinoBlinkOdd 1.0s infinite ease-in-out;
+}
+
+@keyframes casinoBlinkEven {
+    0%, 48% {
+        opacity: 1;
+        filter: drop-shadow(0 0 5px var(--bulb-bright)) drop-shadow(0 0 10px var(--bulb-glow));
+    }
+    50%, 98% {
+        opacity: 0.25;
+        filter: none;
+    }
+}
+
+@keyframes casinoBlinkOdd {
+    0%, 48% {
+        opacity: 0.25;
+        filter: none;
+    }
+    50%, 98% {
+        opacity: 1;
+        filter: drop-shadow(0 0 5px var(--bulb-bright)) drop-shadow(0 0 10px var(--bulb-glow));
+    }
+}
+
+/* Spinning State: GPU-composited opacity strobe (no filter in keyframes = zero rasterize cost) */
+.casino-lights-ring.is-spinning .casino-bulb,
+.casino-center-lights.is-spinning .casino-bulb {
+    filter: drop-shadow(0 0 7px var(--bulb-bright)) drop-shadow(0 0 12px var(--bulb-glow));
+    will-change: opacity;
+}
+
+.casino-lights-ring.is-spinning .bulb-even {
+    animation: casinoSpinFlashEven 0.14s infinite ease-in-out;
+}
+
+.casino-lights-ring.is-spinning .bulb-odd {
+    animation: casinoSpinFlashOdd 0.14s infinite ease-in-out;
+}
+
+@keyframes casinoSpinFlashEven {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.15; }
+}
+
+@keyframes casinoSpinFlashOdd {
+    0%, 49% { opacity: 0.15; }
+    50%, 100% { opacity: 1; }
+}
+
+/* Winning Celebration State: High-voltage victory strobe */
+.casino-lights-ring.is-winning .casino-bulb {
+    animation: casinoWinCelebration 0.2s infinite alternate ease-in-out !important;
+}
+
+@keyframes casinoWinCelebration {
+    0% {
+        opacity: 1;
+        filter: drop-shadow(0 0 10px #ffe066) drop-shadow(0 0 20px #f59e0b);
+    }
+    100% {
+        opacity: 0.35;
+        filter: drop-shadow(0 0 3px #ffe066);
+    }
+}
+
+/* Floor Ambient Ground Shadow for 3D Modes (Nằm trực tiếp trên sàn wheel-stage) */
 .wheel-ground-shadow {
     position: absolute;
-    bottom: 2%;
+    bottom: 50px;
     left: 50%;
-    transform: translateX(-50%) rotateX(68deg);
-    width: 88%;
-    height: 36%;
-    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.3) 52%, transparent 76%);
-    filter: blur(14px);
+    transform: translateX(-50%);
     pointer-events: none;
     z-index: 1;
     opacity: 0;
-    transition: opacity 0.45s ease, transform 0.45s ease;
+    transition: opacity 0.45s ease, transform 0.45s ease, bottom 0.45s ease;
 }
 
-/* Pointer Needle on Right Side (3 o'clock) */
+/* Pointer Needle on Right-Down Side (4:30 position / 45deg) - Neo cố định theo vành bánh xe */
 .wheel-pointer-container {
     position: absolute;
-    right: -10px;
+    left: 50%;
     top: 50%;
-    transform: translateY(-50%);
     width: 64px;
     height: 56px;
     pointer-events: none;
     z-index: 10;
-    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), right 0.45s ease, top 0.45s ease;
+    transform-origin: center center;
+    transform: translate(-50%, -50%) rotate(45deg) translateX(calc(var(--wheel-radius, 240px) + 24px));
+    transition: top 0.45s ease;
 }
 
 #pointerCanvas {
@@ -71,99 +198,163 @@
     display: block;
 }
 
-/* Center Clickable Spin Button Overlay */
+/* Center Clickable Spin Button Overlay (Kích thước tỷ lệ chuẩn theo vòng quay) */
 .wheel-center-btn {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80px;
-    height: 80px;
+    width: var(--hub-size, calc(var(--wheel-size, 520px) * 0.34));
+    height: var(--hub-size, calc(var(--wheel-size, 520px) * 0.34));
     border-radius: var(--border-radius-full, 9999px);
     background: transparent;
     border: none;
     cursor: pointer;
-    z-index: 5;
+    z-index: 6;
     outline: none;
-    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.45s ease;
+    transition: top 0.45s ease;
 }
 
 .wheel-center-btn:focus-visible {
     box-shadow: 0 0 0 3px var(--accent-primary, #e50914);
 }
 
+/* Center Casino Light Ring (Vành đèn chớp quanh tâm nút quay) */
+.casino-center-lights {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--hub-size, calc(var(--wheel-size, 520px) * 0.34));
+    height: var(--hub-size, calc(var(--wheel-size, 520px) * 0.34));
+    pointer-events: none;
+    z-index: 5;
+    transition: top 0.45s ease;
+}
+
+.casino-center-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Center Bulbs Hover Glow */
+.wheel-center-btn:hover ~ .casino-center-lights .casino-bulb {
+    filter: drop-shadow(0 0 7px var(--bulb-bright)) drop-shadow(0 0 14px var(--bulb-glow));
+}
+
+/* Center Lights Spinning State (shares same optimized keyframes as ring lights) */
+.casino-center-lights.is-spinning .bulb-even {
+    animation: casinoSpinFlashEven 0.14s infinite ease-in-out;
+}
+
+.casino-center-lights.is-spinning .bulb-odd {
+    animation: casinoSpinFlashOdd 0.14s infinite ease-in-out;
+}
+
+/* Center Lights Winning State */
+.casino-center-lights.is-winning .casino-bulb {
+    animation: casinoWinCelebration 0.2s infinite alternate ease-in-out !important;
+}
+
 /* ==========================================================================
    DISPLAY MODES (2D Flat, 3D Tilt, 3D Cylinder)
    ========================================================================== */
 
-/* Mode 1: 2D Phẳng (Default) */
+/* --------------------------------------------------------------------------
+   Mode 1: 2D Phẳng (Default)
+   -------------------------------------------------------------------------- */
+.wheel-stage.mode-2d {
+    background: var(--bg-primary, #191919);
+    perspective: none;
+}
+.wheel-stage.mode-2d .wheel-wrapper {
+    transform: none;
+}
 .wheel-stage.mode-2d #wheelCanvas {
     transform: none;
-    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.6));
+    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.65));
 }
 .wheel-stage.mode-2d .wheel-ground-shadow {
     opacity: 0;
 }
 .wheel-stage.mode-2d .wheel-pointer-container {
-    right: -10px;
     top: 50%;
-    transform: translateY(-50%);
 }
-.wheel-stage.mode-2d .wheel-center-btn {
+.wheel-stage.mode-2d .wheel-center-btn,
+.wheel-stage.mode-2d .casino-center-lights {
     top: 50%;
-    transform: translate(-50%, -50%);
 }
 
-/* Mode 2: 3D Nghiêng (Perspective Tilt) */
+/* --------------------------------------------------------------------------
+   Mode 2: 3D Nghiêng (Perspective Tilt - Xoay Cụm wheel-wrapper Nguyên Khối)
+   -------------------------------------------------------------------------- */
 .wheel-stage.mode-3d-tilt {
-    background: radial-gradient(circle at 50% 40%, rgba(30, 58, 100, 0.25) 0%, rgba(15, 23, 42, 0.5) 60%, transparent 80%);
+    background: var(--bg-primary, #191919);
+    perspective: 2800px;
+    perspective-origin: 50% 45%;
 }
+/* Xoay toàn bộ cụm wheel-wrapper: đĩa + kim + nút tâm nghiêng đồng thời */
 .wheel-stage.mode-3d-tilt .wheel-wrapper {
-    perspective: 1100px;
-    perspective-origin: 50% 36%;
+    transform: rotateY(30deg) rotateX(45deg);
 }
 .wheel-stage.mode-3d-tilt #wheelCanvas {
-    transform: rotateX(40deg);
-    filter: drop-shadow(0 22px 38px rgba(0, 0, 0, 0.75));
+    transform: none;
+    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.7));
 }
+/* Bóng sàn nằm phẳng trên sàn wheel-stage */
 .wheel-stage.mode-3d-tilt .wheel-ground-shadow {
-    opacity: 1;
-    bottom: 4%;
-    transform: translateX(-50%) rotateX(72deg) scale(1.05);
+    opacity: 0.65;
+    bottom: 60px;
+    width: 480px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.35) 55%, transparent 75%);
+    transform: translateX(-50%) rotateY(30deg) rotateX(60deg);
+    filter: blur(18px);
 }
 .wheel-stage.mode-3d-tilt .wheel-pointer-container {
-    right: -4px;
     top: 50%;
-    transform: translateY(-50%) rotateX(40deg);
-    transform-origin: center right;
 }
-.wheel-stage.mode-3d-tilt .wheel-center-btn {
+.wheel-stage.mode-3d-tilt .wheel-center-btn,
+.wheel-stage.mode-3d-tilt .casino-center-lights {
     top: 50%;
-    transform: translate(-50%, -50%) rotateX(40deg);
 }
 
-/* Mode 3: 3D Khối Trụ (Volumetric Cylinder) */
+/* --------------------------------------------------------------------------
+   Mode 3: 3D Khối Trụ (Arcade Deluxe - Bám Sát Hình 2)
+   - Background Arcade Neon Bokeh lung linh hoài niệm phòng game cổ điển
+   - Bệ đỡ đồng thau vững chãi, thành vàng kim loại và tâm ngọc bích
+   -------------------------------------------------------------------------- */
 .wheel-stage.mode-3d-cylinder {
-    background: radial-gradient(ellipse at 50% 45%, rgba(45, 55, 72, 0.35) 0%, rgba(15, 23, 42, 0.6) 70%, transparent 85%);
+    background: 
+        radial-gradient(circle at 16% 24%, rgba(56, 189, 248, 0.22) 0%, transparent 35%),
+        radial-gradient(circle at 84% 26%, rgba(192, 132, 242, 0.24) 0%, transparent 38%),
+        radial-gradient(circle at 50% 12%, rgba(245, 158, 11, 0.2) 0%, transparent 42%),
+        radial-gradient(circle at 22% 76%, rgba(236, 72, 153, 0.16) 0%, transparent 36%),
+        radial-gradient(circle at 80% 72%, rgba(16, 185, 129, 0.15) 0%, transparent 36%),
+        radial-gradient(ellipse at 50% 45%, #182030 0%, #0d121c 65%, #07090f 100%);
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.85);
 }
 .wheel-stage.mode-3d-cylinder .wheel-wrapper {
     perspective: none;
 }
 .wheel-stage.mode-3d-cylinder #wheelCanvas {
     transform: none;
-    filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.7));
+    filter: drop-shadow(0 24px 42px rgba(0, 0, 0, 0.8));
 }
 .wheel-stage.mode-3d-cylinder .wheel-ground-shadow {
-    opacity: 0.55;
-    bottom: 3%;
-    transform: translateX(-50%) scale(0.95);
+    opacity: 0.6;
+    bottom: -10px;
+    transform: translateX(-50%) scale(1.08);
+    filter: blur(26px);
 }
 .wheel-stage.mode-3d-cylinder .wheel-pointer-container {
-    right: -10px;
-    top: calc(50% - 15px);
-    transform: translateY(-50%);
+    top: calc(50% - 24px); /* Khớp chuẩn xác theo trục elip trên của khối trụ */
+    transform: translate(-50%, -50%) rotate(45deg) translateX(calc(var(--wheel-radius, 240px) + 24px));
 }
-.wheel-stage.mode-3d-cylinder .wheel-center-btn {
-    top: calc(50% - 15px);
+.wheel-stage.mode-3d-cylinder .wheel-center-btn,
+.wheel-stage.mode-3d-cylinder .casino-center-lights {
+    top: calc(50% - 24px);
     transform: translate(-50%, -50%);
 }

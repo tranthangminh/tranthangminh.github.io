@@ -1,0 +1,458 @@
+/* ==========================================================================
+   3D DICE ROLLER - CORE LAYOUT & HUD STYLES
+   Complies with _RULE-web-apps.md (< 500 lines)
+   Locked viewport 100vh on Desktop & Tablet, zero external scrollbar
+   ========================================================================== */
+
+/* 1. Base Reset & Viewport Constraints */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+button, input, select {
+    font-family: inherit;
+}
+
+html, body {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+body {
+    font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    background-color: var(--bg-primary, #191919);
+    color: var(--text-primary, #ffffff);
+    display: flex;
+    flex-direction: column;
+    line-height: 1.5;
+}
+
+/* 2. App Header (Height: 52px) */
+.app-header {
+    background-color: var(--bg-secondary, #222222);
+    border-bottom: 1px solid var(--border-color, #3a3a3a);
+    padding: 8px 24px;
+    height: 52px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 50;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.brand-title {
+    font-size: var(--font-lg, 16px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary, #ffffff);
+    line-height: 1.2;
+}
+
+/* Header Actions: Right-to-Left (SSO -> Lang -> Sound) */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon-btn {
+    background: var(--bg-tertiary, #343434);
+    border: 1px solid var(--border-color, #3a3a3a);
+    color: var(--text-primary, #ffffff);
+    width: 34px;
+    height: 34px;
+    border-radius: var(--border-radius, 6px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-fast, all 0.15s ease);
+}
+
+.icon-btn:hover {
+    background: var(--bg-elevated, #464646);
+    border-color: var(--border-hover, #8a8a8a);
+}
+
+.icon-btn.is-muted {
+    opacity: 0.55;
+    filter: grayscale(1);
+}
+
+/* Language Switcher - Sticky Header CSS Flag Style */
+.lang-switch {
+    display: inline-flex;
+    align-items: center;
+}
+
+.lang-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #ffffff);
+    padding: 0 4px;
+    min-width: var(--btn-height-sm, 28px);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: var(--font-xs, 11px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    opacity: 0.85;
+    transition: opacity var(--transition-normal, 0.2s ease);
+}
+
+.lang-btn:hover {
+    opacity: 1;
+}
+
+.lang-flag {
+    position: relative;
+    display: block;
+    width: 20px;
+    height: 13px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+}
+
+.lang-flag--vi {
+    background: #d62828;
+}
+
+.lang-flag--vi::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    background: #f4d35e;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    transform: translate(-50%, -50%);
+}
+
+.lang-flag--en {
+    background: repeating-linear-gradient(to bottom, #b22234 0px, #b22234 1px, #ffffff 1px, #ffffff 2px);
+}
+
+.lang-flag--en::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 9px;
+    height: 7px;
+    background: #3c3b6e;
+}
+
+/* 3. Main App Layout (2 Columns) */
+.app-layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    height: calc(100vh - 52px);
+    overflow: hidden;
+}
+
+/* Left Column: Streamlined Sidebar (Fixed 360px) */
+.control-panels {
+    width: 360px;
+    flex-shrink: 0;
+    background-color: var(--bg-secondary, #222222);
+    border-right: 1px solid var(--border-color, #3a3a3a);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.panels-scroll-area {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Custom Slim Scrollbar */
+.panels-scroll-area::-webkit-scrollbar,
+.history-list-wrapper::-webkit-scrollbar {
+    width: 5px;
+}
+
+.panels-scroll-area::-webkit-scrollbar-thumb,
+.history-list-wrapper::-webkit-scrollbar-thumb {
+    background: var(--bg-elevated, #464646);
+    border-radius: var(--border-radius-full, 9999px);
+}
+
+/* 4. Right Column: Main 3D Stage (flex: 1) */
+.main-stage {
+    flex: 1;
+    position: relative;
+    height: 100%;
+    background-color: #111413;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+}
+
+.dice-canvas-container {
+    width: 100%;
+    height: 100%;
+}
+
+.dice-canvas-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* 5. Floating Top HUD: Polyhedral Type + Dice Count */
+.stage-top-hud {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(22, 24, 23, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    border-radius: var(--border-radius-full, 9999px);
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 30;
+    pointer-events: auto;
+}
+
+.hud-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hud-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.18);
+    margin: 0 4px;
+}
+
+.hud-chip {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid transparent;
+    color: var(--text-secondary, #bbbbbb);
+    font-size: var(--font-xs, 11px);
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: var(--border-radius-full, 9999px);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1.2;
+}
+
+.hud-chip:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+}
+
+.hud-chip.is-active {
+    background: var(--c-green, #34d399);
+    color: #064e3b;
+    font-weight: 800;
+    box-shadow: 0 0 10px rgba(52, 211, 153, 0.35);
+}
+
+.type-chip.is-active {
+    background: var(--c-yellow, #e5c158);
+    color: #1a1500;
+    box-shadow: 0 0 10px rgba(229, 193, 88, 0.35);
+}
+
+.hud-stepper-btn {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--border-radius-full, 9999px);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.hud-stepper-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.hud-count-chips {
+    display: flex;
+    gap: 3px;
+}
+
+/* 6. Floating Bottom HUD: Total Score & Breakdown (No tag badge) */
+.stage-bottom-hud {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(22, 24, 23, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: var(--border-radius-lg, 12px);
+    padding: 10px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    z-index: 30;
+    pointer-events: auto;
+    min-width: 260px;
+}
+
+.hud-result-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.hud-total-box {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.hud-total-label {
+    font-size: var(--font-xs, 11px);
+    color: var(--text-secondary, #bbbbbb);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.hud-total-num {
+    font-size: 36px;
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.hud-breakdown {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.hud-awaiting {
+    font-size: var(--font-sm, 12px);
+    color: var(--text-tertiary, #888888);
+    font-style: italic;
+}
+
+.hud-die-chip {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--border-radius-md, 4px);
+    padding: 2px 8px;
+    font-size: var(--font-sm, 12px);
+    font-weight: 800;
+    color: var(--c-yellow, #e5c158);
+}
+
+.hud-hint {
+    font-size: 10px;
+    color: var(--text-tertiary, #888888);
+    letter-spacing: 0.03em;
+}
+
+/* 7. Mobile Responsiveness (< 700px) */
+@media (max-width: 700px) {
+    html, body {
+        height: auto;
+        max-height: none;
+        overflow-y: auto;
+    }
+
+    .app-layout {
+        flex-direction: column-reverse;
+        height: auto;
+        overflow: visible;
+    }
+
+    .control-panels {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-top: 1px solid var(--border-color, #3a3a3a);
+    }
+
+    .main-stage {
+        height: 75vh;
+        min-height: 520px;
+    }
+
+    .stage-top-hud {
+        top: 10px;
+        width: 94%;
+        max-width: 380px;
+        flex-wrap: wrap;
+        justify-content: center;
+        border-radius: var(--border-radius-lg, 12px);
+        padding: 5px 8px;
+        gap: 4px;
+    }
+
+    .hud-chip {
+        padding: 3px 8px;
+        font-size: 11px;
+    }
+
+    .hud-stepper-btn {
+        width: 22px;
+        height: 22px;
+        font-size: 13px;
+    }
+
+    .hud-divider {
+        display: none;
+    }
+
+    .stage-bottom-hud {
+        bottom: 12px;
+        width: 90%;
+        max-width: 360px;
+        padding: 8px 16px;
+    }
+
+    .hud-total-num {
+        font-size: 28px;
+    }
+}

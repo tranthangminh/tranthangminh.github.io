@@ -30,6 +30,10 @@ class SoundEngine {
      */
     playTick(speedFactor = 1.0) {
         if (this.isMuted) return;
+        // Throttle: max 1 tick per 30ms to prevent AudioNode flooding at high speed
+        const tickNow = performance.now();
+        if (this._lastTickTime && tickNow - this._lastTickTime < 30) return;
+        this._lastTickTime = tickNow;
         this.initContext();
         if (!this.ctx) return;
 

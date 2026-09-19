@@ -43,61 +43,157 @@
         </div>
     </header>
 
-    <!-- Main Layout: 1. History, 2. Wheel Stage, 3. Slices & Settings -->
+    <!-- Main Layout: 1. Wheel Stage (Left/Center), 2. Unified Control Panels (Right) -->
     <main class="app-layout">
-        <!-- Column 1 (Left): Spin History Panel -->
-        <aside class="history-panel card" id="historyPanel" aria-label="Spin History">
-            <div id="historyCardContent" class="history-card-inner">
-                <div class="history-panel-header">
-                    <div class="history-header-title">
-                        <span>📜</span> <span data-i18n="history.panelTitle">Lịch Sử</span>
-                        <span class="badge" id="historyCountBadge">0</span>
-                    </div>
-                    <button type="button" class="btn btn-ghost btn-sm" id="clearHistoryBtn" data-i18n="history.clear">Xóa Lịch Sử</button>
-                </div>
-                <div class="history-list-wrapper">
-                    <ul class="history-list" id="historyList">
-                        <!-- Dynamically populated -->
-                    </ul>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Column 2 (Center): Wheel Stage -->
+        <!-- Main Column: Wheel Stage -->
         <section class="wheel-stage mode-2d" id="wheelStage" aria-label="Wheel Stage">
+            <!-- Ground Shadow for 3D Modes (Floor ambient shadow) -->
+            <div class="wheel-ground-shadow" id="wheelGroundShadow" aria-hidden="true"></div>
+
             <div class="wheel-wrapper" id="wheelWrapper">
-                <!-- Ground Shadow for 3D Modes -->
-                <div class="wheel-ground-shadow" id="wheelGroundShadow" aria-hidden="true"></div>
-                <!-- Pointer / Needle on Right Side (3 o'clock) -->
+                <!-- Casino Vegas Light Ring (Blinking & Chasing Lights) -->
+                <div class="casino-lights-ring" id="casinoLightsRing" aria-hidden="true">
+                    <svg class="casino-lights-svg" id="casinoLightsSvg" viewBox="0 0 540 540">
+                        <!-- Decorative Metallic Bezel -->
+                        <circle cx="270" cy="270" r="264" fill="none" stroke="#161821" stroke-width="12" />
+                        <circle cx="270" cy="270" r="268" fill="none" stroke="#334155" stroke-width="1.5" opacity="0.6" />
+                        <circle cx="270" cy="270" r="256" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.4" />
+                        <circle cx="270" cy="270" r="248" fill="none" stroke="#0f172a" stroke-width="2" />
+                        
+                        <!-- 24 Bulb Sockets (Metallic Base) -->
+                        <g class="casino-bulb-sockets" fill="#1e293b" stroke="#090d16" stroke-width="1.5">
+                            <circle cx="526" cy="270" r="8.5" />
+                            <circle cx="517.3" cy="336.3" r="8.5" />
+                            <circle cx="491.7" cy="398" r="8.5" />
+                            <circle cx="451" cy="451" r="8.5" />
+                            <circle cx="398" cy="491.7" r="8.5" />
+                            <circle cx="336.3" cy="517.3" r="8.5" />
+                            <circle cx="270" cy="526" r="8.5" />
+                            <circle cx="203.7" cy="517.3" r="8.5" />
+                            <circle cx="142" cy="491.7" r="8.5" />
+                            <circle cx="89" cy="451" r="8.5" />
+                            <circle cx="48.3" cy="398" r="8.5" />
+                            <circle cx="22.7" cy="336.3" r="8.5" />
+                            <circle cx="14" cy="270" r="8.5" />
+                            <circle cx="22.7" cy="203.7" r="8.5" />
+                            <circle cx="48.3" cy="142" r="8.5" />
+                            <circle cx="89" cy="89" r="8.5" />
+                            <circle cx="142" cy="48.3" r="8.5" />
+                            <circle cx="203.7" cy="22.7" r="8.5" />
+                            <circle cx="270" cy="14" r="8.5" />
+                            <circle cx="336.3" cy="22.7" r="8.5" />
+                            <circle cx="398" cy="48.3" r="8.5" />
+                            <circle cx="451" cy="89" r="8.5" />
+                            <circle cx="491.7" cy="142" r="8.5" />
+                            <circle cx="517.3" cy="203.7" r="8.5" />
+                        </g>
+
+                        <!-- 24 Casino Bulbs (Glowing & Blinking) -->
+                        <g class="casino-bulb-lights">
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="526" cy="270" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="517.3" cy="336.3" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="491.7" cy="398" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="451" cy="451" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="398" cy="491.7" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="336.3" cy="517.3" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="270" cy="526" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="203.7" cy="517.3" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="142" cy="491.7" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="89" cy="451" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="48.3" cy="398" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="22.7" cy="336.3" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="14" cy="270" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="22.7" cy="203.7" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="48.3" cy="142" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="89" cy="89" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="142" cy="48.3" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="203.7" cy="22.7" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="270" cy="14" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="336.3" cy="22.7" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="398" cy="48.3" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="451" cy="89" r="6" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="491.7" cy="142" r="6" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="517.3" cy="203.7" r="6" />
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Pointer / Needle on Right Side (4:30 position) -->
                 <div class="wheel-pointer-container">
                     <canvas id="pointerCanvas" width="64" height="56"></canvas>
                 </div>
                 <!-- Wheel Canvas -->
                 <canvas id="wheelCanvas" width="520" height="520" aria-label="Lucky Wheel Interactive Canvas"></canvas>
+
+                <!-- Center Casino Light Ring (Around Wheel Center Hub) -->
+                <div class="casino-center-lights" id="casinoCenterLights" aria-hidden="true">
+                    <svg class="casino-center-svg" id="casinoCenterSvg" viewBox="0 0 200 200">
+                        <!-- Outer Metallic Center Rim & Gold Accent -->
+                        <circle cx="100" cy="100" r="95" fill="none" stroke="#161821" stroke-width="8" />
+                        <circle cx="100" cy="100" r="98" fill="none" stroke="#334155" stroke-width="1.2" opacity="0.6" />
+                        <circle cx="100" cy="100" r="86" fill="none" stroke="#d4af37" stroke-width="1" stroke-dasharray="2 3" opacity="0.45" />
+                        <circle cx="100" cy="100" r="76" fill="none" stroke="#06b6d4" stroke-width="1.5" opacity="0.8" />
+
+                        <!-- 16 Sockets -->
+                        <g class="casino-center-sockets" fill="#1e293b" stroke="#090d16" stroke-width="1.2">
+                            <circle cx="186" cy="100" r="6.5" />
+                            <circle cx="179.5" cy="132.9" r="6.5" />
+                            <circle cx="160.8" cy="160.8" r="6.5" />
+                            <circle cx="132.9" cy="179.5" r="6.5" />
+                            <circle cx="100" cy="186" r="6.5" />
+                            <circle cx="67.1" cy="179.5" r="6.5" />
+                            <circle cx="39.2" cy="160.8" r="6.5" />
+                            <circle cx="20.5" cy="132.9" r="6.5" />
+                            <circle cx="14" cy="100" r="6.5" />
+                            <circle cx="20.5" cy="67.1" r="6.5" />
+                            <circle cx="39.2" cy="39.2" r="6.5" />
+                            <circle cx="67.1" cy="20.5" r="6.5" />
+                            <circle cx="100" cy="14" r="6.5" />
+                            <circle cx="132.9" cy="20.5" r="6.5" />
+                            <circle cx="160.8" cy="39.2" r="6.5" />
+                            <circle cx="179.5" cy="67.1" r="6.5" />
+                        </g>
+
+                        <!-- 16 Center Casino Bulbs -->
+                        <g class="casino-center-bulbs">
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="186" cy="100" r="4.5" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="179.5" cy="132.9" r="4.5" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="160.8" cy="160.8" r="4.5" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="132.9" cy="179.5" r="4.5" />
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="100" cy="186" r="4.5" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="67.1" cy="179.5" r="4.5" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="39.2" cy="160.8" r="4.5" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="20.5" cy="132.9" r="4.5" />
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="14" cy="100" r="4.5" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="20.5" cy="67.1" r="4.5" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="39.2" cy="39.2" r="4.5" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="67.1" cy="20.5" r="4.5" />
+                            <circle class="casino-bulb bulb-even bulb-gold" cx="100" cy="14" r="4.5" />
+                            <circle class="casino-bulb bulb-odd bulb-ruby" cx="132.9" cy="20.5" r="4.5" />
+                            <circle class="casino-bulb bulb-even bulb-cyan" cx="160.8" cy="39.2" r="4.5" />
+                            <circle class="casino-bulb bulb-odd bulb-amber" cx="179.5" cy="67.1" r="4.5" />
+                        </g>
+                    </svg>
+                </div>
+
                 <!-- Center Clickable Spin Button Overlay -->
                 <button type="button" class="wheel-center-btn" id="centerSpinBtn" aria-label="Spin Wheel"></button>
             </div>
 
-            <!-- Quick Action Bar Below Wheel with Sidebars Toggle Controls -->
+            <!-- Quick Action Bar Below Wheel with Single Panel Toggle -->
             <div class="wheel-controls">
-                <button type="button" class="btn btn-secondary btn-lg" id="toggleHistoryBtn" aria-label="Toggle History">
-                    <span>📜</span> <span data-i18n="history.panelTitle">Lịch Sử</span>
-                </button>
-                <button type="button" class="btn btn-primary btn-lg" id="mainSpinBtn" aria-label="Spin Wheel">
-                    <span>⚡</span> <span data-i18n="actions.spin">QUAY</span>
+                <button type="button" class="btn btn-secondary btn-lg" id="togglePanelBtn" aria-label="Toggle Control Panel">
+                    <span>📋</span> <span data-i18n="actions.togglePanel">Bảng Điều Khiển</span>
                 </button>
                 <button type="button" class="btn btn-secondary btn-lg" id="shuffleBtn" aria-label="Shuffle Slices">
                     <span>🔀</span> <span data-i18n="actions.shuffle">Xáo Trộn</span>
                 </button>
-                <button type="button" class="btn btn-secondary btn-lg" id="toggleControlsBtn" aria-label="Toggle Settings">
-                    <span>⚙️</span> <span data-i18n="tabs.settings">Cài Đặt</span>
-                </button>
             </div>
         </section>
 
-        <!-- Column 3 (Right): Slices & Settings -->
+        <!-- Sidebar: Unified Control Panels (Slices & Settings / History) -->
         <aside class="control-panels card" id="controlPanels" aria-label="Configuration & Controls">
-            <!-- Tablet & Mobile Unified Tab Bar (Hidden on Desktop) -->
+            <!-- Unified Tab Bar (Always visible on Desktop, Tablet & Mobile) -->
             <div class="unified-panel-tabs" id="unifiedTabs" role="tablist">
                 <button type="button" class="unified-tab-btn is-active" id="tabBtnSlices" role="tab" aria-selected="true">
                     <span>🎯</span> <span data-i18n="tabs.slicesAndSettings">Ô Quay &amp; Cài Đặt</span>
@@ -109,26 +205,30 @@
                 </button>
             </div>
 
-            <!-- Desktop Single Header (Hidden when Unified Tab Bar is visible) -->
-            <div class="control-panel-header">
-                <div class="panel-header-title">
-                    <span>🎯</span> <span data-i18n="tabs.slicesAndSettings">Ô Quay &amp; Cài Đặt</span>
-                    <span class="badge" id="sliceCountBadge">0</span>
-                </div>
-            </div>
-
             <!-- Tab Pane 1: Slices & Settings -->
             <div class="tab-pane is-active" id="tabPaneSlices">
                 <!-- Quick Bar: Preset Selector (Row 1), Sort, Bulk Edit & Show/Hide All (Row 2) -->
                 <div class="slices-quick-bar">
-                    <select class="form-select preset-quick-select" id="presetSelect" aria-label="Quick Load Preset">
-                        <option value="" data-i18n="slices.quickPreset">⚡ Mẫu có sẵn...</option>
-                        <option value="food" data-i18n="presetsList.food">🍕 Hôm Nay Ăn Gì</option>
-                        <option value="decision" data-i18n="presetsList.decision">🤔 Chọn Lựa (Có / Không)</option>
-                        <option value="numbers" data-i18n="presetsList.numbers">🔢 Số May Mắn 1-10</option>
-                        <option value="standup" data-i18n="presetsList.standup">👥 Chọn Người Báo Cáo</option>
-                        <option value="dice" data-i18n="presetsList.dice">🎲 Xúc Xắc (1-6)</option>
-                    </select>
+                    <div class="preset-control-row">
+                        <select class="form-select preset-quick-select" id="presetSelect" aria-label="Quick Load Preset">
+                            <option value="" data-i18n="slices.quickPreset">⚡ Mẫu có sẵn...</option>
+                            <optgroup id="customPresetsOptgroup" label="Mẫu Của Bạn" data-i18n-label="presets.customGroup"></optgroup>
+                            <optgroup id="defaultPresetsOptgroup" label="Mẫu Mặc Định" data-i18n-label="presets.defaultGroup">
+                                <option value="prizes" data-i18n="presetsList.prizes">🎁 Vòng Quay Trúng Thưởng</option>
+                                <option value="food" data-i18n="presetsList.food">🍕 Hôm Nay Ăn Gì</option>
+                                <option value="decision" data-i18n="presetsList.decision">🤔 Chọn Lựa (Có / Không)</option>
+                                <option value="numbers" data-i18n="presetsList.numbers">🔢 Số May Mắn 1-10</option>
+                                <option value="standup" data-i18n="presetsList.standup">👥 Chọn Người Báo Cáo</option>
+                                <option value="dice" data-i18n="presetsList.dice">🎲 Xúc Xắc (1-6)</option>
+                            </optgroup>
+                        </select>
+                        <button type="button" class="btn btn-secondary btn-icon-preset" id="editPresetBtn" aria-label="Sửa / Đổi tên mẫu" disabled>
+                            <span>✏️</span>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-new-preset" id="newPresetBtn" aria-label="Tạo mẫu mới">
+                            <span>➕</span> <span data-i18n="presets.newPreset">Lưu Mẫu</span>
+                        </button>
+                    </div>
                     <div class="slices-action-row">
                         <select class="form-select sort-quick-select" id="sortSelect" aria-label="Sort Slices">
                             <option value="" data-i18n="slices.sortPlaceholder">🔃 Sắp xếp...</option>
@@ -171,24 +271,11 @@
 
                     <!-- Elimination Mode Toggle -->
                     <div class="setting-row">
-                        <div>
-                            <div class="setting-label" data-i18n="settings.elimination">Chế Độ Loại Trừ</div>
-                            <div class="setting-desc" data-i18n="settings.eliminationDesc">Tự động ẩn ô vừa trúng thưởng</div>
-                        </div>
+                        <div class="setting-label" data-i18n="settings.elimination">Ẩn sau khi trúng</div>
                         <label class="switch">
                             <input type="checkbox" id="eliminationToggle">
                             <span class="switch-slider"></span>
                         </label>
-                    </div>
-
-                    <!-- Display Mode (3 Modes: 2D, 3D Tilt, 3D Cylinder) -->
-                    <div class="setting-row setting-row-stack">
-                        <div class="setting-label" data-i18n="settings.displayMode">Chế Độ Hiển Thị</div>
-                        <div class="segmented-control segmented-control-3" role="group" aria-label="Wheel Display Mode">
-                            <button type="button" class="segmented-btn is-active" id="btnDisplay2D" data-i18n="settings.mode2D">2D Phẳng</button>
-                            <button type="button" class="segmented-btn" id="btnDisplay3DTilt" data-i18n="settings.mode3DTilt">3D Nghiêng</button>
-                            <button type="button" class="segmented-btn" id="btnDisplay3DCylinder" data-i18n="settings.mode3DCylinder">3D Khối Trụ</button>
-                        </div>
                     </div>
 
                     <!-- Sizing Mode Radio (3 Modes) -->
@@ -212,9 +299,21 @@
                 </div>
             </div>
 
-            <!-- Tab Pane 2: History (Tablet & Mobile Unified Slot) -->
+            <!-- Tab Pane 2: History (Permanent Tab Pane) -->
             <div class="tab-pane" id="tabPaneHistory" style="display: none;">
-                <div id="tabHistorySlot" class="tab-history-slot"></div>
+                <div class="history-card-inner">
+                    <div class="history-panel-header">
+                        <div class="history-header-title">
+                            <span class="history-title-text" id="historyPresetTitle">🎁 Vòng Quay Trúng Thưởng</span>
+                        </div>
+                        <button type="button" class="btn btn-ghost btn-sm" id="clearHistoryBtn" data-i18n="history.clear">Xóa Lịch Sử</button>
+                    </div>
+                    <div class="history-list-wrapper">
+                        <ul class="history-list" id="historyList">
+                            <!-- Dynamically populated -->
+                        </ul>
+                    </div>
+                </div>
             </div>
         </aside>
     </main>
@@ -258,6 +357,37 @@
         </div>
     </div>
 
+    <!-- Modal: Save / Edit Preset -->
+    <div class="modal-backdrop" id="presetModal" role="dialog" aria-modal="true" aria-labelledby="presetModalHeading">
+        <div class="modal-card preset-modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="presetModalHeading" data-i18n="presets.modalCreateHeading">💾 Lưu Các Ô Hiện Tại Thành Mẫu Mới</h3>
+                <button type="button" class="modal-close-btn" id="presetModalCloseBtn" aria-label="Close Modal">&times;</button>
+            </div>
+            <div class="preset-modal-body">
+                <div class="preset-quota-banner">
+                    <span class="preset-quota-text"><span data-i18n="presets.quotaLabel">Đã dùng:</span> <strong id="presetQuotaCount">0</strong>/10</span>
+                    <span class="preset-quota-limit" data-i18n="presets.quotaMax">(Tối đa 10 mẫu / tài khoản)</span>
+                </div>
+                <div class="preset-field-group">
+                    <label for="presetNameInput" class="preset-input-label" data-i18n="presets.nameLabel">Tên Mẫu:</label>
+                    <input type="text" class="form-input preset-name-input" id="presetNameInput" placeholder="Ví dụ: Ăn trưa văn phòng, Bốc thăm..." data-i18n-placeholder="presets.namePlaceholder" maxlength="40" autocomplete="off">
+                </div>
+                <div class="preset-slices-preview" id="presetSlicesPreview">
+                    <span id="presetSlicesCount">0</span> <span data-i18n="presets.slicesWillSave">ô hiện tại sẽ được lưu vào mẫu này.</span>
+                </div>
+                <div class="preset-alert-msg" id="presetAlertMsg" style="display: none;"></div>
+            </div>
+            <div class="modal-actions preset-modal-actions">
+                <button type="button" class="btn btn-danger" id="presetDeleteBtn" style="display: none;" data-i18n="presets.delete">Xóa Mẫu</button>
+                <div class="preset-modal-actions-right">
+                    <button type="button" class="btn btn-ghost" id="presetCancelBtn" data-i18n="presets.cancel">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="presetSaveBtn" data-i18n="presets.save">Lưu Mẫu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDKs for Shared SSO Auth & Cloud Sync -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -269,6 +399,8 @@
 
     <!-- Lucky Wheel Core Scripts -->
     <script src="./lucky-wheel/audio.js"></script>
+    <script src="./lucky-wheel/wheel-3d-tilt.js"></script>
+    <script src="./lucky-wheel/wheel-3d-cylinder.js"></script>
     <script src="./lucky-wheel/wheel.js"></script>
     <script src="./lucky-wheel/lucky-wheel-i18n.js"></script>
     <script src="./lucky-wheel/presets.js"></script>

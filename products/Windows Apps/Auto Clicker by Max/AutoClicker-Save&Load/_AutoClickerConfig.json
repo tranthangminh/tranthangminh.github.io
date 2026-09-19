@@ -7,7 +7,7 @@
   "MapOverlayOpacity": 60,
   "IsDarkTheme": true,
   "IsAdvancedTab": false,
-  "LastUpdateCheckDate": "2026-09-17",
+  "LastUpdateCheckDate": "2026-09-19",
   "SimpleProfiles": [
     {
       "TabIndex": 0,
@@ -20,7 +20,7 @@
       "SimpleTargetWindowTitle": "Building Portable Auto Cl...",
       "SimpleRelativeToWindow": true,
       "Points": [
-        { "X": 699, "Y": 871 }
+        { "X": 720, "Y": 867 }
       ]
     },
     {
@@ -86,7 +86,7 @@
   "SimpleTargetWindowTitle": "Building Portable Auto Cl...",
   "SimpleRelativeToWindow": true,
   "Points": [
-    { "X": 699, "Y": 871 }
+    { "X": 720, "Y": 867 }
   ],
   "AdvancedProfile": {
   "ActiveIndex": 0,

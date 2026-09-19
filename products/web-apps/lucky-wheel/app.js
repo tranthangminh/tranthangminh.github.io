@@ -18,17 +18,29 @@ document.addEventListener('DOMContentLoaded', () => {
         displayMode: '2d', // Default: '2d' | '3d_tilt' | '3d_cylinder'
         autoRainbow: true
     };
-    let history = [];
+    let history = {};
+    let currentPresetId = 'prizes';
     let lastWinnerSlice = null;
     let activeUnifiedTab = 'slices';
 
+    const MAX_CUSTOM_PRESETS = 10;
+    let customPresets = [];
+    let currentEditingPresetId = null;
+
     // Load from LocalStorage
     try {
+        const savedPresetId = localStorage.getItem('lucky_wheel_current_preset_id');
+        if (savedPresetId) {
+            currentPresetId = savedPresetId;
+        }
+
         const savedSlices = localStorage.getItem('lucky_wheel_slices');
         if (savedSlices) {
             slices = JSON.parse(savedSlices);
-        } else if (PRESETS['food']) {
-            slices = PRESETS['food'].slices.map((s, idx) => ({ ...s, id: 's_' + Date.now() + '_' + idx, enabled: true }));
+        } else if (PRESETS[currentPresetId]) {
+            slices = PRESETS[currentPresetId].slices.map((s, idx) => ({ ...s, id: 's_' + Date.now() + '_' + idx, enabled: true }));
+        } else if (PRESETS['prizes']) {
+            slices = PRESETS['prizes'].slices.map((s, idx) => ({ ...s, id: 's_' + Date.now() + '_' + idx, enabled: true }));
         }
 
         const savedSettings = localStorage.getItem('lucky_wheel_settings');
@@ -48,20 +60,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const savedHistory = localStorage.getItem('lucky_wheel_history');
         if (savedHistory) {
-            history = JSON.parse(savedHistory);
+            const parsedHist = JSON.parse(savedHistory);
+            if (Array.isArray(parsedHist)) {
+                history = { [currentPresetId]: parsedHist };
+            } else if (parsedHist && typeof parsedHist === 'object') {
+                history = parsedHist;
+            }
+        }
+
+        const savedCustomPresets = localStorage.getItem('lucky_wheel_custom_presets');
+        if (savedCustomPresets) {
+            const parsed = JSON.parse(savedCustomPresets);
+            if (Array.isArray(parsed)) {
+                customPresets = parsed.slice(0, MAX_CUSTOM_PRESETS);
+            }
         }
     } catch (e) {
         console.warn('LocalStorage error, using defaults', e);
-        if (PRESETS['food']) {
-            slices = PRESETS['food'].slices.map((s, idx) => ({ ...s, id: 's_' + Date.now() + '_' + idx, enabled: true }));
+        if (PRESETS['prizes']) {
+            slices = PRESETS['prizes'].slices.map((s, idx) => ({ ...s, id: 's_' + Date.now() + '_' + idx, enabled: true }));
         }
     }
 
+    function getPresetDisplayName(pid) {
+        const i18n = window.LuckyWheelI18n;
+        if (!pid) return i18n ? i18n.t('presets.customGroup') : 'Tùy chỉnh';
+        if (pid.startsWith('cp_')) {
+            const cp = customPresets.find(p => p.id === pid);
+            return cp ? cp.name : (i18n ? i18n.t('presets.customGroup') : 'Mẫu Của Bạn');
+        }
+        if (PRESETS[pid]) {
+            return i18n ? i18n.t('presetsList.' + pid) : PRESETS[pid].name;
+        }
+        return pid;
+    }
+
     function saveState() {
+        const historyData = window.LuckyWheelHistory ? window.LuckyWheelHistory.getHistoryMap() : history;
+
+        // Auto-sync slices into the active custom preset
+        if (currentPresetId && currentPresetId.startsWith('cp_')) {
+            const activeCP = customPresets.find(p => p.id === currentPresetId);
+            if (activeCP) {
+                activeCP.slices = JSON.parse(JSON.stringify(slices));
+                updateCustomPresetOptionText(currentPresetId, activeCP.name, slices.length);
+            }
+        }
+
         try {
             localStorage.setItem('lucky_wheel_slices', JSON.stringify(slices));
             localStorage.setItem('lucky_wheel_settings', JSON.stringify(settings));
-            localStorage.setItem('lucky_wheel_history', JSON.stringify(history));
+            localStorage.setItem('lucky_wheel_history', JSON.stringify(historyData));
+            localStorage.setItem('lucky_wheel_custom_presets', JSON.stringify(customPresets));
+            localStorage.setItem('lucky_wheel_current_preset_id', currentPresetId);
         } catch (e) {
             console.error('Failed to save to localStorage', e);
         }
@@ -71,10 +122,23 @@ document.addEventListener('DOMContentLoaded', () => {
             window.SharedAuth.saveData({
                 slices: slices,
                 settings: settings,
-                history: history
+                history: historyData,
+                customPresets: customPresets,
+                currentPresetId: currentPresetId
             });
         }
     }
+
+    // Update the text of a single custom preset <option> without resetting the whole dropdown
+    function updateCustomPresetOptionText(presetId, name, count) {
+        const optgroup = document.getElementById('customPresetsOptgroup');
+        if (!optgroup) return;
+        const opt = optgroup.querySelector(`option[value="${presetId}"]`);
+        if (opt) {
+            opt.textContent = `⭐ ${name} (${count})`;
+        }
+    }
+
 
     // --------------------------------------------------------------------------
     // 2. DOM ELEMENTS
@@ -86,61 +150,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainSpinBtn = document.getElementById('mainSpinBtn');
     const shuffleBtn = document.getElementById('shuffleBtn');
 
-    // Panel collapse & toggle buttons (in wheel-controls)
-    const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
-    const toggleControlsBtn = document.getElementById('toggleControlsBtn');
+    // Panel collapse & toggle button (in wheel-controls)
+    const togglePanelBtn = document.getElementById('togglePanelBtn');
 
     const appLayout = document.querySelector('.app-layout');
     const soundToggleBtn = document.getElementById('soundToggleBtn');
 
-    // Tablet & Mobile Unified Tabs Elements
+    // Unified Tabs Elements (Slices & Settings / History)
     const tabBtnSlices = document.getElementById('tabBtnSlices');
     const tabBtnHistory = document.getElementById('tabBtnHistory');
     const tabPaneSlices = document.getElementById('tabPaneSlices');
     const tabPaneHistory = document.getElementById('tabPaneHistory');
-    const historyCardContent = document.getElementById('historyCardContent');
-    const tabHistorySlot = document.getElementById('tabHistorySlot');
-    const historyPanel = document.getElementById('historyPanel');
 
     // Settings Card Elements
     const rainbowToggle = document.getElementById('rainbowToggle');
     const eliminationToggle = document.getElementById('eliminationToggle');
-    const btnDisplay2D = document.getElementById('btnDisplay2D');
-    const btnDisplay3DTilt = document.getElementById('btnDisplay3DTilt');
-    const btnDisplay3DCylinder = document.getElementById('btnDisplay3DCylinder');
     const btnModeEqual = document.getElementById('btnModeEqual');
     const btnModeWeighted = document.getElementById('btnModeWeighted');
     const btnModeEqualWeighted = document.getElementById('btnModeEqualWeighted');
     const durationSlider = document.getElementById('durationSlider');
     const durationVal = document.getElementById('durationVal');
     const presetSelect = document.getElementById('presetSelect');
+    const customPresetsOptgroup = document.getElementById('customPresetsOptgroup');
+    const defaultPresetsOptgroup = document.getElementById('defaultPresetsOptgroup');
+    const editPresetBtn = document.getElementById('editPresetBtn');
+    const newPresetBtn = document.getElementById('newPresetBtn');
+
+    // Preset Modal Elements
+    const presetModal = document.getElementById('presetModal');
+    const presetModalHeading = document.getElementById('presetModalHeading');
+    const presetModalCloseBtn = document.getElementById('presetModalCloseBtn');
+    const presetCancelBtn = document.getElementById('presetCancelBtn');
+    const presetSaveBtn = document.getElementById('presetSaveBtn');
+    const presetDeleteBtn = document.getElementById('presetDeleteBtn');
+    const presetNameInput = document.getElementById('presetNameInput');
+    const presetQuotaCount = document.getElementById('presetQuotaCount');
+    const presetSlicesCount = document.getElementById('presetSlicesCount');
+    const presetAlertMsg = document.getElementById('presetAlertMsg');
+
     const presetSelectSettings = document.getElementById('presetSelectSettings');
     const sortSelect = document.getElementById('sortSelect');
     const wheelStage = document.getElementById('wheelStage');
 
     // --------------------------------------------------------------------------
-    // 3. TABLET & MOBILE UNIFIED TABS CONTROLLER
+    // 3. UNIFIED TABS CONTROLLER (Slices & Settings / History)
     // --------------------------------------------------------------------------
-    function syncHistoryDOM() {
-        const isTabletOrMobile = window.innerWidth < 1200;
-        if (!historyCardContent || !historyPanel || !tabHistorySlot) return;
-        if (isTabletOrMobile) {
-            if (historyCardContent.parentElement !== tabHistorySlot) {
-                tabHistorySlot.appendChild(historyCardContent);
-            }
-        } else {
-            if (historyCardContent.parentElement !== historyPanel) {
-                historyPanel.appendChild(historyCardContent);
-            }
-            if (tabPaneSlices) {
-                tabPaneSlices.style.display = 'flex';
-            }
-            if (tabPaneHistory) {
-                tabPaneHistory.style.display = 'none';
-            }
-        }
-    }
-
     function switchUnifiedTab(tab) {
         activeUnifiedTab = tab;
         if (tabBtnSlices) {
@@ -159,8 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tabPaneHistory.style.display = tab === 'history' ? 'flex' : 'none';
             tabPaneHistory.classList.toggle('is-active', tab === 'history');
         }
-        syncHistoryDOM();
-        updatePanelButtonsUI();
     }
 
     if (tabBtnSlices) {
@@ -185,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
             handleSpinWinner(winner, winnerIdx);
         }
     });
+    window.wheelEngine = wheelEngine;
 
     // --------------------------------------------------------------------------
     // 5. SUB-MODULES INITIALIZATION
@@ -192,6 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.LuckyWheelHistory) {
         window.LuckyWheelHistory.init({
             history: history,
+            presetId: currentPresetId,
+            presetName: getPresetDisplayName(currentPresetId),
             saveState: saveState
         });
     }
@@ -241,13 +296,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const bulkEditModal = document.getElementById('bulkEditModal');
         if (bulkEditModal) bulkEditModal.classList.remove('is-open');
 
-        mainSpinBtn.disabled = true;
+        if (mainSpinBtn) mainSpinBtn.disabled = true;
+        if (centerSpinBtn) centerSpinBtn.disabled = true;
+        const casinoRing = document.getElementById('casinoLightsRing');
+        const casinoCenter = document.getElementById('casinoCenterLights');
+        if (casinoRing) {
+            casinoRing.classList.remove('is-winning');
+            casinoRing.classList.add('is-spinning');
+        }
+        if (casinoCenter) {
+            casinoCenter.classList.remove('is-winning');
+            casinoCenter.classList.add('is-spinning');
+        }
+        document.body.classList.add('wheel-is-spinning');
         wheelEngine.spin();
     }
 
     function handleSpinWinner(winner, winnerIdx) {
-        mainSpinBtn.disabled = false;
+        if (mainSpinBtn) mainSpinBtn.disabled = false;
+        if (centerSpinBtn) centerSpinBtn.disabled = false;
+        document.body.classList.remove('wheel-is-spinning');
         lastWinnerSlice = winner;
+
+        const casinoRing = document.getElementById('casinoLightsRing');
+        const casinoCenter = document.getElementById('casinoCenterLights');
+        if (casinoRing) {
+            casinoRing.classList.remove('is-spinning');
+            casinoRing.classList.add('is-winning');
+            setTimeout(() => {
+                casinoRing.classList.remove('is-winning');
+            }, 3500);
+        }
+        if (casinoCenter) {
+            casinoCenter.classList.remove('is-spinning');
+            casinoCenter.classList.add('is-winning');
+            setTimeout(() => {
+                casinoCenter.classList.remove('is-winning');
+            }, 3500);
+        }
 
         // Play celebrations
         window.soundEngine.playWin();
@@ -277,16 +363,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --------------------------------------------------------------------------
     // 7. EVENT LISTENERS & TOOLBAR ACTIONS
     // --------------------------------------------------------------------------
-    // Spin buttons
-    mainSpinBtn.addEventListener('click', triggerSpin);
-    centerSpinBtn.addEventListener('click', triggerSpin);
+    if (mainSpinBtn) mainSpinBtn.addEventListener('click', triggerSpin);
+    if (centerSpinBtn) centerSpinBtn.addEventListener('click', triggerSpin);
     wheelCanvas.addEventListener('click', (e) => {
         // Only trigger if clicked inside hub radius
         const rect = wheelCanvas.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
         const dist = Math.sqrt(x * x + y * y);
-        if (dist <= rect.width * 0.18) {
+        if (dist <= rect.width * 0.20) {
             triggerSpin();
         }
     });
@@ -332,19 +417,56 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
+    function updateEditPresetBtnState() {
+        if (!editPresetBtn || !presetSelect) return;
+        const val = presetSelect.value;
+        const isCustom = !!(val && val.startsWith('cp_'));
+        editPresetBtn.disabled = !isCustom;
+    }
+
     function updatePresetOptions() {
-        if (!window.LuckyWheelI18n) return;
         const i18n = window.LuckyWheelI18n;
         const selects = [presetSelect, presetSelectSettings, sortSelect];
         selects.forEach(sel => {
             if (!sel) return;
             const opts = sel.querySelectorAll('option');
             opts.forEach(opt => {
-                if (opt.dataset.i18n) {
+                if (opt.dataset.i18n && i18n) {
                     opt.textContent = i18n.t(opt.dataset.i18n);
                 }
             });
         });
+
+        // Update Custom Presets Optgroup
+        if (customPresetsOptgroup) {
+            const curVal = presetSelect ? presetSelect.value : '';
+            customPresetsOptgroup.label = i18n ? i18n.t('presets.customGroup') : 'Mẫu Của Bạn';
+            customPresetsOptgroup.innerHTML = '';
+            if (customPresets.length === 0) {
+                customPresetsOptgroup.style.display = 'none';
+            } else {
+                customPresetsOptgroup.style.display = '';
+                customPresets.forEach(cp => {
+                    const opt = document.createElement('option');
+                    opt.value = cp.id;
+                    opt.textContent = `⭐ ${cp.name} (${cp.slices ? cp.slices.length : 0})`;
+                    customPresetsOptgroup.appendChild(opt);
+                });
+            }
+            if (presetSelect) presetSelect.value = curVal;
+        }
+
+        // Update Default Presets Optgroup
+        if (defaultPresetsOptgroup && i18n) {
+            defaultPresetsOptgroup.label = i18n.t('presets.defaultGroup');
+        }
+
+        // Ensure current preset is selected in dropdown
+        if (presetSelect && currentPresetId) {
+            presetSelect.value = currentPresetId;
+        }
+
+        updateEditPresetBtnState();
     }
 
     if (langToggleBtn) {
@@ -356,72 +478,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updatePanelButtonsUI() {
-        if (!appLayout) return;
-        const isTabletOrMobile = window.innerWidth < 1200;
-        const isHistoryHidden = appLayout.classList.contains('hide-history');
+        if (!appLayout || !togglePanelBtn) return;
         const isControlsHidden = appLayout.classList.contains('hide-controls');
-
-        if (toggleHistoryBtn) {
-            const isHidden = isTabletOrMobile
-                ? (isControlsHidden || activeUnifiedTab !== 'history')
-                : isHistoryHidden;
-            toggleHistoryBtn.classList.toggle('is-panel-hidden', isHidden);
-        }
-        if (toggleControlsBtn) {
-            const isHidden = isTabletOrMobile
-                ? (isControlsHidden || activeUnifiedTab !== 'slices')
-                : isControlsHidden;
-            toggleControlsBtn.classList.toggle('is-panel-hidden', isHidden);
-        }
+        togglePanelBtn.classList.toggle('is-panel-hidden', isControlsHidden);
     }
 
-    function toggleHistory() {
+    function togglePanel() {
         if (!appLayout) return;
-        const isTabletOrMobile = window.innerWidth < 1200;
-        if (isTabletOrMobile) {
-            if (appLayout.classList.contains('hide-controls')) {
-                appLayout.classList.remove('hide-controls');
-                switchUnifiedTab('history');
-            } else if (activeUnifiedTab === 'history') {
-                appLayout.classList.add('hide-controls');
-            } else {
-                switchUnifiedTab('history');
-            }
-        } else {
-            appLayout.classList.toggle('hide-history');
-        }
+        appLayout.classList.toggle('hide-controls');
         updatePanelButtonsUI();
+
+        // Trigger wheelEngine resize when animation completes so canvas remains sharp and centered
+        setTimeout(() => {
+            if (wheelEngine) wheelEngine.resize();
+        }, 440);
     }
 
-    function toggleControls() {
-        if (!appLayout) return;
-        const isTabletOrMobile = window.innerWidth < 1200;
-        if (isTabletOrMobile) {
-            if (appLayout.classList.contains('hide-controls')) {
-                appLayout.classList.remove('hide-controls');
-                switchUnifiedTab('slices');
-            } else if (activeUnifiedTab === 'slices') {
-                appLayout.classList.add('hide-controls');
-            } else {
-                switchUnifiedTab('slices');
-            }
-        } else {
-            appLayout.classList.toggle('hide-controls');
-        }
-        updatePanelButtonsUI();
+    if (togglePanelBtn) {
+        togglePanelBtn.addEventListener('click', togglePanel);
     }
 
-    if (toggleHistoryBtn) {
-        toggleHistoryBtn.addEventListener('click', toggleHistory);
+    if (wheelStage) {
+        wheelStage.addEventListener('transitionend', () => {
+            if (wheelEngine) wheelEngine.resize();
+        });
     }
 
-    if (toggleControlsBtn) {
-        toggleControlsBtn.addEventListener('click', toggleControls);
-    }
-
-    // Responsive DOM Synchronization on resize
+    // Responsive synchronization on resize
     window.addEventListener('resize', () => {
-        syncHistoryDOM();
         updatePanelButtonsUI();
     });
 
@@ -433,7 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
             window.LuckyWheelSlices.updateToggleAllBtnUI();
             window.LuckyWheelSlices.renderSlices();
         }
-        if (window.LuckyWheelHistory) window.LuckyWheelHistory.renderHistory();
+        if (window.LuckyWheelHistory) {
+            window.LuckyWheelHistory.updatePresetName(getPresetDisplayName(currentPresetId));
+            window.LuckyWheelHistory.renderHistory();
+        }
         if (wheelEngine) wheelEngine.draw();
         updatePanelButtonsUI();
     });
@@ -441,7 +528,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Preset selection handler
     const handlePresetChange = (e) => {
         const key = e.target.value;
-        if (key && PRESETS[key]) {
+        if (!key) {
+            updateEditPresetBtnState();
+            return;
+        }
+
+        currentPresetId = key;
+
+        // Custom preset selected
+        if (key.startsWith('cp_')) {
+            const cp = customPresets.find(p => p.id === key);
+            if (cp && Array.isArray(cp.slices) && cp.slices.length > 0) {
+                slices = JSON.parse(JSON.stringify(cp.slices));
+                if (settings.autoRainbow && window.LuckyWheelSlices) {
+                    window.LuckyWheelSlices.applyRainbowColors();
+                }
+                saveState();
+                if (window.LuckyWheelSlices) {
+                    window.LuckyWheelSlices.setSlices(slices);
+                }
+                wheelEngine.setSlices(slices);
+            }
+            if (window.LuckyWheelHistory) {
+                window.LuckyWheelHistory.setPreset(currentPresetId, getPresetDisplayName(currentPresetId));
+            }
+            updateEditPresetBtnState();
+            return;
+        }
+
+        // Default preset selected
+        if (PRESETS[key]) {
             slices = PRESETS[key].slices.map((s, idx) => ({ ...s, id: 's_' + Date.now() + '_' + idx, enabled: true }));
             if (settings.autoRainbow && window.LuckyWheelSlices) {
                 window.LuckyWheelSlices.applyRainbowColors();
@@ -451,12 +567,197 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.LuckyWheelSlices.setSlices(slices);
             }
             wheelEngine.setSlices(slices);
-            if (presetSelect) presetSelect.value = '';
-            if (presetSelectSettings) presetSelectSettings.value = '';
+            if (window.LuckyWheelHistory) {
+                window.LuckyWheelHistory.setPreset(currentPresetId, getPresetDisplayName(currentPresetId));
+            }
+            updateEditPresetBtnState();
         }
     };
     if (presetSelect) presetSelect.addEventListener('change', handlePresetChange);
     if (presetSelectSettings) presetSelectSettings.addEventListener('change', handlePresetChange);
+
+    // --------------------------------------------------------------------------
+    // 3.5 CUSTOM PRESET CONTROLLER & MODAL
+    // --------------------------------------------------------------------------
+    function openPresetModal(mode, presetId = null) {
+        if (!presetModal) return;
+        const i18n = window.LuckyWheelI18n;
+        currentEditingPresetId = presetId;
+        if (presetAlertMsg) {
+            presetAlertMsg.style.display = 'none';
+            presetAlertMsg.textContent = '';
+        }
+        if (presetQuotaCount) presetQuotaCount.textContent = customPresets.length;
+
+        if (mode === 'create') {
+            if (customPresets.length >= MAX_CUSTOM_PRESETS) {
+                alert(i18n ? i18n.t('presets.limitReached') : 'Bạn đã đạt giới hạn tối đa 10 mẫu. Vui lòng xóa bớt mẫu cũ để lưu mẫu mới!');
+                return;
+            }
+            if (presetModalHeading) {
+                presetModalHeading.textContent = i18n ? i18n.t('presets.modalCreateHeading') : '💾 Lưu Các Ô Hiện Tại Thành Mẫu Mới';
+            }
+            if (presetDeleteBtn) presetDeleteBtn.style.display = 'none';
+            if (presetSaveBtn) {
+                presetSaveBtn.textContent = i18n ? i18n.t('presets.save') : 'Lưu Mẫu';
+            }
+            if (presetSlicesCount) presetSlicesCount.textContent = slices.length;
+            if (presetNameInput) {
+                presetNameInput.value = '';
+            }
+        } else if (mode === 'edit') {
+            const targetPreset = customPresets.find(p => p.id === presetId);
+            if (!targetPreset) return;
+
+            if (presetModalHeading) {
+                presetModalHeading.textContent = i18n ? i18n.t('presets.modalEditHeading') : '✏️ Đổi Tên / Quản Lý Mẫu';
+            }
+            if (presetDeleteBtn) presetDeleteBtn.style.display = 'inline-block';
+            if (presetSaveBtn) {
+                presetSaveBtn.textContent = i18n ? i18n.t('presets.update') : 'Cập Nhật Tên';
+            }
+            if (presetSlicesCount) presetSlicesCount.textContent = targetPreset.slices ? targetPreset.slices.length : 0;
+            if (presetNameInput) {
+                presetNameInput.value = targetPreset.name || '';
+            }
+        }
+
+        presetModal.classList.add('is-open');
+        setTimeout(() => {
+            if (presetNameInput) {
+                presetNameInput.focus();
+                presetNameInput.select();
+            }
+        }, 50);
+    }
+
+    function closePresetModal() {
+        if (!presetModal) return;
+        presetModal.classList.remove('is-open');
+        currentEditingPresetId = null;
+    }
+
+    function handleSavePreset() {
+        const i18n = window.LuckyWheelI18n;
+        const name = presetNameInput ? presetNameInput.value.trim() : '';
+        if (!name) {
+            if (presetAlertMsg) {
+                presetAlertMsg.textContent = i18n ? i18n.t('presets.nameRequired') : 'Vui lòng nhập tên cho mẫu!';
+                presetAlertMsg.style.display = 'block';
+            }
+            if (presetNameInput) presetNameInput.focus();
+            return;
+        }
+
+        if (currentEditingPresetId) {
+            const target = customPresets.find(p => p.id === currentEditingPresetId);
+            if (target) {
+                target.name = name;
+                if (currentEditingPresetId === currentPresetId && window.LuckyWheelHistory) {
+                    window.LuckyWheelHistory.updatePresetName(name);
+                }
+                saveState();
+                updatePresetOptions();
+                if (presetSelect) presetSelect.value = currentEditingPresetId;
+                updateEditPresetBtnState();
+            }
+        } else {
+            if (customPresets.length >= MAX_CUSTOM_PRESETS) {
+                if (presetAlertMsg) {
+                    presetAlertMsg.textContent = i18n ? i18n.t('presets.limitReached') : 'Bạn đã đạt giới hạn tối đa 10 mẫu!';
+                    presetAlertMsg.style.display = 'block';
+                }
+                return;
+            }
+            const newPreset = {
+                id: 'cp_' + Date.now(),
+                name: name,
+                createdAt: Date.now(),
+                slices: JSON.parse(JSON.stringify(slices))
+            };
+            customPresets.push(newPreset);
+            currentPresetId = newPreset.id;
+            if (window.LuckyWheelHistory) {
+                window.LuckyWheelHistory.setPreset(currentPresetId, newPreset.name);
+            }
+            saveState();
+            updatePresetOptions();
+            if (presetSelect) presetSelect.value = newPreset.id;
+            updateEditPresetBtnState();
+        }
+        closePresetModal();
+    }
+
+    function handleDeletePreset() {
+        if (!currentEditingPresetId) return;
+        const i18n = window.LuckyWheelI18n;
+        const confirmMsg = i18n ? i18n.t('presets.deleteConfirm') : 'Bạn có chắc chắn muốn xóa mẫu này không?';
+        if (!confirm(confirmMsg)) return;
+
+        if (window.LuckyWheelHistory) {
+            window.LuckyWheelHistory.deletePresetHistory(currentEditingPresetId);
+        }
+        customPresets = customPresets.filter(p => p.id !== currentEditingPresetId);
+        if (currentPresetId === currentEditingPresetId) {
+            currentPresetId = 'prizes';
+            if (window.LuckyWheelHistory) {
+                window.LuckyWheelHistory.setPreset('prizes', getPresetDisplayName('prizes'));
+            }
+        }
+        saveState();
+        updatePresetOptions();
+        if (presetSelect) presetSelect.value = currentPresetId;
+        updateEditPresetBtnState();
+        closePresetModal();
+    }
+
+    if (newPresetBtn) {
+        newPresetBtn.addEventListener('click', () => {
+            const i18n = window.LuckyWheelI18n;
+            if (customPresets.length >= MAX_CUSTOM_PRESETS) {
+                alert(i18n ? i18n.t('presets.limitReached') : 'Bạn đã đạt giới hạn tối đa 10 mẫu. Vui lòng xóa bớt mẫu cũ để lưu mẫu mới!');
+                return;
+            }
+            openPresetModal('create');
+        });
+    }
+
+    if (editPresetBtn) {
+        editPresetBtn.addEventListener('click', () => {
+            const i18n = window.LuckyWheelI18n;
+            const currentVal = presetSelect ? presetSelect.value : '';
+            if (currentVal && currentVal.startsWith('cp_')) {
+                openPresetModal('edit', currentVal);
+            } else if (customPresets.length > 0) {
+                openPresetModal('edit', customPresets[0].id);
+            } else {
+                alert(i18n ? i18n.t('presets.selectCustomToEdit') : 'Vui lòng chọn một mẫu tự tạo từ danh sách để sửa hoặc xóa.');
+            }
+        });
+    }
+
+    if (presetSaveBtn) presetSaveBtn.addEventListener('click', handleSavePreset);
+    if (presetDeleteBtn) presetDeleteBtn.addEventListener('click', handleDeletePreset);
+    if (presetCancelBtn) presetCancelBtn.addEventListener('click', closePresetModal);
+    if (presetModalCloseBtn) presetModalCloseBtn.addEventListener('click', closePresetModal);
+    if (presetModal) {
+        presetModal.addEventListener('click', (e) => {
+            if (e.target === presetModal) closePresetModal();
+        });
+    }
+    if (presetNameInput) {
+        presetNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSavePreset();
+            }
+        });
+    }
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && presetModal && presetModal.classList.contains('is-open')) {
+            closePresetModal();
+        }
+    });
 
     // Rainbow color mode toggle
     if (rainbowToggle) {
@@ -485,41 +786,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Display mode (2D Flat vs 3D Tilt vs 3D Cylinder)
+    // Display mode (Standard 2D)
     function updateDisplayModeUI() {
-        const mode = settings.displayMode || '2d';
-        if (btnDisplay2D) btnDisplay2D.classList.toggle('is-active', mode === '2d');
-        if (btnDisplay3DTilt) btnDisplay3DTilt.classList.toggle('is-active', mode === '3d_tilt');
-        if (btnDisplay3DCylinder) btnDisplay3DCylinder.classList.toggle('is-active', mode === '3d_cylinder');
-
         if (wheelStage) {
-            wheelStage.classList.remove('mode-2d', 'mode-3d-tilt', 'mode-3d-cylinder');
-            const classSuffix = mode === '3d_tilt' ? '3d-tilt' : mode === '3d_cylinder' ? '3d-cylinder' : '2d';
-            wheelStage.classList.add(`mode-${classSuffix}`);
+            wheelStage.classList.remove('mode-3d-tilt', 'mode-3d-cylinder');
+            wheelStage.classList.add('mode-2d');
         }
-
-        wheelEngine.setDisplayMode(mode);
-    }
-    if (btnDisplay2D) {
-        btnDisplay2D.addEventListener('click', () => {
-            settings.displayMode = '2d';
-            saveState();
-            updateDisplayModeUI();
-        });
-    }
-    if (btnDisplay3DTilt) {
-        btnDisplay3DTilt.addEventListener('click', () => {
-            settings.displayMode = '3d_tilt';
-            saveState();
-            updateDisplayModeUI();
-        });
-    }
-    if (btnDisplay3DCylinder) {
-        btnDisplay3DCylinder.addEventListener('click', () => {
-            settings.displayMode = '3d_cylinder';
-            saveState();
-            updateDisplayModeUI();
-        });
+        if (wheelEngine) {
+            wheelEngine.setDisplayMode('2d');
+        }
     }
 
     // Sizing mode (Equal vs Weighted vs Equal-Weighted)
@@ -584,8 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSoundUI();
     }
 
-    // Initial render & DOM synchronization
-    syncHistoryDOM();
+    // Initial render
     if (window.LuckyWheelSlices) window.LuckyWheelSlices.renderSlices();
     if (window.LuckyWheelHistory) window.LuckyWheelHistory.renderHistory();
     updateSizingModeUI();
@@ -635,12 +909,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Safely merge cloud history
-                if (Array.isArray(cloudData.history)) {
-                    history = cloudData.history;
+                if (cloudData.history) {
+                    if (window.LuckyWheelHistory) {
+                        window.LuckyWheelHistory.setHistoryMap(cloudData.history);
+                    }
+                }
+
+                // Safely merge cloud custom presets
+                if (Array.isArray(cloudData.customPresets)) {
+                    customPresets = cloudData.customPresets.slice(0, MAX_CUSTOM_PRESETS);
+                    try {
+                        localStorage.setItem('lucky_wheel_custom_presets', JSON.stringify(customPresets));
+                    } catch (e) {}
+                    updatePresetOptions();
+                }
+
+                // Safely restore current preset from cloud
+                if (cloudData.currentPresetId) {
+                    currentPresetId = cloudData.currentPresetId;
+                    if (window.LuckyWheelHistory) {
+                        window.LuckyWheelHistory.setPreset(currentPresetId, getPresetDisplayName(currentPresetId));
+                    }
+                    if (presetSelect) presetSelect.value = currentPresetId;
+                    updateEditPresetBtnState();
                 }
 
                 if (window.LuckyWheelSlices) window.LuckyWheelSlices.setSlices(slices);
-                if (window.LuckyWheelHistory) window.LuckyWheelHistory.setHistory(history);
                 wheelEngine.setSlices(slices);
             }
         });

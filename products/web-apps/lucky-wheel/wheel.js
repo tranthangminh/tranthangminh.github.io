@@ -20,8 +20,8 @@ class LuckyWheelEngine {
         this.startAngle = 0;
         this.targetAngle = 0;
 
-        // Pointer configuration (3 o'clock / Right side)
-        this.pointerAngle = 0; // 0 rad = 3 o'clock (Right)
+        // Pointer configuration (4:30 position / 45 degrees)
+        this.pointerAngle = Math.PI / 4; // PI/4 rad = 45 deg = 4:30 position
 
         // Pointer dynamic kickback wobble physics
         this.pointerDeflection = 0;
@@ -34,6 +34,12 @@ class LuckyWheelEngine {
         this.onSpinEnd = options.onSpinEnd || null;
         this.onTick = options.onTick || null;
 
+        // Display mode & 3D thickness transition state (0% to 100%)
+        this.thicknessProgress = (this.displayMode === '2d') ? 0 : 1;
+        this._modeAnimId = null;
+        this._isTransitioning = false;
+        this._transitionSourceMode = null;
+
         // High DPI setup
         this.resize();
         window.addEventListener('resize', () => this.resize());
@@ -44,9 +50,11 @@ class LuckyWheelEngine {
      */
     resize() {
         const wrapper = this.canvas.parentElement;
-        const wRect = wrapper ? wrapper.getBoundingClientRect() : this.canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        const size = Math.max(260, Math.floor(Math.min(wRect.width || 480, wRect.height || 480)));
+        const wWidth = wrapper ? (wrapper.clientWidth || wrapper.offsetWidth) : 480;
+        const wHeight = wrapper ? (wrapper.clientHeight || wrapper.offsetHeight) : 480;
+        // Super-sampling: ensure at least 2x DPR for razor-sharp rendering in 3D perspective
+        const dpr = Math.max(2, window.devicePixelRatio || 1);
+        const size = Math.max(260, Math.floor(Math.min(wWidth, wHeight)));
 
         // Skip redundant buffer re-allocation and redraw if dimensions have not changed
         if (this.width === size && this._lastDpr === dpr) {
@@ -66,17 +74,30 @@ class LuckyWheelEngine {
         this.centerX = size / 2;
         this.centerY = size / 2;
         this.radius = size / 2 - 18; // clearance for outer rim & pegs
+        const hubRadius = Math.round(this.radius * 0.36);
+        this.hubRadius = hubRadius;
 
-        if (this.pointerCanvas) {
-            const pRect = this.pointerCanvas.getBoundingClientRect();
-            this.pointerCanvas.width = (pRect.width || 64) * dpr;
-            this.pointerCanvas.height = (pRect.height || 56) * dpr;
-            this.pointerCtx.setTransform(1, 0, 0, 1, 0, 0);
-            this.pointerCtx.scale(dpr, dpr);
-            this.pWidth = pRect.width || 64;
-            this.pHeight = pRect.height || 56;
+        if (wrapper) {
+            wrapper.style.setProperty('--wheel-radius', `${this.radius}px`);
+            wrapper.style.setProperty('--wheel-size', `${size}px`);
+            wrapper.style.setProperty('--hub-size', `${hubRadius * 2}px`);
+            wrapper.style.setProperty('--hub-radius', `${hubRadius}px`);
         }
 
+        if (this.pointerCanvas) {
+            // Use layout dimensions (offsetWidth/offsetHeight) or explicit fallback,
+            // NEVER getBoundingClientRect() which is distorted by rotate(45deg) or 3D transforms
+            const pw = this.pointerCanvas.offsetWidth || 64;
+            const ph = this.pointerCanvas.offsetHeight || 56;
+            this.pointerCanvas.width = pw * dpr;
+            this.pointerCanvas.height = ph * dpr;
+            this.pointerCtx.setTransform(1, 0, 0, 1, 0, 0);
+            this.pointerCtx.scale(dpr, dpr);
+            this.pWidth = pw;
+            this.pHeight = ph;
+        }
+
+        this._discCacheValid = false;
         this.draw();
     }
 
@@ -86,6 +107,7 @@ class LuckyWheelEngine {
     setSlices(slices) {
         this.slices = slices.filter(s => s.enabled !== false);
         this.calculateAngles();
+        this._discCacheValid = false;
         this.draw();
     }
 
@@ -99,12 +121,57 @@ class LuckyWheelEngine {
     }
 
     /**
-     * Set display mode ('2d' | '3d_tilt' | '3d_cylinder')
+     * Set display mode ('2d' | '3d_tilt' | '3d_cylinder') with smooth thickness transition (0% - 100%)
      */
     setDisplayMode(mode) {
         if (this.displayMode === mode) return;
+
+        const prevMode = this.displayMode;
         this.displayMode = mode;
-        this.draw();
+
+        const isTo3D = (mode === '3d_tilt' || mode === '3d_cylinder');
+        const isFrom3D = (prevMode === '3d_tilt' || prevMode === '3d_cylinder');
+
+        if (this._modeAnimId) {
+            cancelAnimationFrame(this._modeAnimId);
+            this._modeAnimId = null;
+        }
+
+        // Animate thickness from 0% to 100% (or 100% to 0%) matching 0.45s CSS transition
+        if ((prevMode === '2d' && isTo3D) || (isFrom3D && mode === '2d')) {
+            const startVal = (this.thicknessProgress !== undefined) ? this.thicknessProgress : (isTo3D ? 0 : 1);
+            const endVal = isTo3D ? 1 : 0;
+            const duration = 450; // ms, matches 0.45s CSS cubic-bezier transition
+            const startTime = performance.now();
+            this._isTransitioning = true;
+            this._transitionSourceMode = prevMode;
+
+            const animateTransition = (now) => {
+                const elapsed = now - startTime;
+                const t = Math.min(1, elapsed / duration);
+                // Ease out cubic
+                const ease = 1 - Math.pow(1 - t, 3);
+                this.thicknessProgress = startVal + (endVal - startVal) * ease;
+                this.draw();
+
+                if (t < 1) {
+                    this._modeAnimId = requestAnimationFrame(animateTransition);
+                } else {
+                    this._modeAnimId = null;
+                    this._isTransitioning = false;
+                    this._transitionSourceMode = null;
+                    this.thicknessProgress = endVal;
+                    this.draw();
+                }
+            };
+
+            this._modeAnimId = requestAnimationFrame(animateTransition);
+        } else {
+            this.thicknessProgress = isTo3D ? 1 : 0;
+            this._isTransitioning = false;
+            this._transitionSourceMode = null;
+            this.draw();
+        }
     }
 
     /**
@@ -246,6 +313,11 @@ class LuckyWheelEngine {
         this.winningIndex = winnerIdx;
         this.lastPegPassed = -1;
 
+        // Build disc cache just before spinning (only for 2D/3D-tilt flat mode)
+        if (this.displayMode === '2d' || this.displayMode === '3d_tilt') {
+            this._rebuildDiscCache();
+        }
+
         // Run animation frame loop
         this.animate(this.spinStartTime);
         return true;
@@ -351,6 +423,14 @@ class LuckyWheelEngine {
     }
 
     /**
+     * Fallback palette colors for slices
+     */
+    getDefaultColor(idx) {
+        const defaultPalette = ['#ef4444', '#f97316', '#eab308', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
+        return defaultPalette[idx % defaultPalette.length];
+    }
+
+    /**
      * Draw wheel on canvas according to displayMode
      */
     draw() {
@@ -360,8 +440,15 @@ class LuckyWheelEngine {
             return;
         }
 
-        if (this.displayMode === '3d_cylinder') {
-            this.drawCylinderWheel();
+        // During transition from 3D to 2D, maintain 3D rendering while thickness shrinks to 0
+        const effectiveMode = (this.displayMode === '2d' && this._isTransitioning && this.thicknessProgress > 0)
+            ? (this._transitionSourceMode || '3d_tilt')
+            : this.displayMode;
+
+        if (effectiveMode === '3d_cylinder' && window.LuckyWheel3DCylinder) {
+            window.LuckyWheel3DCylinder.draw(this);
+        } else if (effectiveMode === '3d_tilt' && window.LuckyWheel3DTilt) {
+            window.LuckyWheel3DTilt.draw(this);
         } else {
             this.drawFlatWheel();
         }
@@ -369,14 +456,15 @@ class LuckyWheelEngine {
 
     /**
      * Standard 2D Flat Wheel Rendering (Used for 2D and 3D Tilt)
+    /**
+     * Draw the complete wheel disc surface (Outer rim, slices, text, pegs, center hub)
+     * Single source of truth for 2D wheel surface, reused directly by 3D Tilt mode.
      */
-    drawFlatWheel() {
+    drawWheelDisc() {
         const ctx = this.ctx;
         const cx = this.centerX;
         const cy = this.centerY;
         const r = this.radius;
-
-        ctx.clearRect(0, 0, this.width, this.height);
 
         ctx.save();
         ctx.translate(cx, cy);
@@ -463,220 +551,151 @@ class LuckyWheelEngine {
 
         // 5. Draw Glossy Center Hub
         this.drawCenterHub(ctx, cx, cy);
+    }
 
-        // 6. Draw Pointer
+    /**
+     * Draw standard 2D flat wheel
+     */
+    drawFlatWheel() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.width, this.height);
+
+        // During spinning: use cached disc image (rotate it) — saves all slice/text/peg draw calls
+        if (this.isSpinning && this._discCache && this._discCacheValid) {
+            const cx = this.centerX;
+            const cy = this.centerY;
+            const size = this.width;
+
+            // Draw static rim shadow (outside rotation) from cache
+            ctx.drawImage(this._discRimCache, 0, 0, size, size);
+
+            // Draw rotating disc from cache
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(this.currentAngle);
+            ctx.drawImage(this._discCache, -cx, -cy, size, size);
+            ctx.restore();
+
+            // Draw hub on top (always centered, no rotation)
+            this.drawCenterHub(ctx, cx, cy);
+        } else {
+            this.drawWheelDisc();
+        }
+
         this.drawPointer();
     }
 
     /**
-     * Volumetric 3D Cylinder Wheel Rendering (Pure Canvas 2D Extruded Projection)
+     * Build offscreen disc cache: renders the full wheel disc at angle=0.
+     * Call this whenever slices change or canvas is resized.
      */
-    drawCylinderWheel() {
-        const ctx = this.ctx;
-        const cx = this.centerX;
-        const cy = this.centerY;
+    _rebuildDiscCache() {
+        const size = this.width;
+        const dpr = this._lastDpr || 1;
+        if (!size) return;
+
+        // ---- Cache 1: Rotating disc (slices + text + pegs), drawn at angle=0 ----
+        if (!this._discCache || this._discCache.width !== size * dpr) {
+            this._discCache = document.createElement('canvas');
+            this._discCache.width = size * dpr;
+            this._discCache.height = size * dpr;
+        }
+        const offCtx = this._discCache.getContext('2d');
+        offCtx.setTransform(1, 0, 0, 1, 0, 0);
+        offCtx.scale(dpr, dpr);
+        offCtx.clearRect(0, 0, size, size);
+
+        const cx = size / 2;
+        const cy = size / 2;
         const r = this.radius;
 
-        ctx.clearRect(0, 0, this.width, this.height);
-
-        const tiltRatio = 0.65;
-        const cylinderDepth = Math.max(26, Math.min(46, Math.round(this.width * 0.08)));
-        const topCx = cx;
-        const topCy = cy - Math.round(cylinderDepth * 0.42);
-        const bottomCy = topCy + cylinderDepth;
-        const rx = r;
-        const ry = r * tiltRatio;
-        const outerRx = rx + 8;
-        const outerRy = ry + 8 * tiltRatio;
-
-        // 1. Deep Floor Ambient Shadow
-        ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(topCx, bottomCy + 8, outerRx * 1.05, outerRy * 0.92, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.48)';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
-        ctx.shadowBlur = 24;
-        ctx.shadowOffsetY = 8;
-        ctx.fill();
-        ctx.restore();
-
-        // 2. Base Rim Foundation (Solid Dark Metallic Base)
-        ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(topCx, bottomCy, outerRx, outerRy, 0, 0, Math.PI);
-        ctx.lineTo(topCx - outerRx, topCy);
-        ctx.lineTo(topCx + outerRx, topCy);
-        ctx.closePath();
-        const baseGrad = ctx.createLinearGradient(topCx - outerRx, 0, topCx + outerRx, 0);
-        baseGrad.addColorStop(0, '#090d16');
-        baseGrad.addColorStop(0.2, '#1e293b');
-        baseGrad.addColorStop(0.5, '#334155');
-        baseGrad.addColorStop(0.8, '#1e293b');
-        baseGrad.addColorStop(1, '#090d16');
-        ctx.fillStyle = baseGrad;
-        ctx.fill();
-        ctx.restore();
-
-        // 3. Extruded Cylinder Facets (Rotating Slices on Rim)
+        offCtx.save();
+        offCtx.translate(cx, cy);
+        // angle = 0 for the cache; actual rotation applied via ctx.rotate in drawFlatWheel
         this.slices.forEach((slice, idx) => {
             const start = slice.startAngle;
             const end = slice.endAngle;
-            const segs = this.getVisibleArcSegments(start, end, this.currentAngle);
-            const baseColor = slice.color || this.getDefaultColor(idx);
-
-            segs.forEach(([t1, t2]) => {
-                ctx.save();
-                ctx.beginPath();
-
-                // Curved top edge
-                const steps = Math.max(3, Math.ceil((t2 - t1) / 0.05));
-                for (let j = 0; j <= steps; j++) {
-                    const t = t1 + (t2 - t1) * (j / steps);
-                    const px = topCx + Math.cos(t) * rx;
-                    const py = topCy + Math.sin(t) * ry;
-                    if (j === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
-
-                // Curved bottom edge (reverse)
-                for (let j = steps; j >= 0; j--) {
-                    const t = t1 + (t2 - t1) * (j / steps);
-                    const px = topCx + Math.cos(t) * rx;
-                    const py = bottomCy + Math.sin(t) * ry;
-                    ctx.lineTo(px, py);
-                }
-                ctx.closePath();
-
-                // 3D Diffuse light based on angle: brighter near right (light source), darker near left
-                const midAngle = (t1 + t2) / 2;
-                const lightFactor = 0.45 + 0.55 * Math.cos(midAngle - 0.45);
-
-                const facetGrad = ctx.createLinearGradient(0, topCy, 0, bottomCy + 8);
-                facetGrad.addColorStop(0, this.adjustBrightness(baseColor, lightFactor * 1.12));
-                facetGrad.addColorStop(0.65, this.adjustBrightness(baseColor, lightFactor * 0.72));
-                facetGrad.addColorStop(1, this.adjustBrightness(baseColor, lightFactor * 0.38));
-
-                ctx.fillStyle = facetGrad;
-                ctx.fill();
-
-                // Divider line between slices on cylinder wall
-                ctx.lineWidth = 1.5;
-                ctx.strokeStyle = '#0f172a';
-                ctx.stroke();
-
-                ctx.restore();
-            });
+            offCtx.beginPath();
+            offCtx.moveTo(0, 0);
+            offCtx.arc(0, 0, r, start, end);
+            offCtx.closePath();
+            offCtx.fillStyle = slice.color || this.getDefaultColor(idx);
+            offCtx.fill();
+            offCtx.lineWidth = 2;
+            offCtx.strokeStyle = '#0f172a';
+            offCtx.stroke();
+            this.drawSliceText(offCtx, slice, start, end, r);
         });
-
-        // 4. Beveled Lower Metal Trim
-        ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(topCx, bottomCy, rx, ry, 0, 0, Math.PI);
-        ctx.lineWidth = 2.5;
-        const trimGrad = ctx.createLinearGradient(topCx - rx, 0, topCx + rx, 0);
-        trimGrad.addColorStop(0, '#1e293b');
-        trimGrad.addColorStop(0.3, '#64748b');
-        trimGrad.addColorStop(0.5, '#94a3b8');
-        trimGrad.addColorStop(0.7, '#64748b');
-        trimGrad.addColorStop(1, '#1e293b');
-        ctx.strokeStyle = trimGrad;
-        ctx.stroke();
-        ctx.restore();
-
-        // 5. Top Face Wheel Slices & Text
-        ctx.save();
-        ctx.translate(topCx, topCy);
-        ctx.scale(1, tiltRatio);
-
-        // Top Outer Glowing Rim
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(0, 0, r + 8, 0, Math.PI * 2);
-        ctx.fillStyle = '#090d16';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-        ctx.shadowBlur = 14;
-        ctx.shadowOffsetY = 4;
-        ctx.fill();
-        ctx.restore();
-
-        // Top Metallic Outer Rim
-        const rimGradient = ctx.createRadialGradient(0, 0, r, 0, 0, r + 8);
-        rimGradient.addColorStop(0, '#1e293b');
-        rimGradient.addColorStop(0.4, '#64748b');
-        rimGradient.addColorStop(0.7, '#334155');
-        rimGradient.addColorStop(1, '#0f172a');
-        ctx.beginPath();
-        ctx.arc(0, 0, r + 8, 0, Math.PI * 2);
-        ctx.fillStyle = rimGradient;
-        ctx.fill();
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = '#475569';
-        ctx.stroke();
-
-        // Rotating Slices
-        ctx.rotate(this.currentAngle);
-
-        this.slices.forEach((slice, idx) => {
-            const start = slice.startAngle;
-            const end = slice.endAngle;
-
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.arc(0, 0, r, start, end);
-            ctx.closePath();
-
-            ctx.fillStyle = slice.color || this.getDefaultColor(idx);
-            ctx.fill();
-
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#0f172a';
-            ctx.stroke();
-
-            this.drawSliceText(ctx, slice, start, end, r);
-        });
-
-        // Pegs on Top Face
+        // Pegs
         this.slices.forEach(slice => {
             const angle = slice.startAngle;
             const pegDistance = r + 3;
             const px = Math.cos(angle) * pegDistance;
             const py = Math.sin(angle) * pegDistance;
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(px, py, 3.8, 0, Math.PI * 2);
-
-            const pegGrad = ctx.createRadialGradient(px - 1, py - 1, 0.5, px, py, 3.8);
+            offCtx.save();
+            offCtx.beginPath();
+            offCtx.arc(px, py, 3.5, 0, Math.PI * 2);
+            const pegGrad = offCtx.createRadialGradient(px - 1, py - 1, 0.5, px, py, 3.5);
             pegGrad.addColorStop(0, '#ffffff');
-            pegGrad.addColorStop(0.4, '#cbd5e1');
-            pegGrad.addColorStop(0.8, '#475569');
-            pegGrad.addColorStop(1, '#0f172a');
-
-            ctx.fillStyle = pegGrad;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-            ctx.shadowBlur = 3;
-            ctx.fill();
-            ctx.lineWidth = 0.75;
-            ctx.strokeStyle = '#0f172a';
-            ctx.stroke();
-            ctx.restore();
+            pegGrad.addColorStop(0.4, '#e2e8f0');
+            pegGrad.addColorStop(0.8, '#64748b');
+            pegGrad.addColorStop(1, '#1e293b');
+            offCtx.fillStyle = pegGrad;
+            offCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            offCtx.shadowBlur = 3;
+            offCtx.fill();
+            offCtx.lineWidth = 0.75;
+            offCtx.strokeStyle = '#0f172a';
+            offCtx.stroke();
+            offCtx.restore();
         });
+        offCtx.restore();
 
-        ctx.restore(); // restore top face scale & translation
+        // ---- Cache 2: Static rim (shadow + metallic ring, no rotation) ----
+        if (!this._discRimCache || this._discRimCache.width !== size * dpr) {
+            this._discRimCache = document.createElement('canvas');
+            this._discRimCache.width = size * dpr;
+            this._discRimCache.height = size * dpr;
+        }
+        const rimCtx = this._discRimCache.getContext('2d');
+        rimCtx.setTransform(1, 0, 0, 1, 0, 0);
+        rimCtx.scale(dpr, dpr);
+        rimCtx.clearRect(0, 0, size, size);
 
-        // 6. 3D Beveled Center Hub
-        ctx.save();
-        ctx.translate(topCx, topCy);
-        ctx.scale(1, tiltRatio);
-        this.drawCenterHub(ctx, 0, 0);
-        ctx.restore();
+        rimCtx.save();
+        rimCtx.translate(cx, cy);
+        // Rim shadow
+        rimCtx.save();
+        rimCtx.beginPath();
+        rimCtx.arc(0, 0, r + 8, 0, Math.PI * 2);
+        rimCtx.fillStyle = '#090d16';
+        rimCtx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        rimCtx.shadowBlur = 18;
+        rimCtx.shadowOffsetY = 6;
+        rimCtx.fill();
+        rimCtx.restore();
+        // Metallic rim
+        const rimGrad = rimCtx.createRadialGradient(0, 0, r, 0, 0, r + 8);
+        rimGrad.addColorStop(0, '#1e293b');
+        rimGrad.addColorStop(0.5, '#475569');
+        rimGrad.addColorStop(1, '#0f172a');
+        rimCtx.beginPath();
+        rimCtx.arc(0, 0, r + 8, 0, Math.PI * 2);
+        rimCtx.fillStyle = rimGrad;
+        rimCtx.fill();
+        rimCtx.lineWidth = 1.5;
+        rimCtx.strokeStyle = '#334155';
+        rimCtx.stroke();
+        rimCtx.restore();
 
-        // 7. Draw Pointer
-        this.drawPointer();
+        this._discCacheValid = true;
     }
+
 
     /**
      * Draw text aligned radially within the slice
+     * Scales dynamically with screen size / wheel radius, supports up to 36px font,
+     * auto 2-line wrapping for long items, and enforces a minimum floor (11px).
      */
     drawSliceText(ctx, slice, start, end, radius) {
         ctx.save();
@@ -689,27 +708,70 @@ class LuckyWheelEngine {
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
 
-        // Auto-scale font size depending on slice count and slice angle
+        // 1. Text multi-line splitting (up to 2 lines)
+        let rawText = (slice.text || '').trim();
+        let lines = [rawText];
+
+        if (rawText.includes('\n')) {
+            const parts = rawText.split('\n');
+            lines = [parts[0].trim(), parts.slice(1).join(' ').trim()].filter(Boolean);
+        } else if (rawText.includes(' ') && rawText.length > 7) {
+            const words = rawText.split(/\s+/);
+            if (words.length >= 2) {
+                let bestSplit = 1;
+                let minDiff = Infinity;
+                for (let i = 1; i < words.length; i++) {
+                    const l1 = words.slice(0, i).join(' ');
+                    const l2 = words.slice(i).join(' ');
+                    const diff = Math.abs(l1.length - l2.length);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        bestSplit = i;
+                    }
+                }
+                lines = [words.slice(0, bestSplit).join(' '), words.slice(bestSplit).join(' ')];
+            }
+        }
+        const isMultiLine = lines.length > 1;
+
+        // 2. Responsive font scaling with max 36px and min 11px limit
         const sliceSpan = end - start;
         const availableArc = (radius * 0.65) * sliceSpan;
-        let fontSize = Math.floor(Math.min(18, Math.max(10, availableArc * 0.45)));
+        const MIN_FONT_SIZE = 11;
+        const MAX_FONT_SIZE = isMultiLine ? 28 : 36;
 
-        ctx.font = `600 ${fontSize}px Montserrat, system-ui, sans-serif`;
+        const targetSize = Math.round(isMultiLine ? radius * 0.095 : radius * 0.12);
+        const arcCap = Math.round(availableArc * (isMultiLine ? 0.32 : 0.50));
+        let fontSize = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, Math.min(targetSize, arcCap)));
 
-        // Truncate text if needed
-        let text = slice.text || '';
-        const maxTextWidth = radius * 0.62;
-        while (ctx.measureText(text).width > maxTextWidth && text.length > 3) {
-            text = text.substring(0, text.length - 2) + '…';
+        ctx.font = `700 ${fontSize}px Montserrat, system-ui, sans-serif`;
+
+        // 3. Truncate line with ellipsis if still wider than slice room
+        const maxLineWidth = radius * 0.62;
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            while (ctx.measureText(line).width > maxLineWidth && line.length > 3) {
+                line = line.substring(0, line.length - 2) + '…';
+            }
+            lines[i] = line;
         }
 
-        // Slight text shadow for readability
+        // 4. Drop shadow for crisp readability
         ctx.shadowColor = fontColor === '#ffffff' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.45)';
-        ctx.shadowBlur = 2;
+        ctx.shadowBlur = 3;
         ctx.shadowOffsetX = 1;
         ctx.shadowOffsetY = 1;
 
-        ctx.fillText(text, radius - 20, 0);
+        // 5. Draw text lines radially
+        const textAnchorX = radius - 20;
+        if (!isMultiLine) {
+            ctx.fillText(lines[0], textAnchorX, 0);
+        } else {
+            const lineHeight = fontSize * 1.16;
+            ctx.fillText(lines[0], textAnchorX, -lineHeight * 0.52);
+            ctx.fillText(lines[1], textAnchorX, lineHeight * 0.52);
+        }
+
         ctx.restore();
     }
 
@@ -718,7 +780,7 @@ class LuckyWheelEngine {
      */
     drawCenterHub(ctx, cx, cy) {
         ctx.save();
-        const hubRadius = Math.max(34, this.radius * 0.17);
+        const hubRadius = this.hubRadius || Math.round(this.radius * 0.36);
 
         // Outer rim of hub
         ctx.beginPath();
@@ -738,19 +800,20 @@ class LuckyWheelEngine {
 
         // Inner jewel
         ctx.beginPath();
-        ctx.arc(cx, cy, hubRadius * 0.65, 0, Math.PI * 2);
-        const innerGrad = ctx.createLinearGradient(cx, cy - hubRadius * 0.65, cx, cy + hubRadius * 0.65);
+        ctx.arc(cx, cy, hubRadius * 0.68, 0, Math.PI * 2);
+        const innerGrad = ctx.createLinearGradient(cx, cy - hubRadius * 0.68, cx, cy + hubRadius * 0.68);
         innerGrad.addColorStop(0, '#06b6d4');
         innerGrad.addColorStop(1, '#0891b2');
         ctx.fillStyle = innerGrad;
         ctx.fill();
 
-        // SPIN text or icon in center
+        // SPIN text in center (Sized comfortably inside inner circle without clipping)
         ctx.fillStyle = '#ffffff';
-        ctx.font = `800 ${Math.floor(hubRadius * 0.42)}px Montserrat, sans-serif`;
+        ctx.font = `800 ${Math.floor(hubRadius * 0.32)}px Montserrat, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = 4;
         const spinText = window.LuckyWheelI18n ? window.LuckyWheelI18n.t('actions.spin') : 'SPIN';
         ctx.fillText(spinText, cx, cy);
 
@@ -763,6 +826,28 @@ class LuckyWheelEngine {
     drawPointer() {
         const pCanvas = this.pointerCanvas;
         if (!pCanvas) return;
+
+        // Delegate to dedicated 3D visual modules
+        if (this.displayMode === '3d_cylinder' && window.LuckyWheel3DCylinder) {
+            window.LuckyWheel3DCylinder.drawPointer(this);
+            return;
+        }
+        if (this.displayMode === '3d_tilt' && window.LuckyWheel3DTilt && typeof window.LuckyWheel3DTilt.drawPointer === 'function') {
+            window.LuckyWheel3DTilt.drawPointer(this);
+            return;
+        }
+
+        this.drawStandardPointer();
+    }
+
+    /**
+     * Standard pointer indicator on Right side (3 o'clock) with wobble kickback
+     * Single source of truth for 2D and 3D Tilt pointer.
+     */
+    drawStandardPointer() {
+        const pCanvas = this.pointerCanvas;
+        if (!pCanvas) return;
+
         const ctx = this.pointerCtx;
         const w = this.pWidth;
         const h = this.pHeight;
@@ -773,75 +858,26 @@ class LuckyWheelEngine {
         // Pivot point near right edge of pointer canvas (attached outside the right rim)
         ctx.translate(w - 10, h / 2);
         ctx.rotate(this.pointerDeflection);
+        ctx.beginPath();
+        ctx.moveTo(0, -14);
+        ctx.lineTo(0, 14);
+        ctx.lineTo(-(w - 16), 0);
+        ctx.closePath();
 
-        // Draw physical needle/peg pointing LEFT into the wheel center
-        if (this.displayMode === '3d_cylinder') {
-            // Upper facet (highlighted)
-            ctx.beginPath();
-            ctx.moveTo(0, -14);
-            ctx.lineTo(0, 0);
-            ctx.lineTo(-(w - 16), 0);
-            ctx.closePath();
-            const topGrad = ctx.createLinearGradient(0, -14, 0, 0);
-            topGrad.addColorStop(0, '#fca5a5');
-            topGrad.addColorStop(1, '#ef4444');
-            ctx.fillStyle = topGrad;
-            ctx.fill();
-
-            // Lower facet (shaded)
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, 14);
-            ctx.lineTo(-(w - 16), 0);
-            ctx.closePath();
-            const botGrad = ctx.createLinearGradient(0, 0, 0, 14);
-            botGrad.addColorStop(0, '#dc2626');
-            botGrad.addColorStop(1, '#7f1d1d');
-            ctx.fillStyle = botGrad;
-            ctx.fill();
-
-            // Center bevel ridge line
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(-(w - 16), 0);
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.stroke();
-
-            // Outer crisp white rim contour
-            ctx.beginPath();
-            ctx.moveTo(0, -14);
-            ctx.lineTo(0, 14);
-            ctx.lineTo(-(w - 16), 0);
-            ctx.closePath();
-            ctx.lineWidth = 1.8;
-            ctx.strokeStyle = '#ffffff';
-            ctx.shadowColor = 'rgba(239, 68, 68, 0.65)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = -2;
-            ctx.stroke();
-        } else {
-            ctx.beginPath();
-            ctx.moveTo(0, -14);
-            ctx.lineTo(0, 14);
-            ctx.lineTo(-(w - 16), 0);
-            ctx.closePath();
-
-            // Needle gradient (vertical rich red gradient)
-            const needleGrad = ctx.createLinearGradient(0, -14, 0, 14);
-            needleGrad.addColorStop(0, '#f87171');
-            needleGrad.addColorStop(0.35, '#ef4444');
-            needleGrad.addColorStop(0.7, '#dc2626');
-            needleGrad.addColorStop(1, '#991b1b');
-            ctx.fillStyle = needleGrad;
-            ctx.shadowColor = 'rgba(239, 68, 68, 0.65)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = -2;
-            ctx.fill();
-            ctx.lineWidth = 1.8;
-            ctx.strokeStyle = '#ffffff';
-            ctx.stroke();
-        }
+        // Needle gradient (vertical rich red gradient)
+        const needleGrad = ctx.createLinearGradient(0, -14, 0, 14);
+        needleGrad.addColorStop(0, '#f87171');
+        needleGrad.addColorStop(0.35, '#ef4444');
+        needleGrad.addColorStop(0.7, '#dc2626');
+        needleGrad.addColorStop(1, '#991b1b');
+        ctx.fillStyle = needleGrad;
+        ctx.shadowColor = 'rgba(239, 68, 68, 0.65)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = -2;
+        ctx.fill();
+        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
 
         // Needle right pivot metallic cap
         ctx.beginPath();

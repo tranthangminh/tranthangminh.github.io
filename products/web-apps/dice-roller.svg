@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="feltGrad" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#235c43"/>
+      <stop offset="70%" stop-color="#153829"/>
+      <stop offset="100%" stop-color="#0c2219"/>
+    </radialGradient>
+    <linearGradient id="woodGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4a2a1d"/>
+      <stop offset="100%" stop-color="#25130b"/>
+    </linearGradient>
+    <linearGradient id="diceIvory" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8e2d8"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="softGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#059669" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background Wood Tray Frame -->
+  <rect width="800" height="600" fill="#141414"/>
+  <rect x="40" y="40" width="720" height="520" rx="24" fill="url(#woodGrad)" stroke="#5d3524" stroke-width="4"/>
+  <rect x="64" y="64" width="672" height="472" rx="16" fill="url(#feltGrad)" stroke="#112d21" stroke-width="6"/>
+
+  <!-- Tray Inner Shadow / Border Accent -->
+  <rect x="64" y="64" width="672" height="472" rx="16" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="12"/>
+
+  <!-- Ambient Light Reflection on Felt -->
+  <ellipse cx="400" cy="300" rx="280" ry="180" fill="white" opacity="0.04"/>
+
+  <!-- Die 1 Shadow -->
+  <ellipse cx="330" cy="380" rx="85" ry="35" fill="black" opacity="0.45" filter="url(#dropShadow)"/>
+
+  <!-- Die 1 (Isometric 3D Cube) -->
+  <g transform="translate(320, 270)" filter="url(#dropShadow)">
+    <!-- Top Face (Value 1 - Big Red Dot) -->
+    <polygon points="0,-85 80,-45 0,-5 -80,-45" fill="#fcfbf8" stroke="#e0dad0" stroke-width="2"/>
+    <ellipse cx="0" cy="-45" rx="18" ry="11" fill="#d62828"/>
+
+    <!-- Left Face (Value 2 - Diagonal) -->
+    <polygon points="-80,-45 0,-5 0,90 -80,50" fill="#eae4da" stroke="#cfc7bc" stroke-width="2"/>
+    <circle cx="-50" cy="-10" r="7" fill="#222222"/>
+    <circle cx="-30" cy="55" r="7" fill="#222222"/>
+
+    <!-- Right Face (Value 3) -->
+    <polygon points="0,-5 80,-45 80,50 0,90" fill="#dad2c5" stroke="#bfb6a8" stroke-width="2"/>
+    <circle cx="28" cy="15" r="7" fill="#222222"/>
+    <circle cx="48" cy="40" r="7" fill="#222222"/>
+    <circle cx="68" cy="65" r="7" fill="#222222"/>
+  </g>
+
+  <!-- Die 2 Shadow -->
+  <ellipse cx="510" cy="350" rx="75" ry="30" fill="black" opacity="0.45" filter="url(#dropShadow)"/>
+
+  <!-- Die 2 (Rotated Isometric 3D Cube) -->
+  <g transform="translate(500, 250) scale(0.9)" filter="url(#dropShadow)">
+    <!-- Top Face (Value 6) -->
+    <polygon points="0,-85 80,-45 0,-5 -80,-45" fill="#fcfbf8" stroke="#e0dad0" stroke-width="2"/>
+    <ellipse cx="-40" cy="-55" rx="7" ry="5" fill="#222222"/>
+    <ellipse cx="-40" cy="-45" rx="7" ry="5" fill="#222222"/>
+    <ellipse cx="-40" cy="-35" rx="7" ry="5" fill="#222222"/>
+    <ellipse cx="40" cy="-55" rx="7" ry="5" fill="#222222"/>
+    <ellipse cx="40" cy="-45" rx="7" ry="5" fill="#222222"/>
+    <ellipse cx="40" cy="-35" rx="7" ry="5" fill="#222222"/>
+
+    <!-- Left Face (Value 4 - Red Pips) -->
+    <polygon points="-80,-45 0,-5 0,90 -80,50" fill="#eae4da" stroke="#cfc7bc" stroke-width="2"/>
+    <circle cx="-55" cy="0" r="7" fill="#d62828"/>
+    <circle cx="-25" cy="15" r="7" fill="#d62828"/>
+    <circle cx="-55" cy="40" r="7" fill="#d62828"/>
+    <circle cx="-25" cy="55" r="7" fill="#d62828"/>
+
+    <!-- Right Face (Value 5) -->
+    <polygon points="0,-5 80,-45 80,50 0,90" fill="#dad2c5" stroke="#bfb6a8" stroke-width="2"/>
+    <circle cx="25" cy="15" r="6" fill="#222222"/>
+    <circle cx="65" cy="25" r="6" fill="#222222"/>
+    <circle cx="45" cy="45" r="6" fill="#222222"/>
+    <circle cx="25" cy="65" r="6" fill="#222222"/>
+    <circle cx="65" cy="75" r="6" fill="#222222"/>
+  </g>
+
+  <!-- Title Badge Overlay -->
+  <g transform="translate(400, 500)">
+    <rect x="-140" y="-22" width="280" height="44" rx="22" fill="rgba(25, 25, 25, 0.85)" stroke="#34d399" stroke-width="2" filter="url(#softGlow)"/>
+    <text x="0" y="7" fill="#ffffff" font-family="'Montserrat', sans-serif" font-size="18" font-weight="800" text-anchor="middle" letter-spacing="1.5">
+      3D DICE ROLLER
+    </text>
+  </g>
+</svg>

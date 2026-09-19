@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title data-i18n="brand.documentTitle">Đổ Xí Ngầu 3D - Xí Ngầu Đa Diện Chân Thực</title>
+    <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Design System & Shared SSO Styles -->
+    <link rel="stylesheet" href="../../common/theme.css">
+    <link rel="stylesheet" href="../../common/shared-auth.css">
+    <link rel="stylesheet" href="./dice-roller/dice-roller.css">
+    <link rel="stylesheet" href="./dice-roller/dice-roller-controls.css">
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="brand-icon" aria-hidden="true">🎲</div>
+            <h1 class="brand-title" data-i18n="brand.title">Đổ Xí Ngầu 3D</h1>
+        </div>
+
+        <!-- Header Actions: Right-to-Left (SSO -> Lang -> Sound) -->
+        <div class="header-actions">
+            <!-- Sound Toggle Button -->
+            <button type="button" class="icon-btn" id="soundToggleBtn" aria-label="Toggle Sound">🔊</button>
+            
+            <!-- Bilingual Switcher (Sticky Header CSS Flag Style) -->
+            <div class="lang-switch">
+                <button type="button" class="lang-btn lang-btn--toggle" id="langToggleBtn" data-lang="en" aria-label="Chuyển sang Tiếng Anh">
+                    <span class="lang-flag lang-flag--en" aria-hidden="true"></span>
+                    <span class="lang-code">EN</span>
+                </button>
+            </div>
+
+            <!-- Shared SSO Auth Slot -->
+            <div id="sharedAuthSlot"></div>
+        </div>
+    </header>
+
+    <!-- Main 2-Column Layout -->
+    <main class="app-layout">
+        <!-- Left Column: Streamlined (Only Material Theme & History) -->
+        <aside class="control-panels" aria-label="Control Panels">
+            <div class="panels-scroll-area">
+                <!-- 1. Dice Themes / Material -->
+                <div class="card">
+                    <div class="section-heading" data-i18n="controls.diceTheme">Chất Liệu Xí Ngầu</div>
+                    <div class="theme-selector-row">
+                        <button type="button" class="theme-btn is-active" data-theme="ivory" data-i18n="controls.themeIvory">Hạt Ngà</button>
+                        <button type="button" class="theme-btn" data-theme="dark" data-i18n="controls.themeDark">Đá Đen</button>
+                        <button type="button" class="theme-btn" data-theme="ruby" data-i18n="controls.themeRuby">Hồng Ngọc</button>
+                    </div>
+                </div>
+
+                <!-- 2. History Panel -->
+                <div class="card history-card">
+                    <div class="history-header">
+                        <div class="history-stats">
+                            <span data-i18n="history.panelTitle">Lịch Sử Đổ</span>
+                            <span class="history-badge" id="historyCountBadge">0</span>
+                        </div>
+                        <button type="button" class="btn-ghost-sm" id="clearHistoryBtn" data-i18n="history.clear">Xóa</button>
+                    </div>
+                    <div class="history-list-wrapper">
+                        <ul class="history-list" id="historyList"></ul>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Column: 3D Stage Arena with Floating HUDs -->
+        <section class="main-stage" id="mainStage" aria-label="3D Dice Arena">
+            <!-- Top HUD: Dice Type (D6..D20) & Quantity (1..6) -->
+            <div class="stage-top-hud">
+                <div class="hud-group hud-types">
+                    <button type="button" class="hud-chip type-chip is-active" data-type="d6">D6</button>
+                    <button type="button" class="hud-chip type-chip" data-type="d8">D8</button>
+                    <button type="button" class="hud-chip type-chip" data-type="d10">D10</button>
+                    <button type="button" class="hud-chip type-chip" data-type="d12">D12</button>
+                    <button type="button" class="hud-chip type-chip" data-type="d20">D20</button>
+                </div>
+                <div class="hud-divider" aria-hidden="true"></div>
+                <div class="hud-group hud-count">
+                    <button type="button" class="hud-stepper-btn" id="btnCountMinus" aria-label="Decrease Dice Count">&minus;</button>
+                    <div class="hud-count-chips">
+                        <button type="button" class="hud-chip count-chip" data-count="1">1</button>
+                        <button type="button" class="hud-chip count-chip is-active" data-count="2">2</button>
+                        <button type="button" class="hud-chip count-chip" data-count="3">3</button>
+                        <button type="button" class="hud-chip count-chip" data-count="4">4</button>
+                        <button type="button" class="hud-chip count-chip" data-count="5">5</button>
+                        <button type="button" class="hud-chip count-chip" data-count="6">6</button>
+                    </div>
+                    <button type="button" class="hud-stepper-btn" id="btnCountPlus" aria-label="Increase Dice Count">&plus;</button>
+                </div>
+            </div>
+
+            <!-- 3D Canvas Container -->
+            <div class="dice-canvas-container" id="diceCanvasContainer"></div>
+
+            <!-- Bottom HUD: Total Score & Breakdown (No result-tag-badge) -->
+            <div class="stage-bottom-hud" id="stageBottomHud">
+                <div class="hud-result-row">
+                    <div class="hud-total-box">
+                        <span class="hud-total-label" data-i18n="results.totalScore">TỔNG</span>
+                        <span class="hud-total-num" id="resultTotal">--</span>
+                    </div>
+                    <div class="hud-breakdown" id="resultBreakdown">
+                        <span class="hud-awaiting" data-i18n="results.awaitingRoll">Nhấp khay để đổ...</span>
+                    </div>
+                </div>
+                <div class="hud-hint" data-i18n="controls.tapToRollHint">💡 Nhấp vào khay hoặc bấm SPACE để đổ</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 3D Graphics & Physics Engines (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+
+    <!-- Firebase SDKs for Shared SSO & Realtime Cloud Sync -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <!-- Universal Shared SSO Engine -->
+    <script src="../../common/shared-auth-config.js"></script>
+    <script src="../../common/shared-auth.js"></script>
+
+    <!-- Dice Roller Modules -->
+    <script src="./dice-roller/dice-roller-i18n.js"></script>
+    <script src="./dice-roller/audio.js"></script>
+    <script src="./dice-roller/dice-physics.js"></script>
+    <script src="./dice-roller/dice-engine.js"></script>
+    <script src="./dice-roller/history.js"></script>
+    <script src="./dice-roller/app.js"></script>
+</body>
+</html>

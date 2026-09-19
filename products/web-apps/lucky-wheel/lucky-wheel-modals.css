@@ -33,6 +33,16 @@
     font-size: var(--font-base, 13px);
     font-weight: 700;
     color: var(--text-primary, #ffffff);
+    min-width: 0;
+    overflow: hidden;
+    flex: 1 1 auto;
+}
+
+.history-title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--c-cyan, #8DF2F2);
 }
 
 .history-list-wrapper {
@@ -40,7 +50,7 @@
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 2px;
+    padding-right: 4px;
 }
 
 /* Tab 3: History Pane */
@@ -210,7 +220,7 @@
     min-height: var(--btn-height-lg, 42px) !important;
     font-size: var(--font-md, 14px);
     font-weight: 700;
-    border-radius: var(--border-radius, 6px);
+    border-radius: var(--border-radius-md, 4px);
 }
 
 /* Bulk Edit Modal */
@@ -244,6 +254,109 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+}
+
+/* Custom Preset Modal */
+.preset-modal-card {
+    max-width: 440px;
+}
+
+.preset-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.preset-quota-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-primary, #191919);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius, 6px);
+    padding: 8px 12px;
+    font-size: 11.5px;
+}
+
+.preset-quota-text {
+    color: var(--text-primary, #ffffff);
+}
+
+.preset-quota-text strong {
+    color: var(--c-cyan, #8DF2F2);
+    font-size: 13px;
+}
+
+.preset-quota-limit {
+    color: var(--text-tertiary, #888888);
+    font-size: 11px;
+}
+
+.preset-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.preset-input-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary, #ffffff);
+}
+
+.preset-name-input {
+    width: 100%;
+    height: 38px;
+    background: var(--bg-primary, #191919);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius, 6px);
+    padding: 0 12px;
+    color: var(--text-primary, #ffffff);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.preset-name-input:focus {
+    border-color: var(--c-cyan, #8DF2F2);
+    box-shadow: 0 0 0 2px rgba(141, 242, 242, 0.2);
+}
+
+.preset-slices-preview {
+    font-size: 11.5px;
+    color: var(--text-secondary, #bbbbbb);
+    padding: 2px 0;
+}
+
+.preset-slices-preview span:first-child {
+    font-weight: 700;
+    color: var(--text-primary, #ffffff);
+}
+
+.preset-alert-msg {
+    font-size: 11.5px;
+    padding: 8px 10px;
+    border-radius: var(--border-radius, 6px);
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+    line-height: 1.4;
+}
+
+.preset-modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.preset-modal-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
 }
 
 /* Confetti Canvas Fullscreen */

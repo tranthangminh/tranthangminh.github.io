@@ -4,6 +4,17 @@
  */
 
 const PRESETS = {
+    'prizes': {
+        name: 'Lucky Draw / Prizes',
+        slices: [
+            { text: '💎 Giải Đặc Biệt', color: '#f59e0b', weight: 1 },
+            { text: '🥇 Giải Nhất', color: '#ec4899', weight: 2 },
+            { text: '🥈 Giải Nhì', color: '#8b5cf6', weight: 5 },
+            { text: '🥉 Giải Ba', color: '#3b82f6', weight: 10 },
+            { text: '🎁 Giải Khuyến Khích', color: '#10b981', weight: 25 },
+            { text: '🍀 May Mắn Lần Sau', color: '#64748b', weight: 57 }
+        ]
+    },
     'food': {
         name: 'Food Picker',
         slices: [

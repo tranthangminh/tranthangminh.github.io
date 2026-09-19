@@ -1,0 +1,181 @@
+/* ==========================================================================
+   DICE ROLLER - SIDEBAR CONTROLS & HISTORY STYLES
+   Complies with _RULE-web-apps.md (< 500 lines)
+   ========================================================================== */
+
+/* Card Foundation */
+.card {
+    background-color: var(--bg-primary, #191919);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius-lg, 8px);
+    padding: 14px;
+}
+
+.section-heading {
+    font-size: var(--font-sm, 12px);
+    font-weight: 700;
+    color: var(--text-secondary, #bbbbbb);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+/* Theme Selector */
+.theme-selector-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+}
+
+.theme-btn {
+    padding: 8px 6px;
+    background: var(--bg-tertiary, #343434);
+    border: 1px solid var(--border-color, #444444);
+    border-radius: var(--border-radius, 6px);
+    color: var(--text-secondary, #bbbbbb);
+    font-size: var(--font-xs, 11px);
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+}
+
+.theme-btn:hover {
+    background: var(--bg-elevated, #464646);
+    color: #ffffff;
+}
+
+.theme-btn.is-active {
+    background: var(--bg-elevated, #464646);
+    border-color: var(--c-yellow, #e5c158);
+    color: var(--c-yellow, #e5c158);
+    font-weight: 700;
+}
+
+/* History Card */
+.history-card {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 280px;
+    padding: 12px 14px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.history-stats {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: var(--font-sm, 12px);
+    font-weight: 700;
+}
+
+.history-badge {
+    background: var(--bg-tertiary, #343434);
+    padding: 1px 8px;
+    border-radius: var(--border-radius-full, 9999px);
+    font-size: var(--font-xs, 11px);
+    color: var(--c-yellow, #e5c158);
+    font-weight: 700;
+}
+
+.btn-ghost-sm {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary, #888888);
+    font-size: var(--font-xs, 11px);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: var(--border-radius-sm, 2px);
+    transition: color 0.15s ease;
+}
+
+.btn-ghost-sm:hover {
+    color: var(--c-red, #ef4444);
+}
+
+.history-list-wrapper {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.history-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.history-empty {
+    color: var(--text-tertiary, #888888);
+    font-size: var(--font-xs, 11px);
+    text-align: center;
+    padding: 24px 0;
+}
+
+.history-item {
+    background: var(--bg-tertiary, #343434);
+    border-radius: var(--border-radius-md, 4px);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-left: 3px solid var(--c-yellow, #e5c158);
+}
+
+.history-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-type-tag {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--c-cyan, #8DF2F2);
+    letter-spacing: 0.04em;
+}
+
+.history-item-total {
+    font-size: var(--font-sm, 12px);
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.total-label {
+    color: var(--text-tertiary, #888888);
+    margin-right: 2px;
+}
+
+.history-item-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-item-dice {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.history-pip-badge {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--c-yellow, #e5c158);
+}
+
+.history-time {
+    font-size: 10px;
+    color: var(--text-tertiary, #888888);
+}

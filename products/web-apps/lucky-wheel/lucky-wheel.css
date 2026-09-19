@@ -30,6 +30,46 @@ body {
     line-height: 1.5;
 }
 
+/* Universal Custom Sleek Scrollbars (Dark Theme) */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 3px 0;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-full, 9999px);
+    transition: background 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+*::-webkit-scrollbar-thumb:active {
+    background: var(--c-cyan, #8DF2F2);
+}
+
+*::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
 /* App Header */
 .app-header {
     background-color: var(--bg-secondary, #222222);
@@ -69,7 +109,7 @@ body {
     color: var(--text-primary, #ffffff);
     width: 34px;
     height: 34px;
-    border-radius: var(--border-radius, 6px);
+    border-radius: var(--border-radius-md, 4px);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -183,11 +223,10 @@ body {
     background: #3c3b6e;
 }
 
-/* Main Symmetrical Layout: 1. History (Left), 2. Wheel Stage (Strict Dead Center), 3. Slices & Settings (Right) */
+/* Main Symmetrical Layout: Wheel Stage (Flex Center) + Unified Control Panels (Right) */
 .app-layout {
-    display: grid;
-    grid-template-columns: minmax(280px, 320px) minmax(0, 1fr) minmax(410px, 450px);
-    gap: 16px;
+    display: flex;
+    gap: 20px;
     max-width: 1680px;
     width: 100%;
     margin: 0 auto;
@@ -197,21 +236,56 @@ body {
     height: calc(100vh - 52px);
     overflow: hidden;
     align-items: stretch;
+    justify-content: center;
+    position: relative;
 }
 
-/* Independent Smooth Sidebar Fade & Hide (Zero Shift on Wheel Stage) */
-.app-layout.hide-history .history-panel {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateX(-16px);
+/* Wheel Stage Container - Flex Center & Smooth Animation When Centering */
+.wheel-stage {
+    flex: 1 1 calc(100vh - 140px);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.42s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Unified Control Panels Sidebar (Max 410px, Min 350px, Shrinks Before Wheel) */
+.control-panels {
+    width: 410px;
+    max-width: 410px;
+    min-width: 350px;
+    flex: 0 10 410px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: margin-right 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.35s ease;
+}
+
+/* When Panel is Hidden: Smooth slide out right & fade, allowing wheel stage to expand and dead-center */
 .app-layout.hide-controls .control-panels {
+    margin-right: -430px;
+    transform: translateX(30px);
     opacity: 0;
-    visibility: hidden;
     pointer-events: none;
-    transform: translateX(16px);
+}
+
+/* Spin Lock: Block ALL editing interactions while the wheel is spinning */
+body.wheel-is-spinning .control-panels {
+    pointer-events: none;
+    opacity: 0.42;
+    cursor: not-allowed;
+    user-select: none;
+    transition: opacity 0.25s ease;
+}
+
+body.wheel-is-spinning .control-panels * {
+    cursor: not-allowed;
 }
 
 .icon-btn.is-active {
@@ -221,9 +295,9 @@ body {
     box-shadow: 0 0 8px rgba(141, 242, 242, 0.3);
 }
 
-/* Tablet & Mobile Unified Panel Tabs */
+/* Unified Panel Tabs - Always Visible on Desktop, Tablet & Mobile */
 .unified-panel-tabs {
-    display: none; /* Hidden on desktop */
+    display: flex;
     align-items: center;
     gap: 6px;
     margin-bottom: 12px;
@@ -242,7 +316,7 @@ body {
     font-family: inherit;
     background: var(--bg-tertiary, #2c2c2c);
     border: 1px solid var(--border-color, #3a3a3a);
-    border-radius: var(--border-radius, 6px);
+    border-radius: var(--border-radius-md, 4px);
     color: var(--text-secondary, #bbbbbb);
     font-size: var(--font-sm, 12px);
     font-weight: 600;
@@ -276,22 +350,7 @@ body {
     overflow: hidden;
 }
 
-@media (min-width: 1200px) {
-    #tabPaneSlices {
-        display: flex !important;
-    }
-    #tabPaneHistory {
-        display: none !important;
-    }
-}
 
-.tab-history-slot {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 0;
-    min-height: 0;
-    height: 100%;
-}
 
 .history-card-inner {
     display: flex;
@@ -322,7 +381,7 @@ body {
     font-weight: 600;
     padding: 0 14px;
     height: var(--btn-height-sm, 30px);
-    border-radius: var(--border-radius, 6px);
+    border-radius: var(--border-radius-md, 4px);
     border: 1px solid transparent;
     cursor: pointer;
     transition: var(--transition-fast, all 0.15s ease);
@@ -396,7 +455,7 @@ body {
     justify-content: center;
     gap: 8px;
     width: 100%;
-    max-width: 540px;
+    max-width: 400px;
     flex-shrink: 0;
 }
 
@@ -421,48 +480,30 @@ body {
 }
 
 /* Responsive Media Queries */
-/* Tablet Mode (700px - 1199px): 2 Columns (Wheel Stage + Unified 2-Tab Panel) */
+/* Tablet Mode (700px - 1199px): Unified 2-Tab Panel */
 @media (max-width: 1199px) and (min-width: 700px) {
     .app-layout {
-        grid-template-columns: 1fr minmax(410px, 450px) !important;
         gap: 14px;
         padding: 10px 14px;
-        height: calc(100vh - 52px);
-        overflow: hidden;
-    }
-
-    #historyPanel {
-        display: none !important;
-    }
-
-    .control-panel-header {
-        display: none !important;
-    }
-
-    .unified-panel-tabs {
-        display: flex !important;
     }
 
     .control-panels {
-        max-width: 450px !important;
-        min-width: 410px !important;
-        justify-self: stretch !important;
+        width: 410px;
+        max-width: 410px;
+        min-width: 350px;
+        flex: 0 10 410px;
     }
 
     .wheel-controls {
-        max-width: 520px;
-    }
-
-    .app-layout.hide-controls {
-        grid-template-columns: 1fr !important;
+        max-width: 380px;
     }
 
     .app-layout.hide-controls .control-panels {
-        display: none !important;
+        margin-right: -430px;
     }
 }
 
-/* Phones (Narrow screens < 700px): 1 Column, 2 Rows */
+/* Phones (Narrow screens < 700px): 1 Column, 2 Rows (Wheel Top, Controls Bottom) */
 @media (max-width: 699px) {
     html, body {
         height: auto !important;
@@ -472,7 +513,6 @@ body {
     }
 
     .app-layout {
-        display: flex !important;
         flex-direction: column !important;
         height: auto !important;
         overflow: visible !important;
@@ -494,40 +534,31 @@ body {
 
     .control-panels {
         order: 2;
-        min-height: 750px;
+        height: auto !important;
+        min-height: 800px !important;
         min-width: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
+        flex: none !important;
     }
 
     .tab-pane {
-        min-height: 700px;
+        min-height: 740px !important;
     }
 
     .slices-list-wrapper {
-        min-height: 480px;
-        max-height: none;
+        min-height: 520px !important;
+        max-height: none !important;
     }
 
     .history-list-wrapper {
-        min-height: 520px;
-        max-height: none;
+        min-height: 620px !important;
+        max-height: none !important;
     }
 
     .app-layout.hide-controls .control-panels {
         display: none !important;
-    }
-
-    #historyPanel {
-        display: none !important;
-    }
-
-    .control-panel-header {
-        display: none !important;
-    }
-
-    .unified-panel-tabs {
-        display: flex !important;
+        margin-right: 0 !important;
     }
 
     .lang-btn {
