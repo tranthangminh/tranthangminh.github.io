@@ -6,8 +6,8 @@
   "SmoothMouseMove": true,
   "MapOverlayOpacity": 60,
   "IsDarkTheme": true,
-  "IsAdvancedTab": false,
-  "LastUpdateCheckDate": "2026-09-19",
+  "IsAdvancedTab": true,
+  "LastUpdateCheckDate": "2026-09-21",
   "SimpleProfiles": [
     {
       "TabIndex": 0,
@@ -101,6 +101,33 @@
       "DefaultProcessName": "",
       "DefaultRelativeToWindow": false,
       "Steps": [
+        {
+          "Id": "d6fe0bd31e34475892117c617c3369f9",
+          "Name": "Step",
+          "ActionType": 0,
+          "Enabled": true,
+          "IsChecked": true,
+          "StartX": 0,
+          "StartY": 0,
+          "EndX": 0,
+          "EndY": 0,
+          "HoldMs": 10,
+          "DelayMs": 240,
+          "RepeatCount": 1,
+          "ScrollStep": 0,
+          "KeyData": "Space",
+          "ColorHex": "#00FF00",
+          "Tolerance": 10,
+          "IfTrueStep": -2,
+          "IfFalseStep": 0,
+          "WindowTitle": "",
+          "ProcessName": "",
+          "RelativeToWindow": false,
+          "ImageBase64": "",
+          "Similarity": 90,
+          "TimeoutSec": 10,
+          "Note": ""
+        }
       ]
     }
   ]

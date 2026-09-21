@@ -561,6 +561,11 @@ body.wheel-is-spinning .control-panels * {
         margin-right: 0 !important;
     }
 
+    /* Hide toggle panel button on mobile — panel is always visible below wheel */
+    #togglePanelBtn {
+        display: none !important;
+    }
+
     .lang-btn {
         font-size: var(--font-xs, 11px);
         gap: 3px;

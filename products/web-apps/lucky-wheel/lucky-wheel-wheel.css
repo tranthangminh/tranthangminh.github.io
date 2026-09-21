@@ -38,7 +38,7 @@
     z-index: 3;
     display: block;
     cursor: pointer;
-    touch-action: none;
+    touch-action: manipulation; /* Allow page scroll; only prevent double-tap zoom */
     filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.6));
     transform: none;
     transition: filter 0.45s ease;

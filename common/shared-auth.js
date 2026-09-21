@@ -296,40 +296,25 @@
             const container = document.querySelector(this.mountSelector);
             if (!container) return;
 
-            const config = this.getConfig();
+            const isVi = document.documentElement.lang === 'vi'
+                || (window.LuckyWheelI18n && window.LuckyWheelI18n.currentLang === 'vi');
 
-            // Case 1: Config is missing
-            if (!config) {
-                container.innerHTML = `
-                    <div class="shared-auth-container">
-                        <button type="button" class="btn-setup-cloud" id="btnSharedAuthSetup">
-                            <span>☁️</span> <span data-i18n="auth.setup">Setup Cloud</span>
-                        </button>
-                    </div>
-                `;
-                document.getElementById('btnSharedAuthSetup').addEventListener('click', () => this.openConfigModal());
-                if (window.LuckyWheelI18n && typeof window.LuckyWheelI18n.applyTranslations === 'function') {
-                    window.LuckyWheelI18n.applyTranslations();
-                }
-                return;
-            }
-
-            // Case 2: Not logged in
+            // Case: Not logged in (or config missing — show sign-in button either way)
             if (!this.currentUser) {
+                const line1 = isVi ? 'Đăng nhập' : 'Sign in';
+                const line2 = isVi ? 'để đồng bộ' : 'to sync';
                 container.innerHTML = `
                     <div class="shared-auth-container">
-                        <button type="button" class="btn-google-auth" id="btnSharedGoogleLogin">
+                        <button type="button" class="btn-google-auth" id="btnSharedGoogleLogin" aria-label="${line1} ${line2}">
                             ${GOOGLE_ICON_SVG}
-                            <span data-i18n="auth.signIn">Sign in</span>
+                            <span class="btn-google-auth-text"><span class="auth-line1">${line1}</span><span class="auth-line2">${line2}</span></span>
                         </button>
                     </div>
                 `;
                 document.getElementById('btnSharedGoogleLogin').addEventListener('click', () => this.signIn());
-                if (window.LuckyWheelI18n && typeof window.LuckyWheelI18n.applyTranslations === 'function') {
-                    window.LuckyWheelI18n.applyTranslations();
-                }
                 return;
             }
+
 
             // Case 3: Logged in
             const user = this.currentUser;
@@ -354,9 +339,6 @@
                         </div>
                         <button type="button" class="dropdown-action-btn" id="btnDropdownSyncNow">
                             <span>🔄</span> <span data-i18n="auth.syncNow">Sync Now</span>
-                        </button>
-                        <button type="button" class="dropdown-action-btn" id="btnDropdownCloudConfig">
-                            <span>⚙️</span> <span data-i18n="auth.cloudSetup">Cloud Setup</span>
                         </button>
                         <button type="button" class="dropdown-action-btn btn-signout" id="btnDropdownSignOut">
                             <span>🚪</span> <span data-i18n="auth.signOut">Sign Out</span>
@@ -386,11 +368,6 @@
             document.getElementById('btnDropdownSyncNow').addEventListener('click', () => {
                 menu.classList.remove('is-open');
                 this.loadData();
-            });
-
-            document.getElementById('btnDropdownCloudConfig').addEventListener('click', () => {
-                menu.classList.remove('is-open');
-                this.openConfigModal();
             });
 
             document.getElementById('btnDropdownSignOut').addEventListener('click', () => {
