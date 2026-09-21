@@ -525,6 +525,8 @@ body.wheel-is-spinning .control-panels * {
         order: 1;
         width: 100%;
         flex-shrink: 0;
+        overflow: visible;      /* Allow casino ring to extend beyond stage bounds */
+        padding-bottom: 16px;   /* Visual gap between ring bottom and Xáo Trộn button */
     }
 
     .wheel-wrapper {
@@ -564,6 +566,11 @@ body.wheel-is-spinning .control-panels * {
     /* Hide toggle panel button on mobile — panel is always visible below wheel */
     #togglePanelBtn {
         display: none !important;
+    }
+
+    /* More breathing room between wheel ring and action buttons */
+    .wheel-controls {
+        margin-top: 14px;
     }
 
     .lang-btn {

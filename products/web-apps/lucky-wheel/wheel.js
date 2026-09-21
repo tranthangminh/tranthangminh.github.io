@@ -736,7 +736,7 @@ class LuckyWheelEngine {
 
         // 2. Responsive font scaling with max 36px and min 11px limit
         const sliceSpan = end - start;
-        const availableArc = (radius * 0.65) * sliceSpan;
+        const availableArc = (radius * 0.60) * sliceSpan;
         const MIN_FONT_SIZE = 11;
         const MAX_FONT_SIZE = isMultiLine ? 28 : 36;
 
@@ -747,7 +747,8 @@ class LuckyWheelEngine {
         ctx.font = `700 ${fontSize}px Montserrat, system-ui, sans-serif`;
 
         // 3. Truncate line with ellipsis if still wider than slice room
-        const maxLineWidth = radius * 0.62;
+        // maxLineWidth capped to avoid hub overlap: text must stop before hubRadius
+        const maxLineWidth = radius * 0.54;
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
             while (ctx.measureText(line).width > maxLineWidth && line.length > 3) {
@@ -763,7 +764,9 @@ class LuckyWheelEngine {
         ctx.shadowOffsetY = 1;
 
         // 5. Draw text lines radially
-        const textAnchorX = radius - 20;
+        // Mobile (radius < 160): 10px rim padding — brings text closer to edge
+        // Desktop: 20px rim padding
+        const textAnchorX = radius < 160 ? radius - 10 : radius - 20;
         if (!isMultiLine) {
             ctx.fillText(lines[0], textAnchorX, 0);
         } else {

@@ -195,12 +195,6 @@
             { labelKey: 'header.profession.bunGioHeo', label: 'B\u00fan Gi\u00f2 Heo Minh Nh\u1eadt', href: profBase + 'bun-gio-heo-minh-nhat.html' },
             { labelKey: 'header.profession.harryPerfume', label: 'Harry Perfume', href: 'https://harryperfume.vn/gioi-thieu', target: '_blank' }
         ];
-        var toolItems = Array.isArray(opts.toolItems) && opts.toolItems.length ? opts.toolItems : [
-            { labelKey: 'header.tool.windowsApps', label: 'Windows Apps', href: prodBase + '?tab=windows-apps' },
-            { labelKey: 'header.tool.chromeExtension', label: 'Chrome Extensions', href: prodBase + '?tab=chrome-extension' },
-            { labelKey: 'header.tool.books', label: 'Books', href: prodBase + '?tab=books' },
-            { labelKey: 'header.tool.plugins', label: 'Plugins', href: prodBase + '?tab=plugins' }
-        ];
         var currentLanguage = window.sharedI18n && typeof window.sharedI18n.getLanguage === 'function'
             ? window.sharedI18n.getLanguage()
             : 'vi';
@@ -218,7 +212,6 @@
         }
 
         var professionMenuHtml = renderMenuHtml(professionItems);
-        var toolMenuHtml = renderMenuHtml(toolItems);
         var nextLanguage = currentLanguage === 'en' ? 'vi' : 'en';
         var nextLanguageCode = nextLanguage === 'en' ? 'EN' : 'VN';
         var nextLanguageFlagClass = nextLanguage === 'en' ? 'lang-flag--en' : 'lang-flag--vi';
@@ -259,10 +252,7 @@
             '            <span class="header-logo icon-mask" style="mask-image: url(\'' + logoSvgUrl + '\'); -webkit-mask-image: url(\'' + logoSvgUrl + '\');"></span>' +
             '        </a>' +
             '        <div class="header-right">' +
-            '            <div class="menu-wrap">' +
-            '                <a class="menu-btn" href="' + productsHref + '">' + escapeHtml(translate('header.tools', 'S\u1ea3n Ph\u1ea9m')) + '</a>' +
-            '                <ul class="menu-list">' + toolMenuHtml + '</ul>' +
-            '            </div>' +
+            '            <a class="menu-btn" href="' + productsHref + '">' + escapeHtml(translate('header.tools', 'S\u1ea3n Ph\u1ea9m')) + '</a>' +
             languageSwitchHtml +
             '        </div>' +
             '    </div>' +
