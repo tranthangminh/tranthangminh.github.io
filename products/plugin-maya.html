@@ -23,6 +23,7 @@
 <script src="../common/shared-book-now.js?v=20260903-3"></script>
 <script src="../common/shared-contact.js?v=20260905-1"></script>
 <script src="../common/shared-page.js?v=20260903-3"></script>
+<script src="plugin-maya-i18n.js?v=20260923-1"></script>
 </head>
 <body class="tools-page-view actor-page-view">
 <div id="sharedHeaderRoot"></div>
@@ -37,7 +38,7 @@
                 <span class="page-breadcrumb-sep" aria-hidden="true">&#9656;</span>
                 <a class="page-breadcrumb-link" href="../products.html?tab=plugins" data-i18n="productsPage.tabs.plugins">Plugins</a>
                 <span class="page-breadcrumb-sep" aria-hidden="true">&#9656;</span>
-                <span class="page-breadcrumb-current">Maya</span>
+                <span class="page-breadcrumb-current" data-i18n="mayaPlugin.breadcrumb">Maya</span>
             </nav>
         </div>
     </div>
@@ -47,17 +48,17 @@
         <section class="tools-panels">
             <article class="tools-panel surface-card is-active">
                 <div class="tools-panel-head">
-                    <h1 class="tools-panel-title">Maya Tools</h1>
-                    <span class="tools-panel-badge">3D Workflow</span>
+                    <h1 class="tools-panel-title" data-i18n="mayaPlugin.title">Maya Tools</h1>
+                    <span class="tools-panel-badge" data-i18n="mayaPlugin.badge">3D Workflow</span>
                 </div>
-                <p class="tools-panel-summary">
+                <p class="tools-panel-summary" data-i18n="mayaPlugin.summary">
                     Trong Maya, mình ưu tiên các tool phục vụ thao tác dựng hình, dọn scene và tăng tốc những bước kỹ thuật lặp đi lặp lại
                     để pipeline 3D gọn hơn và ít lỗi vặt hơn.
                 </p>
                 <ul class="tools-panel-list">
-                    <li>Hỗ trợ clean scene, đổi tên object và gom nhóm cấu trúc file gọn hơn.</li>
-                    <li>Tăng tốc thao tác modeling, setup nhanh các bước kỹ thuật hay dùng.</li>
-                    <li>Giúp quá trình làm việc ổn định hơn khi phải xử lý nhiều asset trong cùng một dự án.</li>
+                    <li data-i18n="mayaPlugin.f1">Hỗ trợ clean scene, đổi tên object và gom nhóm cấu trúc file gọn hơn.</li>
+                    <li data-i18n="mayaPlugin.f2">Tăng tốc thao tác modeling, setup nhanh các bước kỹ thuật hay dùng.</li>
+                    <li data-i18n="mayaPlugin.f3">Giúp quá trình làm việc ổn định hơn khi phải xử lý nhiều asset trong cùng một dự án.</li>
                 </ul>
                 <section class="tools-support">
                     <div class="tools-action-row">
@@ -72,8 +73,8 @@
                             <span class="tools-download-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.29a1 1 0 1 1 1.4 1.41l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.41L11 12.59V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"/></svg>
                             </span>
-                            <span class="tools-download-label" data-i18n="toolsPage.maya.downloadLabel">Tải Xuống .ZIP</span>
-                            <span class="tools-download-badge"><span class="product-download-count">0</span> <span class="tools-download-badge-label">lượt tải</span></span>
+                            <span class="tools-download-label" data-i18n="mayaPlugin.downloadLabel">Tải Xuống .ZIP</span>
+                            <span class="tools-download-badge"><span class="product-download-count">0</span> <span class="tools-download-badge-label" data-i18n="mayaPlugin.downloadUnit">lượt tải</span></span>
                         </a>
                     </div>
                 </section>
@@ -86,38 +87,6 @@
 <div id="sharedBookNowRoot"></div>
 
 <script src="../common/shared-download-counter.js?v=20260911-1"></script>
-<script>
-if (typeof initSharedPage === 'function') {
-    initSharedPage({
-        header: {
-            rootId: 'sharedHeaderRoot',
-            options: {
-                homeHref: '../index.html',
-                professionBaseHref: '../jobs/',
-                assetBase: '../'
-            }
-        },
-        contact: {
-            rootId: 'sharedContactRoot',
-            options: {
-                pageClass: 'contact-page',
-                id: 'contactSection',
-                includeReveal: false,
-                assetBase: '../'
-            }
-        },
-        bookNow: {
-            rootId: 'sharedBookNowRoot',
-            options: { id: 'bookNowButton' }
-        },
-        headerMenus: {},
-        bookNowBehavior: {
-            buttonId: 'bookNowButton',
-            hideWhenVisible: 'contactSection',
-            visibilityThreshold: 0.45
-        }
-    });
-}
-</script>
+<script src="plugin-maya.js?v=20260923-1"></script>
 </body>
 </html>

@@ -1,12 +1,12 @@
 ﻿{
-  "ActiveSimpleTabIndex": 4,
+  "ActiveSimpleTabIndex": 0,
   "AlwaysOnTop": false,
   "ShowMapOverlay": true,
   "FreeMouseMode": true,
   "SmoothMouseMove": true,
   "MapOverlayOpacity": 60,
   "IsDarkTheme": true,
-  "IsAdvancedTab": true,
+  "IsAdvancedTab": false,
   "LastUpdateCheckDate": "2026-09-21",
   "SimpleProfiles": [
     {
@@ -66,18 +66,20 @@
     },
     {
       "TabIndex": 4,
-      "IntervalMs": 200,
+      "IntervalMs": 50,
       "SimpleLoops": 0,
       "SimpleJitterPx": 0,
       "MouseButton": 0,
       "SimpleClickMode": 0,
-      "SimpleTargetProcessName": "crosvm",
-      "SimpleTargetWindowTitle": "Cat Gunner - MaxieChen96",
+      "SimpleTargetProcessName": "HD-Player",
+      "SimpleTargetWindowTitle": "BlueStacks App Player",
       "SimpleRelativeToWindow": true,
       "Points": [
-        { "X": 178, "Y": 962 },
-        { "X": 331, "Y": 962 },
-        { "X": 516, "Y": 974 }
+        { "X": 102, "Y": 789 },
+        { "X": 236, "Y": 791 },
+        { "X": 355, "Y": 783 },
+        { "X": 353, "Y": 591 },
+        { "X": 348, "Y": 689 }
       ]
     }
   ],
@@ -96,7 +98,7 @@
   "ActiveIndex": 0,
   "Profiles": [
     {
-      "Name": "Skip AD",
+      "Name": "Script 1",
       "IsCombine": false,
       "LoopCount": 0,
       "RandomIntervalMs": 0,
@@ -105,60 +107,6 @@
       "DefaultProcessName": "",
       "DefaultRelativeToWindow": false,
       "Steps": [
-        {
-          "Id": "d6fe0bd31e34475892117c617c3369f9",
-          "Name": "Step",
-          "ActionType": 13,
-          "Enabled": true,
-          "IsChecked": true,
-          "StartX": 0,
-          "StartY": 0,
-          "EndX": 0,
-          "EndY": 0,
-          "HoldMs": 1,
-          "DelayMs": 240,
-          "RepeatCount": 1,
-          "ScrollStep": 0,
-          "KeyData": "Space",
-          "ColorHex": "#00FF00",
-          "Tolerance": 10,
-          "IfTrueStep": -2,
-          "IfFalseStep": 0,
-          "WindowTitle": "Cat Gunner - MaxieChen96",
-          "ProcessName": "crosvm",
-          "RelativeToWindow": true,
-          "ImageBase64": "iVBORw0KGgoAAAANSUhEUgAAAA8AAAASCAYAAACEnoQPAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADySURBVDhPpdNNqkVwGAZwUrIAC7ALyQJkYmBm6CMZYQVWgampmXXYgpmhDBUjPbd75et17jl0nnrq9e/9FYJhGAZf9HLwpPuFbdsIw5AuvOsyKIqCNWmaQpZluviqyxAEwYbXJElCl2mXwXVdajEMA4qigGEY4Hmewvd4Td/3iKKIwh07jkPNKW3bIs9zqKr6HK+Z5xm+79+/bZqu657jcRyRZdnx5d3D0zTBNM3j8+7Y8zy6v6Wua2iaRuFnXJYlRFGk6IzjOD6hpmlgWRZYlqXginVd32BVVZAkiS6+6jJwHPf3V/1+44Ig0KX/ejm43R/hhCguAPD1sQAAAABJRU5ErkJggg==",
-          "Similarity": 90,
-          "TimeoutSec": 10,
-          "Note": "Skip AD"
-        },
-        {
-          "Id": "e6670bcd1aa1448c82f843c247f55ce3",
-          "Name": "Step",
-          "ActionType": 0,
-          "Enabled": false,
-          "IsChecked": false,
-          "StartX": 0,
-          "StartY": 0,
-          "EndX": 0,
-          "EndY": 0,
-          "HoldMs": 10,
-          "DelayMs": 240,
-          "RepeatCount": 1,
-          "ScrollStep": 0,
-          "KeyData": "Space",
-          "ColorHex": "#00FF00",
-          "Tolerance": 10,
-          "IfTrueStep": -2,
-          "IfFalseStep": 0,
-          "WindowTitle": "",
-          "ProcessName": "",
-          "RelativeToWindow": false,
-          "ImageBase64": "",
-          "Similarity": 90,
-          "TimeoutSec": 10,
-          "Note": ""
-        }
       ]
     }
   ]

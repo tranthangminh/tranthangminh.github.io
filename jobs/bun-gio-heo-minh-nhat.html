@@ -14,93 +14,18 @@
 <link rel="stylesheet" href="../common/shared-surfaces.css?v=20260904-1">
 <link rel="stylesheet" href="../common/shared-lightbox.css?v=20260904-1">
 <link rel="stylesheet" href="../common/shared-mobile-type-scale.css?v=20260904-1">
+<link rel="stylesheet" href="bun-gio-heo-minh-nhat.css?v=20260923-1">
 <script src="../common/shared-utils.js?v=20260904-1"></script>
 <script src="../common/shared-i18n.js?v=20260904-1"></script>
 <script src="../common/i18n-vi.js?v=20260904-1"></script>
 <script src="../common/i18n-en.js?v=20260904-1"></script>
+<script src="bun-gio-heo-minh-nhat-i18n.js?v=20260923-1"></script>
 <script src="../common/shared-header.js?v=20260904-1"></script>
 <script src="../common/shared-book-now.js?v=20260904-1"></script>
 <script src="../common/shared-lightbox.js?v=20260904-1"></script>
 <script src="../common/shared-contact.js?v=20260905-1"></script>
 <script src="../common/shared-page.js?v=20260904-1"></script>
 <script src="bun-gio-heo-images.js?v=20260904-1"></script>
-<style>
-body {
-    background: var(--bg-100);
-    color: var(--text-primary);
-    min-height: 100vh;
-}
-.bun-page-main {
-    padding: calc(var(--header-h) + 18px) 0 60px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-.bun-hero {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-    gap: 24px;
-    align-items: start;
-}
-.bun-card {
-    padding: 24px 28px;
-}
-.bun-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: clamp(2rem, 4vw, 2.8rem);
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #ffffff;
-    margin-bottom: 8px;
-    line-height: 1.1;
-}
-.bun-badge {
-    display: inline-flex;
-    padding: 4px 12px;
-    background: rgba(229, 9, 20, 0.12);
-    border: 1px solid var(--accent-primary);
-    border-radius: var(--border-radius-full);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--accent-primary);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-}
-.bun-desc {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: var(--text-secondary);
-    margin-bottom: 20px;
-}
-.bun-logo-wrap {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 30px;
-    border-radius: var(--border-radius-lg);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-color);
-}
-.bun-logo-wrap img {
-    max-width: 260px;
-    height: auto;
-    object-fit: contain;
-}
-@media (max-width: 768px) {
-    .bun-hero {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    .bun-card {
-        padding: 18px 16px;
-    }
-    .bun-title {
-        font-size: 1.8rem;
-    }
-}
-</style>
 </head>
 <body class="actor-page-view">
 <div id="sharedHeaderRoot"></div>
@@ -109,23 +34,23 @@ body {
     <div class="page-breadcrumb-bar">
         <div class="content-wrap">
             <nav class="page-breadcrumb" aria-label="Breadcrumb">
-                <a class="page-breadcrumb-link" href="../index.html">Trang Chủ</a>
+                <a class="page-breadcrumb-link" href="../index.html" data-i18n="bunGioHeo.breadcrumbHome">Trang Chủ</a>
                 <span class="page-breadcrumb-sep" aria-hidden="true">&#9656;</span>
-                <span class="page-breadcrumb-current">Bún Giò Heo Minh Nhật</span>
+                <span class="page-breadcrumb-current" data-i18n="bunGioHeo.breadcrumbCurrent">Bún Giò Heo Minh Nhật</span>
             </nav>
         </div>
     </div>
 
     <div class="content-wrap bun-hero">
         <section class="surface-card bun-card reveal-up">
-            <span class="bun-badge">F&amp;B - Kinh doanh gia đình</span>
-            <h1 class="bun-title">Bún Giò Heo Minh Nhật</h1>
-            <p class="bun-desc">
+            <span class="bun-badge" data-i18n="bunGioHeo.badge">F&amp;B - Kinh doanh gia đình</span>
+            <h1 class="bun-title" data-i18n="bunGioHeo.title">Bún Giò Heo Minh Nhật</h1>
+            <p class="bun-desc" data-i18n="bunGioHeo.desc">
                 Thương hiệu kinh doanh ẩm thực gia đình lâu đời tại Hóc Môn từ năm 2004. Chuyên phục vụ các món bún giò heo truyền thống với hương vị đậm đà, nguyên liệu tươi ngon được chọn lọc kỹ càng mỗi ngày.
             </p>
         </section>
         <div class="bun-logo-wrap reveal-up">
-            <img src="bun-gio-heo-minh-nhat/Logo.png" alt="Bún Giò Heo Minh Nhật - Logo">
+            <img src="bun-gio-heo-minh-nhat/Logo.png" alt="Bún Giò Heo Minh Nhật - Logo" data-i18n-attr="alt:bunGioHeo.logoAlt">
         </div>
     </div>
 </main>
@@ -133,40 +58,6 @@ body {
 <div id="sharedContactRoot"></div>
 <div id="sharedBookNowRoot"></div>
 <div id="sharedLightboxRoot"></div>
-<script>
-if (typeof initSharedPage === 'function') {
-    initSharedPage({
-        header: {
-            rootId: 'sharedHeaderRoot',
-            options: {
-                homeHref: '../index.html',
-                toolBaseHref: '../',
-                assetBase: '../',
-                professionItems: [
-                    { labelKey: 'header.profession.actor', label: 'Diễn Viên', href: 'actor.html' },
-                    { labelKey: 'header.profession.artist', label: 'Họa Sĩ', href: 'artist.html' },
-                    { labelKey: 'header.profession.photographer', label: 'Nhiếp Ảnh', href: 'photographer.html' },
-                    { labelKey: 'header.profession.bunGioHeo', label: 'Bún Giò Heo Minh Nhật', href: 'bun-gio-heo-minh-nhat.html' },
-                    { labelKey: 'header.profession.harryPerfume', label: 'Harry Perfume', href: 'https://harryperfume.vn/gioi-thieu', target: '_blank' }
-                ]
-            }
-        },
-        contact: {
-            rootId: 'sharedContactRoot',
-            options: {
-                pageClass: 'contact-page',
-                id: 'contactSection',
-                includeReveal: true,
-                assetBase: '../'
-            }
-        },
-        bookNow: {
-            rootId: 'sharedBookNowRoot',
-            options: { id: 'bookNowButton' }
-        },
-        headerMenus: {}
-    });
-}
-</script>
+<script src="bun-gio-heo-minh-nhat.js?v=20260923-1"></script>
 </body>
 </html>

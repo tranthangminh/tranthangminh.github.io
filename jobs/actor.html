@@ -21,6 +21,7 @@
 <script src="../common/shared-i18n.js?v=20260904-1"></script>
 <script src="../common/i18n-vi.js?v=20260904-1"></script>
 <script src="../common/i18n-en.js?v=20260904-1"></script>
+<script src="actor-i18n.js?v=20260923-1"></script>
 <script src="../common/shared-header.js?v=20260904-1"></script>
 <script src="../common/shared-book-now.js?v=20260904-1"></script>
 <script src="../common/shared-momentum.js?v=20260904-1"></script>
@@ -37,9 +38,9 @@
     <div class="page-breadcrumb-bar">
         <div class="content-wrap">
             <nav class="page-breadcrumb" aria-label="Breadcrumb">
-                <a class="page-breadcrumb-link" href="../index.html">Trang Chủ</a>
+                <a class="page-breadcrumb-link" href="../index.html" data-i18n="productsPage.breadcrumbHome">Trang Chủ</a>
                 <span class="page-breadcrumb-sep" aria-hidden="true">&#9656;</span>
-                <span class="page-breadcrumb-current">Diễn Viên</span>
+                <span class="page-breadcrumb-current" data-i18n="actorPage.breadcrumb">Diễn Viên</span>
             </nav>
         </div>
     </div>
@@ -50,46 +51,46 @@
             <!-- Left Column: Profile & Bio Hub -->
             <div class="actor-profile-hub">
                 <div class="actor-kicker-bar">
-                    <span class="actor-badge-pill">DIỄN VIÊN / ACTOR</span>
+                    <span class="actor-badge-pill" data-i18n="actorPage.hero.badge">DIỄN VIÊN / ACTOR</span>
                 </div>
-                <h1 class="actor-name-title">TRẦN THẮNG MINH</h1>
+                <h1 class="actor-name-title" data-i18n="actorPage.hero.name">TRẦN THẮNG MINH</h1>
 
                 <!-- Metric Pills Bar -->
                 <div class="actor-metrics-bar">
                     <div class="actor-metric-pill">
-                        <span class="actor-metric-label">Chiều cao</span>
+                        <span class="actor-metric-label" data-i18n="actorPage.hero.metrics.heightLabel">Chiều cao</span>
                         <span class="actor-metric-val">175 <small>cm</small></span>
                     </div>
                     <div class="actor-metric-pill">
-                        <span class="actor-metric-label">Cân nặng</span>
+                        <span class="actor-metric-label" data-i18n="actorPage.hero.metrics.weightLabel">Cân nặng</span>
                         <span class="actor-metric-val">72 <small>kg</small></span>
                     </div>
                     <div class="actor-metric-pill">
-                        <span class="actor-metric-label">Số đo 3 vòng</span>
+                        <span class="actor-metric-label" data-i18n="actorPage.hero.metrics.measurementsLabel">Số đo 3 vòng</span>
                         <span class="actor-metric-val">90 - 73 - 92</span>
                     </div>
                 </div>
 
                 <!-- Basic Info Card -->
                 <section class="actor-card surface-card actor-card--bio">
-                    <h3 class="actor-card-title">Thông tin cơ bản</h3>
+                    <h3 class="actor-card-title" data-i18n="actorPage.basicInfo.title">Thông tin cơ bản</h3>
                     <ul class="actor-bio-meta-list">
                         <li>
                             <span class="actor-field-icon" aria-hidden="true">🎂</span>
-                            <span class="actor-field-label">Ngày sinh:</span>
+                            <span class="actor-field-label" data-i18n="actorPage.basicInfo.dobLabel">Ngày sinh:</span>
                             <span class="actor-field-value">20/09/1996</span>
                         </li>
                         <li>
                             <span class="actor-field-icon" aria-hidden="true">📞</span>
-                            <span class="actor-field-label">SDT:</span>
+                            <span class="actor-field-label" data-i18n="actorPage.basicInfo.phoneLabel">SDT:</span>
                             <span class="actor-field-value">
-                                <button class="actor-phone-toggle" id="actorPhoneToggle" type="button" data-phone="+84363219989" data-phone-display="036 321 9989">Hiển thị</button>
+                                <button class="actor-phone-toggle" id="actorPhoneToggle" type="button" data-phone="+84363219989" data-phone-display="036 321 9989" data-i18n="actorPage.basicInfo.phoneShow">Hiển thị</button>
                             </span>
                         </li>
                         <li class="actor-bio-meta-full">
                             <span class="actor-field-icon" aria-hidden="true">✨</span>
-                            <span class="actor-field-label">Năng Khiếu:</span>
-                            <span class="actor-field-value">Võ Thuật, Hát, Vẽ</span>
+                            <span class="actor-field-label" data-i18n="actorPage.basicInfo.skillsLabel">Năng Khiếu:</span>
+                            <span class="actor-field-value" data-i18n="actorPage.basicInfo.skillsValue">Võ Thuật, Hát, Vẽ</span>
                         </li>
                     </ul>
                 </section>
@@ -97,36 +98,36 @@
                 <!-- Highlights Grid -->
                 <div class="actor-highlights-grid">
                     <section class="actor-card surface-card actor-card--training-summary">
-                        <h3 class="actor-card-title">Quá trình Rèn luyện</h3>
+                        <h3 class="actor-card-title" data-i18n="actorPage.trainingSummary.title">Quá trình Rèn luyện</h3>
                         <ul class="actor-bullet-list">
-                            <li>Tham gia trong <strong>MV Trộm Vía</strong> của ca sĩ Vũ Thùy Linh.</li>
-                            <li>Tham gia dự án <strong>NPC game logic</strong> của công ty Chấn Hải Media.</li>
-                            <li>Các vở đang diễn ở Sân khấu: <strong>Cô Năm Cậu Mười</strong>, <strong>Ai Kế Tiếp</strong>, <strong>Thương Thì Thương Thế Thôi</strong>, <strong>Bỉ Vỏ</strong>.</li>
-                            <li><strong>Độc thoại Trần Ích Tắc</strong> (lịch sử Việt Nam).</li>
-                            <li>Adhya trong vở <strong>Quyền Lực và Tình Yêu</strong> (Sử thi Ramayana).</li>
-                            <li>Willy trong vở <strong>Cái Chết Của Một Người Bán Hàng</strong> (tác giả Arthur Miller).</li>
-                            <li>Nguyệt Đình trong vở <strong>Nhật Xuất</strong> (tác giả Tào Ngu).</li>
+                            <li data-i18n-html="actorPage.trainingSummary.item1">Tham gia trong <strong>MV Trộm Vía</strong> của ca sĩ Vũ Thùy Linh.</li>
+                            <li data-i18n-html="actorPage.trainingSummary.item2">Tham gia dự án <strong>NPC game logic</strong> của công ty Chấn Hải Media.</li>
+                            <li data-i18n-html="actorPage.trainingSummary.item3">Các vở đang diễn ở Sân khấu: <strong>Cô Năm Cậu Mười</strong>, <strong>Ai Kế Tiếp</strong>, <strong>Thương Thì Thương Thế Thôi</strong>, <strong>Bỉ Vỏ</strong>.</li>
+                            <li data-i18n-html="actorPage.trainingSummary.item4"><strong>Độc thoại Trần Ích Tắc</strong> (lịch sử Việt Nam).</li>
+                            <li data-i18n-html="actorPage.trainingSummary.item5">Adhya trong vở <strong>Quyền Lực và Tình Yêu</strong> (Sử thi Ramayana).</li>
+                            <li data-i18n-html="actorPage.trainingSummary.item6">Willy trong vở <strong>Cái Chết Của Một Người Bán Hàng</strong> (tác giả Arthur Miller).</li>
+                            <li data-i18n-html="actorPage.trainingSummary.item7">Nguyệt Đình trong vở <strong>Nhật Xuất</strong> (tác giả Tào Ngu).</li>
                         </ul>
-                        <a href="#section-training" class="actor-card-link">Xem chi tiết các vai diễn &amp; video &darr;</a>
+                        <a href="#section-training" class="actor-card-link" data-i18n-html="actorPage.trainingSummary.viewDetails">Xem chi tiết các vai diễn &amp; video &darr;</a>
                     </section>
 
                     <section class="actor-card surface-card actor-card--study-summary">
-                        <h3 class="actor-card-title">Quá trình học tập</h3>
+                        <h3 class="actor-card-title" data-i18n="actorPage.studySummary.title">Quá trình học tập</h3>
                         <ul class="study-summary-list">
                             <li>
-                                <span class="study-field-label">Lớp Cơ bản (K16)</span>
-                                <span class="study-field-value"><strong>NSND Hồng Vân</strong>, cô <strong>Trần Bảo Châu</strong>, thầy <strong>Lê Nguyễn Tuấn Anh</strong> giảng dạy.</span>
+                                <span class="study-field-label" data-i18n="actorPage.studySummary.item1.label">Lớp Cơ bản (K16)</span>
+                                <span class="study-field-value" data-i18n-html="actorPage.studySummary.item1.value"><strong>NSND Hồng Vân</strong>, cô <strong>Trần Bảo Châu</strong>, thầy <strong>Lê Nguyễn Tuấn Anh</strong> giảng dạy.</span>
                             </li>
                             <li>
-                                <span class="study-field-label">Lớp Nâng Cao (NC4.2)</span>
-                                <span class="study-field-value"><strong>Thầy Vũ Xuân Trang</strong> &amp; <strong>Cô Nguyễn Lê Hoàng Thy</strong> giảng dạy.</span>
+                                <span class="study-field-label" data-i18n="actorPage.studySummary.item2.label">Lớp Nâng Cao (NC4.2)</span>
+                                <span class="study-field-value" data-i18n-html="actorPage.studySummary.item2.value"><strong>Thầy Vũ Xuân Trang</strong> &amp; <strong>Cô Nguyễn Lê Hoàng Thy</strong> giảng dạy.</span>
                             </li>
                             <li>
-                                <span class="study-field-label">Lớp Nâng Cao Chuyên Sâu (NCCS1)</span>
-                                <span class="study-field-value"><strong>Thầy Nguyễn Hữu Châu</strong> giảng dạy.</span>
+                                <span class="study-field-label" data-i18n="actorPage.studySummary.item3.label">Lớp Nâng Cao Chuyên Sâu (NCCS1)</span>
+                                <span class="study-field-value" data-i18n-html="actorPage.studySummary.item3.value"><strong>Thầy Nguyễn Hữu Châu</strong> giảng dạy.</span>
                             </li>
                         </ul>
-                        <a href="#section-study" class="actor-card-link">Xem chi tiết quá trình học tập &darr;</a>
+                        <a href="#section-study" class="actor-card-link" data-i18n-html="actorPage.studySummary.viewDetails">Xem chi tiết quá trình học tập &darr;</a>
                     </section>
                 </div>
             </div>
@@ -135,12 +136,12 @@
             <div class="actor-gallery-hub">
                 <div class="actor-spotlight-display">
                     <div class="actor-spotlight-frame">
-                        <img id="actorFeaturedImg" src="actor/main-01.jpg" alt="Trần Thắng Minh - Diễn viên">
+                        <img id="actorFeaturedImg" src="actor/main-01.jpg" alt="Trần Thắng Minh - Diễn viên" data-i18n-attr="alt:actorPage.gallery.featuredAlt">
                     </div>
                 </div>
 
                 <div class="actor-gallery-strip-wrapper">
-                    <section class="actor-hero-gallery" aria-label="Bộ sưu tập ảnh chân dung diễn viên">
+                    <section class="actor-hero-gallery" aria-label="Bộ sưu tập ảnh chân dung diễn viên" data-i18n-attr="aria-label:actorPage.gallery.ariaLabel">
                         <figure class="actor-item active-thumb"><img src="actor/main-01.jpg" alt="Actor photo main-01"></figure>
                         <figure class="actor-item"><img src="actor/main-02.jpg" alt="Actor photo main-02"></figure>
                         <figure class="actor-item"><img src="actor/main-03.jpg" alt="Actor photo main-03"></figure>
@@ -158,7 +159,7 @@
     <!-- Section 1: Quá Trình Rèn Luyện & Vai Diễn -->
     <div class="content-wrap actor-section-container" id="section-training">
         <div class="section-title-bar reveal-up">
-            <h2 class="section-title-bar-heading">Quá Trình Rèn Luyện &amp; Tác Phẩm</h2>
+            <h2 class="section-title-bar-heading" data-i18n-html="actorPage.timelineTraining.title">Quá Trình Rèn Luyện &amp; Tác Phẩm</h2>
             <span class="section-title-bar-line" aria-hidden="true"></span>
         </div>
 
@@ -167,13 +168,13 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2026-01</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202601">
                         Tham gia trong <strong>MV Trộm Vía</strong> của ca sĩ Vũ Thùy Linh.
                     </p>
                     <div class="timeline-video-grid">
                         <figure class="timeline-video-item">
-                            <a class="timeline-video-link" href="https://www.youtube.com/watch?v=S-YVjeYC4T8" target="_blank" rel="noopener noreferrer" aria-label="Xem MV Trộm Vía trên YouTube">
-                                <img src="https://i.ytimg.com/vi/S-YVjeYC4T8/hqdefault.jpg" alt="Preview YouTube - MV Trộm Vía">
+                            <a class="timeline-video-link" href="https://www.youtube.com/watch?v=S-YVjeYC4T8" target="_blank" rel="noopener noreferrer" aria-label="Xem MV Trộm Vía trên YouTube" data-i18n-attr="aria-label:actorPage.timelineTraining.t202601VideoAria">
+                                <img src="https://i.ytimg.com/vi/S-YVjeYC4T8/hqdefault.jpg" alt="Preview YouTube - MV Trộm Vía" data-i18n-attr="alt:actorPage.timelineTraining.t202601PreviewAlt">
                                 <span class="timeline-video-play" aria-hidden="true"></span>
                             </a>
                         </figure>
@@ -184,19 +185,19 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2024-08</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202408">
                         Tham gia dự án <strong>NPC game logic</strong> của công ty Chấn Hải Media.
                     </p>
                     <div class="timeline-video-grid">
                         <figure class="timeline-video-item">
-                            <a class="timeline-video-link" href="https://www.youtube.com/watch?v=9WZ0-d3x1QU" target="_blank" rel="noopener noreferrer" aria-label="Xem video NPC game logic clip 1 trên YouTube">
-                                <img src="https://i.ytimg.com/vi/9WZ0-d3x1QU/hqdefault.jpg" alt="Preview YouTube - NPC game logic clip 1">
+                            <a class="timeline-video-link" href="https://www.youtube.com/watch?v=9WZ0-d3x1QU" target="_blank" rel="noopener noreferrer" aria-label="Xem video NPC game logic clip 1 trên YouTube" data-i18n-attr="aria-label:actorPage.timelineTraining.t202408Video1Aria">
+                                <img src="https://i.ytimg.com/vi/9WZ0-d3x1QU/hqdefault.jpg" alt="Preview YouTube - NPC game logic clip 1" data-i18n-attr="alt:actorPage.timelineTraining.t202408Preview1Alt">
                                 <span class="timeline-video-play" aria-hidden="true"></span>
                             </a>
                         </figure>
                         <figure class="timeline-video-item">
-                            <a class="timeline-video-link" href="https://www.youtube.com/watch?v=r7RW-Ppiqv8" target="_blank" rel="noopener noreferrer" aria-label="Xem video NPC game logic clip 2 trên YouTube">
-                                <img src="https://i.ytimg.com/vi/r7RW-Ppiqv8/hqdefault.jpg" alt="Preview YouTube - NPC game logic clip 2">
+                            <a class="timeline-video-link" href="https://www.youtube.com/watch?v=r7RW-Ppiqv8" target="_blank" rel="noopener noreferrer" aria-label="Xem video NPC game logic clip 2 trên YouTube" data-i18n-attr="aria-label:actorPage.timelineTraining.t202408Video2Aria">
+                                <img src="https://i.ytimg.com/vi/r7RW-Ppiqv8/hqdefault.jpg" alt="Preview YouTube - NPC game logic clip 2" data-i18n-attr="alt:actorPage.timelineTraining.t202408Preview2Alt">
                                 <span class="timeline-video-play" aria-hidden="true"></span>
                             </a>
                         </figure>
@@ -207,7 +208,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2024-03</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202403">
                         <strong>Độc thoại vai Trần Ích Tắc</strong> - Giảng viên Thầy Nguyễn Hữu Châu.
                     </p>
                     <div class="timeline-media-grid">
@@ -221,7 +222,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2024-01</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202401">
                         Vai <strong>cảnh sát Thắng</strong> vở <strong>Ai Kế Tiếp</strong> - Đạo diễn N.I.B.
                     </p>
                     <div class="timeline-media-grid">
@@ -238,7 +239,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2023-10</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202310">
                         Vai <strong>Thám Tử</strong> vở <strong>Bỉ Vỏ</strong> - Đạo diễn Cố NSND Doãn Hoàng Giang và NSND Hồng Vân.
                     </p>
                     <div class="timeline-media-grid">
@@ -255,7 +256,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2023-09</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202309">
                         Vai <strong>Willy</strong> vở <strong>Cái Chết Người Chào Hàng</strong> - Đạo diễn NSƯT Vũ Xuân Trang.
                     </p>
                     <div class="timeline-media-grid">
@@ -278,7 +279,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2023-08</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202308">
                         Vai <strong>Chiến sĩ</strong> vở thi ở Hà Nội - Đạo diễn NSƯT Vũ Xuân Trang.
                     </p>
                     <div class="timeline-media-grid">
@@ -298,7 +299,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2022-10</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202210">
                         Vai <strong>Nguyệt Đình</strong> vở <strong>Nhật Xuất</strong> - Đạo diễn NSƯT Vũ Xuân Trang.
                     </p>
                     <div class="timeline-media-grid">
@@ -312,7 +313,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2022-05</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202205">
                         Vai <strong>Búp Bê</strong> vở kịch <strong>Xóm Lầy</strong> - Đạo diễn Lê Nguyễn Tuấn Anh.
                     </p>
                     <div class="timeline-media-grid">
@@ -332,7 +333,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2022-04</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineTraining.t202204">
                         Vai <strong>Phạm Công</strong> vở <strong>Nỗi Lòng Tào Thị</strong>, vai <strong>ông Dương</strong> vở <strong>Tía Ơi</strong> - Đạo diễn Lê Nguyễn Tuấn Anh.
                     </p>
                     <div class="timeline-media-grid">
@@ -359,7 +360,7 @@
     <!-- Section 2: Quá Trình Học Tập -->
     <div class="content-wrap actor-section-container" id="section-study">
         <div class="section-title-bar reveal-up">
-            <h2 class="section-title-bar-heading">Quá Trình Học Tập &amp; Đào Tạo</h2>
+            <h2 class="section-title-bar-heading" data-i18n-html="actorPage.timelineStudy.title">Quá Trình Học Tập &amp; Đào Tạo</h2>
             <span class="section-title-bar-line" aria-hidden="true"></span>
         </div>
 
@@ -368,7 +369,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2024-04</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineStudy.s202404">
                         Tốt nghiệp lớp <strong>Nâng Cao Chuyên Sâu</strong>.
                     </p>
                     <div class="timeline-media-grid">
@@ -382,7 +383,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2023-03</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineStudy.s202303">
                         Bắt đầu học lớp <strong>Nâng Cao Chuyên Sâu (NCCS1)</strong> tại Sân Khấu kịch Hồng Vân.
                     </p>
                     <div class="timeline-media-grid">
@@ -396,7 +397,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2022-11</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineStudy.s202211">
                         Tốt nghiệp lớp <strong>Nâng Cao (NC4.2)</strong>.
                     </p>
                     <div class="timeline-media-grid">
@@ -419,7 +420,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2022-06</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineStudy.s202206">
                         Bắt đầu học lớp <strong>Nâng Cao (NC4.2)</strong> tại Sân Khấu kịch Hồng Vân.
                     </p>
                     <div class="timeline-media-grid">
@@ -439,7 +440,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2022-04</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineStudy.s202204">
                         Hoàn thành HK3, tốt nghiệp lớp <strong>K16 Cơ bản</strong>.
                     </p>
                     <div class="timeline-media-grid">
@@ -465,7 +466,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2020-09</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineStudy.s202009">
                         Hoàn thành HK1 lớp <strong>K16 Cơ bản</strong>.
                     </p>
                     <div class="timeline-media-grid">
@@ -482,7 +483,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2020-06</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineStudy.s202006">
                         Tham diễn webdrama <strong>Đại Kê Chạy Đi 2</strong>.
                     </p>
                     <div class="timeline-media-grid">
@@ -496,7 +497,7 @@
                     <div class="timeline-header-meta">
                         <span class="timeline-year">2020-05</span>
                     </div>
-                    <p class="timeline-text">
+                    <p class="timeline-text" data-i18n-html="actorPage.timelineStudy.s202005">
                         Khai giảng lớp <strong>K16 Cơ bản</strong>, vào học tại Sân khấu kịch Hồng Vân.
                     </p>
                 </li>

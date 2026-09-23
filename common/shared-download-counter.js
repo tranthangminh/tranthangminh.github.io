@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
     'use strict';
 
     var API_BASE = 'https://countapi.mileshilliard.com/api/v1';
@@ -108,10 +108,11 @@
         buttons.forEach(function (btn) {
             var productId = btn.getAttribute('data-product-id');
             var chromeId = btn.getAttribute('data-chrome-id');
+            var noDownload = btn.getAttribute('data-no-download') === 'true';
             if (!productId) return;
 
-            // Bind click & keyboard handlers if not already bound
-            if (!btn._hasDownloadHandler) {
+            // Bind click & keyboard handlers if not already bound and not a display-only badge
+            if (!noDownload && !btn._hasDownloadHandler) {
                 btn._hasDownloadHandler = true;
                 btn.addEventListener('click', function (e) {
                     executeDownload(btn, e);

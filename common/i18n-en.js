@@ -8,22 +8,22 @@
     window.sharedI18n.registerTranslations('en', {
         meta: {
             home: {
-                title: 'Tran Thang Minh - Actor, 2D/3D Artist & Photographer'
+                title: 'Trần Thắng Minh - Actor, 2D/3D Artist & Photographer'
             },
             actor: {
-                title: 'Actor - Tran Thang Minh'
+                title: 'Actor - Trần Thắng Minh'
             },
             photographer: {
-                title: 'Photographer - Tran Thang Minh'
+                title: 'Photographer - Trần Thắng Minh'
             },
             artist: {
-                title: 'Artist - Tran Thang Minh'
+                title: 'Artist - Trần Thắng Minh'
             },
             tools: {
-                title: 'Products & Creative Tools - Tran Thang Minh'
+                title: 'Products & Creative Tools - Trần Thắng Minh'
             },
             products: {
-                title: 'Products & Creative Tools - Tran Thang Minh'
+                title: 'Products & Creative Tools - Trần Thắng Minh'
             }
         },
         header: {
@@ -36,7 +36,7 @@
                 actor: 'Actor',
                 artist: 'Artist',
                 photographer: 'Photographer',
-                bunGioHeo: 'Minh Nhat Pork Hock Noodle',
+                bunGioHeo: 'Minh Nhật Pork Hock Noodle',
                 harryPerfume: 'Harry Perfume'
             },
             tool: {
@@ -74,7 +74,7 @@
             call: 'Call: 036 321 9989',
             email: 'Email: maxiechen96@gmail.com',
             moreSocial: 'See more social links',
-            copyright: 'Copyright 2026 Tran Thang Minh. All rights reserved.',
+            copyright: 'Copyright 2026 Trần Thắng Minh. All rights reserved.',
             signatureAlt: 'Signature',
             visitsPrefix: 'Total Visits:'
         },
@@ -125,6 +125,11 @@
                 plugins: 'Plugins',
                 webApps: 'Web Apps'
             },
+            units: {
+                downloads: 'downloads',
+                users: 'users',
+                visits: 'visits'
+            },
             viewAction: 'View Details',
             emptyNotice: 'More products in this category are coming soon...'
         },
@@ -140,7 +145,7 @@
             },
             actor: {
                 kicker: 'Actor',
-                title: 'Tran Thang Minh'
+                title: 'Trần Thắng Minh'
             }
         }
     });

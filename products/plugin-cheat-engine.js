@@ -71,7 +71,7 @@ function updateCheatTableCount(count) {
     }
 
     var labelTemplate = window.sharedI18n && typeof window.sharedI18n.t === 'function'
-        ? window.sharedI18n.t('toolsPage.cheatTables.count', '{{count}} file')
+        ? window.sharedI18n.t('cheatEnginePlugin.count', '{{count}} file')
         : '{{count}} file';
 
     cheatTableFileCount.textContent = String(labelTemplate).replace('{{count}}', String(count));
@@ -116,7 +116,7 @@ function renderCheatTableList(files) {
         var emptyMessage = document.createElement('div');
         emptyMessage.className = 'tools-file-empty surface-card';
         emptyMessage.textContent = window.sharedI18n && typeof window.sharedI18n.t === 'function'
-            ? window.sharedI18n.t('toolsPage.cheatTables.empty')
+            ? window.sharedI18n.t('cheatEnginePlugin.empty', 'Không tìm thấy file phù hợp.')
             : 'Không tìm thấy file phù hợp.';
         cheatTableFileList.appendChild(emptyMessage);
         return;

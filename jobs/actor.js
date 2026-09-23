@@ -83,6 +83,7 @@ if (actorPhoneToggle) {
         }
 
         actorPhoneToggle.classList.add('is-revealed');
+        actorPhoneToggle.removeAttribute('data-i18n');
         actorPhoneToggle.textContent = phoneDisplay;
     });
 }

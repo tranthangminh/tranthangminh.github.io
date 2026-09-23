@@ -338,6 +338,11 @@ body {
     transform: translateY(1px);
 }
 
+.product-download-icon--web-app {
+    mask-image: url('svg/web-apps.svg');
+    -webkit-mask-image: url('svg/web-apps.svg');
+}
+
 .product-download-count {
     font-family: var(--font-primary);
     font-size: var(--font-sm);

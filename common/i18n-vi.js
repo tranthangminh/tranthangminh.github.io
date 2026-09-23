@@ -125,6 +125,11 @@
                 plugins: 'Plugins',
                 webApps: 'Web Apps'
             },
+            units: {
+                downloads: 'lượt tải',
+                users: 'người dùng',
+                visits: 'lượt truy cập'
+            },
             viewAction: 'Xem chi tiết',
             emptyNotice: 'Đang cập nhật thêm sản phẩm trong danh mục này...'
         },
