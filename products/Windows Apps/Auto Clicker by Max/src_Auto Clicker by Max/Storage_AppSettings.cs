@@ -67,6 +67,7 @@ namespace ModernAutoClicker
         public bool IsAdvancedTab { get; set; }
         public string AdvancedProfileJson { get; set; }
         public string LastUpdateCheckDate { get; set; }
+        public string Language { get; set; }
 
         public int ActiveSimpleTabIndex { get; set; }
         public List<SimpleProfileConfig> SimpleProfiles { get; set; }
@@ -138,6 +139,8 @@ namespace ModernAutoClicker
             IsDarkTheme = true;
             IsAdvancedTab = false;
             AdvancedProfileJson = null;
+            LastUpdateCheckDate = "";
+            Language = "en";
             ActiveSimpleTabIndex = 0;
             SimpleProfiles = new List<SimpleProfileConfig>();
             for (int i = 0; i < 5; i++)
@@ -188,6 +191,7 @@ namespace ModernAutoClicker
                 settings.IsAdvancedTab = GetBool(json, "IsAdvancedTab", false);
                 settings.ActiveSimpleTabIndex = Math.Max(0, Math.Min(4, GetInt(json, "ActiveSimpleTabIndex", 0)));
                 settings.LastUpdateCheckDate = GetString(json, "LastUpdateCheckDate", "");
+                settings.Language = GetString(json, "Language", "en");
 
                 // Try parsing SimpleProfiles array
                 int spIdx = json.IndexOf("\"SimpleProfiles\"", StringComparison.OrdinalIgnoreCase);
@@ -352,6 +356,7 @@ namespace ModernAutoClicker
                 sb.AppendLine(string.Format("  \"IsDarkTheme\": {0},", settings.IsDarkTheme.ToString().ToLower()));
                 sb.AppendLine(string.Format("  \"IsAdvancedTab\": {0},", settings.IsAdvancedTab.ToString().ToLower()));
                 sb.AppendLine(string.Format("  \"LastUpdateCheckDate\": \"{0}\",", EscapeJson(settings.LastUpdateCheckDate ?? "")));
+                sb.AppendLine(string.Format("  \"Language\": \"{0}\",", EscapeJson(settings.Language ?? "en")));
 
                 // Save 5 SimpleProfiles
                 sb.AppendLine("  \"SimpleProfiles\": [");

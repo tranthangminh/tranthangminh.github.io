@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker
 {
@@ -149,6 +150,20 @@ namespace ModernAutoClicker
                     }
                 };
             }
+
+            if (titleBar != null)
+            {
+                titleBar.OnLanguageToggleRequested += () =>
+                {
+                    Loc.CurrentLanguage = Loc.IsVietnamese ? AppLanguage.English : AppLanguage.Vietnamese;
+                    SaveSettings();
+                };
+            }
+
+            Loc.OnLanguageChanged += () =>
+            {
+                ApplyLanguage();
+            };
 
             LoadSettings();
 
@@ -611,7 +626,7 @@ namespace ModernAutoClicker
             menu.ShowImageMargin = true;
             menu.Closed += (s, e) => { btnSimpleTargetWindow.IsOpen = false; btnSimpleTargetWindow.BeginInvoke((Action)(() => menu.Dispose())); };
 
-            ToolStripMenuItem itemDesktop = new ToolStripMenuItem("All Screens (Desktop)");
+            ToolStripMenuItem itemDesktop = new ToolStripMenuItem(Loc.IsVietnamese ? "Toàn màn hình (Desktop)" : "All Screens (Desktop)");
             itemDesktop.Image = IconCache.DesktopIcon;
             itemDesktop.Click += (s, e) =>
             {
@@ -629,7 +644,7 @@ namespace ModernAutoClicker
             var windows = NativeMethods.GetOpenWindows();
             if (windows.Count == 0)
             {
-                var itemEmpty = new ToolStripMenuItem("(No open windows detected)");
+                var itemEmpty = new ToolStripMenuItem(Loc.IsVietnamese ? "(Không phát hiện cửa sổ đang mở)" : "(No open windows detected)");
                 itemEmpty.Enabled = false;
                 menu.Items.Add(itemEmpty);
             }
@@ -678,7 +693,7 @@ namespace ModernAutoClicker
             else
             {
                 btnSimpleTargetWindow.Image = IconCache.DesktopIcon;
-                btnSimpleTargetWindow.Text = "All Screens (Desktop)";
+                btnSimpleTargetWindow.Text = Loc.IsVietnamese ? "Toàn màn hình (Desktop)" : "All Screens (Desktop)";
                 btnSimpleTargetWindow.CustomTextColor = currentTheme != null ? currentTheme.TextPrimary : Color.White;
             }
             btnSimpleTargetWindow.Invalidate();
@@ -810,12 +825,12 @@ namespace ModernAutoClicker
         {
             if (radModeCursor != null && radModeCursor.Checked)
             {
-                if (lblHeaderList != null) lblHeaderList.Text = "Follow Cursor Mode";
+                if (lblHeaderList != null) lblHeaderList.Text = Loc.CursorGuideTitle;
                 return;
             }
             if (lblHeaderList != null && lstPoints != null)
             {
-                lblHeaderList.Text = string.Format("Target ({0} {1})", lstPoints.Count, lstPoints.Count == 1 ? "Point" : "Points");
+                lblHeaderList.Text = Loc.HeaderTargetPoints(lstPoints.Count);
             }
         }
 
@@ -1309,17 +1324,17 @@ namespace ModernAutoClicker
             if (isRunning)
             {
                 btnStart.IsDisabled = false;
-                btnStart.Text = "Stop";
-                btnStart.Subtitle = "(F6 to stop)";
+                btnStart.Text = Loc.IsVietnamese ? "Dừng" : "Stop";
+                btnStart.Subtitle = Loc.IsVietnamese ? "(F6 để dừng)" : "(F6 to stop)";
                 btnStart.NormalColor = currentTheme.Danger;
                 btnStart.HoverColor = currentTheme.CRed;
                 btnStart.ForeColor = Color.White;
-                if (_startToolTip != null) _startToolTip.SetToolTip(btnStart, "Stop active tab (F6)");
+                if (_startToolTip != null) _startToolTip.SetToolTip(btnStart, Loc.IsVietnamese ? "Dừng tab đang hoạt động (F6)" : "Stop active tab (F6)");
                 btnStart.Invalidate();
                 return;
             }
 
-            btnStart.Text = "Start";
+            btnStart.Text = Loc.BtnStart;
             btnStart.Subtitle = "(F6)";
             btnStart.NormalColor = currentTheme.AccentPrimary;
             btnStart.HoverColor = currentTheme.AccentPrimaryHover;
@@ -1330,18 +1345,18 @@ namespace ModernAutoClicker
 
             if (!canStart)
             {
-                string tip = "Please add points or steps to start";
+                string tip = Loc.IsVietnamese ? "Vui lòng thêm tọa độ hoặc bước để bắt đầu" : "Please add points or steps to start";
                 if (_currentTabIndex == 1 && radModePoints != null && radModePoints.Checked)
                 {
-                    tip = "No points set. Please add at least 1 point to start (Press Space to capture point)";
+                    tip = Loc.IsVietnamese ? "Chưa có tọa độ. Vui lòng thêm ít nhất 1 tọa độ để bắt đầu (Nhấn Space để lấy tọa độ)" : "No points set. Please add at least 1 point to start (Press Space to capture point)";
                 }
                 else if (_currentTabIndex == 2)
                 {
-                    tip = "No active steps. Please add at least 1 step to start (Click + Add Step)";
+                    tip = Loc.IsVietnamese ? "Chưa có bước hợp lệ. Vui lòng thêm ít nhất 1 bước để bắt đầu (Bấm + Thêm bước)" : "No active steps. Please add at least 1 step to start (Click + Add Step)";
                 }
                 else if (_currentTabIndex == 0)
                 {
-                    tip = "Switch to Simple or Asian Mode to start";
+                    tip = Loc.IsVietnamese ? "Chuyển sang tab Cơ bản hoặc Nâng cao để bắt đầu" : "Switch to Simple or Asian Mode to start";
                 }
 
                 if (_startToolTip != null)
@@ -1353,7 +1368,7 @@ namespace ModernAutoClicker
             {
                 if (_startToolTip != null)
                 {
-                    _startToolTip.SetToolTip(btnStart, "Start active tab (F6)");
+                    _startToolTip.SetToolTip(btnStart, Loc.IsVietnamese ? "Bắt đầu tab đang hoạt động (F6)" : "Start active tab (F6)");
                 }
             }
             btnStart.Invalidate();
@@ -1689,11 +1704,13 @@ namespace ModernAutoClicker
                 }
                 else if (runningNames.Count == 1)
                 {
-                    lblMainStatusInfo.Text = "Running: " + runningNames[0];
+                    lblMainStatusInfo.Text = (Loc.IsVietnamese ? "Đang chạy: " : "Running: ") + runningNames[0];
                 }
                 else
                 {
-                    lblMainStatusInfo.Text = string.Format("Running: {0} tasks ({1})", runningNames.Count, string.Join(", ", runningNames.ToArray()));
+                    lblMainStatusInfo.Text = Loc.IsVietnamese
+                        ? string.Format("Đang chạy: {0} tác vụ ({1})", runningNames.Count, string.Join(", ", runningNames.ToArray()))
+                        : string.Format("Running: {0} tasks ({1})", runningNames.Count, string.Join(", ", runningNames.ToArray()));
                 }
             }
         }
@@ -1704,19 +1721,19 @@ namespace ModernAutoClicker
 
             if (isCurrentRunning)
             {
-                btnStart.Text = "Stop";
-                btnStart.Subtitle = "(F6 to stop)";
+                btnStart.Text = Loc.IsVietnamese ? "Dừng" : "Stop";
+                btnStart.Subtitle = Loc.IsVietnamese ? "(F6 để dừng)" : "(F6 to stop)";
                 btnStart.NormalColor = currentTheme.Danger;
                 btnStart.HoverColor = currentTheme.CRed;
                 btnStart.ForeColor = Color.White;
                 btnStart.IsDisabled = false;
                 btnStart.Enabled = true;
-                if (_startToolTip != null) _startToolTip.SetToolTip(btnStart, "Stop active tab (F6)");
+                if (_startToolTip != null) _startToolTip.SetToolTip(btnStart, Loc.IsVietnamese ? "Dừng tab đang hoạt động (F6)" : "Stop active tab (F6)");
                 btnStart.Invalidate();
             }
             else
             {
-                btnStart.Text = "Start";
+                btnStart.Text = Loc.BtnStart;
                 btnStart.Subtitle = "(F6)";
                 btnStart.NormalColor = currentTheme.AccentPrimary;
                 btnStart.HoverColor = currentTheme.AccentPrimaryHover;
@@ -1980,6 +1997,9 @@ namespace ModernAutoClicker
             {
                 SwitchTab(1);
             }
+
+            Loc.SetLanguage(config.Language);
+            ApplyLanguage();
         }
 
         private void SaveSettings()
@@ -2006,6 +2026,7 @@ namespace ModernAutoClicker
             config.SmoothMouseMove = (chkSmoothMove != null && chkSmoothMove.Checked);
             config.IsDarkTheme = currentTheme.IsDark;
             config.IsAdvancedTab = !_isBasicTab;
+            config.Language = Loc.CurrentLanguageCode;
             config.AdvancedProfileJson = (pnlTabAdvanced != null) ? ModernAutoClicker.Advanced.MacroStorage.ProjectToJson(pnlTabAdvanced.GetAllProfiles(), pnlTabAdvanced.ActiveProfileIndex) : null;
 
             AppSettings.Save(config);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker.Advanced
 {
@@ -241,6 +242,16 @@ namespace ModernAutoClicker.Advanced
             return MacroActionType.LeftClick;
         }
 
+        private void PopulateActionTypes()
+        {
+            if (cboActionType == null) return;
+            cboActionType.Items.Clear();
+            for (int i = 0; i < ActionTypeDisplayList.Length; i++)
+            {
+                cboActionType.Items.Add(Loc.GetActionTypeName(ActionTypeDisplayList[i]));
+            }
+        }
+
         private void InitializeRow()
         {
             this.SuspendLayout();
@@ -300,22 +311,7 @@ namespace ModernAutoClicker.Advanced
                 Size = new Size(116, 22),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular)
             };
-            cboActionType.Items.AddRange(new string[] {
-                "Left Click",
-                "Right Click",
-                "Middle / Scroll",
-                "Double Click",
-                "Drag & Drop",
-                "Key Press",
-                "Type Text",
-                "Delay",
-                "Wait Color",
-                "If Color",
-                "Wait Image",
-                "If Image",
-                "Wait Change",
-                "Run Script"
-            });
+            PopulateActionTypes();
             cboActionType.ItemColorProvider = (idx) => GetActionTypeColor(GetActionTypeFromIndex(idx), _theme);
             cboActionType.SelectedIndex = GetActionTypeIndex(_step.ActionType);
             cboActionType.SelectedIndexChanged += (s, e) =>
@@ -744,26 +740,22 @@ namespace ModernAutoClicker.Advanced
             {
                 if (idx >= 0 && idx < cboIfTrue.Items.Count)
                 {
-                    string text = cboIfTrue.Items[idx];
-                    if (text == "Click Target" || text == "Next Step") return _theme.CGreen;
-                    if (text == "Stop") return _theme.Danger;
+                    if (idx == 0 || idx == 1) return _theme.CGreen;
+                    if (idx == cboIfTrue.Items.Count - 1) return _theme.Danger;
                 }
                 return _theme.TextPrimary;
             };
             cboIfTrue.SelectedIndexChanged += (s, e) =>
             {
                 if (_isBinding || _isPopulatingJumps) return;
-                if ((_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage) && cboIfTrue.SelectedItem != null)
+                if ((_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage))
                 {
-                    string sel = cboIfTrue.SelectedItem;
-                    if (sel == "Click Target" || sel == "Click Center") _step.IfTrueStep = -2;
-                    else if (sel == "Next Step") _step.IfTrueStep = 0;
-                    else if (sel == "Stop") _step.IfTrueStep = -1;
-                    else if (sel.StartsWith("Step "))
-                    {
-                        int val;
-                        if (int.TryParse(sel.Substring(5), out val)) _step.IfTrueStep = val;
-                    }
+                    int idx = cboIfTrue.SelectedIndex;
+                    if (idx == 0) _step.IfTrueStep = -2;
+                    else if (idx == 1) _step.IfTrueStep = 0;
+                    else if (idx == cboIfTrue.Items.Count - 1) _step.IfTrueStep = -1;
+                    else if (idx >= 2) _step.IfTrueStep = idx - 1;
+
                     if (OnStepChanged != null) OnStepChanged();
                 }
             };
@@ -791,26 +783,22 @@ namespace ModernAutoClicker.Advanced
             {
                 if (idx >= 0 && idx < cboIfFalse.Items.Count)
                 {
-                    string text = cboIfFalse.Items[idx];
-                    if (text == "Click Target" || text == "Click Center" || text == "Next Step") return _theme.CGreen;
-                    if (text == "Stop") return _theme.Danger;
+                    if (idx == 0 || idx == 1) return _theme.CGreen;
+                    if (idx == cboIfFalse.Items.Count - 1) return _theme.Danger;
                 }
                 return _theme.TextPrimary;
             };
             cboIfFalse.SelectedIndexChanged += (s, e) =>
             {
                 if (_isBinding || _isPopulatingJumps) return;
-                if ((_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage) && cboIfFalse.SelectedItem != null)
+                if ((_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage))
                 {
-                    string sel = cboIfFalse.SelectedItem;
-                    if (sel == "Click Target" || sel == "Click Center") _step.IfFalseStep = -2;
-                    else if (sel == "Next Step") _step.IfFalseStep = 0;
-                    else if (sel == "Stop") _step.IfFalseStep = -1;
-                    else if (sel.StartsWith("Step "))
-                    {
-                        int val;
-                        if (int.TryParse(sel.Substring(5), out val)) _step.IfFalseStep = val;
-                    }
+                    int idx = cboIfFalse.SelectedIndex;
+                    if (idx == 0) _step.IfFalseStep = -2;
+                    else if (idx == 1) _step.IfFalseStep = 0;
+                    else if (idx == cboIfFalse.Items.Count - 1) _step.IfFalseStep = -1;
+                    else if (idx >= 2) _step.IfFalseStep = idx - 1;
+
                     if (OnStepChanged != null) OnStepChanged();
                 }
             };
@@ -909,20 +897,55 @@ namespace ModernAutoClicker.Advanced
             if (_step.RelativeToWindow && !string.IsNullOrEmpty(_step.ProcessName))
             {
                 lblWindowIcon.Image = IconCache.GetProcessIcon(_step.ProcessName, _step.WindowTitle) ?? IconCache.GenericAppIcon;
-                string tip = string.Format("Target Window: [{0}] {1}\n(Click to change target)", _step.ProcessName, _step.WindowTitle);
+                string tip = Loc.IsVietnamese
+                    ? string.Format("Cửa sổ Mục tiêu: [{0}] {1}\n(Bấm để đổi mục tiêu)", _step.ProcessName, _step.WindowTitle)
+                    : string.Format("Target Window: [{0}] {1}\n(Click to change target)", _step.ProcessName, _step.WindowTitle);
                 RowToolTipManager.SetToolTip(lblWindowIcon, tip);
             }
             else
             {
                 lblWindowIcon.Image = IconCache.DesktopIcon;
-                RowToolTipManager.SetToolTip(lblWindowIcon, "Target Window: All Screens (Desktop mode)\n(Click to bind window)");
+                string tip = Loc.IsVietnamese
+                    ? "Cửa sổ Mục tiêu: Toàn màn hình (Chế độ Desktop)\n(Bấm để gắn vào cửa sổ)"
+                    : "Target Window: All Screens (Desktop mode)\n(Click to bind window)";
+                RowToolTipManager.SetToolTip(lblWindowIcon, tip);
+            }
+        }
+
+        public void ApplyLanguage()
+        {
+            bool prevBinding = _isBinding;
+            _isBinding = true;
+            try
+            {
+                if (cboActionType != null)
+                {
+                    int sel = cboActionType.SelectedIndex;
+                    PopulateActionTypes();
+                    cboActionType.SelectedIndex = (sel >= 0 && sel < cboActionType.Items.Count) ? sel : 0;
+                }
+                if (_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage)
+                {
+                    PopulateIfJumpLists();
+                }
+                UpdateDynamicFields();
+                UpdateWindowIconDisplay();
+                UpdateRowTooltips();
+            }
+            finally
+            {
+                _isBinding = prevBinding;
             }
         }
 
         private void UpdateRowTooltips()
         {
-            RowToolTipManager.SetToolTip(lblIndex, string.Format("Step #{0}:\nDrag the ≡ handle to reorder steps. Click to select row.", _index + 1));
-            RowToolTipManager.SetToolTip(chkSelect, string.Format("Enable / Disable Step #{0}:\nWhen unchecked, this step will not run during execution and will not show on the map overlay.", _index + 1));
+            RowToolTipManager.SetToolTip(lblIndex, Loc.IsVietnamese
+                ? string.Format("Bước #{0}:\nKéo nút ≡ để sắp xếp lại các bước. Nhấp để chọn hàng.", _index + 1)
+                : string.Format("Step #{0}:\nDrag the ≡ handle to reorder steps. Click to select row.", _index + 1));
+            RowToolTipManager.SetToolTip(chkSelect, Loc.IsVietnamese
+                ? string.Format("Bật / Tắt Bước #{0}:\nKhi bỏ chọn, bước này sẽ không chạy khi thực thi và không hiển thị trên bản đồ overlay.", _index + 1)
+                : string.Format("Enable / Disable Step #{0}:\nWhen unchecked, this step will not run during execution and will not show on the map overlay.", _index + 1));
 
             if (cboActionType != null)
                 RowToolTipManager.SetToolTip(cboActionType, MacroDescriptions.GetActionTypeDescription(_step.ActionType));
@@ -936,17 +959,31 @@ namespace ModernAutoClicker.Advanced
             if (pnlColorSwatch != null) RowToolTipManager.SetToolTip(pnlColorSwatch, targetDesc);
             if (pnlImageThumb != null)
             {
-                string imgDesc = (_step != null && !string.IsNullOrEmpty(_step.ImageBase64))
-                    ? "Template Image:\nLeft-click: Capture new image from screen.\nRight-click: Import / Export / Preview / Clear."
-                    : "Template Image:\nLeft-click to capture template image from screen.\nRight-click for options.";
+                string imgDesc;
+                if (Loc.IsVietnamese)
+                {
+                    imgDesc = (_step != null && !string.IsNullOrEmpty(_step.ImageBase64))
+                        ? "Hình ảnh Mẫu:\nChuột trái: Chụp ảnh mới từ màn hình.\nChuột phải: Nhập / Xuất / Xem trước / Xóa."
+                        : "Hình ảnh Mẫu:\nChuột trái: Chụp ảnh mẫu từ màn hình.\nChuột phải để mở tùy chọn.";
+                }
+                else
+                {
+                    imgDesc = (_step != null && !string.IsNullOrEmpty(_step.ImageBase64))
+                        ? "Template Image:\nLeft-click: Capture new image from screen.\nRight-click: Import / Export / Preview / Clear."
+                        : "Template Image:\nLeft-click to capture template image from screen.\nRight-click for options.";
+                }
                 RowToolTipManager.SetToolTip(pnlImageThumb, imgDesc);
             }
 
             if (numSimilarity != null)
-                RowToolTipManager.SetToolTip(numSimilarity, "Similarity (%):\nAcceptable match threshold (50% - 100%, Default: 90%).");
+                RowToolTipManager.SetToolTip(numSimilarity, Loc.IsVietnamese
+                    ? "Độ tương đồng (%):\nNgưỡng khớp chấp nhận được (50% - 100%, Mặc định: 90%)."
+                    : "Similarity (%):\nAcceptable match threshold (50% - 100%, Default: 90%).");
 
             if (numTimeout != null)
-                RowToolTipManager.SetToolTip(numTimeout, "Timeout (seconds):\nMaximum duration to wait for the template image to appear. 0 = wait indefinitely.");
+                RowToolTipManager.SetToolTip(numTimeout, Loc.IsVietnamese
+                    ? "Thời gian chờ (giây):\nThời gian tối đa chờ hình ảnh mẫu xuất hiện. 0 = chờ vô hạn."
+                    : "Timeout (seconds):\nMaximum duration to wait for the template image to appear. 0 = wait indefinitely.");
 
             if (numHold != null)
                 RowToolTipManager.SetToolTip(numHold, MacroDescriptions.GetHoldDescription(_step.ActionType));
@@ -961,18 +998,29 @@ namespace ModernAutoClicker.Advanced
             {
                 if (_step.ActionType == MacroActionType.IfImage)
                 {
-                    RowToolTipManager.SetToolTip(cboIfTrue, "If Found (Action when template image is found):\n" +
-                                                           "• [Click Center]: Click at the center of the found image.\n" +
-                                                           "• [Next Step]: Continue to the next step.\n" +
-                                                           "• Jump to your selected step # to execute next.\n" +
-                                                           "• [Stop]: Immediately stop script execution.");
+                    RowToolTipManager.SetToolTip(cboIfTrue, Loc.IsVietnamese
+                        ? "Nếu Thấy (Hành động khi tìm thấy hình ảnh mẫu):\n" +
+                          "• [Click Tâm ảnh]: Click vào điểm giữa hình tìm thấy.\n" +
+                          "• [Bước kế tiếp]: Tiếp tục thực hiện bước kế tiếp.\n" +
+                          "• Nhảy đến số bước đã chọn để thực hiện tiếp.\n" +
+                          "• [Dừng lại]: Dừng chạy script ngay lập tức."
+                        : "If Found (Action when template image is found):\n" +
+                          "• [Click Center]: Click at the center of the found image.\n" +
+                          "• [Next Step]: Continue to the next step.\n" +
+                          "• Jump to your selected step # to execute next.\n" +
+                          "• [Stop]: Immediately stop script execution.");
                 }
                 else
                 {
-                    RowToolTipManager.SetToolTip(cboIfTrue, "Match Condition (Jump Destination):\n" +
-                                                           "If the pixel color at (X, Y) MATCHES the target color:\n" +
-                                                           "• Jump to your selected step # to execute next.\n" +
-                                                           "• [Stop]: Immediately stop script execution.");
+                    RowToolTipManager.SetToolTip(cboIfTrue, Loc.IsVietnamese
+                        ? "Điều kiện Khớp (Điểm nhảy tới):\n" +
+                          "Nếu màu pixel tại (X, Y) TRÙNG KHỚP với màu mục tiêu:\n" +
+                          "• Nhảy đến số bước đã chọn để thực hiện tiếp.\n" +
+                          "• [Dừng lại]: Dừng chạy script ngay lập tức."
+                        : "Match Condition (Jump Destination):\n" +
+                          "If the pixel color at (X, Y) MATCHES the target color:\n" +
+                          "• Jump to your selected step # to execute next.\n" +
+                          "• [Stop]: Immediately stop script execution.");
                 }
             }
 
@@ -980,25 +1028,39 @@ namespace ModernAutoClicker.Advanced
             {
                 if (_step.ActionType == MacroActionType.IfImage)
                 {
-                    RowToolTipManager.SetToolTip(cboIfFalse, "If Not Found (Action when template image is missing):\n" +
-                                                            "• [Next Step]: Continue to the next step.\n" +
-                                                            "• Jump to your selected step # to execute next.\n" +
-                                                            "• [Stop]: Immediately stop script execution.");
+                    RowToolTipManager.SetToolTip(cboIfFalse, Loc.IsVietnamese
+                        ? "Nếu Thiếu (Hành động khi không thấy hình ảnh mẫu):\n" +
+                          "• [Bước kế tiếp]: Tiếp tục thực hiện bước kế tiếp.\n" +
+                          "• Nhảy đến số bước đã chọn để thực hiện tiếp.\n" +
+                          "• [Dừng lại]: Dừng chạy script ngay lập tức."
+                        : "If Not Found (Action when template image is missing):\n" +
+                          "• [Next Step]: Continue to the next step.\n" +
+                          "• Jump to your selected step # to execute next.\n" +
+                          "• [Stop]: Immediately stop script execution.");
                 }
                 else
                 {
-                    RowToolTipManager.SetToolTip(cboIfFalse, "Unmatch Condition (Jump Destination):\n" +
-                                                            "If the pixel color at (X, Y) does NOT match the target color:\n" +
-                                                            "• Jump to your selected step # to execute next.\n" +
-                                                            "• [Stop]: Immediately stop script execution.");
+                    RowToolTipManager.SetToolTip(cboIfFalse, Loc.IsVietnamese
+                        ? "Điều kiện Không khớp (Điểm nhảy tới):\n" +
+                          "Nếu màu pixel tại (X, Y) KHÔNG trùng khớp với màu mục tiêu:\n" +
+                          "• Nhảy đến số bước đã chọn để thực hiện tiếp.\n" +
+                          "• [Dừng lại]: Dừng chạy script ngay lập tức."
+                        : "Unmatch Condition (Jump Destination):\n" +
+                          "If the pixel color at (X, Y) does NOT match the target color:\n" +
+                          "• Jump to your selected step # to execute next.\n" +
+                          "• [Stop]: Immediately stop script execution.");
                 }
             }
 
             if (btnDelete != null)
-                RowToolTipManager.SetToolTip(btnDelete, string.Format("Delete Step #{0}:\nRemoves this step from the current script.", _index + 1));
+                RowToolTipManager.SetToolTip(btnDelete, Loc.IsVietnamese
+                    ? string.Format("Xóa Bước #{0}:\nXóa bước này khỏi script hiện tại.", _index + 1)
+                    : string.Format("Delete Step #{0}:\nRemoves this step from the current script.", _index + 1));
 
             if (txtNote != null)
-                RowToolTipManager.SetToolTip(txtNote, "Step Note:\nCustom notes or description for this specific step.");
+                RowToolTipManager.SetToolTip(txtNote, Loc.IsVietnamese
+                    ? "Ghi chú Bước:\nGhi chú tùy chỉnh hoặc mô tả cho bước này."
+                    : "Step Note:\nCustom notes or description for this specific step.");
         }
 
         private void ShowWindowSelectMenu(Control anchor)
@@ -1486,25 +1548,25 @@ namespace ModernAutoClicker.Advanced
             {
                 if (_step.ActionType == MacroActionType.IfImage)
                 {
-                    lblIfMatch.Text = "If Found:";
+                    lblIfMatch.Text = Loc.IsVietnamese ? "Nếu Thấy:" : "If Found:";
                     lblIfMatch.Location = new Point(68, 34);
                     cboIfTrue.Location = new Point(134, 31);
                     cboIfTrue.Size = new Size(106, 22);
 
-                    lblIfUnmatch.Text = "If Missing:";
+                    lblIfUnmatch.Text = Loc.IsVietnamese ? "Nếu Thiếu:" : "If Missing:";
                     lblIfUnmatch.Location = new Point(248, 34);
                     cboIfFalse.Location = new Point(320, 31);
                     cboIfFalse.Size = new Size(106, 22);
                 }
                 else
                 {
-                    lblIfMatch.Text = "Match:";
+                    lblIfMatch.Text = Loc.LblIfMatch;
                     lblIfMatch.Location = new Point(80, 34);
                     cboIfTrue.Location = new Point(124, 31);
                     cboIfTrue.Size = new Size(96, 22);
 
-                    lblIfUnmatch.Text = "Unmatch:";
-                    lblIfUnmatch.Location = new Point(228, 34);
+                    lblIfUnmatch.Text = Loc.LblIfUnmatch;
+                    lblIfUnmatch.Location = Loc.IsVietnamese ? new Point(216, 34) : new Point(228, 34);
                     cboIfFalse.Location = new Point(286, 31);
                     cboIfFalse.Size = new Size(96, 22);
                 }
@@ -1518,76 +1580,49 @@ namespace ModernAutoClicker.Advanced
                 cboIfTrue.Items.Clear();
                 cboIfFalse.Items.Clear();
 
-                string clickActionLabel = (_step.ActionType == MacroActionType.IfImage) ? "Click Center" : "Click Target";
+                string clickActionLabel = (_step.ActionType == MacroActionType.IfImage) ? Loc.JumpClickCenter : Loc.JumpClickTarget;
+                string nextStepLabel = Loc.JumpNextStep;
+                string stopLabel = Loc.JumpStop;
+
                 cboIfTrue.Items.Add(clickActionLabel);
-                cboIfTrue.Items.Add("Next Step");
+                cboIfTrue.Items.Add(nextStepLabel);
                 cboIfFalse.Items.Add(clickActionLabel);
-                cboIfFalse.Items.Add("Next Step");
+                cboIfFalse.Items.Add(nextStepLabel);
 
                 for (int i = 1; i <= maxStepNeeded; i++)
                 {
-                    string stepName = string.Format("Step {0}", i);
+                    string stepName = Loc.JumpStepFormat(i);
                     cboIfTrue.Items.Add(stepName);
                     cboIfFalse.Items.Add(stepName);
                 }
-                cboIfTrue.Items.Add("Stop");
-                cboIfFalse.Items.Add("Stop");
+                cboIfTrue.Items.Add(stopLabel);
+                cboIfFalse.Items.Add(stopLabel);
 
                 // 2. Resolve True selection (Default: Click Target / Click Center, value = -2)
-                string trueTarget;
-                if (_step.IfTrueStep == -2)
-                {
-                    trueTarget = clickActionLabel;
-                }
-                else if (_step.IfTrueStep == 0)
-                {
-                    trueTarget = "Next Step";
-                }
-                else if (_step.IfTrueStep == -1)
-                {
-                    trueTarget = "Stop";
-                }
-                else if (_step.IfTrueStep > 0)
-                {
-                    trueTarget = string.Format("Step {0}", _step.IfTrueStep);
-                }
+                int trueIdx = 0;
+                if (_step.IfTrueStep == -2) trueIdx = 0;
+                else if (_step.IfTrueStep == 0) trueIdx = 1;
+                else if (_step.IfTrueStep == -1) trueIdx = cboIfTrue.Items.Count - 1;
+                else if (_step.IfTrueStep > 0 && _step.IfTrueStep <= maxStepNeeded) trueIdx = _step.IfTrueStep + 1;
                 else
                 {
-                    // Brand new step: default to Click Target / Click Center (-2)
-                    trueTarget = clickActionLabel;
+                    trueIdx = 0;
                     _step.IfTrueStep = -2;
                 }
-
-                int trueIdx = cboIfTrue.Items.IndexOf(trueTarget);
-                cboIfTrue.SelectedIndex = trueIdx >= 0 ? trueIdx : 0;
+                cboIfTrue.SelectedIndex = (trueIdx >= 0 && trueIdx < cboIfTrue.Items.Count) ? trueIdx : 0;
 
                 // 3. Resolve False selection (Default: Next Step, value = 0)
-                string falseTarget;
-                if (_step.IfFalseStep == -2)
-                {
-                    falseTarget = clickActionLabel;
-                }
-                else if (_step.IfFalseStep == 0)
-                {
-                    falseTarget = "Next Step";
-                }
-                else if (_step.IfFalseStep == -1)
-                {
-                    falseTarget = "Stop";
-                }
-                else if (_step.IfFalseStep > 0)
-                {
-                    falseTarget = string.Format("Step {0}", _step.IfFalseStep);
-                }
+                int falseIdx = 1;
+                if (_step.IfFalseStep == -2) falseIdx = 0;
+                else if (_step.IfFalseStep == 0) falseIdx = 1;
+                else if (_step.IfFalseStep == -1) falseIdx = cboIfFalse.Items.Count - 1;
+                else if (_step.IfFalseStep > 0 && _step.IfFalseStep <= maxStepNeeded) falseIdx = _step.IfFalseStep + 1;
                 else
                 {
-                    // Brand new step: default to Next Step (0)
-                    falseTarget = "Next Step";
+                    falseIdx = 1;
                     _step.IfFalseStep = 0;
                 }
-
-                int falseIdx = cboIfFalse.Items.IndexOf(falseTarget);
-                cboIfFalse.SelectedIndex = falseIdx >= 0 ? falseIdx : 0;
+                cboIfFalse.SelectedIndex = (falseIdx >= 0 && falseIdx < cboIfFalse.Items.Count) ? falseIdx : 0;
             }
             finally
             {

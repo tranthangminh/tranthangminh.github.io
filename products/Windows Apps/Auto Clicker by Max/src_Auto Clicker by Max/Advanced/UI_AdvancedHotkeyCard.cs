@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker.Advanced
 {
@@ -25,17 +26,17 @@ namespace ModernAutoClicker.Advanced
 
             // Left Section: Hotkeys
             lblHelp1 = CreateKeyLabel("[F6]", 10, 8);
-            lblHelpVal1 = CreateTextLabel(": Start / Stop", 46, 8);
+            lblHelpVal1 = CreateTextLabel(Loc.HotkeyAdvF6, 46, 8);
 
             lblHelp2 = CreateKeyLabel("[F7]", 10, 30);
-            lblHelpVal2 = CreateTextLabel(": Stop ALL", 46, 30);
+            lblHelpVal2 = CreateTextLabel(Loc.HotkeyAdvF7, 46, 30);
 
             lblHelp3 = CreateKeyLabel("[SPACE]", 10, 52);
-            lblHelpVal3 = CreateTextLabel(": Add Step", 58, 52);
+            lblHelpVal3 = CreateTextLabel(Loc.HotkeyAdvSpace, 58, 52);
 
             // Right Section: Usage Tips
-            lblTip1 = CreateTextLabel("• Multi-select: Hold Ctrl or Shift to select rows", 146, 15);
-            lblTip2 = CreateTextLabel("• Batch edit: Click column header to edit rows", 146, 41);
+            lblTip1 = CreateTextLabel(Loc.HotkeyAdvTip1, 146, 15);
+            lblTip2 = CreateTextLabel(Loc.HotkeyAdvTip2, 146, 41);
 
             this.Controls.AddRange(new Control[] {
                 lblHelp1, lblHelpVal1,
@@ -46,6 +47,16 @@ namespace ModernAutoClicker.Advanced
 
             this.Paint += AdvancedHotkeyCard_Paint;
             ApplyTheme(theme);
+            Loc.OnLanguageChanged += ApplyLanguage;
+        }
+
+        public void ApplyLanguage()
+        {
+            if (lblHelpVal1 != null) lblHelpVal1.Text = Loc.HotkeyAdvF6;
+            if (lblHelpVal2 != null) lblHelpVal2.Text = Loc.HotkeyAdvF7;
+            if (lblHelpVal3 != null) lblHelpVal3.Text = Loc.HotkeyAdvSpace;
+            if (lblTip1 != null) lblTip1.Text = Loc.HotkeyAdvTip1;
+            if (lblTip2 != null) lblTip2.Text = Loc.HotkeyAdvTip2;
         }
 
         private void AdvancedHotkeyCard_Paint(object sender, PaintEventArgs e)

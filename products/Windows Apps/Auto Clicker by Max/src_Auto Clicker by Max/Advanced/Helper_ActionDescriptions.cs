@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker.Advanced
 {
@@ -9,6 +10,52 @@ namespace ModernAutoClicker.Advanced
         // 1. Action Type Detailed Descriptions
         public static string GetActionTypeDescription(MacroActionType type)
         {
+            if (Loc.IsVietnamese)
+            {
+                switch (type)
+                {
+                    case MacroActionType.LeftClick:
+                        return "Click Chuột Trái:\nThực hiện một cú nhấp chuột chính tại tọa độ (X, Y) được chỉ định.";
+                    case MacroActionType.RightClick:
+                        return "Click Chuột Phải:\nThực hiện một cú nhấp chuột phụ (menu ngữ cảnh) tại tọa độ (X, Y).";
+                    case MacroActionType.MiddleClick:
+                        return "Click Giữa / Cuộn Chuột:\nNhấp nút chuột giữa tại (X, Y) hoặc cuộn con lăn chuột.\n• 0: Click chuột giữa\n• Dương (+): Cuộn lên\n• Âm (-): Cuộn xuống";
+                    case MacroActionType.DoubleClick:
+                        return "Click Đúp (Nhấp Đôi):\nThực hiện nhấp đôi chuột trái nhanh tại tọa độ (X, Y).";
+                    case MacroActionType.DragDrop:
+                        return "Kéo & Thả (Drag & Drop):\nNhấp và kéo con trỏ mượt mà từ Điểm A đến Điểm B trong khoảng thời gian Giữ (Hold) đã cài đặt.";
+                    case MacroActionType.KeyPress:
+                        return "Nhấn Phím:\nNhấn một phím đơn hoặc tổ hợp phím tắt (ví dụ Space, Enter, Ctrl+C, Alt+F4) trong khoảng thời gian Giữ (Hold).";
+                    case MacroActionType.TypeText:
+                        return "Gõ Văn Bản:\nTự động gõ một chuỗi ký tự hoặc văn bản Unicode vào ô nhập liệu đang hoạt động.";
+                    case MacroActionType.Delay:
+                        return "Chờ Đợi (Delay):\nTạm dừng thực thi kịch bản (chuột đứng yên trong Hold, sau đó chờ hoặc di chuyển đến bước kế trong Delay).";
+                    case MacroActionType.WaitColor:
+                        return "Chờ Màu Xuất Hiện:\nTạm dừng thực thi cho đến khi mã màu HEX mục tiêu xuất hiện tại điểm hoặc trong vùng đã chọn (trong phạm vi sai số).";
+                    case MacroActionType.IfColor:
+                        return "Nếu Đúng Màu (Rẽ nhánh điều kiện):\n" +
+                               "Kiểm tra màu HEX mục tiêu tại điểm hoặc quét toàn bộ vùng đã chọn:\n" +
+                               "• Khớp: Hành động khi màu khớp (Click Mục tiêu, Nhảy đến bước X, hoặc Dừng).\n" +
+                               "• Không khớp: Hành động khi màu không khớp (Bước kế tiếp, Nhảy đến bước X, Dừng, hoặc Click Mục tiêu).";
+                    case MacroActionType.IfColorArea:
+                        return "Nếu Đúng Màu trong Vùng:\n" +
+                               "Quét toàn bộ vùng giới hạn (Điểm A đến Điểm B) để tìm màu mục tiêu.";
+                    case MacroActionType.WaitChange:
+                        return "Chờ Đổi Màu:\nTạm dừng thực thi cho đến khi màu pixel tại (X, Y) thay đổi so với màu ban đầu.";
+                    case MacroActionType.RunScript:
+                        return "Gọi Script Phụ:\nChạy một script tab khác đã lưu như một chương trình con với số lần lặp đã chỉ định.";
+                    case MacroActionType.WaitImage:
+                        return "Chờ Hình Ảnh:\nTạm dừng thực thi cho đến khi hình ảnh mẫu xuất hiện trong vùng tìm kiếm trong phạm vi độ tương đồng hoặc hết thời gian chờ.";
+                    case MacroActionType.IfImage:
+                        return "Nếu Thấy Hình Ảnh (Template Matching):\n" +
+                               "Tìm kiếm hình ảnh mẫu trên màn hình hoặc vùng chỉ định:\n" +
+                               "• Thấy: Hành động khi tìm thấy ảnh (Click Tâm ảnh, Nhảy đến bước X, Bước kế tiếp, hoặc Dừng).\n" +
+                               "• Không thấy: Hành động khi không tìm thấy (Bước kế tiếp, Nhảy đến bước X, hoặc Dừng).";
+                    default:
+                        return "Bước Macro: Thực hiện một hành động tự động hóa.";
+                }
+            }
+
             switch (type)
             {
                 case MacroActionType.LeftClick:
@@ -56,6 +103,28 @@ namespace ModernAutoClicker.Advanced
         // 2. Hold Duration Tooltip (Thời gian hoàn tất một Step)
         public static string GetHoldDescription(MacroActionType type)
         {
+            if (Loc.IsVietnamese)
+            {
+                switch (type)
+                {
+                    case MacroActionType.Delay:
+                        return "Giữ (ms) - Thời Gian Đứng Yên:\nKhoảng thời gian chuột giữ nguyên vị trí không di chuyển.";
+                    case MacroActionType.DragDrop:
+                        return "Giữ (ms) - Thời Gian Hoàn Tất Kéo:\nThời gian kéo mượt mà con trỏ chuột từ Điểm A đến Điểm B.";
+                    case MacroActionType.TypeText:
+                        return "Giữ (ms) - Thời Gian Hoàn Tất Gõ:\nTổng thời gian để gõ xong toàn bộ chuỗi ký tự.";
+                    case MacroActionType.KeyPress:
+                        return "Giữ (ms) - Thời Gian Nhấn Phím:\nThời gian giữ phím hoặc tổ hợp phím trước khi nhả ra.";
+                    case MacroActionType.LeftClick:
+                    case MacroActionType.RightClick:
+                    case MacroActionType.MiddleClick:
+                    case MacroActionType.DoubleClick:
+                        return "Giữ (ms) - Thời Gian Nhấn Chuột:\nThời gian nút chuột được nhấn giữ xuống trước khi nhả ra.";
+                    default:
+                        return "Giữ (ms) - Thời Gian Thực Thi:\nKhoảng thời gian để hoàn thành bước hành động này.";
+                }
+            }
+
             switch (type)
             {
                 case MacroActionType.Delay:
@@ -79,6 +148,12 @@ namespace ModernAutoClicker.Advanced
         // 3. Delay Duration Tooltip (Thời gian chờ đến step tiếp theo hoặc thời gian di chuyển chuột)
         public static string GetDelayDescription(MacroActionType type)
         {
+            if (Loc.IsVietnamese)
+            {
+                return "Chờ (ms) - Thời Gian Chờ Đến Bước Kế / Di Chuyển:\n" +
+                       "Thời gian chờ trước khi chuyển sang bước tiếp theo, hoặc thời gian chuột di chuyển mượt đến bước kế tiếp (khi bật Di chuột mượt).";
+            }
+
             return "Delay (ms) - Next Step Wait / Travel Time:\n" +
                    "Wait time before proceeding to the next step, or mouse travel duration to the next step (when Smooth Mouse Move is enabled).";
         }
@@ -86,6 +161,15 @@ namespace ModernAutoClicker.Advanced
         // 4. Repeat Count Tooltip
         public static string GetRepeatDescription(MacroActionType type)
         {
+            if (Loc.IsVietnamese)
+            {
+                if (type == MacroActionType.RunScript)
+                {
+                    return "Lặp (Số Lần Lặp):\nSố lần liên tiếp thực thi script con mục tiêu.";
+                }
+                return "Lặp (Số Lần Lặp):\nSố lần thực hiện lặp lại bước hành động này trước khi chuyển bước.";
+            }
+
             if (type == MacroActionType.RunScript)
             {
                 return "Rep (Repeat Count):\nNumber of times to execute the target sub-script consecutively.";
@@ -96,10 +180,74 @@ namespace ModernAutoClicker.Advanced
         // 5. Target / Key / Coordinate Column Tooltip
         public static string GetTargetKeyDescription(MacroStep step)
         {
-            if (step == null) return "Target:\nTarget coordinates, key shortcut, typed text, or sub-script name.";
+            if (step == null)
+            {
+                return Loc.IsVietnamese
+                    ? "Mục Tiêu:\nTọa độ mục tiêu, phím tắt, văn bản cần gõ, hoặc tên script con."
+                    : "Target:\nTarget coordinates, key shortcut, typed text, or sub-script name.";
+            }
+
             bool isArea = (step.EndPoint != Point.Empty && step.EndPoint != step.StartPoint);
             int areaW = isArea ? Math.Abs(step.EndPoint.X - step.StartPoint.X) : 0;
             int areaH = isArea ? Math.Abs(step.EndPoint.Y - step.StartPoint.Y) : 0;
+
+            if (Loc.IsVietnamese)
+            {
+                switch (step.ActionType)
+                {
+                    case MacroActionType.DragDrop:
+                        return string.Format("Đường Kéo:\nTừ Điểm A ({0}, {1}) đến Điểm B ({2}, {3}). Nhấp vào tọa độ hoặc 🎯 để chọn.",
+                            step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y);
+                    case MacroActionType.MiddleClick:
+                        if (isArea)
+                        {
+                            return string.Format("Vùng Click Giữa / Cuộn (Click Ngẫu Nhiên trong Vùng):\nVùng: ({0}, {1}) đến ({2}, {3}) [{4}×{5} px] và nấc cuộn: {6}.\n• 0: Click chuột giữa ngẫu nhiên trong vùng\n• Dương (+): Cuộn lên\n• Âm (-): Cuộn xuống\nNhấp 🎯 để chọn.",
+                                step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH, step.ScrollStep);
+                        }
+                        return string.Format("Tọa Độ & Cuộn Chuột:\nTọa độ ({0}, {1}) và nấc cuộn: {2}.\n• 0: Click chuột giữa\n• Dương (+): Cuộn lên\n• Âm (-): Cuộn xuống\nNhấp 🎯 để chọn tọa độ.",
+                            step.StartPoint.X, step.StartPoint.Y, step.ScrollStep);
+                    case MacroActionType.KeyPress:
+                        return string.Format("Phím Tắt: [{0}]\nBấm phím bất kỳ hoặc tổ hợp phím trong ô để ghi lại.",
+                            !string.IsNullOrEmpty(step.KeyData) ? step.KeyData : "Space");
+                    case MacroActionType.TypeText:
+                        return "Gõ Văn Bản:\nNhập chuỗi văn bản cần tự động gõ (hỗ trợ tiếng Việt Unicode).";
+                    case MacroActionType.Delay:
+                        return "Hành Động Chờ:\nTạm dừng thực thi (Giữ: chuột đứng yên, Chờ: chờ đến bước kế).";
+                    case MacroActionType.WaitColor:
+                    case MacroActionType.IfColor:
+                    case MacroActionType.IfColorArea:
+                        if (isArea || step.ActionType == MacroActionType.IfColorArea)
+                        {
+                            return string.Format("Tìm Màu Trong Vùng:\nVùng quét ({0}, {1}) đến ({2}, {3}) [{4}×{5} px] khớp màu HEX {6} (Sai số ±{7}). Nhấp ô màu để đổi màu, 🎯 để chọn.",
+                                step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH, step.ColorHex, step.Tolerance);
+                        }
+                        return string.Format("Kiểm Tra Màu Pixel:\nPixel ({0}, {1}) khớp màu HEX {2} (Sai số ±{3}). Nhấp ô màu để đổi màu, 🎯 để chọn.",
+                            step.StartPoint.X, step.StartPoint.Y, step.ColorHex, step.Tolerance);
+                    case MacroActionType.WaitChange:
+                        return string.Format("Theo Dõi Đổi Màu:\nQuan sát pixel ({0}, {1}) cho đến khi đổi màu so với ban đầu. Nhấp 🎯 để chọn.",
+                            step.StartPoint.X, step.StartPoint.Y);
+                    case MacroActionType.RunScript:
+                        return string.Format("Script Con: [{0}]\nChọn script tab khác để chạy lồng (script hiện tại được loại trừ).",
+                            !string.IsNullOrEmpty(step.KeyData) ? step.KeyData : "(Chưa chọn)");
+                    case MacroActionType.WaitImage:
+                    case MacroActionType.IfImage:
+                        if (isArea)
+                        {
+                            return string.Format("Tìm Hình Ảnh Trong Vùng:\nGiới hạn tìm ({0}, {1}) đến ({2}, {3}) [{4}×{5} px]. Độ khớp: {6}%. Nhấp ảnh thu nhỏ để cắt ảnh hoặc 🎯 để đặt vùng quét.",
+                                step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH, step.Similarity);
+                        }
+                        return string.Format("Tìm Hình Ảnh (Toàn Màn Hình):\nĐộ khớp: {0}%. Nhấp ảnh thu nhỏ để cắt ảnh hoặc 🎯 để giới hạn vùng tìm.",
+                            step.Similarity);
+                    default:
+                        if (isArea)
+                        {
+                            return string.Format("Mục Tiêu Vùng (Click Ngẫu Nhiên):\nVùng ({0}, {1}) đến ({2}, {3}) [{4}×{5} px]. Click ngẫu nhiên bên trong vùng mỗi lần. Nhấp 🎯 để chọn.",
+                                step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH);
+                        }
+                        return string.Format("Tọa Độ Mục Tiêu ({0}, {1}):\nNhấp vào tọa độ hoặc 🎯 để chọn với kính lúp phóng to.",
+                            step.StartPoint.X, step.StartPoint.Y);
+                }
+            }
 
             switch (step.ActionType)
             {
@@ -160,6 +308,39 @@ namespace ModernAutoClicker.Advanced
         // 6. Header Column Tooltips
         public static string GetHeaderDescription(string colName)
         {
+            if (Loc.IsVietnamese)
+            {
+                switch (colName)
+                {
+                    case "No.":
+                        return "Số Thứ Tự Bước (#):\nKéo tay cầm để sắp xếp lại thứ tự bước.\nNhấp chuột để chọn dòng (Shift+Click để chọn vùng, Ctrl+Click để chọn nhiều dòng, Ctrl+A để chọn tất cả).";
+                    case "✔":
+                        return "Bật / Tắt Tất Cả Các Bước (✔):\nNhấp tiêu đề để bật/tắt toàn bộ các bước trong script này.\n(Các bước bị tắt sẽ không chạy khi thực thi và không hiển thị trên overlay).";
+                    case "Win":
+                        return "Cửa Sổ Mục Tiêu (🪟):\nNhấp tiêu đề để gán hàng loạt Cửa sổ Mục tiêu cho các bước đang chọn (hoặc tất cả bước nếu chưa chọn dòng nào).";
+                    case "Action Type":
+                        return "Loại Hành Động:\nNhấp tiêu đề để đổi hàng loạt Loại Hành Động cho các bước đang chọn (hoặc tất cả bước nếu chưa chọn dòng nào).";
+                    case "Target":
+                        return "Tọa Độ Mục Tiêu / Phím Tắt (🎯):\nNhấp tiêu đề để chọn và gán hàng loạt Tọa Độ cho các bước đang chọn (hoặc tất cả bước nếu chưa chọn dòng nào).";
+                    case "Hold":
+                        return "Giữ (ms) - Thời Gian Hoàn Tất Bước:\n" +
+                               "Thời gian thực thi để hoàn thành bước này (ví dụ: giữ nút chuột, giữ phím, hoặc thời gian kéo chuột).\n" +
+                               "Nhấp tiêu đề để đặt hàng loạt thời gian Giữ cho các bước đã chọn.";
+                    case "Delay":
+                        return "Chờ (ms) - Thời Gian Chờ Đến Bước Kế / Di Chuyển:\n" +
+                               "Thời gian chờ trước khi chuyển sang bước tiếp theo, hoặc thời gian chuột di chuyển mượt đến bước kế tiếp (khi bật Di chuột mượt).\n" +
+                               "Nhấp tiêu đề để đặt hàng loạt thời gian Chờ cho các bước đã chọn.";
+                    case "Rep":
+                        return "Số Lần Lặp (Lặp):\nNhấp tiêu đề để đặt hàng loạt số lần Lặp cho các bước đang chọn (hoặc tất cả bước nếu chưa chọn dòng nào).";
+                    case "Del":
+                        return "Xóa Hàng Loạt (✕):\nNhấp tiêu đề để xóa hàng loạt các bước đang chọn (hoặc tất cả bước nếu chưa chọn dòng nào).";
+                    case "Note":
+                        return "Ghi Chú Hàng Loạt:\nNhấp tiêu đề để đặt ghi chú hàng loạt cho các bước đang chọn (hoặc tất cả bước nếu chưa chọn dòng nào).";
+                    default:
+                        return colName;
+                }
+            }
+
             switch (colName)
             {
                 case "No.":

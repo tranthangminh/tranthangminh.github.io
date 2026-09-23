@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker
 {
@@ -690,21 +691,29 @@ namespace ModernAutoClicker
 
             if (_currentTabIndex == 0)
             {
-                lblMainStatusInfo.Text = string.Format("{0} • Information", AppInfo.AppName);
+                lblMainStatusInfo.Text = Loc.IsVietnamese
+                    ? string.Format("{0} • Thông tin ứng dụng", AppInfo.AppName)
+                    : string.Format("{0} • Information", AppInfo.AppName);
             }
             else if (_currentTabIndex == 1)
             {
-                string modeStr = (chkFreeMouse != null && chkFreeMouse.Checked) ? "Free Mouse" : "Fixed Coordinates";
+                string modeStr = (chkFreeMouse != null && chkFreeMouse.Checked)
+                    ? (Loc.IsVietnamese ? "Chuột tự do" : "Free Mouse")
+                    : (Loc.IsVietnamese ? "Tọa độ cố định" : "Fixed Coordinates");
                 int interval = numInterval != null ? numInterval.Value : 100;
                 bool isCursor = (radModeCursor != null && radModeCursor.Checked);
                 if (isCursor)
                 {
-                    lblMainStatusInfo.Text = string.Format("Ready | Follow Cursor | Mode: {0} | Every: {1}ms", modeStr, interval);
+                    lblMainStatusInfo.Text = Loc.IsVietnamese
+                        ? string.Format("Sẵn sàng | Bám Con trỏ | Chế độ: {0} | Khoảng cách: {1}ms", modeStr, interval)
+                        : string.Format("Ready | Follow Cursor | Mode: {0} | Every: {1}ms", modeStr, interval);
                 }
                 else
                 {
                     int ptsCount = (lstPoints != null) ? lstPoints.Count : 0;
-                    lblMainStatusInfo.Text = string.Format("Ready | Mode: {0} | Every: {1}ms | Points: {2}", modeStr, interval, ptsCount);
+                    lblMainStatusInfo.Text = Loc.IsVietnamese
+                        ? string.Format("Sẵn sàng | Chế độ: {0} | Khoảng cách: {1}ms | Tọa độ: {2}", modeStr, interval, ptsCount)
+                        : string.Format("Ready | Mode: {0} | Every: {1}ms | Points: {2}", modeStr, interval, ptsCount);
                 }
             }
             else
@@ -713,6 +722,65 @@ namespace ModernAutoClicker
                 {
                     pnlTabAdvanced.UpdateStatus();
                 }
+            }
+        }
+
+        public void ApplyLanguage()
+        {
+            this.SuspendLayout();
+            try
+            {
+                // Title bar
+                if (titleBar != null) titleBar.ApplyLanguage();
+
+                // Tabs
+                if (btnTabBasic != null) btnTabBasic.Text = Loc.TabSimple;
+                if (btnTabAdvanced != null) btnTabAdvanced.Text = Loc.TabAsianMode;
+
+                // Click Mode Card
+                if (lblHeaderClickMode != null) lblHeaderClickMode.Text = Loc.HeaderClickMode;
+                if (radModePoints != null) radModePoints.Text = Loc.ModePointList;
+                if (radModeCursor != null) radModeCursor.Text = Loc.ModeFollowCursor;
+
+                // Target Window Card
+                if (lblHeaderSimpleTarget != null) lblHeaderSimpleTarget.Text = Loc.HeaderTargetWindow;
+                UpdateSimpleTargetWindowButtonDisplay();
+
+                // Click Settings Card
+                if (lblHeaderTime != null) lblHeaderTime.Text = Loc.HeaderClickSettings;
+                if (lblInterval != null) lblInterval.Text = Loc.LabelClickEvery;
+                if (lblMs != null) lblMs.Text = Loc.UnitMs;
+                if (lblSimpleLoop != null) lblSimpleLoop.Text = Loc.LabelLoops;
+                if (lblSimpleLoopHint != null) lblSimpleLoopHint.Text = Loc.LoopHintInfinite;
+                if (lblSimpleJitter != null) lblSimpleJitter.Text = Loc.LabelJitter;
+                if (lblSimpleJitterUnit != null) lblSimpleJitterUnit.Text = Loc.UnitJitterPx;
+                if (lblCurrentTimeTitle != null) lblCurrentTimeTitle.Text = Loc.LabelCurrentTime;
+                if (lblCurrentClicksTitle != null) lblCurrentClicksTitle.Text = Loc.LabelCurrentClicks;
+                if (lblClicksUnit2 != null) lblClicksUnit2.Text = Loc.UnitClicks;
+
+                // Target List Card
+                UpdatePointsHeader();
+                if (btnClearList != null) btnClearList.Text = Loc.BtnClear;
+                if (btnSaveList != null) btnSaveList.Text = Loc.BtnSave;
+                if (btnLoadList != null) btnLoadList.Text = Loc.BtnLoad;
+
+                // Action Buttons
+                UpdateStartButtonState();
+                if (btnStopAll != null) btnStopAll.Text = Loc.BtnStopAll;
+                if (btnTransformTool != null) btnTransformTool.Text = Loc.BtnTransformTool;
+
+                // Checkboxes
+                if (chkAlwaysOnTop != null) chkAlwaysOnTop.Text = Loc.ChkAlwaysOnTop;
+                if (chkShowMap != null) chkShowMap.Text = Loc.ChkShowMap;
+                if (chkFreeMouse != null) chkFreeMouse.Text = Loc.ChkFreeMouse;
+                if (chkSmoothMove != null) chkSmoothMove.Text = Loc.ChkSmoothMove;
+
+                // Status info
+                UpdateTabStatus(_isBasicTab);
+            }
+            finally
+            {
+                this.ResumeLayout();
             }
         }
 

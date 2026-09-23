@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker.Info
 {
@@ -18,6 +19,9 @@ namespace ModernAutoClicker.Info
         private LinkLabel linkWeb;
         private Label lblSupportTitle;
         private LinkLabel linkSupport;
+        private Label lblLangTitle;
+        private RoundedButton btnLangEn;
+        private RoundedButton btnLangVi;
         private Panel picLogo;
         private RoundedButton btnCheckUpdates;
         private Label lblUpdateStatus;
@@ -31,6 +35,8 @@ namespace ModernAutoClicker.Info
 
             InitializeComponents();
             ApplyTheme(_theme);
+            ApplyLanguage();
+            Loc.OnLanguageChanged += ApplyLanguage;
         }
 
         private void InitializeComponents()
@@ -193,7 +199,7 @@ namespace ModernAutoClicker.Info
             {
                 btnCheckUpdates.Enabled = false;
                 lblUpdateStatus.ForeColor = _theme.TextSecondary;
-                lblUpdateStatus.Text = "Checking for updates...";
+                lblUpdateStatus.Text = Loc.UpdateChecking;
                 UpdateChecker.CheckForUpdatesAsync(true, this.FindForm(), (res) =>
                 {
                     btnCheckUpdates.Enabled = true;
@@ -202,25 +208,25 @@ namespace ModernAutoClicker.Info
                         if (res.HasUpdate)
                         {
                             lblUpdateStatus.ForeColor = _theme.CYellow;
-                            lblUpdateStatus.Text = string.Format("New version available: v{0}!", res.RemoteVersion);
+                            lblUpdateStatus.Text = Loc.UpdateAvailable(res.RemoteVersion);
                         }
                         else
                         {
                             lblUpdateStatus.ForeColor = _theme.CGreen;
-                            lblUpdateStatus.Text = string.Format("You have the latest version (v{0}).", AppInfo.Version);
+                            lblUpdateStatus.Text = Loc.UpdateLatest(AppInfo.Version);
                         }
                     }
                     else
                     {
                         lblUpdateStatus.ForeColor = _theme.Danger;
-                        lblUpdateStatus.Text = "Check failed. No internet connection.";
+                        lblUpdateStatus.Text = Loc.UpdateFailed;
                     }
                 });
             };
 
             lblUpdateStatus = new Label
             {
-                Text = "Click above to check for updates",
+                Text = Loc.UpdateStatusHint,
                 Location = new Point(20, 374),
                 Size = new Size(348, 20),
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -228,12 +234,45 @@ namespace ModernAutoClicker.Info
                 ForeColor = _theme.TextSecondary
             };
 
+            // Language Selector Group
+            lblLangTitle = new Label
+            {
+                Text = Loc.InfoLanguageTitle,
+                Location = new Point(20, 412),
+                AutoSize = true,
+                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                ForeColor = _theme.TextSecondary
+            };
+
+            btnLangEn = new RoundedButton
+            {
+                Text = "English",
+                Location = new Point(148, 408),
+                Size = new Size(96, 28),
+                BorderRadius = _theme.RadiusSm,
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnLangEn.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.English;
+
+            btnLangVi = new RoundedButton
+            {
+                Text = "Tiếng Việt",
+                Location = new Point(252, 408),
+                Size = new Size(100, 28),
+                BorderRadius = _theme.RadiusSm,
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnLangVi.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.Vietnamese;
+
             pnlInfoCard.Controls.AddRange(new Control[] {
                 picAppIcon, lblInfoTitle, lblInfoAuthor, lblInfoContact,
                 lblFbTitle, linkFb, lblWebTitle, linkWeb,
                 lblSupportTitle, linkSupport,
                 picLogo,
-                btnCheckUpdates, lblUpdateStatus
+                btnCheckUpdates, lblUpdateStatus,
+                lblLangTitle, btnLangEn, btnLangVi
             });
 
             this.Controls.Add(pnlInfoCard);
@@ -292,6 +331,49 @@ namespace ModernAutoClicker.Info
             if (lblUpdateStatus != null)
             {
                 lblUpdateStatus.ForeColor = t.TextSecondary;
+            }
+
+            if (lblLangTitle != null) lblLangTitle.ForeColor = t.TextSecondary;
+
+            UpdateLanguageButtonsStyle();
+        }
+
+        public void ApplyLanguage()
+        {
+            if (lblInfoAuthor != null) lblInfoAuthor.Text = Loc.InfoAuthor;
+            if (lblInfoContact != null) lblInfoContact.Text = Loc.InfoContact;
+            if (lblFbTitle != null) lblFbTitle.Text = Loc.InfoFacebookTitle;
+            if (lblWebTitle != null) lblWebTitle.Text = Loc.InfoMoreProductsTitle;
+            if (lblSupportTitle != null) lblSupportTitle.Text = Loc.InfoSupportTitle;
+            if (lblLangTitle != null) lblLangTitle.Text = Loc.InfoLanguageTitle;
+            if (btnCheckUpdates != null) btnCheckUpdates.Text = Loc.BtnCheckUpdates;
+            if (lblUpdateStatus != null && lblUpdateStatus.Text.StartsWith("Click") || (lblUpdateStatus != null && lblUpdateStatus.Text.StartsWith("Bấm")))
+            {
+                lblUpdateStatus.Text = Loc.UpdateStatusHint;
+            }
+
+            UpdateLanguageButtonsStyle();
+        }
+
+        private void UpdateLanguageButtonsStyle()
+        {
+            ThemeTokens t = _theme ?? ThemeTokens.DarkTheme();
+            bool isVi = Loc.IsVietnamese;
+
+            if (btnLangEn != null)
+            {
+                btnLangEn.NormalColor = !isVi ? t.AccentPrimary : t.BgElevated;
+                btnLangEn.HoverColor = !isVi ? t.AccentPrimaryHover : t.AccentPrimary;
+                btnLangEn.ForeColor = !isVi ? Color.White : t.TextSecondary;
+                btnLangEn.Invalidate();
+            }
+
+            if (btnLangVi != null)
+            {
+                btnLangVi.NormalColor = isVi ? t.AccentPrimary : t.BgElevated;
+                btnLangVi.HoverColor = isVi ? t.AccentPrimaryHover : t.AccentPrimary;
+                btnLangVi.ForeColor = isVi ? Color.White : t.TextSecondary;
+                btnLangVi.Invalidate();
             }
         }
     }

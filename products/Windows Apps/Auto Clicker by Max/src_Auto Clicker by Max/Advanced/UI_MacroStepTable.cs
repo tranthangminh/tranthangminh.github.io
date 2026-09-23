@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker.Advanced
 {
@@ -11,6 +12,17 @@ namespace ModernAutoClicker.Advanced
         private Panel pnlScrollContainer;
         private Panel pnlContent;
         private ModernScrollBar scrollBar;
+
+        private Label _lblColNo;
+        private Label _lblColCheck;
+        private Label _lblColWin;
+        private Label _lblColAction;
+        private Label _lblColTarget;
+        private Label _lblColHold;
+        private Label _lblColDelay;
+        private Label _lblColRep;
+        private Label _lblColDel;
+        private Label _lblColNote;
 
         private int _selectedIndex = -1;
         private HashSet<int> _selectedIndices = new HashSet<int>();
@@ -108,84 +120,109 @@ namespace ModernAutoClicker.Advanced
             };
 
             int x = 2;
-            pnlHeader.Controls.Add(CreateColLabel("No.", x, 28, true, MacroDescriptions.GetHeaderDescription("No."), () => ToggleAllSelection())); x += 30;
-            pnlHeader.Controls.Add(CreateColLabel("✔", x, 18, true, MacroDescriptions.GetHeaderDescription("✔"), () => ToggleAllCheckboxes())); x += 20;
+            _lblColNo = CreateColLabel(Loc.ColNo, x, 28, true, MacroDescriptions.GetHeaderDescription("No."), () => ToggleAllSelection());
+            pnlHeader.Controls.Add(_lblColNo); x += 30;
+
+            _lblColCheck = CreateColLabel(Loc.ColCheck, x, 18, true, MacroDescriptions.GetHeaderDescription("✔"), () => ToggleAllCheckboxes());
+            pnlHeader.Controls.Add(_lblColCheck); x += 20;
             
-            Label lblWin = CreateColLabel("Win", x, 24, true, MacroDescriptions.GetHeaderDescription("Win"), null);
-            lblWin.Click += (s, e) => ShowBatchWindowMenu(lblWin);
-            pnlHeader.Controls.Add(lblWin); x += 26;
+            _lblColWin = CreateColLabel(Loc.ColWin, x, 24, true, MacroDescriptions.GetHeaderDescription("Win"), null);
+            _lblColWin.Click += (s, e) => ShowBatchWindowMenu(_lblColWin);
+            pnlHeader.Controls.Add(_lblColWin); x += 26;
 
-            Label lblAction = CreateColLabel("Action Type", x, 116, true, MacroDescriptions.GetHeaderDescription("Action Type"), null);
-            lblAction.Click += (s, e) => ShowBatchActionTypeMenu(lblAction);
-            pnlHeader.Controls.Add(lblAction); x += 118;
+            _lblColAction = CreateColLabel(Loc.ColActionType, x, 116, true, MacroDescriptions.GetHeaderDescription("Action Type"), null);
+            _lblColAction.Click += (s, e) => ShowBatchActionTypeMenu(_lblColAction);
+            pnlHeader.Controls.Add(_lblColAction); x += 118;
 
-            Label lblTarget = CreateColLabel("Target", x, 118, true, MacroDescriptions.GetHeaderDescription("Target"), () => BatchSetTargetCoordinates());
-            pnlHeader.Controls.Add(lblTarget); x += 120;
+            _lblColTarget = CreateColLabel(Loc.ColTarget, x, 118, true, MacroDescriptions.GetHeaderDescription("Target"), () => BatchSetTargetCoordinates());
+            pnlHeader.Controls.Add(_lblColTarget); x += 120;
 
-            pnlHeader.Controls.Add(CreateColLabel("Hold", x, 48, true, MacroDescriptions.GetHeaderDescription("Hold"), () =>
+            _lblColHold = CreateColLabel(Loc.ColHold, x, 48, true, MacroDescriptions.GetHeaderDescription("Hold"), () =>
             {
                 var targets = GetTargetRowsForBatch();
-                string title = targets.Count == _rows.Count ? "Batch Set Hold Duration (All Steps)" : string.Format("Batch Set Hold Duration ({0} Selected Steps)", targets.Count);
-                string prompt = string.Format("Enter Hold Duration (ms) for {0} steps:\n(Time to complete each step)", targets.Count);
+                string title = targets.Count == _rows.Count
+                    ? (Loc.IsVietnamese ? "Cài đặt hàng loạt Thời gian Giữ (Tất cả bước)" : "Batch Set Hold Duration (All Steps)")
+                    : (Loc.IsVietnamese ? string.Format("Cài đặt hàng loạt Thời gian Giữ ({0} bước đã chọn)", targets.Count) : string.Format("Batch Set Hold Duration ({0} Selected Steps)", targets.Count));
+                string prompt = Loc.IsVietnamese
+                    ? string.Format("Nhập Thời gian Giữ (ms) cho {0} bước:\n(Thời gian hoàn thành từng bước)", targets.Count)
+                    : string.Format("Enter Hold Duration (ms) for {0} steps:\n(Time to complete each step)", targets.Count);
                 PromptBatchNumber(title, prompt, 0, 999999, 10, (val) =>
                 {
                     foreach (MacroRowControl r in targets) r.UpdateHoldValue(val);
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
-            })); x += 50;
+            });
+            pnlHeader.Controls.Add(_lblColHold); x += 50;
 
-            pnlHeader.Controls.Add(CreateColLabel("Delay", x, 50, true, MacroDescriptions.GetHeaderDescription("Delay"), () =>
+            _lblColDelay = CreateColLabel(Loc.ColDelay, x, 50, true, MacroDescriptions.GetHeaderDescription("Delay"), () =>
             {
                 var targets = GetTargetRowsForBatch();
-                string title = targets.Count == _rows.Count ? "Batch Set Delay Duration (All Steps)" : string.Format("Batch Set Delay Duration ({0} Selected Steps)", targets.Count);
-                string prompt = string.Format("Enter Delay Duration (ms) for {0} steps:\n(Wait or travel time to next step)", targets.Count);
+                string title = targets.Count == _rows.Count
+                    ? (Loc.IsVietnamese ? "Cài đặt hàng loạt Thời gian Chờ (Tất cả bước)" : "Batch Set Delay Duration (All Steps)")
+                    : (Loc.IsVietnamese ? string.Format("Cài đặt hàng loạt Thời gian Chờ ({0} bước đã chọn)", targets.Count) : string.Format("Batch Set Delay Duration ({0} Selected Steps)", targets.Count));
+                string prompt = Loc.IsVietnamese
+                    ? string.Format("Nhập Thời gian Chờ (ms) cho {0} bước:\n(Thời gian chờ chuyển sang bước kế tiếp)", targets.Count)
+                    : string.Format("Enter Delay Duration (ms) for {0} steps:\n(Wait or travel time to next step)", targets.Count);
                 PromptBatchNumber(title, prompt, 0, 999999, 240, (val) =>
                 {
                     foreach (MacroRowControl r in targets) r.UpdateDelayValue(val);
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
-            })); x += 52;
+            });
+            pnlHeader.Controls.Add(_lblColDelay); x += 52;
 
-            pnlHeader.Controls.Add(CreateColLabel("Rep", x, 30, true, MacroDescriptions.GetHeaderDescription("Rep"), () =>
+            _lblColRep = CreateColLabel(Loc.ColRep, x, 30, true, MacroDescriptions.GetHeaderDescription("Rep"), () =>
             {
                 var targets = GetTargetRowsForBatch();
-                string title = targets.Count == _rows.Count ? "Batch Set Repeat Count (All Steps)" : string.Format("Batch Set Repeat Count ({0} Selected Steps)", targets.Count);
-                string prompt = string.Format("Enter Repeat Count for {0} steps:", targets.Count);
+                string title = targets.Count == _rows.Count
+                    ? (Loc.IsVietnamese ? "Cài đặt hàng loạt Số lần Lặp (Tất cả bước)" : "Batch Set Repeat Count (All Steps)")
+                    : (Loc.IsVietnamese ? string.Format("Cài đặt hàng loạt Số lần Lặp ({0} bước đã chọn)", targets.Count) : string.Format("Batch Set Repeat Count ({0} Selected Steps)", targets.Count));
+                string prompt = Loc.IsVietnamese
+                    ? string.Format("Nhập Số lần Lặp cho {0} bước:", targets.Count)
+                    : string.Format("Enter Repeat Count for {0} steps:", targets.Count);
                 PromptBatchNumber(title, prompt, 1, 999999, 1, (val) =>
                 {
                     foreach (MacroRowControl r in targets) r.UpdateRepeatValue(val);
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
-            })); x += 32;
+            });
+            pnlHeader.Controls.Add(_lblColRep); x += 32;
 
-            pnlHeader.Controls.Add(CreateColLabel("Del", x, 24, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
+            _lblColDel = CreateColLabel(Loc.ColDel, x, 24, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 if (targets == null || targets.Count == 0) return;
 
                 string confirmMsg = targets.Count == _rows.Count
-                    ? string.Format("Are you sure you want to delete ALL {0} steps in this script?", targets.Count)
-                    : string.Format("Are you sure you want to delete {0} selected step(s)?", targets.Count);
+                    ? (Loc.IsVietnamese ? string.Format("Bạn có chắc chắn muốn xóa TẤT CẢ {0} bước trong script này không?", targets.Count) : string.Format("Are you sure you want to delete ALL {0} steps in this script?", targets.Count))
+                    : (Loc.IsVietnamese ? string.Format("Bạn có chắc chắn muốn xóa {0} bước đã chọn không?", targets.Count) : string.Format("Are you sure you want to delete {0} selected step(s)?", targets.Count));
 
-                if (MessageBox.Show(this.FindForm(), confirmMsg, "Batch Delete Steps", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                string dialogTitle = Loc.IsVietnamese ? "Xóa hàng loạt Bước" : "Batch Delete Steps";
+                if (MessageBox.Show(this.FindForm(), confirmMsg, dialogTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
                     BatchDeleteRows(targets);
                 }
-            })); x += 26;
+            });
+            pnlHeader.Controls.Add(_lblColDel); x += 26;
 
-            pnlHeader.Controls.Add(CreateColLabel("Note", x, 96, true, MacroDescriptions.GetHeaderDescription("Note"), () =>
+            _lblColNote = CreateColLabel(Loc.ColNote, x, 96, true, MacroDescriptions.GetHeaderDescription("Note"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 if (targets == null || targets.Count == 0) return;
 
-                string title = targets.Count == _rows.Count ? "Batch Set Note (All Steps)" : string.Format("Batch Set Note ({0} Selected Steps)", targets.Count);
-                string prompt = string.Format("Enter custom note for {0} step(s):", targets.Count);
+                string title = targets.Count == _rows.Count
+                    ? (Loc.IsVietnamese ? "Cài đặt hàng loạt Ghi chú (Tất cả bước)" : "Batch Set Note (All Steps)")
+                    : (Loc.IsVietnamese ? string.Format("Cài đặt hàng loạt Ghi chú ({0} bước đã chọn)", targets.Count) : string.Format("Batch Set Note ({0} Selected Steps)", targets.Count));
+                string prompt = Loc.IsVietnamese
+                    ? string.Format("Nhập ghi chú tùy chỉnh cho {0} bước:", targets.Count)
+                    : string.Format("Enter custom note for {0} step(s):", targets.Count);
                 PromptBatchText(title, prompt, "", (val) =>
                 {
                     foreach (MacroRowControl r in targets) r.UpdateNoteValue(val);
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
-            }));
+            });
+            pnlHeader.Controls.Add(_lblColNote);
 
             // 2. Viewport & Scrollable Content (AutoScroll = false to avoid default white OS scrollbars)
             pnlScrollContainer = new Panel
@@ -312,7 +349,7 @@ namespace ModernAutoClicker.Advanced
             menu.Renderer = new ModernMenuRenderer(_theme);
             menu.ShowImageMargin = true;
 
-            ToolStripMenuItem itemDesktop = new ToolStripMenuItem("All Screens (Desktop)");
+            ToolStripMenuItem itemDesktop = new ToolStripMenuItem(Loc.IsVietnamese ? "Toàn màn hình (Desktop)" : "All Screens (Desktop)");
             itemDesktop.Image = IconCache.DesktopIcon;
             itemDesktop.Click += (s, e) =>
             {
@@ -329,7 +366,7 @@ namespace ModernAutoClicker.Advanced
             var windows = NativeMethods.GetOpenWindows();
             if (windows.Count == 0)
             {
-                var itemEmpty = new ToolStripMenuItem("(No open windows detected)");
+                var itemEmpty = new ToolStripMenuItem(Loc.IsVietnamese ? "(Không phát hiện cửa sổ đang mở)" : "(No open windows detected)");
                 itemEmpty.Enabled = false;
                 menu.Items.Add(itemEmpty);
             }
@@ -369,26 +406,28 @@ namespace ModernAutoClicker.Advanced
             menu.Renderer = new ModernMenuRenderer(_theme);
             menu.ShowImageMargin = true;
 
-            string[] names = new string[]
+            MacroActionType[] types = new MacroActionType[]
             {
-                "Left Click",
-                "Right Click",
-                "Middle Click",
-                "Double Click",
-                "Drag & Drop",
-                "Key Press",
-                "Type Text",
-                "Delay",
-                "Wait Color",
-                "If Color",
-                "Wait Change",
-                "Run Script"
+                MacroActionType.LeftClick,
+                MacroActionType.RightClick,
+                MacroActionType.MiddleClick,
+                MacroActionType.DoubleClick,
+                MacroActionType.DragDrop,
+                MacroActionType.KeyPress,
+                MacroActionType.TypeText,
+                MacroActionType.Delay,
+                MacroActionType.WaitColor,
+                MacroActionType.IfColor,
+                MacroActionType.WaitImage,
+                MacroActionType.IfImage,
+                MacroActionType.WaitChange,
+                MacroActionType.RunScript
             };
 
-            for (int i = 0; i < names.Length; i++)
+            for (int i = 0; i < types.Length; i++)
             {
-                MacroActionType actionType = (MacroActionType)i;
-                ToolStripMenuItem item = new ToolStripMenuItem(names[i]);
+                MacroActionType actionType = types[i];
+                ToolStripMenuItem item = new ToolStripMenuItem(Loc.GetActionTypeName(actionType));
                 item.ForeColor = MacroRowControl.GetActionTypeColor(actionType, _theme);
                 item.Click += (s, e) =>
                 {
@@ -1256,6 +1295,86 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
+        public void ApplyLanguage()
+        {
+            if (_lblColNo != null)
+            {
+                _lblColNo.Text = Loc.ColNo;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColNo, MacroDescriptions.GetHeaderDescription("No."));
+            }
+            if (_lblColCheck != null)
+            {
+                _lblColCheck.Text = Loc.ColCheck;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColCheck, MacroDescriptions.GetHeaderDescription("✔"));
+            }
+            if (_lblColWin != null)
+            {
+                _lblColWin.Text = Loc.ColWin;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColWin, MacroDescriptions.GetHeaderDescription("Win"));
+            }
+            if (_lblColAction != null)
+            {
+                _lblColAction.Text = Loc.ColActionType;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColAction, MacroDescriptions.GetHeaderDescription("Action Type"));
+            }
+            if (_lblColTarget != null)
+            {
+                _lblColTarget.Text = Loc.ColTarget;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColTarget, MacroDescriptions.GetHeaderDescription("Target"));
+            }
+            if (_lblColHold != null)
+            {
+                _lblColHold.Text = Loc.ColHold;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColHold, MacroDescriptions.GetHeaderDescription("Hold"));
+            }
+            if (_lblColDelay != null)
+            {
+                _lblColDelay.Text = Loc.ColDelay;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColDelay, MacroDescriptions.GetHeaderDescription("Delay"));
+            }
+            if (_lblColRep != null)
+            {
+                _lblColRep.Text = Loc.ColRep;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColRep, MacroDescriptions.GetHeaderDescription("Rep"));
+            }
+            if (_lblColDel != null)
+            {
+                _lblColDel.Text = Loc.ColDel;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColDel, MacroDescriptions.GetHeaderDescription("Del"));
+            }
+            if (_lblColNote != null)
+            {
+                _lblColNote.Text = Loc.ColNote;
+                if (_headerToolTip != null) _headerToolTip.SetToolTip(_lblColNote, MacroDescriptions.GetHeaderDescription("Note"));
+            }
+
+            // Freeze redraw to avoid any flicker when updating all rows
+            bool handleCreated = pnlContent != null && pnlContent.IsHandleCreated;
+            if (handleCreated)
+            {
+                NativeMethods.SendMessage(pnlContent.Handle, NativeMethods.WM_SETREDRAW, (IntPtr)0, IntPtr.Zero);
+            }
+            try
+            {
+                foreach (MacroRowControl r in _rows)
+                {
+                    r.ApplyLanguage();
+                }
+                foreach (MacroRowControl r in _rowPool)
+                {
+                    r.ApplyLanguage();
+                }
+            }
+            finally
+            {
+                if (handleCreated)
+                {
+                    NativeMethods.SendMessage(pnlContent.Handle, NativeMethods.WM_SETREDRAW, (IntPtr)1, IntPtr.Zero);
+                    pnlContent.Invalidate(true);
+                }
+            }
+        }
+
         private void ReorderRows()
         {
             pnlContent.SuspendLayout();
@@ -1478,7 +1597,7 @@ namespace ModernAutoClicker.Advanced
 
             btnApply = new RoundedButton
             {
-                Text = "Apply All",
+                Text = Loc.IsVietnamese ? "Áp dụng" : "Apply All",
                 Location = new Point(20, 78),
                 Size = new Size(108, 28),
                 BorderRadius = theme.RadiusMd,
@@ -1503,7 +1622,7 @@ namespace ModernAutoClicker.Advanced
 
             btnCancel = new RoundedButton
             {
-                Text = "Cancel",
+                Text = Loc.IsVietnamese ? "Hủy" : "Cancel",
                 Location = new Point(136, 78),
                 Size = new Size(108, 28),
                 BorderRadius = theme.RadiusMd,
@@ -1572,7 +1691,7 @@ namespace ModernAutoClicker.Advanced
 
             btnApply = new RoundedButton
             {
-                Text = "Apply All",
+                Text = Loc.IsVietnamese ? "Áp dụng" : "Apply All",
                 Location = new Point(20, 78),
                 Size = new Size(128, 28),
                 BorderRadius = theme.RadiusMd,
@@ -1590,7 +1709,7 @@ namespace ModernAutoClicker.Advanced
 
             btnCancel = new RoundedButton
             {
-                Text = "Cancel",
+                Text = Loc.IsVietnamese ? "Hủy" : "Cancel",
                 Location = new Point(156, 78),
                 Size = new Size(128, 28),
                 BorderRadius = theme.RadiusMd,

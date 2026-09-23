@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker
 {
@@ -21,13 +22,13 @@ namespace ModernAutoClicker
             this.Size = new Size(224, 74);
 
             lblHelp1 = CreateKeyLabel("[F6]", 8, 8);
-            lblHelpVal1 = CreateTextLabel(": Start / Stop (Active)", 54, 8);
+            lblHelpVal1 = CreateTextLabel(Loc.HotkeySimpleF6, 54, 8);
 
             lblHelp2 = CreateKeyLabel("[F7]", 8, 30);
-            lblHelpVal2 = CreateTextLabel(": Stop ALL", 54, 30);
+            lblHelpVal2 = CreateTextLabel(Loc.HotkeySimpleF7, 54, 30);
 
             lblHelp3 = CreateKeyLabel("[SPACE]", 8, 52);
-            lblHelpVal3 = CreateTextLabel(": Add Point", 64, 52);
+            lblHelpVal3 = CreateTextLabel(Loc.HotkeySimpleSpace, 64, 52);
 
             this.Controls.AddRange(new Control[] {
                 lblHelp1, lblHelpVal1,
@@ -36,6 +37,14 @@ namespace ModernAutoClicker
             });
 
             ApplyTheme(theme);
+            Loc.OnLanguageChanged += ApplyLanguage;
+        }
+
+        public void ApplyLanguage()
+        {
+            if (lblHelpVal1 != null) lblHelpVal1.Text = Loc.HotkeySimpleF6;
+            if (lblHelpVal2 != null) lblHelpVal2.Text = Loc.HotkeySimpleF7;
+            if (lblHelpVal3 != null) lblHelpVal3.Text = Loc.HotkeySimpleSpace;
         }
 
         private Label CreateKeyLabel(string text, int x, int y)

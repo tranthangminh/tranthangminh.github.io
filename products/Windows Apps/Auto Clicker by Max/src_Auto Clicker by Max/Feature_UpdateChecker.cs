@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker
 {
@@ -121,16 +122,20 @@ namespace ModernAutoClicker
                                 if (result.Success && !result.HasUpdate)
                                 {
                                     MessageBox.Show(ownerForm,
-                                        string.Format("You are running the latest version (v{0}).\nNo updates found.", AppInfo.Version),
-                                        "Auto Clicker - Up to Date",
+                                        Loc.IsVietnamese
+                                            ? string.Format("Bạn đang chạy phiên bản mới nhất (v{0}).\nKhông tìm thấy bản cập nhật mới nào.", AppInfo.Version)
+                                            : string.Format("You are running the latest version (v{0}).\nNo updates found.", AppInfo.Version),
+                                        Loc.IsVietnamese ? "Auto Clicker - Đã Cập Nhật" : "Auto Clicker - Up to Date",
                                         MessageBoxButtons.OK,
                                         MessageBoxIcon.Information);
                                 }
                                 else if (!result.Success)
                                 {
                                     MessageBox.Show(ownerForm,
-                                        "Unable to check for updates.\nPlease check your internet connection and try again.\n\nDetails: " + result.ErrorMessage,
-                                        "Check for Updates",
+                                        Loc.IsVietnamese
+                                            ? "Không thể kiểm tra cập nhật.\nVui lòng kiểm tra kết nối mạng và thử lại.\n\nChi tiết: " + result.ErrorMessage
+                                            : "Unable to check for updates.\nPlease check your internet connection and try again.\n\nDetails: " + result.ErrorMessage,
+                                        Loc.IsVietnamese ? "Kiểm tra Cập nhật" : "Check for Updates",
                                         MessageBoxButtons.OK,
                                         MessageBoxIcon.Warning);
                                 }
@@ -193,7 +198,7 @@ namespace ModernAutoClicker
 
             using (Form dlg = new Form())
             {
-                dlg.Text = "Update Available";
+                dlg.Text = Loc.DialogUpdateTitle;
                 dlg.FormBorderStyle = FormBorderStyle.FixedDialog;
                 dlg.MaximizeBox = false;
                 dlg.MinimizeBox = false;
@@ -205,7 +210,7 @@ namespace ModernAutoClicker
 
                 Label lblHeader = new Label
                 {
-                    Text = "🚀 New Version Available!",
+                    Text = Loc.IsVietnamese ? "🚀 Đã Có Phiên Bản Mới!" : "🚀 New Version Available!",
                     Location = new Point(20, 18),
                     AutoSize = true,
                     Font = ThemeTokens.FontSegoe(13F, FontStyle.Bold),
@@ -214,7 +219,9 @@ namespace ModernAutoClicker
 
                 Label lblDesc = new Label
                 {
-                    Text = string.Format("A new version (v{0}) of Auto Clicker by Max is now available!\nYour current version is v{1}.\n\nWould you like to visit the website to download it now?", newVersion, AppInfo.Version),
+                    Text = Loc.IsVietnamese
+                        ? string.Format("Đã có phiên bản mới (v{0}) của Auto Clicker by Max!\nPhiên bản hiện tại của bạn là v{1}.\n\nBạn có muốn mở trang web để tải về ngay bây giờ không?", newVersion, AppInfo.Version)
+                        : string.Format("A new version (v{0}) of Auto Clicker by Max is now available!\nYour current version is v{1}.\n\nWould you like to visit the website to download it now?", newVersion, AppInfo.Version),
                     Location = new Point(20, 48),
                     Size = new Size(340, 68),
                     Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Regular),
@@ -223,7 +230,7 @@ namespace ModernAutoClicker
 
                 RoundedButton btnDownload = new RoundedButton
                 {
-                    Text = "Update Now",
+                    Text = Loc.DialogBtnUpdateNow,
                     Location = new Point(140, 130),
                     Size = new Size(110, 32),
                     BorderRadius = theme.RadiusMd,
@@ -244,7 +251,7 @@ namespace ModernAutoClicker
 
                 RoundedButton btnLater = new RoundedButton
                 {
-                    Text = "Later",
+                    Text = Loc.DialogBtnLater,
                     Location = new Point(260, 130),
                     Size = new Size(100, 32),
                     BorderRadius = theme.RadiusMd,

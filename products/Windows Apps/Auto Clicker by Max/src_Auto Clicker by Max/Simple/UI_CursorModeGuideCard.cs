@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker.Simple
 {
@@ -26,7 +27,7 @@ namespace ModernAutoClicker.Simple
             // 1. Warning Badge
             lblBadge = new Label
             {
-                Text = "⚠ CAUTION",
+                Text = Loc.CursorGuideBadge,
                 Location = new Point(8, 12),
                 Size = new Size(152, 20),
                 Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
@@ -36,7 +37,7 @@ namespace ModernAutoClicker.Simple
             // 2. Mode Title
             lblTitle = new Label
             {
-                Text = "Follow Cursor Mode",
+                Text = Loc.CursorGuideTitle,
                 Location = new Point(8, 36),
                 Size = new Size(152, 20),
                 Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
@@ -46,7 +47,7 @@ namespace ModernAutoClicker.Simple
             // 3. Warning Description
             lblDesc = new Label
             {
-                Text = "Clicks continuously wherever your mouse moves.\n\nOnce started, clicking the Stop button with the mouse will be nearly impossible!",
+                Text = Loc.CursorGuideDesc,
                 Location = new Point(8, 62),
                 Size = new Size(152, 95),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular),
@@ -64,7 +65,7 @@ namespace ModernAutoClicker.Simple
 
             lblHotkeyKey = new Label
             {
-                Text = "KEEP F6 READY",
+                Text = Loc.CursorGuideHotkeyKey,
                 Location = new Point(4, 8),
                 Size = new Size(144, 18),
                 Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
@@ -73,7 +74,7 @@ namespace ModernAutoClicker.Simple
 
             lblHotkeyDesc = new Label
             {
-                Text = "Always press [F6] on your keyboard to Stop anytime.",
+                Text = Loc.CursorGuideHotkeyDesc,
                 Location = new Point(6, 28),
                 Size = new Size(140, 36),
                 Font = ThemeTokens.FontSegoe(10F, FontStyle.Regular),
@@ -85,7 +86,7 @@ namespace ModernAutoClicker.Simple
             // 5. Bottom Tip
             lblTip = new Label
             {
-                Text = "• Move mouse freely.\n• Interval timer applies.",
+                Text = Loc.CursorGuideTip,
                 Location = new Point(8, 244),
                 Size = new Size(152, 48),
                 Font = ThemeTokens.FontSegoe(10F, FontStyle.Regular),
@@ -98,6 +99,17 @@ namespace ModernAutoClicker.Simple
             });
 
             ApplyTheme(theme);
+            Loc.OnLanguageChanged += ApplyLanguage;
+        }
+
+        public void ApplyLanguage()
+        {
+            if (lblBadge != null) lblBadge.Text = Loc.CursorGuideBadge;
+            if (lblTitle != null) lblTitle.Text = Loc.CursorGuideTitle;
+            if (lblDesc != null) lblDesc.Text = Loc.CursorGuideDesc;
+            if (lblHotkeyKey != null) lblHotkeyKey.Text = Loc.CursorGuideHotkeyKey;
+            if (lblHotkeyDesc != null) lblHotkeyDesc.Text = Loc.CursorGuideHotkeyDesc;
+            if (lblTip != null) lblTip.Text = Loc.CursorGuideTip;
         }
 
         public void ApplyTheme(ThemeTokens t)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker.Advanced
 {
@@ -84,13 +85,28 @@ namespace ModernAutoClicker.Advanced
             this.Size = new Size(590, 482);
             this.BorderRadius = _theme.RadiusMd;
             this.BorderSize = 1;
-            this.DoubleBuffered = true;
-
             _vfxOverdrive = new VFX_AsianDragonOverdrive();
             _vfxOverdrive.Attach(this);
 
             InitializeComponents();
             ApplyTheme(_theme);
+            ApplyLanguage();
+            Loc.OnLanguageChanged += ApplyLanguage;
+        }
+
+        public void ApplyLanguage()
+        {
+            if (btnAddStep != null) btnAddStep.Text = Loc.AdvBtnAddStep;
+            if (btnCloneSelected != null) btnCloneSelected.Text = Loc.AdvBtnClone;
+            if (btnSaveProfile != null) btnSaveProfile.Text = Loc.AdvBtnSave;
+            if (btnLoadProfile != null) btnLoadProfile.Text = Loc.AdvBtnLoad;
+            if (btnClearAll != null) btnClearAll.Text = Loc.AdvBtnClear;
+            if (btnTemplate != null) btnTemplate.Text = Loc.AdvBtnTemplate;
+            if (lblLoop != null) lblLoop.Text = Loc.AdvLblLoop;
+            if (lblRandJitter != null) lblRandJitter.Text = Loc.AdvLblJitter;
+            if (lblRandInterval != null) lblRandInterval.Text = Loc.AdvLblInterval;
+
+            if (tableControl != null) tableControl.ApplyLanguage();
         }
 
         private void EnsureProfileExists()

@@ -83,9 +83,9 @@ for /d %%D in ("%~dp0src_*") do (
     :: Compile source files recursively (/nologo suppresses compiler banner)
     echo [*] Compiling source code...
     if exist "%%D\app.ico" (
-        "%CSC%" /nologo /target:winexe /optimize+ /win32icon:"%%D\app.ico" !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! /recurse:"%%D\*.cs"
+        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /utf8output /win32icon:"%%D\app.ico" !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! /recurse:"%%D\*.cs"
     ) else (
-        "%CSC%" /nologo /target:winexe /optimize+ !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! /recurse:"%%D\*.cs"
+        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /utf8output !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! /recurse:"%%D\*.cs"
     )
 
     if !ERRORLEVEL! equ 0 (
