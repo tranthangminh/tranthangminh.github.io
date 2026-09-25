@@ -23,7 +23,7 @@ namespace ModernAutoClicker.Advanced
                     case MacroActionType.DoubleClick:
                         return "Click Đúp (Nhấp Đôi):\nThực hiện nhấp đôi chuột trái nhanh tại tọa độ (X, Y).";
                     case MacroActionType.DragDrop:
-                        return "Kéo & Thả (Drag & Drop):\nNhấp và kéo con trỏ mượt mà từ Điểm A đến Điểm B trong khoảng thời gian Giữ (Hold) đã cài đặt.";
+                        return "Kéo và Thả (Drag n Drop):\nNhấp và kéo con trỏ mượt mà từ Điểm A đến Điểm B trong khoảng thời gian Giữ (Hold) đã cài đặt.";
                     case MacroActionType.KeyPress:
                         return "Nhấn Phím:\nNhấn một phím đơn hoặc tổ hợp phím tắt (ví dụ Space, Enter, Ctrl+C, Alt+F4) trong khoảng thời gian Giữ (Hold).";
                     case MacroActionType.TypeText:
@@ -67,7 +67,7 @@ namespace ModernAutoClicker.Advanced
                 case MacroActionType.DoubleClick:
                     return "Double Click:\nPerforms a rapid double left-click at the specified (X, Y) coordinates.";
                 case MacroActionType.DragDrop:
-                    return "Drag & Drop:\nSmoothly clicks and drags cursor from Point A to Point B over the configured Hold duration.";
+                    return "Drag n Drop:\nSmoothly clicks and drags cursor from Point A to Point B over the configured Hold duration.";
                 case MacroActionType.KeyPress:
                     return "Key Press:\nPresses a single key or shortcut combination (e.g. Space, Enter, Ctrl+C, Alt+F4) for Hold ms.";
                 case MacroActionType.TypeText:
@@ -85,7 +85,7 @@ namespace ModernAutoClicker.Advanced
                     return "If Color Area:\n" +
                            "Scans the bounding box area (Point A to Point B) for the target color.";
                 case MacroActionType.WaitChange:
-                    return "Wait Change:\nPauses execution until the pixel color at (X, Y) changes from its initial color.";
+                    return "Wait Color Change:\nPauses execution until the pixel color at (X, Y) changes from its initial color.";
                 case MacroActionType.RunScript:
                     return "Run Script:\nExecutes another saved script tab as a sub-routine for the specified repeat count.";
                 case MacroActionType.WaitImage:

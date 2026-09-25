@@ -150,12 +150,12 @@ namespace ModernAutoClicker.Advanced
             btnTemplate.Click += (s, e) => ShowTemplateMenu();
 
             // 2. Top Toolbar (Y = 36, Height = 24)
-            int x = 8;
+            // Left Side: Step-level operations
             btnAddStep = new RoundedButton
             {
                 Text = "➕ Add Step",
-                Location = new Point(x, 36),
-                Size = new Size(92, 24),
+                Location = new Point(8, 36),
+                Size = new Size(96, 24),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnAddStep.Click += (s, e) =>
@@ -174,13 +174,12 @@ namespace ModernAutoClicker.Advanced
                 tableControl.AddStep(step);
                 UpdateStatus();
             };
-            x += 96;
 
             btnCloneSelected = new RoundedButton
             {
-                Text = "Clone",
-                Location = new Point(x, 36),
-                Size = new Size(56, 24),
+                Text = "Clone Step(s)",
+                Location = new Point(110, 36),
+                Size = new Size(112, 24),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnCloneSelected.Click += (s, e) =>
@@ -188,33 +187,12 @@ namespace ModernAutoClicker.Advanced
                 tableControl.DuplicateSelectedSteps();
                 UpdateStatus();
             };
-            x += 60;
-
-            btnSaveProfile = new RoundedButton
-            {
-                Text = "Save",
-                Location = new Point(x, 36),
-                Size = new Size(50, 24),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
-            };
-            btnSaveProfile.Click += (s, e) => SaveProfile();
-            x += 54;
-
-            btnLoadProfile = new RoundedButton
-            {
-                Text = "Load",
-                Location = new Point(x, 36),
-                Size = new Size(50, 24),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
-            };
-            btnLoadProfile.Click += (s, e) => LoadProfile();
-            x += 54;
 
             btnClearAll = new RoundedButton
             {
-                Text = "Clear",
-                Location = new Point(x, 36),
-                Size = new Size(50, 24),
+                Text = "Clear All Steps",
+                Location = new Point(228, 36),
+                Size = new Size(116, 24),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnClearAll.Click += (s, e) =>
@@ -222,7 +200,25 @@ namespace ModernAutoClicker.Advanced
                 tableControl.ClearAll();
                 UpdateStatus();
             };
-            x += 54;
+
+            // Right Side: Script file operations (aligned with Template button above)
+            btnSaveProfile = new RoundedButton
+            {
+                Text = "Save Script",
+                Location = new Point(400, 36),
+                Size = new Size(88, 24),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+            };
+            btnSaveProfile.Click += (s, e) => SaveProfile();
+
+            btnLoadProfile = new RoundedButton
+            {
+                Text = "Load Script",
+                Location = new Point(494, 36),
+                Size = new Size(88, 24),
+                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+            };
+            btnLoadProfile.Click += (s, e) => LoadProfile();
 
             // 3. Shared Macro Table Control (Y = 64, Height = 382)
             tableControl = new MacroTableControl

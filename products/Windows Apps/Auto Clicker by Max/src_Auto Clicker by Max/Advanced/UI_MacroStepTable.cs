@@ -120,24 +120,24 @@ namespace ModernAutoClicker.Advanced
             };
 
             int x = 2;
-            _lblColNo = CreateColLabel(Loc.ColNo, x, 28, true, MacroDescriptions.GetHeaderDescription("No."), () => ToggleAllSelection());
-            pnlHeader.Controls.Add(_lblColNo); x += 30;
+            _lblColNo = CreateColLabel(Loc.ColNo, x, 36, true, MacroDescriptions.GetHeaderDescription("No."), () => ToggleAllSelection());
+            pnlHeader.Controls.Add(_lblColNo); x += 38;
 
-            _lblColCheck = CreateColLabel(Loc.ColCheck, x, 18, true, MacroDescriptions.GetHeaderDescription("✔"), () => ToggleAllCheckboxes());
-            pnlHeader.Controls.Add(_lblColCheck); x += 20;
+            _lblColCheck = CreateColLabel(Loc.ColCheck, x, 20, true, MacroDescriptions.GetHeaderDescription("✔"), () => ToggleAllCheckboxes());
+            pnlHeader.Controls.Add(_lblColCheck); x += 22;
             
-            _lblColWin = CreateColLabel(Loc.ColWin, x, 24, true, MacroDescriptions.GetHeaderDescription("Win"), null);
+            _lblColWin = CreateColLabel(Loc.ColWin, x, 34, true, MacroDescriptions.GetHeaderDescription("Win"), null);
             _lblColWin.Click += (s, e) => ShowBatchWindowMenu(_lblColWin);
-            pnlHeader.Controls.Add(_lblColWin); x += 26;
+            pnlHeader.Controls.Add(_lblColWin); x += 36;
 
-            _lblColAction = CreateColLabel(Loc.ColActionType, x, 116, true, MacroDescriptions.GetHeaderDescription("Action Type"), null);
+            _lblColAction = CreateColLabel(Loc.ColActionType, x, 114, true, MacroDescriptions.GetHeaderDescription("Action Type"), null);
             _lblColAction.Click += (s, e) => ShowBatchActionTypeMenu(_lblColAction);
-            pnlHeader.Controls.Add(_lblColAction); x += 118;
+            pnlHeader.Controls.Add(_lblColAction); x += 116;
 
-            _lblColTarget = CreateColLabel(Loc.ColTarget, x, 118, true, MacroDescriptions.GetHeaderDescription("Target"), () => BatchSetTargetCoordinates());
-            pnlHeader.Controls.Add(_lblColTarget); x += 120;
+            _lblColTarget = CreateColLabel(Loc.ColTarget, x, 114, true, MacroDescriptions.GetHeaderDescription("Target"), () => BatchSetTargetCoordinates());
+            pnlHeader.Controls.Add(_lblColTarget); x += 116;
 
-            _lblColHold = CreateColLabel(Loc.ColHold, x, 48, true, MacroDescriptions.GetHeaderDescription("Hold"), () =>
+            _lblColHold = CreateColLabel(Loc.ColHold, x, 46, true, MacroDescriptions.GetHeaderDescription("Hold"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 string title = targets.Count == _rows.Count
@@ -152,9 +152,9 @@ namespace ModernAutoClicker.Advanced
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
             });
-            pnlHeader.Controls.Add(_lblColHold); x += 50;
+            pnlHeader.Controls.Add(_lblColHold); x += 48;
 
-            _lblColDelay = CreateColLabel(Loc.ColDelay, x, 50, true, MacroDescriptions.GetHeaderDescription("Delay"), () =>
+            _lblColDelay = CreateColLabel(Loc.ColDelay, x, 48, true, MacroDescriptions.GetHeaderDescription("Delay"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 string title = targets.Count == _rows.Count
@@ -169,7 +169,7 @@ namespace ModernAutoClicker.Advanced
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
             });
-            pnlHeader.Controls.Add(_lblColDelay); x += 52;
+            pnlHeader.Controls.Add(_lblColDelay); x += 50;
 
             _lblColRep = CreateColLabel(Loc.ColRep, x, 30, true, MacroDescriptions.GetHeaderDescription("Rep"), () =>
             {
@@ -188,7 +188,7 @@ namespace ModernAutoClicker.Advanced
             });
             pnlHeader.Controls.Add(_lblColRep); x += 32;
 
-            _lblColDel = CreateColLabel(Loc.ColDel, x, 24, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
+            _lblColDel = CreateColLabel(Loc.ColDel, x, 34, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 if (targets == null || targets.Count == 0) return;
@@ -203,9 +203,9 @@ namespace ModernAutoClicker.Advanced
                     BatchDeleteRows(targets);
                 }
             });
-            pnlHeader.Controls.Add(_lblColDel); x += 26;
+            pnlHeader.Controls.Add(_lblColDel); x += 36;
 
-            _lblColNote = CreateColLabel(Loc.ColNote, x, 96, true, MacroDescriptions.GetHeaderDescription("Note"), () =>
+            _lblColNote = CreateColLabel(Loc.ColNote, x, 72, true, MacroDescriptions.GetHeaderDescription("Note"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 if (targets == null || targets.Count == 0) return;
@@ -416,11 +416,9 @@ namespace ModernAutoClicker.Advanced
                 MacroActionType.KeyPress,
                 MacroActionType.TypeText,
                 MacroActionType.Delay,
-                MacroActionType.WaitColor,
                 MacroActionType.IfColor,
-                MacroActionType.WaitImage,
-                MacroActionType.IfImage,
                 MacroActionType.WaitChange,
+                MacroActionType.IfImage,
                 MacroActionType.RunScript
             };
 

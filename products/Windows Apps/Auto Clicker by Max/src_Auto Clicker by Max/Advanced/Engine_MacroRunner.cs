@@ -347,6 +347,11 @@ namespace ModernAutoClicker.Advanced
 
                     targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;
                 }
+                else if (jumpAction == -3)
+                {
+                    // Repeat this Step: loop back to current step i
+                    targetIdx = i;
+                }
                 else if (jumpAction > 0)
                 {
                     targetIdx = jumpAction - 1;
@@ -392,8 +397,13 @@ namespace ModernAutoClicker.Advanced
                 }
                 else
                 {
-                    // Unmatched: zero delay to enable instant reaction times; sleep 1ms only at end of loop
-                    if (targetIdx == 0 && _isRunning)
+                    // Unmatched
+                    if (jumpAction == -3)
+                    {
+                        int repDelay = step.DelayMs > 0 ? ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs) : 20;
+                        if (repDelay > 0 && _isRunning) Thread.Sleep(repDelay);
+                    }
+                    else if (targetIdx == 0 && _isRunning)
                     {
                         Thread.Sleep(1);
                     }
@@ -485,6 +495,11 @@ namespace ModernAutoClicker.Advanced
 
                     targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;
                 }
+                else if (jumpAction == -3)
+                {
+                    // Repeat this Step: loop back to current step i
+                    targetIdx = i;
+                }
                 else if (jumpAction > 0)
                 {
                     targetIdx = jumpAction - 1;
@@ -505,7 +520,12 @@ namespace ModernAutoClicker.Advanced
                 }
                 else
                 {
-                    if (targetIdx == 0 && _isRunning)
+                    if (jumpAction == -3)
+                    {
+                        int repDelay = step.DelayMs > 0 ? ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs) : 20;
+                        if (repDelay > 0 && _isRunning) Thread.Sleep(repDelay);
+                    }
+                    else if (targetIdx == 0 && _isRunning)
                     {
                         Thread.Sleep(1);
                     }

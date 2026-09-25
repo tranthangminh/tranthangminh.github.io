@@ -68,6 +68,7 @@ namespace ModernAutoClicker
         public string AdvancedProfileJson { get; set; }
         public string LastUpdateCheckDate { get; set; }
         public string Language { get; set; }
+        public bool IsFirstRun { get; set; }
 
         public int ActiveSimpleTabIndex { get; set; }
         public List<SimpleProfileConfig> SimpleProfiles { get; set; }
@@ -175,6 +176,7 @@ namespace ModernAutoClicker
 
             if (!File.Exists(path))
             {
+                settings.IsFirstRun = true;
                 return settings;
             }
 

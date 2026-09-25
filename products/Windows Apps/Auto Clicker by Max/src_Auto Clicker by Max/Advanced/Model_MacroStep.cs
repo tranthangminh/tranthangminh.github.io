@@ -106,7 +106,7 @@ namespace ModernAutoClicker.Advanced
             ColorHex = "#00FF00";
             Tolerance = 10;
             IfTrueStep = -2; // Default: Click Target
-            IfFalseStep = 0;  // Default: Next Step
+            IfFalseStep = -3; // Default: Repeat this Step
             WindowHwnd = IntPtr.Zero;
             WindowTitle = "";
             ProcessName = "";

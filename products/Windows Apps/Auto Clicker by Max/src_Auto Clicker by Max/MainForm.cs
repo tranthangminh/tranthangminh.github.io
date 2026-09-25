@@ -102,6 +102,7 @@ namespace ModernAutoClicker
         private UnfocusClickFilter _unfocusFilter;
         private ToolTip _startToolTip;
         private bool _isLoadingProfile = false;
+        private bool _isFirstRun = false;
 
         protected override CreateParams CreateParams
         {
@@ -278,6 +279,24 @@ namespace ModernAutoClicker
             SyncOverlay();
             UpdateTabStatus(_isBasicTab);
             UpdateStartButtonState();
+
+            // First-launch language prompt
+            if (_isFirstRun)
+            {
+                _isFirstRun = false;
+                using (UI_FirstRunLanguageDialog langDlg = new UI_FirstRunLanguageDialog())
+                {
+                    if (langDlg.ShowDialog(this) == DialogResult.OK)
+                    {
+                        Loc.CurrentLanguage = langDlg.SelectedLanguage;
+                    }
+                    else
+                    {
+                        Loc.CurrentLanguage = AppLanguage.English;
+                    }
+                    SaveSettings();
+                }
+            }
 
             // Background automatic update check (Runs after 2.5s, checks at most once a day, never blocks UI)
             System.Windows.Forms.Timer autoUpdateTimer = new System.Windows.Forms.Timer { Interval = 2500 };
@@ -1954,6 +1973,7 @@ namespace ModernAutoClicker
         private void LoadSettings()
         {
             AppSettings config = AppSettings.Load();
+            _isFirstRun = config.IsFirstRun;
 
             _simpleTabIndex = Math.Max(0, Math.Min(4, config.ActiveSimpleTabIndex));
             LoadSimpleProfileToUI(_simpleTabIndex, config);

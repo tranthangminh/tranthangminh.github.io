@@ -399,10 +399,10 @@ namespace ModernAutoClicker
             btnTransformTool = new RoundedButton
             {
                 Text = "Move &\nScale",
-                Location = new Point(246, 0),
-                Size = new Size(68, 44),
+                Location = new Point(242, 0),
+                Size = new Size(74, 44),
                 BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Bold),
                 NormalColor = currentTheme.BgElevated,
                 HoverColor = currentTheme.AccentPrimary,
                 ForeColor = currentTheme.TextPrimary
@@ -570,12 +570,12 @@ namespace ModernAutoClicker
             pnlBottomBar.Size = new Size(targetW, 46);
             if (!isAdvanced)
             {
-                btnStart.Location = new Point(24, 0);
+                btnStart.Location = new Point(20, 0);
                 btnStart.Size = new Size(118, 44);
-                if (btnStopAll != null) { btnStopAll.Location = new Point(148, 0); btnStopAll.Size = new Size(92, 44); }
-                btnTransformTool.Location = new Point(246, 0);
-                btnTransformTool.Size = new Size(68, 44);
-                btnThemeToggle.Location = new Point(320, 0);
+                if (btnStopAll != null) { btnStopAll.Location = new Point(144, 0); btnStopAll.Size = new Size(92, 44); }
+                btnTransformTool.Location = new Point(242, 0);
+                btnTransformTool.Size = new Size(74, 44);
+                btnThemeToggle.Location = new Point(322, 0);
                 btnThemeToggle.Size = new Size(44, 44);
             }
             else

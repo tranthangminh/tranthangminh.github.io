@@ -17,7 +17,7 @@ namespace ModernAutoClicker
         private bool _isRunning = false;
 
         private const int BTN_WIDTH = 44;
-        private const int LANG_WIDTH = 48;
+        private const int LANG_WIDTH = 36;
         private const int TITLE_HEIGHT = 32;
 
         public event Action OnCloseRequested;
@@ -85,7 +85,7 @@ namespace ModernAutoClicker
 
         private Rectangle LangButtonRect
         {
-            get { return new Rectangle(this.Width - BTN_WIDTH * 2 - LANG_WIDTH + 4, (this.Height - 20) / 2, LANG_WIDTH - 8, 20); }
+            get { return new Rectangle(this.Width - BTN_WIDTH * 2 - LANG_WIDTH + 2, (this.Height - 20) / 2, LANG_WIDTH - 4, 20); }
         }
 
         private void TitleBar_MouseMove(object sender, MouseEventArgs e)
@@ -220,9 +220,9 @@ namespace ModernAutoClicker
                     g.DrawPath(langPen, langPath);
                 }
             }
-            using (Font langFont = ThemeTokens.FontSegoe(9.5F, FontStyle.Bold))
+            using (Font langFont = ThemeTokens.FontSegoe(9F, FontStyle.Bold))
             {
-                string langStr = Loc.IsVietnamese ? "🌐 VI" : "🌐 EN";
+                string langStr = Loc.IsVietnamese ? "VI" : "EN";
                 TextRenderer.DrawText(g, langStr, langFont, langRect, langFg,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
             }

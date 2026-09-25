@@ -57,7 +57,7 @@ namespace ModernAutoClicker.Localization
         // 1. MAIN TABS & TITLE BAR
         // ========================================================
         public static string TabSimple { get { return IsVietnamese ? "Cơ bản" : "Simple"; } }
-        public static string TabAsianMode { get { return IsVietnamese ? "Chế độ Nâng cao" : "Asian Mode"; } }
+        public static string TabAsianMode { get { return IsVietnamese ? "Chế độ \"Châu Á\"" : "Asian Mode"; } }
         public static string LangBadge { get { return IsVietnamese ? "VI" : "EN"; } }
         public static string LangToggleTooltip { get { return IsVietnamese ? "Đổi sang Tiếng Anh (English)" : "Switch to Vietnamese (Tiếng Việt)"; } }
 
@@ -65,8 +65,8 @@ namespace ModernAutoClicker.Localization
         // 2. CLICK MODE CARD
         // ========================================================
         public static string HeaderClickMode { get { return IsVietnamese ? "Chế độ Click" : "Click Mode"; } }
-        public static string ModePointList { get { return IsVietnamese ? "Danh sách Tọa độ" : "Point List"; } }
-        public static string ModeFollowCursor { get { return IsVietnamese ? "Bám theo Con trỏ" : "Follow Cursor"; } }
+        public static string ModePointList { get { return IsVietnamese ? "DS Điểm" : "Point List"; } }
+        public static string ModeFollowCursor { get { return IsVietnamese ? "Theo Chuột" : "Follow Cursor"; } }
 
         // ========================================================
         // 3. TARGET WINDOW CARD
@@ -79,7 +79,7 @@ namespace ModernAutoClicker.Localization
         // 4. CLICK SETTINGS CARD
         // ========================================================
         public static string HeaderClickSettings { get { return IsVietnamese ? "Cài đặt Click" : "Click Settings"; } }
-        public static string LabelClickEvery { get { return IsVietnamese ? "Khoảng cách:" : "Click Every:"; } }
+        public static string LabelClickEvery { get { return IsVietnamese ? "Click mỗi" : "Click Every:"; } }
         public static string UnitMs { get { return "ms"; } }
         public static string LabelLoops { get { return IsVietnamese ? "Vòng lặp:" : "Loops:"; } }
         public static string LoopHintInfinite { get { return "(0 = ∞)"; } }
@@ -109,7 +109,7 @@ namespace ModernAutoClicker.Localization
         public static string BtnPause { get { return IsVietnamese ? "Tạm dừng" : "Pause"; } }
         public static string BtnResume { get { return IsVietnamese ? "Tiếp tục" : "Resume"; } }
         public static string BtnStopAll { get { return IsVietnamese ? "Dừng HẾT" : "Stop ALL"; } }
-        public static string BtnTransformTool { get { return IsVietnamese ? "Di chuyển &\nCo giãn" : "Move &\nScale"; } }
+        public static string BtnTransformTool { get { return IsVietnamese ? "Di chuyển\n& Scale" : "Move &\nScale"; } }
         public static string StatusReady { get { return IsVietnamese ? "Sẵn sàng" : "Ready"; } }
         public static string StatusRunning { get { return IsVietnamese ? "Đang chạy..." : "Running..."; } }
         public static string StatusPaused { get { return IsVietnamese ? "Đang tạm dừng" : "Paused"; } }
@@ -119,18 +119,18 @@ namespace ModernAutoClicker.Localization
         // 7. GLOBAL SETTINGS CHECKBOXES
         // ========================================================
         public static string ChkAlwaysOnTop { get { return IsVietnamese ? "Ghim lên đầu" : "Window on Top"; } }
-        public static string ChkShowMap { get { return IsVietnamese ? "Hiện Overlay" : "Show Map"; } }
-        public static string ChkFreeMouse { get { return IsVietnamese ? "Click ngầm (Tự do chuột)" : "Free Mouse Mode"; } }
+        public static string ChkShowMap { get { return IsVietnamese ? "Hiện Map" : "Show Map"; } }
+        public static string ChkFreeMouse { get { return IsVietnamese ? "Chuột Tự Do" : "Free Mouse Mode"; } }
         public static string ChkSmoothMove { get { return IsVietnamese ? "Di chuột mượt" : "Smooth Mouse Move"; } }
 
         // ========================================================
         // 8. HOTKEY CARDS
         // ========================================================
-        public static string HotkeySimpleF6 { get { return IsVietnamese ? ": Bắt đầu / Tạm dừng" : ": Start / Stop (Active)"; } }
+        public static string HotkeySimpleF6 { get { return IsVietnamese ? ": Bắt đầu / Dừng" : ": Start / Stop (Active)"; } }
         public static string HotkeySimpleF7 { get { return IsVietnamese ? ": Dừng TẤT CẢ" : ": Stop ALL"; } }
         public static string HotkeySimpleSpace { get { return IsVietnamese ? ": Thêm tọa độ" : ": Add Point"; } }
 
-        public static string HotkeyAdvF6 { get { return IsVietnamese ? ": Bắt đầu / Tạm dừng" : ": Start / Stop"; } }
+        public static string HotkeyAdvF6 { get { return IsVietnamese ? ": Bắt đầu / Dừng" : ": Start / Stop"; } }
         public static string HotkeyAdvF7 { get { return IsVietnamese ? ": Dừng TẤT CẢ" : ": Stop ALL"; } }
         public static string HotkeyAdvSpace { get { return IsVietnamese ? ": Thêm bước" : ": Add Step"; } }
         public static string HotkeyAdvTip1 { get { return IsVietnamese ? "• Chọn nhiều hàng: Giữ Ctrl hoặc Shift để chọn" : "• Multi-select: Hold Ctrl or Shift to select rows"; } }
@@ -215,11 +215,11 @@ namespace ModernAutoClicker.Localization
         // ========================================================
         // 11. ASIAN MODE (ADVANCED TAB) TOOLBAR & BOTTOM BAR
         // ========================================================
-        public static string AdvBtnAddStep { get { return IsVietnamese ? "➕ Thêm bước" : "➕ Add Step"; } }
-        public static string AdvBtnClone { get { return IsVietnamese ? "Nhân bản" : "Clone"; } }
-        public static string AdvBtnSave { get { return IsVietnamese ? "Lưu" : "Save"; } }
-        public static string AdvBtnLoad { get { return IsVietnamese ? "Tải" : "Load"; } }
-        public static string AdvBtnClear { get { return IsVietnamese ? "Xóa hết" : "Clear"; } }
+        public static string AdvBtnAddStep { get { return IsVietnamese ? "➕ Thêm Bước" : "➕ Add Step"; } }
+        public static string AdvBtnClone { get { return IsVietnamese ? "Nhân Bản Bước" : "Clone Step(s)"; } }
+        public static string AdvBtnClear { get { return IsVietnamese ? "Xóa Hết Bước" : "Clear All Steps"; } }
+        public static string AdvBtnSave { get { return IsVietnamese ? "Lưu Script" : "Save Script"; } }
+        public static string AdvBtnLoad { get { return IsVietnamese ? "Tải Script" : "Load Script"; } }
         public static string AdvBtnTemplate { get { return IsVietnamese ? "Mẫu" : "Template"; } }
 
         public static string AdvLblLoop { get { return IsVietnamese ? "Lặp:" : "Loop:"; } }
@@ -239,7 +239,7 @@ namespace ModernAutoClicker.Localization
                     case Advanced.MacroActionType.RightClick: return "Right Click";
                     case Advanced.MacroActionType.MiddleClick: return "Middle / Scroll";
                     case Advanced.MacroActionType.DoubleClick: return "Double Click";
-                    case Advanced.MacroActionType.DragDrop: return "Drag & Drop";
+                    case Advanced.MacroActionType.DragDrop: return "Drag n Drop";
                     case Advanced.MacroActionType.KeyPress: return "Key Press";
                     case Advanced.MacroActionType.TypeText: return "Type Text";
                     case Advanced.MacroActionType.Delay: return "Delay";
@@ -247,7 +247,7 @@ namespace ModernAutoClicker.Localization
                     case Advanced.MacroActionType.IfColor: return "If Color";
                     case Advanced.MacroActionType.WaitImage: return "Wait Image";
                     case Advanced.MacroActionType.IfImage: return "If Image";
-                    case Advanced.MacroActionType.WaitChange: return "Wait Change";
+                    case Advanced.MacroActionType.WaitChange: return "Wait Color Change";
                     case Advanced.MacroActionType.RunScript: return "Run Script";
                     default: return type.ToString();
                 }
@@ -260,7 +260,7 @@ namespace ModernAutoClicker.Localization
                     case Advanced.MacroActionType.RightClick: return "Click Phải";
                     case Advanced.MacroActionType.MiddleClick: return "Cuộn / Giữa";
                     case Advanced.MacroActionType.DoubleClick: return "Click Đúp";
-                    case Advanced.MacroActionType.DragDrop: return "Kéo & Thả";
+                    case Advanced.MacroActionType.DragDrop: return "Kéo và Thả";
                     case Advanced.MacroActionType.KeyPress: return "Nhấn Phím";
                     case Advanced.MacroActionType.TypeText: return "Gõ Văn Bản";
                     case Advanced.MacroActionType.Delay: return "Chờ Đợi";
@@ -281,6 +281,7 @@ namespace ModernAutoClicker.Localization
         public static string JumpClickTarget { get { return IsVietnamese ? "Click Mục tiêu" : "Click Target"; } }
         public static string JumpClickCenter { get { return IsVietnamese ? "Click Tâm ảnh" : "Click Center"; } }
         public static string JumpNextStep { get { return IsVietnamese ? "Bước kế tiếp" : "Next Step"; } }
+        public static string JumpRepeatStep { get { return IsVietnamese ? "Lặp Lại Bước Này" : "Repeat this Step"; } }
         public static string JumpStop { get { return IsVietnamese ? "Dừng lại" : "Stop"; } }
         public static string JumpStepFormat(int stepIndex)
         {
@@ -295,11 +296,11 @@ namespace ModernAutoClicker.Localization
         // ========================================================
         public static string ColNo { get { return "No."; } }
         public static string ColCheck { get { return "✔"; } }
-        public static string ColWin { get { return IsVietnamese ? "Cửa sổ" : "Win"; } }
+        public static string ColWin { get { return "Win"; } }
         public static string ColActionType { get { return IsVietnamese ? "Loại Hành Động" : "Action Type"; } }
         public static string ColTarget { get { return IsVietnamese ? "Mục Tiêu" : "Target"; } }
-        public static string ColHold { get { return IsVietnamese ? "Giữ (ms)" : "Hold"; } }
-        public static string ColDelay { get { return IsVietnamese ? "Chờ (ms)" : "Delay"; } }
+        public static string ColHold { get { return IsVietnamese ? "Giữ" : "Hold"; } }
+        public static string ColDelay { get { return IsVietnamese ? "Chờ" : "Delay"; } }
         public static string ColRep { get { return IsVietnamese ? "Lặp" : "Rep"; } }
         public static string ColDel { get { return IsVietnamese ? "Xóa" : "Del"; } }
         public static string ColNote { get { return IsVietnamese ? "Ghi Chú" : "Note"; } }

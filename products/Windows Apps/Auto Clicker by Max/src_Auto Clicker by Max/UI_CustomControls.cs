@@ -352,8 +352,10 @@ namespace ModernAutoClicker
             {
                 if (!string.IsNullOrEmpty(_subtitle))
                 {
-                    RectangleF topRect = new RectangleF(textLeft, 4, Math.Max(0, textRight - textLeft), 20);
-                    RectangleF btmRect = new RectangleF(textLeft, 22, Math.Max(0, textRight - textLeft), 16);
+                    float totalTextH = 36f;
+                    float startY = Math.Max(2f, (this.Height - totalTextH) / 2f);
+                    RectangleF topRect = new RectangleF(textLeft, startY, Math.Max(0, textRight - textLeft), 20);
+                    RectangleF btmRect = new RectangleF(textLeft, startY + 20, Math.Max(0, textRight - textLeft), 16);
 
                     g.DrawString(this.Text, this.Font, textBrush, topRect, sf);
 

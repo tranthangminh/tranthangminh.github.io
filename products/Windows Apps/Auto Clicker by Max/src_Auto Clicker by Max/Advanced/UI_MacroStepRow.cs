@@ -215,17 +215,16 @@ namespace ModernAutoClicker.Advanced
             MacroActionType.KeyPress,
             MacroActionType.TypeText,
             MacroActionType.Delay,
-            MacroActionType.WaitColor,
             MacroActionType.IfColor,
-            MacroActionType.WaitImage,
-            MacroActionType.IfImage,
             MacroActionType.WaitChange,
+            MacroActionType.IfImage,
             MacroActionType.RunScript
         };
 
         private static int GetActionTypeIndex(MacroActionType actionType)
         {
-            if (actionType == MacroActionType.IfColorArea) return 9; // Map to IfColor
+            if (actionType == MacroActionType.IfColorArea || actionType == MacroActionType.WaitColor) return 8; // Map to IfColor
+            if (actionType == MacroActionType.WaitImage) return 10; // Map to IfImage
             for (int i = 0; i < ActionTypeDisplayList.Length; i++)
             {
                 if (ActionTypeDisplayList[i] == actionType) return i;
@@ -256,14 +255,14 @@ namespace ModernAutoClicker.Advanced
         {
             this.SuspendLayout();
 
-            int x = 6;
+            int x = 2;
 
-            // 1. Reorder Handle / Step Index Label (Width = 42px)
+            // 1. Reorder Handle / Step Index Label (Width = 36px)
             lblIndex = new Label
             {
                 Text = (_index + 1).ToString(),
                 Location = new Point(x, 6),
-                Size = new Size(42, 22),
+                Size = new Size(36, 22),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
                 Cursor = Cursors.SizeAll
@@ -275,13 +274,13 @@ namespace ModernAutoClicker.Advanced
                     OnDragStarted(this);
                 }
             };
-            x += 44;
+            x += 38;
 
-            // 2. Enable/Disable Step CheckBox (Width = 18px)
+            // 2. Enable/Disable Step CheckBox (Width = 18px, centered in 20px)
             chkSelect = new CheckBox
             {
                 Checked = _step.Enabled,
-                Location = new Point(x, 9),
+                Location = new Point(x + 1, 9),
                 Size = new Size(18, 18),
                 Cursor = Cursors.Hand
             };
@@ -291,24 +290,24 @@ namespace ModernAutoClicker.Advanced
                 _step.Enabled = chkSelect.Checked;
                 if (OnStepChanged != null) OnStepChanged();
             };
-            x += 20;
+            x += 22;
 
-            // 3. Process / Window Icon Indicator (Width = 22px)
+            // 3. Process / Window Icon Indicator (Width = 20px, centered in 34px: x + 7)
             lblWindowIcon = new Label
             {
-                Location = new Point(x, 6),
+                Location = new Point(x + 7, 6),
                 Size = new Size(20, 20),
                 Cursor = Cursors.Hand,
                 TextAlign = ContentAlignment.MiddleCenter
             };
             lblWindowIcon.Click += (s, e) => ShowWindowSelectMenu(lblWindowIcon);
-            x += 22;
+            x += 36;
 
-            // 4. Action Type Dropdown (Width = 116px)
+            // 4. Action Type Dropdown (Width = 114px)
             cboActionType = new ModernDropdown
             {
                 Location = new Point(x, 6),
-                Size = new Size(116, 22),
+                Size = new Size(114, 22),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular)
             };
             PopulateActionTypes();
@@ -378,8 +377,11 @@ namespace ModernAutoClicker.Advanced
                     }
                     if (newType == MacroActionType.IfColor || newType == MacroActionType.IfColorArea || newType == MacroActionType.IfImage)
                     {
-                        if (_step.IfTrueStep == 0) _step.IfTrueStep = -2; // Click Target
-                        // _step.IfFalseStep = 0; // Next Step
+                        if (oldType != MacroActionType.IfColor && oldType != MacroActionType.IfColorArea && oldType != MacroActionType.IfImage)
+                        {
+                            _step.IfTrueStep = -2; // Default: Click Target / Center
+                            _step.IfFalseStep = -3; // Default: Repeat this Step
+                        }
                     }
                     if (newType == MacroActionType.WaitImage)
                     {
@@ -412,13 +414,13 @@ namespace ModernAutoClicker.Advanced
                 UpdateDynamicFields();
                 if (OnStepChanged != null) OnStepChanged();
             };
-            x += 118;
+            x += 116;
 
-            // 5. Coordinate Text / Key Text / Scroll Step (Column Width = 118px)
+            // 5. Coordinate Text / Key Text / Scroll Step (Column Width = 114px)
             lblCoord = new Label
             {
                 Location = new Point(x, 8),
-                Size = new Size(72, 18),
+                Size = new Size(68, 18),
                 Font = ThemeTokens.GetMonospaceFont(10.5F),
                 TextAlign = ContentAlignment.MiddleRight,
                 Cursor = Cursors.Hand
@@ -453,7 +455,7 @@ namespace ModernAutoClicker.Advanced
             btnPickCoord = new RoundedButton
             {
                 Text = "🎯",
-                Location = new Point(x + 74, 6),
+                Location = new Point(x + 70, 6),
                 Size = new Size(22, 22),
                 Font = ThemeTokens.FontSegoeSymbol(11F)
             };
@@ -461,7 +463,7 @@ namespace ModernAutoClicker.Advanced
 
             numScroll = new NumberInput
             {
-                Location = new Point(x + 72, 6),
+                Location = new Point(x + 70, 6),
                 Width = 36,
                 Minimum = -99,
                 Maximum = 99,
@@ -480,8 +482,8 @@ namespace ModernAutoClicker.Advanced
             txtKeyData = new ModernTextBox
             {
                 Text = _step.KeyData,
-                Location = new Point(x + 2, 6),
-                Size = new Size(114, 22),
+                Location = new Point(x + 1, 6),
+                Size = new Size(112, 22),
                 Font = ThemeTokens.FontSegoe(11F),
                 Visible = false
             };
@@ -558,8 +560,8 @@ namespace ModernAutoClicker.Advanced
             // Target Script Dropdown (for Run Script action)
             cboTargetScript = new ModernDropdown
             {
-                Location = new Point(x + 2, 6),
-                Size = new Size(114, 22),
+                Location = new Point(x + 1, 6),
+                Size = new Size(112, 22),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular),
                 Visible = false
             };
@@ -657,12 +659,12 @@ namespace ModernAutoClicker.Advanced
                     PickImageSnipping();
                 }
             };
-            x += 120;
+            x += 116;
 
             // 6. Hold Duration (Hold ms)
             numHold = new NumberInput
             {
-                Location = new Point(x + 2, 6),
+                Location = new Point(x, 6),
                 Width = 46,
                 Minimum = 1,
                 Maximum = 999999,
@@ -680,7 +682,7 @@ namespace ModernAutoClicker.Advanced
             // Image Similarity Input (50 - 100%)
             numSimilarity = new NumberInput
             {
-                Location = new Point(x + 2, 6),
+                Location = new Point(x, 6),
                 Width = 46,
                 Minimum = 50,
                 Maximum = 100,
@@ -695,12 +697,12 @@ namespace ModernAutoClicker.Advanced
                 _step.Similarity = Math.Max(50, Math.Min(100, numSimilarity.Value));
                 if (OnStepChanged != null) OnStepChanged();
             };
-            x += 50;
+            x += 48;
 
             // 7. Delay After (Delay ms)
             numDelay = new NumberInput
             {
-                Location = new Point(x + 2, 6),
+                Location = new Point(x, 6),
                 Width = 48,
                 Minimum = 0,
                 Maximum = 999999,
@@ -714,7 +716,7 @@ namespace ModernAutoClicker.Advanced
                 _step.DelayMs = Math.Max(0, numDelay.Value);
                 if (OnStepChanged != null) OnStepChanged();
             };
-            x += 52;
+            x += 50;
 
             // IfColor Branch Line 2 Controls (Match Jump & Unmatch Jump)
             lblIfMatch = new Label
@@ -741,6 +743,7 @@ namespace ModernAutoClicker.Advanced
                 if (idx >= 0 && idx < cboIfTrue.Items.Count)
                 {
                     if (idx == 0 || idx == 1) return _theme.CGreen;
+                    if (idx == 2) return _theme.COrange;
                     if (idx == cboIfTrue.Items.Count - 1) return _theme.Danger;
                 }
                 return _theme.TextPrimary;
@@ -753,8 +756,9 @@ namespace ModernAutoClicker.Advanced
                     int idx = cboIfTrue.SelectedIndex;
                     if (idx == 0) _step.IfTrueStep = -2;
                     else if (idx == 1) _step.IfTrueStep = 0;
+                    else if (idx == 2) _step.IfTrueStep = -3;
                     else if (idx == cboIfTrue.Items.Count - 1) _step.IfTrueStep = -1;
-                    else if (idx >= 2) _step.IfTrueStep = idx - 1;
+                    else if (idx >= 3) _step.IfTrueStep = idx - 2;
 
                     if (OnStepChanged != null) OnStepChanged();
                 }
@@ -784,6 +788,7 @@ namespace ModernAutoClicker.Advanced
                 if (idx >= 0 && idx < cboIfFalse.Items.Count)
                 {
                     if (idx == 0 || idx == 1) return _theme.CGreen;
+                    if (idx == 2) return _theme.COrange;
                     if (idx == cboIfFalse.Items.Count - 1) return _theme.Danger;
                 }
                 return _theme.TextPrimary;
@@ -796,8 +801,9 @@ namespace ModernAutoClicker.Advanced
                     int idx = cboIfFalse.SelectedIndex;
                     if (idx == 0) _step.IfFalseStep = -2;
                     else if (idx == 1) _step.IfFalseStep = 0;
+                    else if (idx == 2) _step.IfFalseStep = -3;
                     else if (idx == cboIfFalse.Items.Count - 1) _step.IfFalseStep = -1;
-                    else if (idx >= 2) _step.IfFalseStep = idx - 1;
+                    else if (idx >= 3) _step.IfFalseStep = idx - 2;
 
                     if (OnStepChanged != null) OnStepChanged();
                 }
@@ -806,7 +812,7 @@ namespace ModernAutoClicker.Advanced
             // 8. Repeat Count (Rep)
             numRepeat = new NumberInput
             {
-                Location = new Point(x + 2, 6),
+                Location = new Point(x + 1, 6),
                 Width = 28,
                 Minimum = 1,
                 Maximum = 9999,
@@ -824,7 +830,7 @@ namespace ModernAutoClicker.Advanced
             // Image Timeout Input (seconds)
             numTimeout = new NumberInput
             {
-                Location = new Point(x + 2, 6),
+                Location = new Point(x + 1, 6),
                 Width = 28,
                 Minimum = 0,
                 Maximum = 9999,
@@ -841,11 +847,11 @@ namespace ModernAutoClicker.Advanced
             };
             x += 32;
 
-            // 9. Delete Button "✕" (Matching Simple style)
+            // 9. Delete Button "✕" (Matching Simple style, centered in 34px: x + 5)
             btnDelete = new Label
             {
                 Text = "✕",
-                Location = new Point(x + 1, 5),
+                Location = new Point(x + 5, 5),
                 Size = new Size(24, 24),
                 Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -858,14 +864,14 @@ namespace ModernAutoClicker.Advanced
             {
                 if (OnDeleteRequested != null) OnDeleteRequested(this);
             };
-            x += 26;
+            x += 36;
 
-            // 10. Note / Ghi chú TextBox (Placed after Del)
+            // 10. Note / Ghi chú TextBox (Placed after Del, width 64px)
             txtNote = new ModernTextBox
             {
                 Text = _step.Note ?? "",
-                Location = new Point(x + 2, 6),
-                Size = new Size(96, 22),
+                Location = new Point(x, 6),
+                Size = new Size(64, 22),
                 Font = ThemeTokens.FontSegoe(11F),
                 MaxLength = 50
             };
@@ -1582,12 +1588,16 @@ namespace ModernAutoClicker.Advanced
 
                 string clickActionLabel = (_step.ActionType == MacroActionType.IfImage) ? Loc.JumpClickCenter : Loc.JumpClickTarget;
                 string nextStepLabel = Loc.JumpNextStep;
+                string repeatStepLabel = Loc.JumpRepeatStep;
                 string stopLabel = Loc.JumpStop;
 
                 cboIfTrue.Items.Add(clickActionLabel);
                 cboIfTrue.Items.Add(nextStepLabel);
+                cboIfTrue.Items.Add(repeatStepLabel);
+
                 cboIfFalse.Items.Add(clickActionLabel);
                 cboIfFalse.Items.Add(nextStepLabel);
+                cboIfFalse.Items.Add(repeatStepLabel);
 
                 for (int i = 1; i <= maxStepNeeded; i++)
                 {
@@ -1602,8 +1612,9 @@ namespace ModernAutoClicker.Advanced
                 int trueIdx = 0;
                 if (_step.IfTrueStep == -2) trueIdx = 0;
                 else if (_step.IfTrueStep == 0) trueIdx = 1;
+                else if (_step.IfTrueStep == -3) trueIdx = 2;
                 else if (_step.IfTrueStep == -1) trueIdx = cboIfTrue.Items.Count - 1;
-                else if (_step.IfTrueStep > 0 && _step.IfTrueStep <= maxStepNeeded) trueIdx = _step.IfTrueStep + 1;
+                else if (_step.IfTrueStep > 0 && _step.IfTrueStep <= maxStepNeeded) trueIdx = _step.IfTrueStep + 2;
                 else
                 {
                     trueIdx = 0;
@@ -1611,18 +1622,19 @@ namespace ModernAutoClicker.Advanced
                 }
                 cboIfTrue.SelectedIndex = (trueIdx >= 0 && trueIdx < cboIfTrue.Items.Count) ? trueIdx : 0;
 
-                // 3. Resolve False selection (Default: Next Step, value = 0)
-                int falseIdx = 1;
+                // 3. Resolve False selection (Default: Repeat this Step, value = -3)
+                int falseIdx = 2;
                 if (_step.IfFalseStep == -2) falseIdx = 0;
                 else if (_step.IfFalseStep == 0) falseIdx = 1;
+                else if (_step.IfFalseStep == -3) falseIdx = 2;
                 else if (_step.IfFalseStep == -1) falseIdx = cboIfFalse.Items.Count - 1;
-                else if (_step.IfFalseStep > 0 && _step.IfFalseStep <= maxStepNeeded) falseIdx = _step.IfFalseStep + 1;
+                else if (_step.IfFalseStep > 0 && _step.IfFalseStep <= maxStepNeeded) falseIdx = _step.IfFalseStep + 2;
                 else
                 {
-                    falseIdx = 1;
-                    _step.IfFalseStep = 0;
+                    falseIdx = 2;
+                    _step.IfFalseStep = -3;
                 }
-                cboIfFalse.SelectedIndex = (falseIdx >= 0 && falseIdx < cboIfFalse.Items.Count) ? falseIdx : 0;
+                cboIfFalse.SelectedIndex = (falseIdx >= 0 && falseIdx < cboIfFalse.Items.Count) ? falseIdx : 2;
             }
             finally
             {
