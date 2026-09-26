@@ -14,15 +14,19 @@ namespace ModernAutoClicker
         private bool _isHoverClose = false;
         private bool _isHoverMin = false;
         private bool _isHoverLang = false;
+        private bool _isHoverTheme = false;
         private bool _isRunning = false;
+        private ToolTip _toolTip;
+        private string _currentTooltipText = "";
 
         private const int BTN_WIDTH = 44;
-        private const int LANG_WIDTH = 36;
+        private const int PREF_BTN_SIZE = 32;
         private const int TITLE_HEIGHT = 32;
 
         public event Action OnCloseRequested;
         public event Action OnMinimizeRequested;
         public event Action OnLanguageToggleRequested;
+        public event Action OnThemeToggleRequested;
 
         public bool IsRunning
         {
@@ -55,6 +59,11 @@ namespace ModernAutoClicker
                           ControlStyles.OptimizedDoubleBuffer |
                           ControlStyles.ResizeRedraw, true);
 
+            _toolTip = new ToolTip();
+            _toolTip.InitialDelay = 300;
+            _toolTip.ReshowDelay = 100;
+            _toolTip.AutoPopDelay = 5000;
+
             this.MouseMove += TitleBar_MouseMove;
             this.MouseLeave += TitleBar_MouseLeave;
             this.MouseDown += TitleBar_MouseDown;
@@ -85,7 +94,12 @@ namespace ModernAutoClicker
 
         private Rectangle LangButtonRect
         {
-            get { return new Rectangle(this.Width - BTN_WIDTH * 2 - LANG_WIDTH + 2, (this.Height - 20) / 2, LANG_WIDTH - 4, 20); }
+            get { return new Rectangle(this.Width - BTN_WIDTH * 2 - 4 - PREF_BTN_SIZE, (this.Height - PREF_BTN_SIZE) / 2, PREF_BTN_SIZE, PREF_BTN_SIZE); }
+        }
+
+        private Rectangle ThemeButtonRect
+        {
+            get { return new Rectangle(this.Width - BTN_WIDTH * 2 - 4 - PREF_BTN_SIZE - 4 - PREF_BTN_SIZE, (this.Height - PREF_BTN_SIZE) / 2, PREF_BTN_SIZE, PREF_BTN_SIZE); }
         }
 
         private void TitleBar_MouseMove(object sender, MouseEventArgs e)
@@ -93,14 +107,46 @@ namespace ModernAutoClicker
             bool oldClose = _isHoverClose;
             bool oldMin = _isHoverMin;
             bool oldLang = _isHoverLang;
+            bool oldTheme = _isHoverTheme;
 
             _isHoverClose = !_isRunning && CloseButtonRect.Contains(e.Location);
             _isHoverMin = MinButtonRect.Contains(e.Location);
             _isHoverLang = LangButtonRect.Contains(e.Location);
+            _isHoverTheme = ThemeButtonRect.Contains(e.Location);
 
-            if (_isHoverClose != oldClose || _isHoverMin != oldMin || _isHoverLang != oldLang)
+            if (_isHoverLang || _isHoverTheme)
             {
+                this.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                this.Cursor = Cursors.Default;
+            }
+
+            if (_isHoverClose != oldClose || _isHoverMin != oldMin || _isHoverLang != oldLang || _isHoverTheme != oldTheme)
+            {
+                UpdateTooltips();
                 Invalidate();
+            }
+        }
+
+        private void UpdateTooltips()
+        {
+            if (_toolTip == null) return;
+            string tip = null;
+            if (_isHoverClose) tip = Loc.IsVietnamese ? "Đóng" : "Close";
+            else if (_isHoverMin) tip = Loc.IsVietnamese ? "Thu nhỏ" : "Minimize";
+            else if (_isHoverLang) tip = Loc.IsVietnamese ? "Đổi sang Tiếng Anh (English)" : "Chuyển sang Tiếng Việt (Vietnamese)";
+            else if (_isHoverTheme)
+            {
+                bool isDark = _theme != null && _theme.IsDark;
+                tip = isDark ? (Loc.IsVietnamese ? "Chuyển sang Giao diện Sáng" : "Switch to Light Mode") : (Loc.IsVietnamese ? "Chuyển sang Giao diện Tối" : "Switch to Dark Mode");
+            }
+
+            if (tip != _currentTooltipText)
+            {
+                _currentTooltipText = tip;
+                _toolTip.SetToolTip(this, tip);
             }
         }
 
@@ -109,6 +155,10 @@ namespace ModernAutoClicker
             _isHoverClose = false;
             _isHoverMin = false;
             _isHoverLang = false;
+            _isHoverTheme = false;
+            _currentTooltipText = "";
+            if (_toolTip != null) _toolTip.SetToolTip(this, null);
+            this.Cursor = Cursors.Default;
             Invalidate();
         }
 
@@ -116,7 +166,7 @@ namespace ModernAutoClicker
         {
             if (e.Button == MouseButtons.Left)
             {
-                if (CloseButtonRect.Contains(e.Location) || MinButtonRect.Contains(e.Location) || LangButtonRect.Contains(e.Location))
+                if (CloseButtonRect.Contains(e.Location) || MinButtonRect.Contains(e.Location) || LangButtonRect.Contains(e.Location) || ThemeButtonRect.Contains(e.Location))
                 {
                     return;
                 }
@@ -171,6 +221,13 @@ namespace ModernAutoClicker
                         Loc.CurrentLanguage = Loc.IsVietnamese ? AppLanguage.English : AppLanguage.Vietnamese;
                     }
                 }
+                else if (ThemeButtonRect.Contains(e.Location))
+                {
+                    if (OnThemeToggleRequested != null)
+                    {
+                        OnThemeToggleRequested();
+                    }
+                }
             }
         }
 
@@ -195,21 +252,59 @@ namespace ModernAutoClicker
                 g.DrawImage(appIcon, 10, (this.Height - 18) / 2, 18, 18);
             }
 
-            // 3. Title Text (Vertically Centered across full bar height)
+            // 3. Title Text (Vertically Centered across full bar height, ending before theme button)
             using (Font titleFont = ThemeTokens.FontSegoe(12F, FontStyle.Bold))
             {
-                Rectangle textRect = new Rectangle(34, 0, this.Width - (BTN_WIDTH * 2 + LANG_WIDTH + 38), this.Height);
+                int textRightBound = Math.Max(50, this.Width - (BTN_WIDTH * 2 + PREF_BTN_SIZE * 2 + 20));
+                Rectangle textRect = new Rectangle(34, 0, textRightBound - 34, this.Height);
                 TextRenderer.DrawText(g, _titleText, titleFont, textRect, t.TextPrimary, 
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
             }
 
-            // 3.5. Language Toggle Badge [ 🌐 VI ] / [ 🌐 EN ]
+            // 3.4. Theme Toggle Button (32x32)
+            Rectangle themeRect = ThemeButtonRect;
+            Color themeBg = _isHoverTheme ? t.TextSecondary : t.TextPrimary;
+            Color themeBorder = _isHoverTheme ? t.AccentPrimary : t.BorderColor;
+
+            Rectangle themeVisual = new Rectangle(themeRect.X + 1, (this.Height - 30) / 2, 30, 30);
+            using (GraphicsPath themePath = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(themeVisual, 4))
+            {
+                using (SolidBrush themeBrush = new SolidBrush(themeBg))
+                {
+                    g.FillPath(themeBrush, themePath);
+                }
+                using (Pen themePen = new Pen(themeBorder, 1f))
+                {
+                    g.DrawPath(themePen, themePath);
+                }
+            }
+
+            // Draw Theme SVG Icon (18x18) centered inside
+            Image themeIcon = SvgFileRenderer.GetThemeIconImage(t.IsDark, 18);
+            if (themeIcon != null)
+            {
+                int iconX = themeVisual.X + (themeVisual.Width - 18) / 2;
+                int iconY = themeVisual.Y + (themeVisual.Height - 18) / 2;
+                g.DrawImage(themeIcon, iconX, iconY, 18, 18);
+            }
+            else
+            {
+                // Fallback emoji if SVG is missing
+                using (Font fbFont = ThemeTokens.FontSegoeSymbol(11F, FontStyle.Regular))
+                {
+                    TextRenderer.DrawText(g, t.IsDark ? "🔆" : "🌙", fbFont, themeVisual, t.AccentPrimary,
+                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+                }
+            }
+
+            // 3.5. Language Toggle Button [ VI ] / [ EN ] (32x32)
             Rectangle langRect = LangButtonRect;
-            Color langBg = _isHoverLang ? t.BgElevated : Color.FromArgb(20, 255, 255, 255);
+            Color langBg = _isHoverLang ? t.BgElevated : Color.FromArgb(16, 255, 255, 255);
             Color langBorder = _isHoverLang ? t.AccentPrimary : t.BorderColor;
             Color langFg = _isHoverLang ? t.AccentPrimary : t.TextSecondary;
 
-            using (GraphicsPath langPath = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(langRect, 3))
+            Rectangle langVisual = new Rectangle(langRect.X + 1, (this.Height - 30) / 2, 30, 30);
+            using (GraphicsPath langPath = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(langVisual, 4))
             {
                 using (SolidBrush langBrush = new SolidBrush(langBg))
                 {
@@ -220,10 +315,10 @@ namespace ModernAutoClicker
                     g.DrawPath(langPen, langPath);
                 }
             }
-            using (Font langFont = ThemeTokens.FontSegoe(9F, FontStyle.Bold))
+            using (Font langFont = ThemeTokens.FontSegoe(9.5F, FontStyle.Bold))
             {
                 string langStr = Loc.IsVietnamese ? "VI" : "EN";
-                TextRenderer.DrawText(g, langStr, langFont, langRect, langFg,
+                TextRenderer.DrawText(g, langStr, langFont, langVisual, langFg,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
             }
 

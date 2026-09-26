@@ -493,15 +493,7 @@ namespace ModernAutoClicker.Advanced
 
         private static void PerformClickDirectToWindow(IntPtr hWnd, Point clientPt, int button, int holdMs)
         {
-            IntPtr lParam = (IntPtr)(((clientPt.Y & 0xFFFF) << 16) | (clientPt.X & 0xFFFF));
-            uint downMsg = (button == 1) ? 0x0204u : (button == 2 ? 0x0207u : 0x0201u);
-            uint upMsg = (button == 1) ? 0x0205u : (button == 2 ? 0x0208u : 0x0202u);
-            IntPtr wParam = (button == 1) ? (IntPtr)0x0002 : (button == 2 ? (IntPtr)0x0010 : (IntPtr)0x0001);
-
-            NativeMethods.PostMessage(hWnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
-            NativeMethods.PostMessage(hWnd, downMsg, wParam, lParam);
-            if (holdMs > 0) Thread.Sleep(holdMs);
-            NativeMethods.PostMessage(hWnd, upMsg, IntPtr.Zero, lParam);
+            NativeMethods.PerformClickDirectToWindow(hWnd, clientPt.X, clientPt.Y, button, holdMs);
         }
 
         private static void PerformClick(Point pt, int button, int holdMs, bool freeMouseMode)
@@ -510,64 +502,15 @@ namespace ModernAutoClicker.Advanced
             {
                 if (freeMouseMode)
                 {
-                    IntPtr targetHwnd = NativeMethods.WindowFromPoint(new NativeMethods.POINT { X = pt.X, Y = pt.Y });
-                    if (targetHwnd != IntPtr.Zero)
-                    {
-                        NativeMethods.POINT screenPt = new NativeMethods.POINT { X = pt.X, Y = pt.Y };
-                        NativeMethods.ScreenToClient(targetHwnd, ref screenPt);
-                        IntPtr lParam = (IntPtr)(((screenPt.Y & 0xFFFF) << 16) | (screenPt.X & 0xFFFF));
-
-                        uint downMsg = 0x0201; // WM_LBUTTONDOWN
-                        uint upMsg = 0x0202;   // WM_LBUTTONUP
-                        IntPtr wParam = (IntPtr)0x0001; // MK_LBUTTON
-
-                        if (button == 1) // Right
-                        {
-                            downMsg = 0x0204;
-                            upMsg = 0x0205;
-                            wParam = (IntPtr)0x0002;
-                        }
-                        else if (button == 2) // Middle
-                        {
-                            downMsg = 0x0207;
-                            upMsg = 0x0208;
-                            wParam = (IntPtr)0x0010;
-                        }
-
-                        NativeMethods.PostMessage(targetHwnd, downMsg, wParam, lParam);
-                        Thread.Sleep(holdMs);
-                        NativeMethods.PostMessage(targetHwnd, upMsg, IntPtr.Zero, lParam);
-                        return;
-                    }
+                    NativeMethods.SendBackgroundClick(pt.X, pt.Y, button, holdMs);
+                    return;
                 }
 
                 NativeMethods.SetCursorPos(pt.X, pt.Y);
-                Thread.Sleep(5);
+                Thread.Sleep(25); // Settle delay to allow OS message queue & hover states to update
             }
 
-            uint dwDown = NativeMethods.MOUSEEVENTF_LEFTDOWN;
-            uint dwUp = NativeMethods.MOUSEEVENTF_LEFTUP;
-
-            if (button == 1)
-            {
-                dwDown = NativeMethods.MOUSEEVENTF_RIGHTDOWN;
-                dwUp = NativeMethods.MOUSEEVENTF_RIGHTUP;
-            }
-            else if (button == 2)
-            {
-                dwDown = NativeMethods.MOUSEEVENTF_MIDDLEDOWN;
-                dwUp = NativeMethods.MOUSEEVENTF_MIDDLEUP;
-            }
-
-            NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[1];
-            inputs[0].type = NativeMethods.INPUT_MOUSE;
-            inputs[0].u.mi.dwFlags = dwDown;
-            NativeMethods.SendInput(1, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
-
-            Thread.Sleep(holdMs);
-
-            inputs[0].u.mi.dwFlags = dwUp;
-            NativeMethods.SendInput(1, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+            NativeMethods.SendPhysicalClick(button, holdMs);
         }
 
         private static void PerformMiddleScroll(Point pt, int scrollStep, int holdMs, bool freeMouseMode)
@@ -592,16 +535,11 @@ namespace ModernAutoClicker.Advanced
                 if (freeMouseMode)
                 {
                     NativeMethods.POINT screenPt = new NativeMethods.POINT { X = pt.X, Y = pt.Y };
-                    IntPtr targetHwnd = NativeMethods.WindowFromPoint(screenPt);
-                    if (targetHwnd != IntPtr.Zero)
+                    IntPtr topHwnd = NativeMethods.WindowFromPoint(screenPt);
+                    if (topHwnd != IntPtr.Zero)
                     {
-                        NativeMethods.POINT clientPt = screenPt;
-                        NativeMethods.ScreenToClient(targetHwnd, ref clientPt);
-                        IntPtr child = NativeMethods.RealChildWindowFromPoint(targetHwnd, clientPt);
-                        if (child != IntPtr.Zero && child != targetHwnd)
-                        {
-                            targetHwnd = child;
-                        }
+                        IntPtr targetHwnd = NativeMethods.FindDeepestChild(topHwnd, screenPt);
+                        if (targetHwnd == IntPtr.Zero) targetHwnd = topHwnd;
 
                         short deltaShort = (short)singleDelta;
                         IntPtr wParam = (IntPtr)((int)((uint)(ushort)deltaShort << 16));
@@ -620,7 +558,7 @@ namespace ModernAutoClicker.Advanced
                 }
 
                 NativeMethods.SetCursorPos(pt.X, pt.Y);
-                Thread.Sleep(5);
+                Thread.Sleep(25);
             }
 
             // Physical multi-notch wheel dispatch (Identical to physical mouse hardware)

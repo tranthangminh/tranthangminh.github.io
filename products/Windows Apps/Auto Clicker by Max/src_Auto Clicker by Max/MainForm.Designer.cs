@@ -41,7 +41,6 @@ namespace ModernAutoClicker
         private RoundedPanel pnlClickMode;
         private Label lblHeaderClickMode;
         private RadioButton radModePoints, radModeCursor;
-        private RoundedButton btnThemeToggle;
 
         // X-Y List Controls & Cursor Guide
         private Label lblHeaderList;
@@ -409,17 +408,7 @@ namespace ModernAutoClicker
             };
             btnTransformTool.Click += (s, e) => ToggleTransformTool();
 
-            btnThemeToggle = new RoundedButton
-            {
-                Text = "🔆",
-                Location = new Point(320, 0),
-                Size = new Size(44, 44),
-                BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontSegoeSymbol(17F, FontStyle.Regular)
-            };
-            btnThemeToggle.Click += (s, e) => ToggleTheme();
-
-            pnlBottomBar.Controls.AddRange(new Control[] { btnStart, btnStopAll, btnTransformTool, btnThemeToggle });
+            pnlBottomBar.Controls.AddRange(new Control[] { btnStart, btnStopAll, btnTransformTool });
 
             // ==========================================
             // 5. STATUS SUMMARY INFO BAR
@@ -571,22 +560,18 @@ namespace ModernAutoClicker
             if (!isAdvanced)
             {
                 btnStart.Location = new Point(20, 0);
-                btnStart.Size = new Size(118, 44);
-                if (btnStopAll != null) { btnStopAll.Location = new Point(144, 0); btnStopAll.Size = new Size(92, 44); }
-                btnTransformTool.Location = new Point(242, 0);
-                btnTransformTool.Size = new Size(74, 44);
-                btnThemeToggle.Location = new Point(322, 0);
-                btnThemeToggle.Size = new Size(44, 44);
+                btnStart.Size = new Size(130, 44);
+                if (btnStopAll != null) { btnStopAll.Location = new Point(156, 0); btnStopAll.Size = new Size(100, 44); }
+                btnTransformTool.Location = new Point(262, 0);
+                btnTransformTool.Size = new Size(106, 44);
             }
             else
             {
-                btnStart.Location = new Point(76, 0);
-                btnStart.Size = new Size(170, 44);
-                if (btnStopAll != null) { btnStopAll.Location = new Point(254, 0); btnStopAll.Size = new Size(110, 44); }
-                btnTransformTool.Location = new Point(372, 0);
-                btnTransformTool.Size = new Size(90, 44);
-                btnThemeToggle.Location = new Point(470, 0);
-                btnThemeToggle.Size = new Size(44, 44);
+                btnStart.Location = new Point(60, 0);
+                btnStart.Size = new Size(180, 44);
+                if (btnStopAll != null) { btnStopAll.Location = new Point(248, 0); btnStopAll.Size = new Size(122, 44); }
+                btnTransformTool.Location = new Point(378, 0);
+                btnTransformTool.Size = new Size(152, 44);
             }
 
             // 5. Global Settings & Hotkey Card
@@ -795,12 +780,6 @@ namespace ModernAutoClicker
                 titleBar.ApplyTheme(t);
             }
 
-            btnThemeToggle.Text = t.IsDark ? "🔆" : "⏾";
-            btnThemeToggle.NormalColor = t.TextPrimary;
-            btnThemeToggle.ForeColor = t.BgPrimary;
-            btnThemeToggle.HoverColor = t.TextSecondary;
-            btnThemeToggle.Invalidate();
-
             // Cards
             RoundedPanel[] cards = new RoundedPanel[] { pnlGlobalSettings, pnlClickMode, pnlSimpleTarget, pnlTime, pnlList };
             foreach (RoundedPanel card in cards)
@@ -956,7 +935,6 @@ namespace ModernAutoClicker
             btnSaveList.BorderRadius = t.RadiusMd;
             btnLoadList.BorderRadius = t.RadiusMd;
             btnStart.BorderRadius = t.RadiusMd;
-            btnThemeToggle.BorderRadius = t.RadiusMd;
             btnTabInfo.BorderRadius = t.RadiusMd;
             btnTabBasic.BorderRadius = t.RadiusMd;
             btnTabAdvanced.BorderRadius = t.RadiusMd;

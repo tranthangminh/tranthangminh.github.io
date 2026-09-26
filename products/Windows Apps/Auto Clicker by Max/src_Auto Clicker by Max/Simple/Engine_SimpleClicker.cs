@@ -84,6 +84,30 @@ namespace ModernAutoClicker
                 bool hasPoints = (config.ClickMode == 0) && config.PointsList != null && config.PointsList.Count > 0;
                 DateTime lastUiUpdate = DateTime.MinValue;
 
+                // Initial settle and focus for first point (prevents missed first click)
+                if (!config.FreeMouseMode && hasPoints)
+                {
+                    if (config.RelativeToWindow && config.TargetHwnd != IntPtr.Zero)
+                    {
+                        NativeMethods.SetForegroundWindow(config.TargetHwnd);
+                        Thread.Sleep(30);
+                    }
+
+                    Point firstRaw = config.PointsList[0];
+                    Point firstPt = ApplyJitter(firstRaw, config.JitterPx);
+                    Point firstAct = ResolveActualPoint(firstPt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.RelativeToWindow);
+
+                    if (config.SmoothMouseMove)
+                    {
+                        MouseMovementSimulator.MoveSmoothly(Point.Empty, firstAct, 120, () => _isRunning);
+                    }
+                    else
+                    {
+                        NativeMethods.SetCursorPos(firstAct.X, firstAct.Y);
+                    }
+                    Thread.Sleep(30);
+                }
+
                 while (_isRunning)
                 {
                     if (config.FreeMouseMode)

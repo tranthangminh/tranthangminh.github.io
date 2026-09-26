@@ -128,12 +128,19 @@ namespace ModernAutoClicker.Info
                         if (File.Exists(p2)) path = p2;
                         else
                         {
-                            foreach (string d in Directory.GetDirectories(baseDir, "src_*"))
+                            string pSvg = Path.Combine(baseDir, "svg", nameOrPath);
+                            if (File.Exists(pSvg)) path = pSvg;
+                            else
                             {
-                                string p3 = Path.Combine(d, nameOrPath);
-                                if (File.Exists(p3)) { path = p3; break; }
-                                string p4 = Path.Combine(d, "Info", nameOrPath);
-                                if (File.Exists(p4)) { path = p4; break; }
+                                foreach (string d in Directory.GetDirectories(baseDir, "src_*"))
+                                {
+                                    string p3 = Path.Combine(d, nameOrPath);
+                                    if (File.Exists(p3)) { path = p3; break; }
+                                    string p4 = Path.Combine(d, "Info", nameOrPath);
+                                    if (File.Exists(p4)) { path = p4; break; }
+                                    string p5 = Path.Combine(d, "svg", nameOrPath);
+                                    if (File.Exists(p5)) { path = p5; break; }
+                                }
                             }
                         }
                     }
@@ -149,6 +156,39 @@ namespace ModernAutoClicker.Info
             catch { }
 
             return null;
+        }
+
+        private static Image _cachedSunIcon = null;
+        private static Image _cachedMoonIcon = null;
+        private static int _cachedThemeIconSize = 0;
+
+        public static Image GetThemeIconImage(bool isDark, int size = 18)
+        {
+            if (_cachedThemeIconSize != size)
+            {
+                _cachedSunIcon = null;
+                _cachedMoonIcon = null;
+                _cachedThemeIconSize = size;
+            }
+
+            if (isDark)
+            {
+                if (_cachedSunIcon == null)
+                {
+                    // Sun icon for switching to Light Mode
+                    _cachedSunIcon = RenderSvg("light-mode.svg", size, size, Color.FromArgb(243, 176, 78));
+                }
+                return _cachedSunIcon;
+            }
+            else
+            {
+                if (_cachedMoonIcon == null)
+                {
+                    // Moon icon for switching to Dark Mode
+                    _cachedMoonIcon = RenderSvg("dark-mode.svg", size, size, Color.FromArgb(235, 160, 40));
+                }
+                return _cachedMoonIcon;
+            }
         }
 
         public static Image GetAppIconImage(int size = 26)
@@ -285,6 +325,31 @@ namespace ModernAutoClicker.Info
                 if (r > 0)
                 {
                     totalPath.AddEllipse(cx - r, cy - r, r * 2, r * 2);
+                }
+            }
+
+            // 5. Lines
+            XmlNodeList lines = doc.GetElementsByTagName("line");
+            foreach (XmlNode line in lines)
+            {
+                if (IsElementNoneFill(line, noneFillClasses)) continue;
+                float x1 = GetFloatAttr(line, "x1", 0);
+                float y1 = GetFloatAttr(line, "y1", 0);
+                float x2 = GetFloatAttr(line, "x2", 0);
+                float y2 = GetFloatAttr(line, "y2", 0);
+                float strokeWidth = GetFloatAttr(line, "stroke-width", 2f);
+                if (strokeWidth <= 0) strokeWidth = 2f;
+
+                using (GraphicsPath lp = new GraphicsPath())
+                {
+                    lp.AddLine(x1, y1, x2, y2);
+                    using (Pen p = new Pen(Color.Black, strokeWidth))
+                    {
+                        p.StartCap = LineCap.Round;
+                        p.EndCap = LineCap.Round;
+                        try { lp.Widen(p); } catch { }
+                    }
+                    totalPath.AddPath(lp, false);
                 }
             }
 

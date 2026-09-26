@@ -722,9 +722,11 @@ namespace ModernAutoClicker.Advanced
             lblIfMatch = new Label
             {
                 Text = "Match:",
-                Location = new Point(80, 34),
-                AutoSize = true,
+                Location = new Point(38, 32),
+                Size = new Size(84, 20),
+                AutoSize = false,
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleRight,
                 ForeColor = _theme.CGreen,
                 Visible = false
             };
@@ -732,7 +734,7 @@ namespace ModernAutoClicker.Advanced
             cboIfTrue = new ModernDropdown
             {
                 Location = new Point(124, 31),
-                Size = new Size(96, 22),
+                Size = new Size(116, 22),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 CustomBackColor = Color.FromArgb(40, 22, 101, 52),
                 CustomBorderColor = Color.FromArgb(140, 34, 197, 94),
@@ -767,17 +769,19 @@ namespace ModernAutoClicker.Advanced
             lblIfUnmatch = new Label
             {
                 Text = "Unmatch:",
-                Location = new Point(228, 34),
-                AutoSize = true,
+                Location = new Point(242, 32),
+                Size = new Size(84, 20),
+                AutoSize = false,
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleRight,
                 ForeColor = _theme.Danger,
                 Visible = false
             };
 
             cboIfFalse = new ModernDropdown
             {
-                Location = new Point(286, 31),
-                Size = new Size(96, 22),
+                Location = new Point(330, 31),
+                Size = new Size(128, 22),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
                 CustomBackColor = Color.FromArgb(45, 127, 29, 29),
                 CustomBorderColor = Color.FromArgb(140, 239, 68, 68),
@@ -1188,14 +1192,14 @@ namespace ModernAutoClicker.Advanced
                 }
                 if (_step.StartPoint != Point.Empty)
                 {
-                    return string.Format("({0},{1})", _step.StartPoint.X, _step.StartPoint.Y);
+                    return string.Format("{0},{1}", _step.StartPoint.X, _step.StartPoint.Y);
                 }
-                return "Full Screen";
+                return "Full\nScreen";
             }
 
             if (_step.ActionType == MacroActionType.DragDrop)
             {
-                return string.Format("A:{0},{1}\nB:{2},{3}", _step.StartPoint.X, _step.StartPoint.Y, _step.EndPoint.X, _step.EndPoint.Y);
+                return string.Format("A: {0}, {1}\nB: {2}, {3}", _step.StartPoint.X, _step.StartPoint.Y, _step.EndPoint.X, _step.EndPoint.Y);
             }
 
             bool isArea = (_step.EndPoint != Point.Empty && _step.EndPoint != _step.StartPoint);
@@ -1208,9 +1212,9 @@ namespace ModernAutoClicker.Advanced
 
             if (_step.StartPoint == Point.Empty)
             {
-                return compactForColorSwatch ? "(0,0)" : "(0, 0)";
+                return compactForColorSwatch ? "0,0" : "0, 0";
             }
-            return compactForColorSwatch ? string.Format("({0},{1})", _step.StartPoint.X, _step.StartPoint.Y) : string.Format("({0}, {1})", _step.StartPoint.X, _step.StartPoint.Y);
+            return compactForColorSwatch ? string.Format("{0},{1}", _step.StartPoint.X, _step.StartPoint.Y) : string.Format("{0}, {1}", _step.StartPoint.X, _step.StartPoint.Y);
         }
 
         private void UpdateDynamicFields()
@@ -1283,7 +1287,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 2, 2);
                 lblCoord.Size = new Size(90, 30);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(6.5F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(8.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText();
 
@@ -1310,8 +1314,8 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 38, 8);
-                lblCoord.Size = new Size(54, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(7F);
+                lblCoord.Size = new Size(55, 18);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(8.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1338,7 +1342,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 20, 8);
                 lblCoord.Size = new Size(72, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(7.5F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(9.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1372,7 +1376,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 20, 8);
                 lblCoord.Size = new Size(72, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(7.5F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(9.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1402,9 +1406,9 @@ namespace ModernAutoClicker.Advanced
 
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
-                lblCoord.Location = new Point(colX + 36, 8);
-                lblCoord.Size = new Size(56, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(7F);
+                lblCoord.Location = new Point(colX + 36, 2);
+                lblCoord.Size = new Size(56, 30);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(8.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1443,9 +1447,9 @@ namespace ModernAutoClicker.Advanced
 
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
-                lblCoord.Location = new Point(colX + 36, 8);
-                lblCoord.Size = new Size(56, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(7F);
+                lblCoord.Location = new Point(colX + 36, 2);
+                lblCoord.Size = new Size(56, 30);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(8.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1482,9 +1486,9 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 2, 8);
                 lblCoord.Size = new Size(90, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(7F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(9.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
-                lblCoord.Text = (_step.StartPoint == Point.Empty) ? "🔄 (0, 0)" : string.Format("🔄 ({0},{1})", _step.StartPoint.X, _step.StartPoint.Y);
+                lblCoord.Text = GetCoordDisplayText(false);
 
                 btnPickCoord.Location = new Point(colX + 94, 6);
                 btnPickCoord.Size = new Size(22, 22);
@@ -1511,7 +1515,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 2, 8);
                 lblCoord.Size = new Size(90, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(7.5F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(9.5F);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(false);
 
@@ -1555,27 +1559,29 @@ namespace ModernAutoClicker.Advanced
                 if (_step.ActionType == MacroActionType.IfImage)
                 {
                     lblIfMatch.Text = Loc.IsVietnamese ? "Nếu Thấy:" : "If Found:";
-                    lblIfMatch.Location = new Point(68, 34);
-                    cboIfTrue.Location = new Point(134, 31);
-                    cboIfTrue.Size = new Size(106, 22);
-
                     lblIfUnmatch.Text = Loc.IsVietnamese ? "Nếu Thiếu:" : "If Missing:";
-                    lblIfUnmatch.Location = new Point(248, 34);
-                    cboIfFalse.Location = new Point(320, 31);
-                    cboIfFalse.Size = new Size(106, 22);
                 }
                 else
                 {
                     lblIfMatch.Text = Loc.LblIfMatch;
-                    lblIfMatch.Location = new Point(80, 34);
-                    cboIfTrue.Location = new Point(124, 31);
-                    cboIfTrue.Size = new Size(96, 22);
-
                     lblIfUnmatch.Text = Loc.LblIfUnmatch;
-                    lblIfUnmatch.Location = Loc.IsVietnamese ? new Point(216, 34) : new Point(228, 34);
-                    cboIfFalse.Location = new Point(286, 31);
-                    cboIfFalse.Size = new Size(96, 22);
                 }
+
+                lblIfMatch.AutoSize = false;
+                lblIfMatch.Location = new Point(38, 32);
+                lblIfMatch.Size = new Size(84, 20);
+                lblIfMatch.TextAlign = ContentAlignment.MiddleRight;
+
+                cboIfTrue.Location = new Point(124, 31);
+                cboIfTrue.Size = new Size(116, 22);
+
+                lblIfUnmatch.AutoSize = false;
+                lblIfUnmatch.Location = new Point(242, 32);
+                lblIfUnmatch.Size = new Size(84, 20);
+                lblIfUnmatch.TextAlign = ContentAlignment.MiddleRight;
+
+                cboIfFalse.Location = new Point(330, 31);
+                cboIfFalse.Size = new Size(128, 22);
 
                 int currentRow = _index + 1;
                 int maxStepNeeded = Math.Max(1, _totalStepCount);
@@ -2031,7 +2037,7 @@ namespace ModernAutoClicker.Advanced
             _step.StartPoint = pt;
             if (lblCoord != null)
             {
-                lblCoord.Text = GetCoordDisplayText(_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.MiddleClick);
+                lblCoord.Text = GetCoordDisplayText(_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.MiddleClick || _step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage);
             }
             this.Invalidate();
         }
@@ -2041,7 +2047,7 @@ namespace ModernAutoClicker.Advanced
             _step.EndPoint = pt;
             if (lblCoord != null)
             {
-                lblCoord.Text = GetCoordDisplayText(_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.MiddleClick);
+                lblCoord.Text = GetCoordDisplayText(_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.MiddleClick || _step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage);
             }
             this.Invalidate();
         }
@@ -2052,7 +2058,7 @@ namespace ModernAutoClicker.Advanced
             _step.EndPoint = ptB;
             if (lblCoord != null)
             {
-                lblCoord.Text = GetCoordDisplayText(_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.MiddleClick);
+                lblCoord.Text = GetCoordDisplayText(_step.ActionType == MacroActionType.WaitColor || _step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.MiddleClick || _step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage);
             }
             this.Invalidate();
         }

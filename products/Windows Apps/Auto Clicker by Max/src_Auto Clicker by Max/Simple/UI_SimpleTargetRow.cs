@@ -141,7 +141,7 @@ namespace ModernAutoClicker
             // 2. Coordinates Label
             lblCoord = new Label
             {
-                Text = string.Format("({0}, {1})", _point.X, _point.Y),
+                Text = string.Format("{0}, {1}", _point.X, _point.Y),
                 Location = new Point(x, 0),
                 Size = new Size(106, 18),
                 Font = ThemeTokens.GetMonospaceFont(10F),
@@ -174,7 +174,7 @@ namespace ModernAutoClicker
 
         public void RefreshDisplay()
         {
-            if (lblCoord != null) lblCoord.Text = string.Format("({0}, {1})", _point.X, _point.Y);
+            if (lblCoord != null) lblCoord.Text = string.Format("{0}, {1}", _point.X, _point.Y);
         }
 
         private void UpdateRowBackground()

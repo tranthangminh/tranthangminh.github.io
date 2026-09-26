@@ -238,22 +238,77 @@ namespace ModernAutoClicker
             SendInput(1, inputUp, Marshal.SizeOf(typeof(INPUT)));
         }
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr ChildWindowFromPointEx(IntPtr hWndParent, POINT pt, uint uFlags);
+
+        public static IntPtr FindDeepestChild(IntPtr parent, POINT screenPt)
+        {
+            if (parent == IntPtr.Zero) return IntPtr.Zero;
+
+            // Check Desktop special case: Progman / WorkerW -> SHELLDLL_DefView -> SysListView32
+            System.Text.StringBuilder sbClass = new System.Text.StringBuilder(256);
+            GetClassName(parent, sbClass, sbClass.Capacity);
+            string cls = sbClass.ToString();
+            if (cls == "Progman" || cls == "WorkerW")
+            {
+                IntPtr shellView = FindWindowEx(parent, IntPtr.Zero, "SHELLDLL_DefView", null);
+                if (shellView == IntPtr.Zero)
+                {
+                    IntPtr worker = IntPtr.Zero;
+                    do
+                    {
+                        worker = FindWindowEx(IntPtr.Zero, worker, "WorkerW", null);
+                        if (worker != IntPtr.Zero)
+                        {
+                            shellView = FindWindowEx(worker, IntPtr.Zero, "SHELLDLL_DefView", null);
+                            if (shellView != IntPtr.Zero) break;
+                        }
+                    } while (worker != IntPtr.Zero);
+                }
+                if (shellView != IntPtr.Zero)
+                {
+                    IntPtr listView = FindWindowEx(shellView, IntPtr.Zero, "SysListView32", null);
+                    if (listView != IntPtr.Zero) return listView;
+                    return shellView;
+                }
+            }
+
+            // Recursive search down child window tree (up to 12 levels)
+            IntPtr current = parent;
+            for (int depth = 0; depth < 12; depth++)
+            {
+                POINT ptInCurrent = screenPt;
+                if (!ScreenToClient(current, ref ptInCurrent)) break;
+
+                IntPtr nextChild = RealChildWindowFromPoint(current, ptInCurrent);
+                if (nextChild == IntPtr.Zero || nextChild == current)
+                {
+                    // Fallback to ChildWindowFromPointEx (CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT = 0x0005)
+                    nextChild = ChildWindowFromPointEx(current, ptInCurrent, 0x0005);
+                    if (nextChild == IntPtr.Zero || nextChild == current)
+                    {
+                        break; // Reached leaf window
+                    }
+                }
+                current = nextChild;
+            }
+            return current;
+        }
+
         public static void SendBackgroundClick(int screenX, int screenY, int mouseBtn, int holdMs = 10)
         {
             POINT screenPt = new POINT { X = screenX, Y = screenY };
-            IntPtr hWnd = WindowFromPoint(screenPt);
-            if (hWnd == IntPtr.Zero) return;
+            IntPtr topHwnd = WindowFromPoint(screenPt);
+            if (topHwnd == IntPtr.Zero) return;
+
+            IntPtr targetHwnd = FindDeepestChild(topHwnd, screenPt);
+            if (targetHwnd == IntPtr.Zero) targetHwnd = topHwnd;
 
             POINT clientPt = screenPt;
-            ScreenToClient(hWnd, ref clientPt);
-
-            IntPtr child = RealChildWindowFromPoint(hWnd, clientPt);
-            if (child != IntPtr.Zero && child != hWnd)
-            {
-                ScreenToClient(child, ref screenPt);
-                hWnd = child;
-                clientPt = screenPt;
-            }
+            ScreenToClient(targetHwnd, ref clientPt);
 
             IntPtr lParam = (IntPtr)(((clientPt.Y & 0xFFFF) << 16) | (clientPt.X & 0xFFFF));
 
@@ -279,11 +334,11 @@ namespace ModernAutoClicker
                 wParam = (IntPtr)0x0001; // MK_LBUTTON
             }
 
-            // 1. Send WM_MOUSEMOVE first so browser/app registers mouse position over the element
-            PostMessage(hWnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
+            // 1. Send WM_MOUSEMOVE first so browser/app/emulator registers mouse position over the element
+            PostMessage(targetHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
             
             // 2. Send Button Down
-            PostMessage(hWnd, msgDown, wParam, lParam);
+            PostMessage(targetHwnd, msgDown, wParam, lParam);
             
             // 3. Hold duration (default 10ms or <= interval)
             if (holdMs > 0)
@@ -292,26 +347,25 @@ namespace ModernAutoClicker
             }
             
             // 4. Send Button Up
-            PostMessage(hWnd, msgUp, IntPtr.Zero, lParam);
+            PostMessage(targetHwnd, msgUp, IntPtr.Zero, lParam);
         }
 
         public static void PerformClickDirectToWindow(IntPtr hWnd, int clientX, int clientY, int mouseBtn, int holdMs)
         {
             if (hWnd == IntPtr.Zero) return;
 
-            // Find child control if any
-            POINT clientPt = new POINT { X = clientX, Y = clientY };
-            IntPtr child = RealChildWindowFromPoint(hWnd, clientPt);
-            if (child != IntPtr.Zero && child != hWnd)
-            {
-                POINT screenPt = clientPt;
-                ClientToScreen(hWnd, ref screenPt);
-                ScreenToClient(child, ref screenPt);
-                hWnd = child;
-                clientPt = screenPt;
-            }
+            // Convert client coordinate of hWnd to screen coordinates
+            POINT screenPt = new POINT { X = clientX, Y = clientY };
+            ClientToScreen(hWnd, ref screenPt);
 
-            IntPtr lParam = (IntPtr)(((clientPt.Y & 0xFFFF) << 16) | (clientPt.X & 0xFFFF));
+            // Drill down to the deepest leaf child window at this position
+            IntPtr targetHwnd = FindDeepestChild(hWnd, screenPt);
+            if (targetHwnd == IntPtr.Zero) targetHwnd = hWnd;
+
+            POINT targetClientPt = screenPt;
+            ScreenToClient(targetHwnd, ref targetClientPt);
+
+            IntPtr lParam = (IntPtr)(((targetClientPt.Y & 0xFFFF) << 16) | (targetClientPt.X & 0xFFFF));
             uint msgDown, msgUp;
             IntPtr wParam;
 
@@ -334,13 +388,13 @@ namespace ModernAutoClicker
                 wParam = (IntPtr)0x0001;
             }
 
-            PostMessage(hWnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
-            PostMessage(hWnd, msgDown, wParam, lParam);
+            PostMessage(targetHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
+            PostMessage(targetHwnd, msgDown, wParam, lParam);
             if (holdMs > 0)
             {
                 System.Threading.Thread.Sleep(holdMs);
             }
-            PostMessage(hWnd, msgUp, IntPtr.Zero, lParam);
+            PostMessage(targetHwnd, msgUp, IntPtr.Zero, lParam);
         }
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]

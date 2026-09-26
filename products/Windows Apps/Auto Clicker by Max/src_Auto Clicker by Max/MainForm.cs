@@ -159,6 +159,10 @@ namespace ModernAutoClicker
                     Loc.CurrentLanguage = Loc.IsVietnamese ? AppLanguage.English : AppLanguage.Vietnamese;
                     SaveSettings();
                 };
+                titleBar.OnThemeToggleRequested += () =>
+                {
+                    ToggleTheme();
+                };
             }
 
             Loc.OnLanguageChanged += () =>
@@ -1767,7 +1771,6 @@ namespace ModernAutoClicker
             if (pnlContentHost != null) pnlContentHost.Enabled = true;
             if (pnlGlobalSettings != null) pnlGlobalSettings.Enabled = true;
             if (btnTransformTool != null) btnTransformTool.Enabled = !isCurrentRunning;
-            if (btnThemeToggle != null) btnThemeToggle.Enabled = true;
 
             if (_currentTabIndex == 1)
             {

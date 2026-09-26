@@ -140,10 +140,10 @@ namespace ModernAutoClicker
             // 4. Bounds Indicator
             lblBounds = new Label
             {
-                Text = "Bounds: (0, 0)",
+                Text = "Bounds: 0, 0",
                 Location = new Point(12, 178),
                 Size = new Size(228, 16),
-                Font = ThemeTokens.GetMonospaceFont(7F),
+                Font = ThemeTokens.GetMonospaceFont(10F),
                 ForeColor = _theme.TextTertiary,
                 TextAlign = ContentAlignment.MiddleCenter
             };

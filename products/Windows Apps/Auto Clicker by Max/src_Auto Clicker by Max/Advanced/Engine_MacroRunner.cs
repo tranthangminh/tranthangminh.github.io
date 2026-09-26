@@ -69,6 +69,34 @@ namespace ModernAutoClicker.Advanced
             {
                 Thread.Sleep(60);
 
+                // Initial settle and focus for first step (prevents missed first click)
+                if (!freeMouseMode && stepsToRun.Count > 0)
+                {
+                    MacroStep firstStep = stepsToRun.Find(s => s.Enabled && (s.StartPoint != Point.Empty || s.RelativeToWindow));
+                    if (firstStep != null)
+                    {
+                        if (firstStep.RelativeToWindow && firstStep.WindowHwnd != IntPtr.Zero)
+                        {
+                            NativeMethods.SetForegroundWindow(firstStep.WindowHwnd);
+                            Thread.Sleep(30);
+                        }
+
+                        if (firstStep.StartPoint != Point.Empty)
+                        {
+                            Point targetPt = ActionExecutor.ResolveActualScreenPoint(firstStep, firstStep.StartPoint);
+                            if (smoothMouseMove)
+                            {
+                                MouseMovementSimulator.MoveSmoothly(Point.Empty, targetPt, 120, () => _isRunning);
+                            }
+                            else
+                            {
+                                NativeMethods.SetCursorPos(targetPt.X, targetPt.Y);
+                            }
+                            Thread.Sleep(30); // Allow OS and target app to update hover & focus
+                        }
+                    }
+                }
+
                 int currentLoop = 0;
 
                 while (_isRunning)
