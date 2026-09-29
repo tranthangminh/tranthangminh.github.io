@@ -8,7 +8,7 @@
   "IsDarkTheme": true,
   "IsAdvancedTab": true,
   "LastUpdateCheckDate": "2026-09-29",
-  "Language": "en",
+  "Language": "vi",
   "AsianWindowWidth": 700,
   "AsianWindowHeight": 760,
   "SimpleProfiles": [
@@ -37,11 +37,11 @@
       "SimpleTargetWindowTitle": "BlueStacks App Player",
       "SimpleRelativeToWindow": true,
       "Points": [
-        { "X": 367, "Y": 603 },
-        { "X": 355, "Y": 702 },
+        { "X": 398, "Y": 600 },
+        { "X": 400, "Y": 697 },
         { "X": 104, "Y": 807 },
         { "X": 239, "Y": 806 },
-        { "X": 379, "Y": 804 }
+        { "X": 402, "Y": 795 }
       ]
     },
     {

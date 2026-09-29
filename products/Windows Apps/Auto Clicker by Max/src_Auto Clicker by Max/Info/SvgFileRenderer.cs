@@ -12,10 +12,27 @@ namespace ModernAutoClicker.Info
 {
     public static class SvgFileRenderer
     {
+        private class SvgShapeItem
+        {
+            public GraphicsPath Path;
+            public Color Color;
+        }
+
+        private class SvgTextItem
+        {
+            public string Content;
+            public float X, Y;
+            public float FontSize;
+            public Color Color;
+        }
+
         private class SvgData
         {
             public GraphicsPath Path;
             public RectangleF ViewBox;
+            public List<SvgShapeItem> Shapes;
+            public List<SvgTextItem> Texts;
+            public bool IsMultiColor;
         }
 
         private static readonly Dictionary<string, SvgData> _svgCache =
@@ -26,6 +43,7 @@ namespace ModernAutoClicker.Info
 
         /// <summary>
         /// Universal SVG renderer: renders directly from embedded resource inside exe, or from file on disk.
+        /// Supports both single-tint monochrome icons and multi-color high-fidelity illustrations (e.g. QR_Vietcombank.svg).
         /// </summary>
         public static Bitmap RenderSvg(string nameOrPath, int targetWidth, int targetHeight, Color? tintColor = null)
         {
@@ -58,27 +76,72 @@ namespace ModernAutoClicker.Info
                     g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                     g.Clear(Color.Transparent);
 
-                    float scaleX = targetWidth / data.ViewBox.Width;
-                    float scaleY = targetHeight / data.ViewBox.Height;
-                    float scale = Math.Min(scaleX, scaleY) * 0.92f;
-
-                    float drawW = data.ViewBox.Width * scale;
-                    float drawH = data.ViewBox.Height * scale;
-                    float offX = (targetWidth - drawW) / 2.0f - (data.ViewBox.X * scale);
-                    float offY = (targetHeight - drawH) / 2.0f - (data.ViewBox.Y * scale);
-
-                    using (Matrix mat = new Matrix())
+                    if (tintColor == null && data.IsMultiColor && data.Shapes != null && data.Shapes.Count > 0)
                     {
-                        mat.Translate(offX, offY);
-                        mat.Scale(scale, scale);
+                        // Multi-color SVG high-fidelity rendering (e.g. QR_Vietcombank.svg)
+                        float scale = Math.Min(targetWidth / data.ViewBox.Width, targetHeight / data.ViewBox.Height);
+                        float offX = (targetWidth - data.ViewBox.Width * scale) / 2.0f;
+                        float offY = (targetHeight - data.ViewBox.Height * scale) / 2.0f;
 
-                        using (GraphicsPath transformed = (GraphicsPath)data.Path.Clone())
+                        using (Matrix mat = new Matrix())
                         {
-                            transformed.Transform(mat);
-                            Color c = tintColor ?? Color.FromArgb(100, 102, 233);
-                            using (SolidBrush brush = new SolidBrush(c))
+                            mat.Translate(offX, offY);
+                            mat.Scale(scale, scale);
+
+                            foreach (SvgShapeItem s in data.Shapes)
                             {
-                                g.FillPath(brush, transformed);
+                                using (GraphicsPath transformed = (GraphicsPath)s.Path.Clone())
+                                {
+                                    transformed.Transform(mat);
+                                    using (SolidBrush brush = new SolidBrush(s.Color))
+                                    {
+                                        g.FillPath(brush, transformed);
+                                    }
+                                }
+                            }
+
+                            if (data.Texts != null && data.Texts.Count > 0)
+                            {
+                                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                                foreach (SvgTextItem txt in data.Texts)
+                                {
+                                    PointF[] pt = new PointF[] { new PointF(txt.X, txt.Y) };
+                                    mat.TransformPoints(pt);
+                                    float scaledFont = txt.FontSize * scale;
+                                    using (Font font = new Font("Segoe UI", scaledFont * 0.72f, FontStyle.Bold, GraphicsUnit.Pixel))
+                                    using (SolidBrush b = new SolidBrush(txt.Color))
+                                    {
+                                        g.DrawString(txt.Content, font, b, pt[0].X, pt[0].Y - (scaledFont * 0.85f));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Monochrome icon rendering with tintColor (e.g. logo-MAX.svg)
+                        float scaleX = targetWidth / data.ViewBox.Width;
+                        float scaleY = targetHeight / data.ViewBox.Height;
+                        float scale = Math.Min(scaleX, scaleY) * 0.92f;
+
+                        float drawW = data.ViewBox.Width * scale;
+                        float drawH = data.ViewBox.Height * scale;
+                        float offX = (targetWidth - drawW) / 2.0f - (data.ViewBox.X * scale);
+                        float offY = (targetHeight - drawH) / 2.0f - (data.ViewBox.Y * scale);
+
+                        using (Matrix mat = new Matrix())
+                        {
+                            mat.Translate(offX, offY);
+                            mat.Scale(scale, scale);
+
+                            using (GraphicsPath transformed = (GraphicsPath)data.Path.Clone())
+                            {
+                                transformed.Transform(mat);
+                                Color c = tintColor ?? Color.FromArgb(100, 102, 233);
+                                using (SolidBrush brush = new SolidBrush(c))
+                                {
+                                    g.FillPath(brush, transformed);
+                                }
                             }
                         }
                     }
@@ -241,22 +304,111 @@ namespace ModernAutoClicker.Info
                 }
             }
 
-            // Identify "none" fill styles or classes
+            // Parse styles & classes
+            Dictionary<string, Color> classColors = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, float> classFontSizes = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
             HashSet<string> noneFillClasses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             XmlNodeList styleNodes = doc.GetElementsByTagName("style");
             foreach (XmlNode st in styleNodes)
             {
                 string css = st.InnerText;
-                MatchCollection mc = Regex.Matches(css, @"\.([a-zA-Z0-9_\-]+)\s*\{[^}]*fill\s*:\s*none[^}]*\}", RegexOptions.IgnoreCase);
+                MatchCollection mc = Regex.Matches(css, @"([^{]+)\{([^}]+)\}");
                 foreach (Match m in mc)
                 {
-                    if (m.Groups.Count > 1) noneFillClasses.Add(m.Groups[1].Value);
+                    string selectors = m.Groups[1].Value;
+                    string body = m.Groups[2].Value;
+
+                    Match mFill = Regex.Match(body, @"fill\s*:\s*(#[a-fA-F0-9]{3,6}|[a-zA-Z]+)");
+                    Color? ruleColor = null;
+                    bool isNoneFill = false;
+                    if (mFill.Success)
+                    {
+                        string fv = mFill.Groups[1].Value.Trim();
+                        if (fv.Equals("none", StringComparison.OrdinalIgnoreCase))
+                        {
+                            isNoneFill = true;
+                        }
+                        else
+                        {
+                            ruleColor = ParseColor(fv, Color.Black);
+                        }
+                    }
+
+                    float? ruleFontSize = null;
+                    Match fontMatch = Regex.Match(body, @"font-size\s*:\s*([0-9.]+)");
+                    if (fontMatch.Success)
+                    {
+                        float fs;
+                        if (float.TryParse(fontMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out fs))
+                        {
+                            ruleFontSize = fs;
+                        }
+                    }
+
+                    foreach (string sel in selectors.Split(','))
+                    {
+                        string s = sel.Trim();
+                        if (s.StartsWith(".")) s = s.Substring(1);
+                        if (isNoneFill)
+                        {
+                            noneFillClasses.Add(s);
+                        }
+                        else if (ruleColor.HasValue)
+                        {
+                            classColors[s] = ruleColor.Value;
+                        }
+                        if (ruleFontSize.HasValue)
+                        {
+                            classFontSizes[s] = ruleFontSize.Value;
+                        }
+                    }
                 }
             }
 
             GraphicsPath totalPath = new GraphicsPath(FillMode.Alternate);
+            List<SvgShapeItem> shapeList = new List<SvgShapeItem>();
+            List<SvgTextItem> textList = new List<SvgTextItem>();
+            HashSet<Color> uniqueColors = new HashSet<Color>();
 
-            // 1. Polygons & Polylines
+            // 1. Rectangles (in painter's algorithm order, background rect is first)
+            XmlNodeList rects = doc.GetElementsByTagName("rect");
+            foreach (XmlNode r in rects)
+            {
+                if (IsElementNoneFill(r, noneFillClasses)) continue;
+                float x = GetFloatAttr(r, "x", 0);
+                float y = GetFloatAttr(r, "y", 0);
+                float w = GetFloatAttr(r, "width", 0);
+                float h = GetFloatAttr(r, "height", 0);
+                float rx = GetFloatAttr(r, "rx", 0);
+                float ry = GetFloatAttr(r, "ry", 0);
+                if (w > 0 && h > 0)
+                {
+                    GraphicsPath p = new GraphicsPath(FillMode.Winding);
+                    if (rx > 0 || ry > 0)
+                    {
+                        float rad = Math.Max(rx, ry);
+                        rad = Math.Min(rad, Math.Min(w / 2f, h / 2f));
+                        float d = rad * 2f;
+                        p.AddArc(x, y, d, d, 180, 90);
+                        p.AddArc(x + w - d, y, d, d, 270, 90);
+                        p.AddArc(x + w - d, y + h - d, d, d, 0, 90);
+                        p.AddArc(x, y + h - d, d, d, 90, 90);
+                        p.CloseFigure();
+                    }
+                    else
+                    {
+                        p.AddRectangle(new RectangleF(x, y, w, h));
+                    }
+                    Color col = GetElementColor(r, classColors, Color.Black);
+                    shapeList.Add(new SvgShapeItem { Path = p, Color = col });
+                    uniqueColors.Add(col);
+
+                    totalPath.AddPath(p, false);
+                }
+            }
+
+            // 2. Polygons & Polylines
             XmlNodeList polygons = doc.GetElementsByTagName("polygon");
             foreach (XmlNode poly in polygons)
             {
@@ -267,6 +419,12 @@ namespace ModernAutoClicker.Info
                     PointF[] pts = ParsePoints(ptsAttr.Value);
                     if (pts != null && pts.Length >= 3)
                     {
+                        GraphicsPath p = new GraphicsPath(FillMode.Winding);
+                        p.AddPolygon(pts);
+                        Color col = GetElementColor(poly, classColors, Color.Black);
+                        shapeList.Add(new SvgShapeItem { Path = p, Color = col });
+                        uniqueColors.Add(col);
+
                         totalPath.AddPolygon(pts);
                     }
                 }
@@ -282,39 +440,36 @@ namespace ModernAutoClicker.Info
                     PointF[] pts = ParsePoints(ptsAttr.Value);
                     if (pts != null && pts.Length >= 3)
                     {
+                        GraphicsPath p = new GraphicsPath(FillMode.Winding);
+                        p.AddPolygon(pts);
+                        Color col = GetElementColor(poly, classColors, Color.Black);
+                        shapeList.Add(new SvgShapeItem { Path = p, Color = col });
+                        uniqueColors.Add(col);
+
                         totalPath.AddPolygon(pts);
                     }
                 }
             }
 
-            // 2. Paths
+            // 3. Paths
             XmlNodeList paths = doc.GetElementsByTagName("path");
-            foreach (XmlNode p in paths)
+            foreach (XmlNode pNode in paths)
             {
-                if (IsElementNoneFill(p, noneFillClasses)) continue;
-                XmlAttribute dAttr = p.Attributes["d"];
+                if (IsElementNoneFill(pNode, noneFillClasses)) continue;
+                XmlAttribute dAttr = pNode.Attributes["d"];
                 if (dAttr != null && !string.IsNullOrEmpty(dAttr.Value))
                 {
-                    AppendSvgPathToGraphicsPath(dAttr.Value, totalPath);
+                    GraphicsPath p = new GraphicsPath(FillMode.Winding);
+                    AppendSvgPathToGraphicsPath(dAttr.Value, p);
+                    Color col = GetElementColor(pNode, classColors, Color.Black);
+                    shapeList.Add(new SvgShapeItem { Path = p, Color = col });
+                    uniqueColors.Add(col);
+
+                    totalPath.AddPath(p, false);
                 }
             }
 
-            // 3. Rectangles
-            XmlNodeList rects = doc.GetElementsByTagName("rect");
-            foreach (XmlNode r in rects)
-            {
-                if (IsElementNoneFill(r, noneFillClasses)) continue;
-                float x = GetFloatAttr(r, "x", 0);
-                float y = GetFloatAttr(r, "y", 0);
-                float w = GetFloatAttr(r, "width", 0);
-                float h = GetFloatAttr(r, "height", 0);
-                if (w > 0 && h > 0)
-                {
-                    totalPath.AddRectangle(new RectangleF(x, y, w, h));
-                }
-            }
-
-            // 4. Circles & Ellipses
+            // 4. Circles
             XmlNodeList circles = doc.GetElementsByTagName("circle");
             foreach (XmlNode c in circles)
             {
@@ -324,6 +479,12 @@ namespace ModernAutoClicker.Info
                 float r = GetFloatAttr(c, "r", 0);
                 if (r > 0)
                 {
+                    GraphicsPath p = new GraphicsPath(FillMode.Winding);
+                    p.AddEllipse(cx - r, cy - r, r * 2, r * 2);
+                    Color col = GetElementColor(c, classColors, Color.Black);
+                    shapeList.Add(new SvgShapeItem { Path = p, Color = col });
+                    uniqueColors.Add(col);
+
                     totalPath.AddEllipse(cx - r, cy - r, r * 2, r * 2);
                 }
             }
@@ -349,7 +510,49 @@ namespace ModernAutoClicker.Info
                         p.EndCap = LineCap.Round;
                         try { lp.Widen(p); } catch { }
                     }
+                    Color col = GetElementColor(line, classColors, Color.Black);
+                    GraphicsPath cp = (GraphicsPath)lp.Clone();
+                    shapeList.Add(new SvgShapeItem { Path = cp, Color = col });
+                    uniqueColors.Add(col);
+
                     totalPath.AddPath(lp, false);
+                }
+            }
+
+            // 6. Texts
+            XmlNodeList textNodes = doc.GetElementsByTagName("text");
+            foreach (XmlNode t in textNodes)
+            {
+                float tx = GetFloatAttr(t, "x", 0);
+                float ty = GetFloatAttr(t, "y", 0);
+                XmlAttribute trAttr = t.Attributes["transform"];
+                if (trAttr != null)
+                {
+                    Match tm = Regex.Match(trAttr.Value, @"translate\(\s*([0-9\.\-]+)[\s,]+([0-9\.\-]+)\s*\)");
+                    if (tm.Success)
+                    {
+                        tx = float.Parse(tm.Groups[1].Value, CultureInfo.InvariantCulture);
+                        ty = float.Parse(tm.Groups[2].Value, CultureInfo.InvariantCulture);
+                    }
+                }
+                float fsize = GetFloatAttr(t, "font-size", 0);
+                if (fsize <= 0)
+                {
+                    XmlAttribute clsAttr = t.Attributes["class"];
+                    if (clsAttr != null && classFontSizes.ContainsKey(clsAttr.Value.Trim()))
+                    {
+                        fsize = classFontSizes[clsAttr.Value.Trim()];
+                    }
+                    else
+                    {
+                        fsize = 47.15f;
+                    }
+                }
+                Color col = GetElementColor(t, classColors, Color.FromArgb(3, 76, 45));
+                string content = t.InnerText.Trim();
+                if (!string.IsNullOrEmpty(content))
+                {
+                    textList.Add(new SvgTextItem { Content = content, X = tx, Y = ty, FontSize = fsize, Color = col });
                 }
             }
 
@@ -369,6 +572,9 @@ namespace ModernAutoClicker.Info
             SvgData result = new SvgData();
             result.Path = totalPath;
             result.ViewBox = viewBox;
+            result.Shapes = shapeList;
+            result.Texts = textList;
+            result.IsMultiColor = (uniqueColors.Count > 1 || textList.Count > 0);
             return result;
         }
 
@@ -397,6 +603,55 @@ namespace ModernAutoClicker.Info
             }
 
             return false;
+        }
+
+        private static Color ParseColor(string str, Color defaultColor)
+        {
+            if (string.IsNullOrEmpty(str)) return defaultColor;
+            str = str.Trim();
+            if (str.Equals("#fff", StringComparison.OrdinalIgnoreCase)) return Color.White;
+            try
+            {
+                return ColorTranslator.FromHtml(str);
+            }
+            catch
+            {
+                return defaultColor;
+            }
+        }
+
+        private static Color GetElementColor(XmlNode n, Dictionary<string, Color> classColors, Color def)
+        {
+            if (n.Attributes["class"] != null)
+            {
+                string[] classes = n.Attributes["class"].Value.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string cl in classes)
+                {
+                    Color c;
+                    if (classColors.TryGetValue(cl, out c)) return c;
+                }
+            }
+            if (n.Attributes["fill"] != null)
+            {
+                string fv = n.Attributes["fill"].Value.Trim();
+                if (!fv.Equals("none", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ParseColor(fv, def);
+                }
+            }
+            if (n.Attributes["style"] != null)
+            {
+                Match m = Regex.Match(n.Attributes["style"].Value, @"fill\s*:\s*([^;]+)");
+                if (m.Success)
+                {
+                    string fv = m.Groups[1].Value.Trim();
+                    if (!fv.Equals("none", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ParseColor(fv, def);
+                    }
+                }
+            }
+            return def;
         }
 
         private static float GetFloatAttr(XmlNode node, string name, float defaultVal)
@@ -440,119 +695,175 @@ namespace ModernAutoClicker.Info
         {
             if (string.IsNullOrEmpty(d)) return;
 
-            MatchCollection tokens = Regex.Matches(d, @"([a-zA-Z])|([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)");
-            if (tokens.Count == 0) return;
+            MatchCollection mc = Regex.Matches(d, @"([a-zA-Z])|([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)");
+            if (mc.Count == 0) return;
 
-            char currentCmd = 'M';
+            List<string> tokens = new List<string>(mc.Count);
+            for (int t = 0; t < mc.Count; t++) tokens.Add(mc[t].Value);
+
             int i = 0;
-            PointF cur = new PointF(0, 0);
-            List<PointF> currentFigure = new List<PointF>();
-
-            Action finishSubFigure = () =>
-            {
-                if (currentFigure.Count >= 3)
-                {
-                    path.AddPolygon(currentFigure.ToArray());
-                }
-                else if (currentFigure.Count == 2)
-                {
-                    path.AddLine(currentFigure[0], currentFigure[1]);
-                }
-                currentFigure.Clear();
-            };
+            char cmd = 'M';
+            char lastCmd = ' ';
+            float cx = 0, cy = 0;
+            float startX = 0, startY = 0;
+            float lastCpX = 0, lastCpY = 0;
 
             while (i < tokens.Count)
             {
-                string tok = tokens[i].Value;
+                string tok = tokens[i];
                 if (char.IsLetter(tok[0]))
                 {
-                    currentCmd = tok[0];
+                    cmd = tok[0];
                     i++;
                 }
 
-                switch (currentCmd)
+                switch (cmd)
                 {
                     case 'M':
-                    case 'm':
+                        if (i + 1 < tokens.Count)
                         {
-                            finishSubFigure();
-                            if (i >= tokens.Count) break;
-                            float x = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            float y = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            if (currentCmd == 'm') { cur = new PointF(cur.X + x, cur.Y + y); }
-                            else { cur = new PointF(x, y); }
+                            cx = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            cy = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            startX = cx; startY = cy;
+                            path.StartFigure();
+                            lastCmd = cmd;
+                            cmd = 'L';
+                        }
+                        break;
 
-                            currentFigure.Add(cur);
-                            currentCmd = (currentCmd == 'm') ? 'l' : 'L';
+                    case 'm':
+                        if (i + 1 < tokens.Count)
+                        {
+                            cx += float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            cy += float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            startX = cx; startY = cy;
+                            path.StartFigure();
+                            lastCmd = cmd;
+                            cmd = 'l';
                         }
                         break;
 
                     case 'L':
-                    case 'l':
+                        if (i + 1 < tokens.Count)
                         {
-                            if (i >= tokens.Count) break;
-                            float x = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            float y = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            PointF next = (currentCmd == 'l') ? new PointF(cur.X + x, cur.Y + y) : new PointF(x, y);
-                            currentFigure.Add(next);
-                            cur = next;
+                            float nx = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float ny = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            path.AddLine(cx, cy, nx, ny);
+                            cx = nx; cy = ny;
+                            lastCmd = cmd;
+                        }
+                        break;
+
+                    case 'l':
+                        if (i + 1 < tokens.Count)
+                        {
+                            float nx = cx + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float ny = cy + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            path.AddLine(cx, cy, nx, ny);
+                            cx = nx; cy = ny;
+                            lastCmd = cmd;
                         }
                         break;
 
                     case 'H':
-                    case 'h':
+                        if (i < tokens.Count)
                         {
-                            if (i >= tokens.Count) break;
-                            float x = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            PointF next = (currentCmd == 'h') ? new PointF(cur.X + x, cur.Y) : new PointF(x, cur.Y);
-                            currentFigure.Add(next);
-                            cur = next;
+                            float nx = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            path.AddLine(cx, cy, nx, cy);
+                            cx = nx;
+                            lastCmd = cmd;
+                        }
+                        break;
+
+                    case 'h':
+                        if (i < tokens.Count)
+                        {
+                            float nx = cx + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            path.AddLine(cx, cy, nx, cy);
+                            cx = nx;
+                            lastCmd = cmd;
                         }
                         break;
 
                     case 'V':
-                    case 'v':
+                        if (i < tokens.Count)
                         {
-                            if (i >= tokens.Count) break;
-                            float y = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            PointF next = (currentCmd == 'v') ? new PointF(cur.X, cur.Y + y) : new PointF(cur.X, y);
-                            currentFigure.Add(next);
-                            cur = next;
+                            float ny = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            path.AddLine(cx, cy, cx, ny);
+                            cy = ny;
+                            lastCmd = cmd;
+                        }
+                        break;
+
+                    case 'v':
+                        if (i < tokens.Count)
+                        {
+                            float ny = cy + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            path.AddLine(cx, cy, cx, ny);
+                            cy = ny;
+                            lastCmd = cmd;
                         }
                         break;
 
                     case 'C':
-                    case 'c':
+                        if (i + 5 < tokens.Count)
                         {
-                            if (i + 5 >= tokens.Count) { i = tokens.Count; break; }
-                            float x1 = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            float y1 = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            float x2 = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            float y2 = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            float x = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
-                            float y = float.Parse(tokens[i++].Value, CultureInfo.InvariantCulture);
+                            float x1 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float y1 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float x2 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float y2 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float x3 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float y3 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            path.AddBezier(cx, cy, x1, y1, x2, y2, x3, y3);
+                            lastCpX = x2; lastCpY = y2;
+                            cx = x3; cy = y3;
+                            lastCmd = cmd;
+                        }
+                        break;
 
-                            PointF cp1 = (currentCmd == 'c') ? new PointF(cur.X + x1, cur.Y + y1) : new PointF(x1, y1);
-                            PointF cp2 = (currentCmd == 'c') ? new PointF(cur.X + x2, cur.Y + y2) : new PointF(x2, y2);
-                            PointF end = (currentCmd == 'c') ? new PointF(cur.X + x, cur.Y + y) : new PointF(x, y);
+                    case 'c':
+                        if (i + 5 < tokens.Count)
+                        {
+                            float x1 = cx + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float y1 = cy + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float x2 = cx + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float y2 = cy + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float x3 = cx + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float y3 = cy + float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            path.AddBezier(cx, cy, x1, y1, x2, y2, x3, y3);
+                            lastCpX = x2; lastCpY = y2;
+                            cx = x3; cy = y3;
+                            lastCmd = cmd;
+                        }
+                        break;
 
-                            for (int step = 1; step <= 8; step++)
+                    case 'S':
+                    case 's':
+                        if (i + 3 < tokens.Count)
+                        {
+                            float cp1X = (lastCmd == 'C' || lastCmd == 'c' || lastCmd == 'S' || lastCmd == 's') ? (2 * cx - lastCpX) : cx;
+                            float cp1Y = (lastCmd == 'C' || lastCmd == 'c' || lastCmd == 'S' || lastCmd == 's') ? (2 * cy - lastCpY) : cy;
+                            float x2 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float y2 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float x3 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            float y3 = float.Parse(tokens[i++], CultureInfo.InvariantCulture);
+                            if (cmd == 's')
                             {
-                                float t = step / 8.0f;
-                                float u = 1.0f - t;
-                                float px = u * u * u * cur.X + 3 * u * u * t * cp1.X + 3 * u * t * t * cp2.X + t * t * t * end.X;
-                                float py = u * u * u * cur.Y + 3 * u * u * t * cp1.Y + 3 * u * t * t * cp2.Y + t * t * t * end.Y;
-                                currentFigure.Add(new PointF(px, py));
+                                x2 += cx; y2 += cy;
+                                x3 += cx; y3 += cy;
                             }
-                            cur = end;
+                            path.AddBezier(cx, cy, cp1X, cp1Y, x2, y2, x3, y3);
+                            lastCpX = x2; lastCpY = y2;
+                            cx = x3; cy = y3;
+                            lastCmd = cmd;
                         }
                         break;
 
                     case 'Z':
                     case 'z':
-                        {
-                            finishSubFigure();
-                        }
+                        path.CloseFigure();
+                        cx = startX; cy = startY;
+                        lastCmd = cmd;
                         break;
 
                     default:
@@ -560,8 +871,7 @@ namespace ModernAutoClicker.Info
                         break;
                 }
             }
-
-            finishSubFigure();
+            path.CloseFigure();
         }
     }
 }

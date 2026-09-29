@@ -212,6 +212,15 @@ namespace ModernAutoClicker.Localization
         }
         public static string UpdateFailed { get { return IsVietnamese ? "Kiểm tra thất bại. Không có kết nối mạng." : "Check failed. No internet connection."; } }
 
+        // Bún Giò Heo & Smart QR Bank strings (Vietnamese localized info)
+        public static string InfoBunGioHeoTitle { get { return "• Ủng hộ Bún Giò Heo Minh Nhật nhà tui"; } }
+        public static string InfoGoogleMaps { get { return "[Google Maps ↗]"; } }
+        public static string InfoQrBankTitle { get { return "• Ủng hộ tác giả (Quét mã QR Ngân Hàng):"; } }
+        public static string InfoQrPlaceholderTitle { get { return "[ Mã QR Bank ]"; } }
+        public static string InfoQrPlaceholderNoImage { get { return "(Chưa có file qr-bank.svg)"; } }
+        public static string InfoQrPlaceholderScanHint { get { return "Quét để chuyển khoản"; } }
+        public static string InfoQrHintSub { get { return "(Hỗ trợ mọi App Ngân Hàng & Ví MoMo)"; } }
+
         // ========================================================
         // 11. ASIAN MODE (ADVANCED TAB) TOOLBAR & BOTTOM BAR
         // ========================================================
