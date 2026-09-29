@@ -255,26 +255,26 @@ namespace ModernAutoClicker
             numInterval.TextChanged += (s, e) => { if (!_isLoadingProfile) UpdateTabStatus(_isBasicTab); };
             lblMs = CreateLabel("ms", 140, tY + 2);
 
-            tY += 27;
+            tY += 28;
             lblSimpleLoop = CreateLabel("Loops:", 10, tY + 2);
             numSimpleLoop = CreateNumberInput(86, tY, 50, 0, 999999, 1, 0);
             numSimpleLoop.AllowEmpty = true;
             numSimpleLoop.TextChanged += (s, e) => SaveSettings();
             lblSimpleLoopHint = CreateLabel("(0 = ∞)", 140, tY + 2);
 
-            tY += 27;
+            tY += 28;
             lblSimpleJitter = CreateLabel("Jitter:", 10, tY + 2);
             numSimpleJitter = CreateNumberInput(86, tY, 50, 0, 999, 1, 0);
             numSimpleJitter.AllowEmpty = true;
             numSimpleJitter.TextChanged += (s, e) => { SyncOverlay(); SaveSettings(); };
             lblSimpleJitterUnit = CreateLabel("± px", 140, tY + 2);
 
-            tY += 31;
+            tY += 30;
             lblCurrentClicksTitle = CreateLabel("Current:", 10, tY);
             lblCurrentClicksVal = CreateValueLabel("0", 86, tY - 1);
             lblClicksUnit2 = CreateLabel("Clicks", 140, tY);
 
-            tY += 25;
+            tY += 24;
             lblCurrentTimeTitle = CreateLabel("Current:", 10, tY);
             lblCurrentTimeVal = CreateValueLabel("00:00:00", 86, tY - 1);
 
@@ -505,8 +505,84 @@ namespace ModernAutoClicker
             };
         }
 
+        public void ApplyAsianDynamicLayout(int clientW, int clientH)
+        {
+            if (_currentTabIndex != 2) return;
+
+            int minW = 700;
+            int minH = 760;
+            int curW = Math.Max(minW, clientW);
+            int curH = Math.Max(minH, clientH);
+
+            int targetW = curW - 24;
+            int targetContentH = curH - 276;
+
+            if (tblRoot != null)
+            {
+                tblRoot.SuspendLayout();
+                if (tblRoot.Width != curW || tblRoot.Height != curH)
+                {
+                    tblRoot.Size = new Size(curW, curH);
+                }
+            }
+
+            // 0. Title Bar
+            if (titleBar != null && titleBar.Width != targetW) titleBar.Size = new Size(targetW, 32);
+
+            // 1. Tab Bar
+            if (pnlTabBar != null && pnlTabBar.Width != targetW) pnlTabBar.Size = new Size(targetW, 36);
+            if (btnTabAdvanced != null)
+            {
+                int tabAdvW = targetW - 196;
+                if (btnTabAdvanced.Width != tabAdvW) btnTabAdvanced.Size = new Size(tabAdvW, 34);
+            }
+
+            // 2. Content Host & Advanced Tab Panel
+            if (pnlContentHost != null && (pnlContentHost.Width != targetW || pnlContentHost.Height != targetContentH))
+            {
+                pnlContentHost.Size = new Size(targetW, targetContentH);
+            }
+            if (pnlTabAdvanced != null && (pnlTabAdvanced.Width != targetW || pnlTabAdvanced.Height != targetContentH))
+            {
+                pnlTabAdvanced.Size = new Size(targetW, targetContentH);
+            }
+
+            // 3. Status Info
+            if (lblMainStatusInfo != null && lblMainStatusInfo.Width != targetW) lblMainStatusInfo.Size = new Size(targetW, 16);
+
+            // 4. Bottom Action Bar
+            if (pnlBottomBar != null)
+            {
+                if (pnlBottomBar.Width != targetW) pnlBottomBar.Size = new Size(targetW, 46);
+                int totalBtnW = 180 + 8 + 122 + 8 + 152; // 470px
+                int startX = Math.Max(10, (targetW - totalBtnW) / 2);
+                if (btnStart != null && btnStart.Left != startX) btnStart.Location = new Point(startX, 0);
+                if (btnStopAll != null && btnStopAll.Left != startX + 180 + 8) btnStopAll.Location = new Point(startX + 180 + 8, 0);
+                if (btnTransformTool != null && btnTransformTool.Left != startX + 180 + 8 + 122 + 8) btnTransformTool.Location = new Point(startX + 180 + 8 + 122 + 8, 0);
+            }
+
+            // 5. Global Settings & Hotkey Card
+            if (pnlGlobalSettings != null)
+            {
+                if (pnlGlobalSettings.Width != targetW) pnlGlobalSettings.Size = new Size(targetW, 90);
+                if (cardAdvancedHotkey != null)
+                {
+                    int cardW = Math.Max(408, targetW - 170 - 12);
+                    if (cardAdvancedHotkey.Width != cardW) cardAdvancedHotkey.Size = new Size(cardW, 74);
+                }
+            }
+
+            if (tblRoot != null) tblRoot.ResumeLayout(true);
+        }
+
         private void SwitchTab(int tabIndex)
         {
+            if (_currentTabIndex == 2 && this.WindowState != FormWindowState.Minimized)
+            {
+                _savedAsianWidth = Math.Max(700, this.Width);
+                _savedAsianHeight = Math.Max(760, this.Height);
+            }
+
             _currentTabIndex = tabIndex;
             _isBasicTab = (tabIndex == 1);
 
@@ -514,8 +590,36 @@ namespace ModernAutoClicker
             if (tblRoot != null) tblRoot.SuspendLayout();
 
             bool isAdvanced = (tabIndex == 2);
-            int targetW = isAdvanced ? 590 : 388;
-            int targetContentH = isAdvanced ? 484 : (tabIndex == 0 ? 508 : 342);
+            if (tblRoot != null)
+            {
+                tblRoot.EnableBorderHitTestTransparent = isAdvanced;
+            }
+
+            if (!isAdvanced)
+            {
+                this.MinimumSize = Size.Empty;
+                this.MaximumSize = Size.Empty;
+                this.AutoSize = true;
+                this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                if (tblRoot != null)
+                {
+                    tblRoot.AutoSize = true;
+                    tblRoot.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                }
+            }
+            else
+            {
+                this.AutoSize = false;
+                if (tblRoot != null) tblRoot.AutoSize = false;
+                this.MinimumSize = new Size(700, 760);
+                this.MaximumSize = Size.Empty;
+                int targetFormW = Math.Max(700, _savedAsianWidth);
+                int targetFormH = Math.Max(760, _savedAsianHeight);
+                this.ClientSize = new Size(targetFormW, targetFormH);
+            }
+
+            int targetW = isAdvanced ? (this.ClientSize.Width - 24) : 388;
+            int targetContentH = isAdvanced ? (this.ClientSize.Height - 276) : (tabIndex == 0 ? 508 : 342);
 
             // 0. Title Bar
             if (titleBar != null) titleBar.Size = new Size(targetW, 32);
@@ -538,7 +642,7 @@ namespace ModernAutoClicker
                 btnTabBasic.Location = new Point(40, 0);
                 btnTabBasic.Size = new Size(150, 34);
                 btnTabAdvanced.Location = new Point(196, 0);
-                btnTabAdvanced.Size = new Size(394, 34);
+                btnTabAdvanced.Size = new Size(targetW - 196, 34);
             }
 
             // 2. Content Host & Panels
@@ -546,6 +650,10 @@ namespace ModernAutoClicker
             pnlTabInfo.Visible = (tabIndex == 0);
             pnlTabBasic.Visible = (tabIndex == 1);
             pnlTabAdvanced.Visible = (tabIndex == 2);
+            if (isAdvanced && pnlTabAdvanced != null)
+            {
+                pnlTabAdvanced.Size = new Size(targetW, targetContentH);
+            }
 
             // 3. Status Info, Bottom Bar & Global Settings
             bool showControls = (tabIndex != 0);
@@ -567,10 +675,12 @@ namespace ModernAutoClicker
             }
             else
             {
-                btnStart.Location = new Point(60, 0);
+                int totalBtnW = 180 + 8 + 122 + 8 + 152;
+                int startX = Math.Max(10, (targetW - totalBtnW) / 2);
+                btnStart.Location = new Point(startX, 0);
                 btnStart.Size = new Size(180, 44);
-                if (btnStopAll != null) { btnStopAll.Location = new Point(248, 0); btnStopAll.Size = new Size(122, 44); }
-                btnTransformTool.Location = new Point(378, 0);
+                if (btnStopAll != null) { btnStopAll.Location = new Point(startX + 180 + 8, 0); btnStopAll.Size = new Size(122, 44); }
+                btnTransformTool.Location = new Point(startX + 180 + 8 + 122 + 8, 0);
                 btnTransformTool.Size = new Size(152, 44);
             }
 
@@ -614,7 +724,7 @@ namespace ModernAutoClicker
                 if (cardAdvancedHotkey != null)
                 {
                     cardAdvancedHotkey.Location = new Point(170, 8);
-                    cardAdvancedHotkey.Size = new Size(408, 74);
+                    cardAdvancedHotkey.Size = new Size(Math.Max(408, targetW - 170 - 12), 74);
                     cardAdvancedHotkey.Visible = true;
                 }
                 if (cardSimpleHotkey != null)

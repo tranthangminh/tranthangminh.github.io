@@ -320,6 +320,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.action === 'execute_context_menu_action') {
+    const actionKey = `${message.menuItemId}_${message.imageUrl}`;
+    const now = Date.now();
+    if (self._lastContextMenuAction &&
+        self._lastContextMenuAction.key === actionKey &&
+        (now - self._lastContextMenuAction.time) < 800) {
+      return; // Debounce duplicate triggers within 800ms
+    }
+    self._lastContextMenuAction = { key: actionKey, time: now };
+
     if (typeof executeFallbackAction === 'function') {
       executeFallbackAction(message.menuItemId, message.imageUrl);
     } else if (self.executeFallbackAction) {

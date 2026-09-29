@@ -120,24 +120,26 @@ namespace ModernAutoClicker.Advanced
             };
 
             int x = 2;
-            _lblColNo = CreateColLabel(Loc.ColNo, x, 36, true, MacroDescriptions.GetHeaderDescription("No."), () => ToggleAllSelection());
-            pnlHeader.Controls.Add(_lblColNo); x += 38;
+            int colGap = 5;
+
+            _lblColNo = CreateColLabel(Loc.ColNo, x, 34, true, MacroDescriptions.GetHeaderDescription("No."), () => ToggleAllSelection());
+            pnlHeader.Controls.Add(_lblColNo); x += 34 + colGap;
 
             _lblColCheck = CreateColLabel(Loc.ColCheck, x, 20, true, MacroDescriptions.GetHeaderDescription("✔"), () => ToggleAllCheckboxes());
-            pnlHeader.Controls.Add(_lblColCheck); x += 22;
+            pnlHeader.Controls.Add(_lblColCheck); x += 20 + colGap;
             
-            _lblColWin = CreateColLabel(Loc.ColWin, x, 34, true, MacroDescriptions.GetHeaderDescription("Win"), null);
+            _lblColWin = CreateColLabel(Loc.ColWin, x, 30, true, MacroDescriptions.GetHeaderDescription("Win"), null);
             _lblColWin.Click += (s, e) => ShowBatchWindowMenu(_lblColWin);
-            pnlHeader.Controls.Add(_lblColWin); x += 36;
+            pnlHeader.Controls.Add(_lblColWin); x += 30 + colGap;
 
-            _lblColAction = CreateColLabel(Loc.ColActionType, x, 114, true, MacroDescriptions.GetHeaderDescription("Action Type"), null);
+            _lblColAction = CreateColLabel(Loc.ColActionType, x, 112, true, MacroDescriptions.GetHeaderDescription("Action Type"), null);
             _lblColAction.Click += (s, e) => ShowBatchActionTypeMenu(_lblColAction);
-            pnlHeader.Controls.Add(_lblColAction); x += 116;
+            pnlHeader.Controls.Add(_lblColAction); x += 112 + colGap;
 
-            _lblColTarget = CreateColLabel(Loc.ColTarget, x, 114, true, MacroDescriptions.GetHeaderDescription("Target"), () => BatchSetTargetCoordinates());
-            pnlHeader.Controls.Add(_lblColTarget); x += 116;
+            _lblColTarget = CreateColLabel(Loc.ColTarget, x, 116, true, MacroDescriptions.GetHeaderDescription("Target"), () => BatchSetTargetCoordinates());
+            pnlHeader.Controls.Add(_lblColTarget); x += 116 + colGap;
 
-            _lblColHold = CreateColLabel(Loc.ColHold, x, 46, true, MacroDescriptions.GetHeaderDescription("Hold"), () =>
+            _lblColHold = CreateColLabel(Loc.ColHold, x, 44, true, MacroDescriptions.GetHeaderDescription("Hold"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 string title = targets.Count == _rows.Count
@@ -152,9 +154,9 @@ namespace ModernAutoClicker.Advanced
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
             });
-            pnlHeader.Controls.Add(_lblColHold); x += 48;
+            pnlHeader.Controls.Add(_lblColHold); x += 44 + colGap;
 
-            _lblColDelay = CreateColLabel(Loc.ColDelay, x, 48, true, MacroDescriptions.GetHeaderDescription("Delay"), () =>
+            _lblColDelay = CreateColLabel(Loc.ColDelay, x, 46, true, MacroDescriptions.GetHeaderDescription("Delay"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 string title = targets.Count == _rows.Count
@@ -169,7 +171,7 @@ namespace ModernAutoClicker.Advanced
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
             });
-            pnlHeader.Controls.Add(_lblColDelay); x += 50;
+            pnlHeader.Controls.Add(_lblColDelay); x += 46 + colGap;
 
             _lblColRep = CreateColLabel(Loc.ColRep, x, 30, true, MacroDescriptions.GetHeaderDescription("Rep"), () =>
             {
@@ -186,9 +188,9 @@ namespace ModernAutoClicker.Advanced
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
             });
-            pnlHeader.Controls.Add(_lblColRep); x += 32;
+            pnlHeader.Controls.Add(_lblColRep); x += 30 + colGap;
 
-            _lblColDel = CreateColLabel(Loc.ColDel, x, 34, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
+            _lblColDel = CreateColLabel(Loc.ColDel, x, 26, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 if (targets == null || targets.Count == 0) return;
@@ -203,7 +205,7 @@ namespace ModernAutoClicker.Advanced
                     BatchDeleteRows(targets);
                 }
             });
-            pnlHeader.Controls.Add(_lblColDel); x += 36;
+            pnlHeader.Controls.Add(_lblColDel); x += 26 + colGap;
 
             _lblColNote = CreateColLabel(Loc.ColNote, x, 72, true, MacroDescriptions.GetHeaderDescription("Note"), () =>
             {
@@ -416,6 +418,7 @@ namespace ModernAutoClicker.Advanced
                 MacroActionType.KeyPress,
                 MacroActionType.TypeText,
                 MacroActionType.Delay,
+                MacroActionType.RepeatTimer,
                 MacroActionType.IfColor,
                 MacroActionType.WaitChange,
                 MacroActionType.IfImage,
@@ -1402,6 +1405,8 @@ namespace ModernAutoClicker.Advanced
             }
             else
             {
+                int maxScroll = Math.Max(0, totalH - pnlScrollContainer.Height);
+                if (scrollBar.Value > maxScroll) scrollBar.Value = maxScroll;
                 pnlContent.Top = -scrollBar.Value;
             }
         }
@@ -1466,12 +1471,56 @@ namespace ModernAutoClicker.Advanced
 
             pnlHeader.Location = new Point(borderPad, borderPad);
             pnlHeader.Size = new Size(this.Width - (borderPad * 2), headerH);
+            if (_lblColNote != null)
+            {
+                _lblColNote.Width = Math.Max(72, pnlHeader.Width - _lblColNote.Left - 4);
+            }
             pnlScrollContainer.Location = new Point(borderPad, headerH + borderPad);
             pnlScrollContainer.Size = new Size(availW, availH);
-            if (pnlContent != null) pnlContent.Width = availW;
             scrollBar.Location = new Point(this.Width - borderPad - scrollBarW, headerH + borderPad);
             scrollBar.Size = new Size(scrollBarW, availH);
-            ReorderRows();
+
+            UpdateLayoutSizes(availW, availH);
+        }
+
+        private void UpdateLayoutSizes(int availW, int availH)
+        {
+            if (pnlContent == null) return;
+
+            bool widthChanged = (pnlContent.Width != availW);
+            if (widthChanged)
+            {
+                pnlContent.Width = availW;
+                pnlContent.SuspendLayout();
+                for (int i = 0; i < _rows.Count; i++)
+                {
+                    if (_rows[i].Width != availW)
+                    {
+                        _rows[i].Width = availW;
+                    }
+                }
+                pnlContent.ResumeLayout(true);
+            }
+
+            int totalH = (_rows.Count > 0) ? (_rows[_rows.Count - 1].Bottom + 2) : 2;
+            pnlContent.Height = Math.Max(availH, totalH);
+
+            scrollBar.Maximum = totalH;
+            scrollBar.LargeChange = availH;
+            scrollBar.SmallChange = 38;
+            scrollBar.Visible = (totalH > availH);
+
+            if (!scrollBar.Visible)
+            {
+                scrollBar.Value = 0;
+                pnlContent.Top = 0;
+            }
+            else
+            {
+                int maxScroll = Math.Max(0, totalH - availH);
+                if (scrollBar.Value > maxScroll) scrollBar.Value = maxScroll;
+                pnlContent.Top = -scrollBar.Value;
+            }
         }
 
         public void ApplyTheme(ThemeTokens t)

@@ -243,6 +243,7 @@ namespace ModernAutoClicker.Localization
                     case Advanced.MacroActionType.KeyPress: return "Key Press";
                     case Advanced.MacroActionType.TypeText: return "Type Text";
                     case Advanced.MacroActionType.Delay: return "Delay";
+                    case Advanced.MacroActionType.RepeatTimer: return "Repeat / Timer";
                     case Advanced.MacroActionType.WaitColor: return "Wait Color";
                     case Advanced.MacroActionType.IfColor: return "If Color";
                     case Advanced.MacroActionType.WaitImage: return "Wait Image";
@@ -264,6 +265,7 @@ namespace ModernAutoClicker.Localization
                     case Advanced.MacroActionType.KeyPress: return "Nhấn Phím";
                     case Advanced.MacroActionType.TypeText: return "Gõ Văn Bản";
                     case Advanced.MacroActionType.Delay: return "Chờ Đợi";
+                    case Advanced.MacroActionType.RepeatTimer: return "Lặp / Bấm giờ";
                     case Advanced.MacroActionType.WaitColor: return "Chờ Màu";
                     case Advanced.MacroActionType.IfColor: return "Nếu Màu";
                     case Advanced.MacroActionType.WaitImage: return "Chờ Hình Ảnh";
@@ -283,6 +285,14 @@ namespace ModernAutoClicker.Localization
         public static string JumpNextStep { get { return IsVietnamese ? "Bước kế tiếp" : "Next Step"; } }
         public static string JumpRepeatStep { get { return IsVietnamese ? "Lặp Lại Bước Này" : "Repeat this Step"; } }
         public static string JumpStop { get { return IsVietnamese ? "Dừng lại" : "Stop"; } }
+
+        // ========================================================
+        // 14. REPEAT / TIMER LOOP LABELS
+        // ========================================================
+        public static string LoopToStep { get { return IsVietnamese ? "Lặp về:" : "Loop to:"; } }
+        public static string LoopWhenFinished { get { return IsVietnamese ? "Sau đó:" : "Then:"; } }
+        public static string LoopModeTimes { get { return IsVietnamese ? "Số lần" : "Times"; } }
+        public static string LoopModeTimer { get { return IsVietnamese ? "Bấm giờ" : "Timer"; } }
         public static string JumpStepFormat(int stepIndex)
         {
             return IsVietnamese ? string.Format("Bước {0}", stepIndex) : string.Format("Step {0}", stepIndex);
@@ -298,7 +308,7 @@ namespace ModernAutoClicker.Localization
         public static string ColCheck { get { return "✔"; } }
         public static string ColWin { get { return "Win"; } }
         public static string ColActionType { get { return IsVietnamese ? "Loại Hành Động" : "Action Type"; } }
-        public static string ColTarget { get { return IsVietnamese ? "Mục Tiêu" : "Target"; } }
+        public static string ColTarget { get { return IsVietnamese ? "Mục Tiêu/Cài Đặt" : "Target/Setting"; } }
         public static string ColHold { get { return IsVietnamese ? "Giữ" : "Hold"; } }
         public static string ColDelay { get { return IsVietnamese ? "Chờ" : "Delay"; } }
         public static string ColRep { get { return IsVietnamese ? "Lặp" : "Rep"; } }

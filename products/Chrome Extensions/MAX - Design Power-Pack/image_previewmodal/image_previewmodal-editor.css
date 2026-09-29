@@ -1,4 +1,25 @@
-/* Image Edit Overlay & Toolbar Styles (image_previewmodal-editor.css) */
+/* Ensure all editor components inherit the Outfit font */
+.edit-toolbar,
+.edit-toolbar *,
+.edit-toolbar button,
+.edit-toolbar input,
+.edit-toolbar select,
+.edit-brush-panel,
+.edit-brush-panel *,
+.edit-brush-panel button,
+.edit-shape-panel,
+.edit-shape-panel *,
+.edit-shape-panel button,
+.shape-type-btn,
+.shape-type-btn *,
+.vector-popover,
+.vector-popover *,
+.vector-popover button,
+.vector-popover input,
+.vector-popover select,
+.vector-inline-size-input {
+  font-family: var(--font-family) !important;
+}
 
 /* Sleek Top Edit Toolbar Bar (2-Row Compact Layout) */
 .edit-toolbar {
@@ -7,6 +28,7 @@
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-secondary);
+  font-family: var(--font-family) !important;
   backdrop-filter: blur(14px);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);

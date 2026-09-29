@@ -22,6 +22,7 @@ namespace ModernAutoClicker.Advanced
         private bool _isEditing = false;
 
         private bool _isRunning = false;
+        private Color _fillColor = Color.FromArgb(37, 38, 43);
 
         public ProfileTabControl ParentTabControl
         {
@@ -114,8 +115,14 @@ namespace ModernAutoClicker.Advanced
             _canClose = canClose;
             _theme = theme ?? ThemeTokens.DarkTheme();
 
-            this.Height = 24;
+            this.Height = 26;
             this.DoubleBuffered = true;
+            this.SetStyle(ControlStyles.SupportsTransparentBackColor |
+                          ControlStyles.UserPaint |
+                          ControlStyles.AllPaintingInWmPaint |
+                          ControlStyles.OptimizedDoubleBuffer |
+                          ControlStyles.ResizeRedraw, true);
+            this.BackColor = Color.Transparent;
             this.Cursor = Cursors.Hand;
             this.Margin = new Padding(0, 0, 4, 0);
 
@@ -308,17 +315,6 @@ namespace ModernAutoClicker.Advanced
             {
                 btnClose.Location = new Point(totalW - 18, 3);
             }
-            UpdateRegion();
-        }
-
-        private void UpdateRegion()
-        {
-            if (this.Width <= 0 || this.Height <= 0) return;
-            Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
-            using (GraphicsPath path = RoundedPanel.GetTopRoundedRectangle(rect, _theme != null ? _theme.RadiusMd : 6))
-            {
-                this.Region = new Region(path);
-            }
             this.Invalidate();
         }
 
@@ -326,15 +322,15 @@ namespace ModernAutoClicker.Advanced
         {
             if (_isActive)
             {
-                this.BackColor = _theme.AccentPrimary;
+                _fillColor = _theme != null ? _theme.AccentPrimary : Color.FromArgb(25, 113, 194);
                 lblTitle.ForeColor = Color.White;
-                btnClose.ForeColor = _theme.TextSecondary;
+                btnClose.ForeColor = _theme != null ? _theme.TextSecondary : Color.FromArgb(160, 160, 160);
             }
             else
             {
-                this.BackColor = _theme.BgElevated;
-                lblTitle.ForeColor = _isRunning ? Color.FromArgb(100, 255, 140) : _theme.TextSecondary;
-                btnClose.ForeColor = _theme.TextTertiary;
+                _fillColor = _theme != null ? _theme.BgElevated : Color.FromArgb(37, 38, 43);
+                lblTitle.ForeColor = _isRunning ? (_theme != null ? _theme.Success : Color.FromArgb(46, 204, 113)) : (_theme != null ? _theme.TextSecondary : Color.FromArgb(160, 160, 160));
+                btnClose.ForeColor = _theme != null ? _theme.TextTertiary : Color.FromArgb(110, 110, 110);
             }
             this.Invalidate();
         }
@@ -343,7 +339,32 @@ namespace ModernAutoClicker.Advanced
         {
             _theme = t;
             UpdateAppearance();
-            UpdateRegion();
+        }
+
+        private static GraphicsPath GetTabPath(int w, int h, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            if (radius <= 0)
+            {
+                path.AddRectangle(new Rectangle(0, 0, w, h));
+                return path;
+            }
+
+            int d = radius * 2;
+            // Top-left arc (180 to 270 degrees)
+            path.AddArc(0, 0, d, d, 180, 90);
+            // Top flat edge
+            path.AddLine(radius, 0, w - radius, 0);
+            // Top-right arc (270 to 360 degrees)
+            path.AddArc(w - d, 0, d, d, 270, 90);
+            // Right edge down to bottom
+            path.AddLine(w, radius, w, h);
+            // Bottom edge across to bottom-left
+            path.AddLine(w, h, 0, h);
+            // Left edge back to start of top-left arc
+            path.AddLine(0, h, 0, radius);
+            path.CloseFigure();
+            return path;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -351,23 +372,42 @@ namespace ModernAutoClicker.Advanced
             base.OnPaint(e);
             Graphics g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-            // Draw top-rounded tab background
-            Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
-            using (GraphicsPath path = RoundedPanel.GetTopRoundedRectangle(rect, _theme != null ? _theme.RadiusMd : 6))
-            using (SolidBrush brush = new SolidBrush(this.BackColor))
+            int w = this.Width - 1;
+            int h = this.Height - 1;
+            if (w <= 0 || h <= 0) return;
+
+            // Fill parent background on corners to ensure smooth anti-aliased edge
+            Color parentBg = _theme != null ? _theme.BgPrimary : Color.FromArgb(25, 25, 25);
+            using (SolidBrush bgBrush = new SolidBrush(parentBg))
             {
-                g.FillPath(brush, path);
+                g.FillRectangle(bgBrush, this.ClientRectangle);
             }
 
-            if (_isRunning)
+            int radius = _theme != null ? _theme.RadiusSm : 5;
+            if (radius < 3) radius = 5;
+
+            using (GraphicsPath path = GetTabPath(w, h, radius))
             {
-                Rectangle borderRect = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
-                using (GraphicsPath borderPath = RoundedPanel.GetTopRoundedRectangle(borderRect, _theme != null ? _theme.RadiusMd : 6))
-                using (Pen pen = new Pen(Color.FromArgb(46, 204, 113), 2f))
+                using (SolidBrush brush = new SolidBrush(_fillColor))
                 {
-                    pen.Alignment = PenAlignment.Inset;
-                    g.DrawPath(pen, borderPath);
+                    g.FillPath(brush, path);
+                }
+
+                if (_isRunning)
+                {
+                    using (Pen pen = new Pen(_theme != null ? _theme.Success : Color.FromArgb(46, 204, 113), 1.5f))
+                    {
+                        g.DrawPath(pen, path);
+                    }
+                }
+                else if (!_isActive)
+                {
+                    using (Pen pen = new Pen(_theme != null ? _theme.BorderColor : Color.FromArgb(58, 58, 58), 1f))
+                    {
+                        g.DrawPath(pen, path);
+                    }
                 }
             }
         }
@@ -395,7 +435,7 @@ namespace ModernAutoClicker.Advanced
         public ProfileTabControl()
         {
             _theme = ThemeTokens.DarkTheme();
-            this.Height = 28;
+            this.Height = 26;
             this.DoubleBuffered = true;
 
             InitializeLayout();
@@ -404,12 +444,14 @@ namespace ModernAutoClicker.Advanced
         private void InitializeLayout()
         {
             this.AutoScroll = false;
+            this.BackColor = _theme.BgPrimary;
             this.MouseWheel += HandleMouseWheel;
 
             pnlTabList = new FlowLayoutPanel
             {
                 Location = new Point(0, 0),
-                Height = 28,
+                Height = 26,
+                BackColor = _theme.BgPrimary,
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 WrapContents = false,
@@ -421,8 +463,8 @@ namespace ModernAutoClicker.Advanced
             btnAddTab = new RoundedButton
             {
                 Text = "＋",
-                Size = new Size(26, 24),
-                Location = new Point(0, 2),
+                Size = new Size(24, 24),
+                Location = new Point(0, 1),
                 Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
                 BorderRadius = _theme.RadiusSm,
                 NormalColor = _theme.BgElevated,
@@ -627,7 +669,9 @@ namespace ModernAutoClicker.Advanced
             }
 
             pnlTabList.Controls.Add(btnAddTab);
-            pnlTabList.ResumeLayout();
+            pnlTabList.ResumeLayout(true);
+            pnlTabList.Invalidate(true);
+            this.Invalidate(true);
 
             HookTabMouseWheel(this);
             EnsureTabVisible(_activeIndex);
@@ -704,6 +748,9 @@ namespace ModernAutoClicker.Advanced
         public void ApplyTheme(ThemeTokens t)
         {
             _theme = t;
+            this.BackColor = t.BgPrimary;
+            if (pnlTabList != null) pnlTabList.BackColor = t.BgPrimary;
+
             btnAddTab.NormalColor = t.BgElevated;
             btnAddTab.ForeColor = t.TextPrimary;
             btnAddTab.HoverColor = t.AccentPrimary;

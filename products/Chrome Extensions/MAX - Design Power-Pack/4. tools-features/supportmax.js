@@ -23,15 +23,15 @@ function createSupportMaxCardHtml() {
     <div class="donate-card">
       <div class="support-max-header">
         <span class="settings-section-icon icon-mask support-max-heart-icon"></span>
-        <span class="support-max-title">Enjoying MAX?</span>
+        <span class="support-max-title" data-i18n="tools.donateTitle">Enjoying MAX?</span>
       </div>
-      <p class="donate-desc">If MAX saves you time, consider buying me a coffee ☕ — it helps keep the tool free and updated!</p>
+      <p class="donate-desc" data-i18n="tools.donateDesc">If MAX saves you time, consider buying me a coffee ☕ — it helps keep the tool free and updated!</p>
       <div class="donate-nudge-celebrate">
         <span>🥳</span><span>🎉</span>
       </div>
       <a href="${KOFI_URL}" target="_blank" class="btn btn-secondary donate-btn">
         ${KOFI_SVG_INLINE}
-        Support on Ko-fi
+        <span data-i18n="tools.donateBtn">Support on Ko-fi</span>
       </a>
     </div>
   `;
@@ -48,22 +48,25 @@ function ensureDonateNudgePopupInDom() {
   popupEl.className = 'donate-nudge-popup hidden';
   popupEl.innerHTML = `
     <div class="donate-card support-max-nudge-card">
-      <button id="donate-nudge-close" class="btn btn-ghost donate-nudge-close-btn" title="Close">✕</button>
+      <button id="donate-nudge-close" class="btn btn-ghost donate-nudge-close-btn" title="Close" data-i18n-title="common.close">✕</button>
       <div class="support-max-header">
         <span class="settings-section-icon icon-mask support-max-heart-icon"></span>
-        <span class="support-max-title">Enjoying MAX?</span>
+        <span class="support-max-title" data-i18n="tools.donateTitle">Enjoying MAX?</span>
       </div>
-      <p class="donate-desc">If MAX saves you time, consider buying me a coffee ☕ — it helps keep the tool free and updated!</p>
+      <p class="donate-desc" data-i18n="tools.donateDesc">If MAX saves you time, consider buying me a coffee ☕ — it helps keep the tool free and updated!</p>
       <div class="donate-nudge-celebrate">
         <span>🥳</span><span>🎉</span>
       </div>
       <a id="donate-btn-nudge" href="${KOFI_URL}" target="_blank" class="btn btn-secondary donate-btn">
         ${KOFI_SVG_INLINE}
-        Support on Ko-fi
+        <span data-i18n="tools.donateBtn">Support on Ko-fi</span>
       </a>
     </div>
   `;
   document.body.appendChild(popupEl);
+  if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+    window.i18n.applyTranslations(popupEl);
+  }
   return popupEl;
 }
 
@@ -76,6 +79,9 @@ function autoRenderSupportMaxMounts() {
     if (!mount.children || mount.children.length === 0) {
       mount.innerHTML = createSupportMaxCardHtml();
     }
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(mount);
+    }
   });
 }
 
@@ -83,6 +89,14 @@ function initSupportMax() {
   // Prevent double registration
   if (!window._supportMaxInit) {
     window._supportMaxInit = true;
+
+    window.addEventListener('maxLanguageChanged', () => {
+      autoRenderSupportMaxMounts();
+      const nudge = document.getElementById('donate-nudge');
+      if (nudge && window.i18n && typeof window.i18n.applyTranslations === 'function') {
+        window.i18n.applyTranslations(nudge);
+      }
+    });
 
     // Delegated click listener for Support MAX cards & popup
     document.addEventListener('click', (e) => {

@@ -16,11 +16,12 @@ namespace ModernAutoClicker.Advanced
 
         private Label lblTip1;
         private Label lblTip2;
+        private ThemeTokens _theme;
 
         public AdvancedHotkeyCard(ThemeTokens theme)
         {
-            theme = theme ?? ThemeTokens.DarkTheme();
-            this.BorderRadius = theme.RadiusMd;
+            _theme = theme ?? ThemeTokens.DarkTheme();
+            this.BorderRadius = _theme.RadiusMd;
             this.BorderSize = 0;
             this.Size = new Size(408, 74);
 
@@ -62,7 +63,7 @@ namespace ModernAutoClicker.Advanced
         private void AdvancedHotkeyCard_Paint(object sender, PaintEventArgs e)
         {
             // Subtle vertical separator between hotkeys and tips
-            Color divColor = Color.FromArgb(40, 255, 255, 255);
+            Color divColor = _theme != null ? _theme.BorderColor : Color.FromArgb(40, 255, 255, 255);
             using (Pen pen = new Pen(divColor, 1))
             {
                 e.Graphics.DrawLine(pen, 136, 8, 136, 66);
@@ -94,6 +95,7 @@ namespace ModernAutoClicker.Advanced
         public void ApplyTheme(ThemeTokens t)
         {
             if (t == null) return;
+            _theme = t;
             this.BackColor = t.HotkeyBoxBg;
             this.BorderRadius = t.RadiusMd;
 
@@ -102,8 +104,8 @@ namespace ModernAutoClicker.Advanced
             if (lblHelpVal1 != null) lblHelpVal1.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
             if (lblHelpVal2 != null) lblHelpVal2.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
 
-            if (lblTip1 != null) lblTip1.ForeColor = t.IsDark ? Color.FromArgb(220, 225, 235) : t.TextSecondary;
-            if (lblTip2 != null) lblTip2.ForeColor = t.IsDark ? Color.FromArgb(220, 225, 235) : t.TextSecondary;
+            if (lblTip1 != null) lblTip1.ForeColor = t.TextSecondary;
+            if (lblTip2 != null) lblTip2.ForeColor = t.TextSecondary;
 
             this.Invalidate();
         }

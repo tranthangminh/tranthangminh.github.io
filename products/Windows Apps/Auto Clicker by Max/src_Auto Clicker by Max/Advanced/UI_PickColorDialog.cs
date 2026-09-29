@@ -140,14 +140,14 @@ namespace ModernAutoClicker.Advanced
 
             Color[] quickColors = new Color[]
             {
-                Color.FromArgb(239, 68, 68),   // Red
-                Color.FromArgb(34, 197, 94),   // Green
-                Color.FromArgb(59, 130, 246),  // Blue
-                Color.FromArgb(234, 179, 8),   // Yellow
-                Color.FromArgb(249, 115, 22),  // Orange
-                Color.FromArgb(168, 85, 247),  // Purple
-                Color.FromArgb(255, 255, 255), // White
-                Color.FromArgb(15, 23, 42)     // Dark
+                _theme != null ? _theme.CRed : Color.FromArgb(239, 68, 68),
+                _theme != null ? _theme.CGreen : Color.FromArgb(34, 197, 94),
+                _theme != null ? _theme.CBlue : Color.FromArgb(59, 130, 246),
+                _theme != null ? _theme.CYellow : Color.FromArgb(234, 179, 8),
+                _theme != null ? _theme.COrange : Color.FromArgb(249, 115, 22),
+                _theme != null ? _theme.CPurple : Color.FromArgb(168, 85, 247),
+                _theme != null ? _theme.TextPrimary : Color.FromArgb(255, 255, 255),
+                _theme != null ? _theme.BgPrimary : Color.FromArgb(15, 23, 42)
             };
 
             int qX = 0;
@@ -163,7 +163,7 @@ namespace ModernAutoClicker.Advanced
                 };
                 swatchBtn.Paint += (s, e) =>
                 {
-                    using (Pen p = new Pen(Color.FromArgb(120, 255, 255, 255), 1))
+                    using (Pen p = new Pen(_theme != null ? _theme.BorderColor : Color.FromArgb(120, 255, 255, 255), 1))
                     {
                         e.Graphics.DrawRectangle(p, 0, 0, swatchBtn.Width - 1, swatchBtn.Height - 1);
                     }
@@ -247,7 +247,7 @@ namespace ModernAutoClicker.Advanced
                 BorderRadius = _theme.RadiusMd,
                 Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
                 NormalColor = _theme.CGreen,
-                HoverColor = Color.FromArgb(Math.Min(255, _theme.CGreen.R + 20), Math.Min(255, _theme.CGreen.G + 20), Math.Min(255, _theme.CGreen.B + 20)),
+                HoverColor = _theme.Success,
                 ForeColor = Color.White
             };
             btnApply.Click += (s, e) =>

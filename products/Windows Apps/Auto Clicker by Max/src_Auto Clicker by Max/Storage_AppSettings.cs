@@ -69,6 +69,8 @@ namespace ModernAutoClicker
         public string LastUpdateCheckDate { get; set; }
         public string Language { get; set; }
         public bool IsFirstRun { get; set; }
+        public int AsianWindowWidth { get; set; }
+        public int AsianWindowHeight { get; set; }
 
         public int ActiveSimpleTabIndex { get; set; }
         public List<SimpleProfileConfig> SimpleProfiles { get; set; }
@@ -142,6 +144,8 @@ namespace ModernAutoClicker
             AdvancedProfileJson = null;
             LastUpdateCheckDate = "";
             Language = "en";
+            AsianWindowWidth = 700;
+            AsianWindowHeight = 760;
             ActiveSimpleTabIndex = 0;
             SimpleProfiles = new List<SimpleProfileConfig>();
             for (int i = 0; i < 5; i++)
@@ -194,6 +198,8 @@ namespace ModernAutoClicker
                 settings.ActiveSimpleTabIndex = Math.Max(0, Math.Min(4, GetInt(json, "ActiveSimpleTabIndex", 0)));
                 settings.LastUpdateCheckDate = GetString(json, "LastUpdateCheckDate", "");
                 settings.Language = GetString(json, "Language", "en");
+                settings.AsianWindowWidth = Math.Max(700, GetInt(json, "AsianWindowWidth", 700));
+                settings.AsianWindowHeight = Math.Max(760, GetInt(json, "AsianWindowHeight", 760));
 
                 // Try parsing SimpleProfiles array
                 int spIdx = json.IndexOf("\"SimpleProfiles\"", StringComparison.OrdinalIgnoreCase);
@@ -359,6 +365,8 @@ namespace ModernAutoClicker
                 sb.AppendLine(string.Format("  \"IsAdvancedTab\": {0},", settings.IsAdvancedTab.ToString().ToLower()));
                 sb.AppendLine(string.Format("  \"LastUpdateCheckDate\": \"{0}\",", EscapeJson(settings.LastUpdateCheckDate ?? "")));
                 sb.AppendLine(string.Format("  \"Language\": \"{0}\",", EscapeJson(settings.Language ?? "en")));
+                sb.AppendLine(string.Format("  \"AsianWindowWidth\": {0},", Math.Max(700, settings.AsianWindowWidth)));
+                sb.AppendLine(string.Format("  \"AsianWindowHeight\": {0},", Math.Max(760, settings.AsianWindowHeight)));
 
                 // Save 5 SimpleProfiles
                 sb.AppendLine("  \"SimpleProfiles\": [");

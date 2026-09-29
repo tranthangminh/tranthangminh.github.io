@@ -159,6 +159,16 @@ namespace ModernAutoClicker
                     else
                     {
                         // Physical Hardware Cursor Click
+                        if (config.RelativeToWindow && config.TargetHwnd != IntPtr.Zero)
+                        {
+                            IntPtr currFg = NativeMethods.GetForegroundWindow();
+                            if (currFg != config.TargetHwnd)
+                            {
+                                NativeMethods.SetForegroundWindow(config.TargetHwnd);
+                                Thread.Sleep(25);
+                            }
+                        }
+
                         if (hasPoints)
                         {
                             int currIdx = pointIndex % config.PointsList.Count;

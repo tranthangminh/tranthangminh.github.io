@@ -59,6 +59,17 @@ namespace ModernAutoClicker.Advanced
                             total += s.DelayMs * Math.Max(1, s.RepeatCount);
                         }
                     }
+                    else if (s.ActionType == MacroActionType.RepeatTimer)
+                    {
+                        if (s.RepeatTimerMode == 1)
+                        {
+                            total += s.RepeatTimerSeconds * 1000;
+                        }
+                        else
+                        {
+                            total += s.DelayMs * Math.Max(1, s.RepeatCount);
+                        }
+                    }
                     else
                     {
                         int stepTime = (s.HoldMs + s.DelayMs) * Math.Max(1, s.RepeatCount);

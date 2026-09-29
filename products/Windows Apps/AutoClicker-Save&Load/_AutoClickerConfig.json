@@ -6,47 +6,39 @@
   "SmoothMouseMove": true,
   "MapOverlayOpacity": 60,
   "IsDarkTheme": true,
-  "IsAdvancedTab": true,
-  "LastUpdateCheckDate": "2026-09-29",
-  "Language": "en",
+  "IsAdvancedTab": false,
+  "LastUpdateCheckDate": "2026-09-28",
+  "Language": "vi",
   "AsianWindowWidth": 700,
   "AsianWindowHeight": 760,
   "SimpleProfiles": [
     {
       "TabIndex": 0,
-      "IntervalMs": 500,
+      "IntervalMs": 250,
       "SimpleLoops": 0,
       "SimpleJitterPx": 0,
       "MouseButton": 0,
       "SimpleClickMode": 0,
-      "SimpleTargetProcessName": "Antigravity",
-      "SimpleTargetWindowTitle": "TEST - Auto Clicker - Ant...",
-      "SimpleRelativeToWindow": true,
-      "Points": [
-        { "X": 717, "Y": 876 }
-      ]
+      "SimpleTargetProcessName": "",
+      "SimpleTargetWindowTitle": "",
+      "SimpleRelativeToWindow": false,
+      "Points": []
     },
     {
       "TabIndex": 1,
-      "IntervalMs": 10,
+      "IntervalMs": 250,
       "SimpleLoops": 0,
       "SimpleJitterPx": 0,
       "MouseButton": 0,
       "SimpleClickMode": 0,
-      "SimpleTargetProcessName": "HD-Player",
-      "SimpleTargetWindowTitle": "BlueStacks App Player",
-      "SimpleRelativeToWindow": true,
-      "Points": [
-        { "X": 367, "Y": 603 },
-        { "X": 355, "Y": 702 },
-        { "X": 104, "Y": 807 },
-        { "X": 239, "Y": 806 },
-        { "X": 379, "Y": 804 }
-      ]
+      "SimpleTargetProcessName": "",
+      "SimpleTargetWindowTitle": "",
+      "SimpleRelativeToWindow": false,
+      "Points": []
     },
     {
       "TabIndex": 2,
-      "IntervalMs": 10,
+      "IntervalMs": 250,
       "SimpleLoops": 0,
       "SimpleJitterPx": 0,
       "MouseButton": 0,
@@ -54,26 +46,19 @@
       "SimpleTargetProcessName": "",
       "SimpleTargetWindowTitle": "",
       "SimpleRelativeToWindow": false,
-      "Points": [
-        { "X": 712, "Y": 861 },
-        { "X": 989, "Y": 961 },
-        { "X": 1119, "Y": 966 },
-        { "X": 1249, "Y": 963 }
-      ]
+      "Points": []
     },
     {
       "TabIndex": 3,
-      "IntervalMs": 10,
-      "SimpleLoops": 2,
+      "IntervalMs": 250,
+      "SimpleLoops": 0,
       "SimpleJitterPx": 0,
       "MouseButton": 0,
       "SimpleClickMode": 0,
       "SimpleTargetProcessName": "",
       "SimpleTargetWindowTitle": "",
       "SimpleRelativeToWindow": false,
-      "Points": [
-        { "X": 483, "Y": 529 }
-      ]
+      "Points": []
     },
     {
       "TabIndex": 4,
@@ -88,17 +73,15 @@
       "Points": []
     }
   ],
-  "IntervalMs": 500,
+  "IntervalMs": 250,
   "SimpleLoops": 0,
   "SimpleJitterPx": 0,
   "MouseButton": 0,
   "SimpleClickMode": 0,
-  "SimpleTargetProcessName": "Antigravity",
-  "SimpleTargetWindowTitle": "TEST - Auto Clicker - Ant...",
-  "SimpleRelativeToWindow": true,
-  "Points": [
-    { "X": 717, "Y": 876 }
-  ],
+  "SimpleTargetProcessName": "",
+  "SimpleTargetWindowTitle": "",
+  "SimpleRelativeToWindow": false,
+  "Points": [],
   "AdvancedProfile": {
   "ActiveIndex": 0,
   "Profiles": [

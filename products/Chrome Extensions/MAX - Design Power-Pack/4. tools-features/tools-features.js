@@ -6,20 +6,21 @@
 // ── Shared Content Script Router Helper ──
 function routeContextMenuToContentScript(info, tab) {
   if (tab && tab.id) {
-    chrome.tabs.sendMessage(tab.id, {
+    const targetFrameId = (info && info.frameId !== undefined) ? info.frameId : 0;
+    const message = {
       action: 'context_menu_action',
       menuItemId: info.menuItemId,
       srcUrl: info.srcUrl
-    }, (response) => {
+    };
+
+    chrome.tabs.sendMessage(tab.id, message, { frameId: targetFrameId }, (response) => {
       if (chrome.runtime.lastError || !response) {
         chrome.scripting.executeScript({
-          target: { tabId: tab.id },
+          target: { tabId: tab.id, frameIds: [targetFrameId] },
           files: ['content.js']
         }).then(() => {
-          chrome.tabs.sendMessage(tab.id, {
-            action: 'context_menu_action',
-            menuItemId: info.menuItemId,
-            srcUrl: info.srcUrl
+          chrome.tabs.sendMessage(tab.id, message, { frameId: targetFrameId }, () => {
+            if (chrome.runtime.lastError) { /* ignore */ }
           });
         }).catch((err) => {
           console.warn('Failed to inject content.js for context action:', err);

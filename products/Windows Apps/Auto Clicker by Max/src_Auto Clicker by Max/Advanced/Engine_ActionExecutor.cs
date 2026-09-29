@@ -422,6 +422,25 @@ namespace ModernAutoClicker.Advanced
                     if (directHwnd != IntPtr.Zero) step.WindowHwnd = directHwnd;
                 }
             }
+            else if (!freeMouseMode && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
+            {
+                IntPtr targetWin = step.WindowHwnd;
+                if (!NativeMethods.IsValidWindowHandle(targetWin, step.ProcessName))
+                {
+                    targetWin = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                    if (targetWin != IntPtr.Zero) step.WindowHwnd = targetWin;
+                }
+
+                if (targetWin != IntPtr.Zero)
+                {
+                    IntPtr currFg = NativeMethods.GetForegroundWindow();
+                    if (currFg != targetWin)
+                    {
+                        NativeMethods.SetForegroundWindow(targetWin);
+                        Thread.Sleep(25); // Settle delay to let OS transition focus and avoid missed click
+                    }
+                }
+            }
 
             switch (step.ActionType)
             {
@@ -444,17 +463,27 @@ namespace ModernAutoClicker.Advanced
                     break;
 
                 case MacroActionType.DoubleClick:
-                    if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
+                    if (freeMouseMode)
                     {
-                        PerformClickDirectToWindow(directHwnd, rawClickPt, 0, hold);
-                        Thread.Sleep(Math.Max(20, System.Windows.Forms.SystemInformation.DoubleClickTime / 3));
-                        PerformClickDirectToWindow(directHwnd, rawClickPt, 0, hold);
+                        if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
+                            PerformClickDirectToWindow(directHwnd, rawClickPt, 3, hold);
+                        else
+                            PerformClick(clickPt, 3, hold, true);
                     }
                     else
                     {
-                        PerformClick(clickPt, 0, hold, freeMouseMode);
-                        Thread.Sleep(Math.Max(20, System.Windows.Forms.SystemInformation.DoubleClickTime / 3));
-                        PerformClick(clickPt, 0, hold, freeMouseMode);
+                        if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
+                        {
+                            PerformClickDirectToWindow(directHwnd, rawClickPt, 0, hold);
+                            Thread.Sleep(Math.Max(20, System.Windows.Forms.SystemInformation.DoubleClickTime / 3));
+                            PerformClickDirectToWindow(directHwnd, rawClickPt, 0, hold);
+                        }
+                        else
+                        {
+                            PerformClick(clickPt, 0, hold, false);
+                            Thread.Sleep(Math.Max(20, System.Windows.Forms.SystemInformation.DoubleClickTime / 3));
+                            PerformClick(clickPt, 0, hold, false);
+                        }
                     }
                     break;
 

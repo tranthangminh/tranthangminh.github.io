@@ -52,6 +52,7 @@ for /d %%D in ("%~dp0src_*") do (
 
     :: Terminate running instance if any to prevent file lock
     taskkill /F /IM "!APP_NAME!.exe" >nul 2>&1
+    powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name = '!APP_NAME!.exe'\" | Invoke-CimMethod -MethodName Terminate | Out-Null" >nul 2>&1
 
     :: Cleanup any rogue legacy folders or files in AutoClicker-Save&Load
     if exist "%~dp0AutoClicker-Save&Load\Templates" rd /s /q "%~dp0AutoClicker-Save&Load\Templates" >nul 2>&1
@@ -80,12 +81,16 @@ for /d %%D in ("%~dp0src_*") do (
         set "MANIFEST_ARG=/win32manifest:"%%D\app.manifest""
     )
 
+    set "CSC_DIR="
+    for %%I in ("%CSC%") do set "CSC_DIR=%%~dpI"
+    set "WPF_ARG=/lib:"!CSC_DIR!WPF" /r:UIAutomationClient.dll,UIAutomationTypes.dll,WindowsBase.dll"
+
     :: Compile source files recursively (/nologo suppresses compiler banner)
     echo [*] Compiling source code...
     if exist "%%D\app.ico" (
-        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /utf8output /win32icon:"%%D\app.ico" !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! /recurse:"%%D\*.cs"
+        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /utf8output /win32icon:"%%D\app.ico" !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! !WPF_ARG! /recurse:"%%D\*.cs"
     ) else (
-        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /utf8output !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! /recurse:"%%D\*.cs"
+        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /utf8output !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! !WPF_ARG! /recurse:"%%D\*.cs"
     )
 
     if !ERRORLEVEL! equ 0 (

@@ -15,7 +15,32 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  font-family: var(--font-family);
+  font-family: var(--font-family) !important;
+}
+
+/* Enforce Outfit font on all modal children, buttons, form controls, and popovers */
+#image-preview-modal,
+#image-preview-modal *,
+#image-preview-modal button,
+#image-preview-modal input,
+#image-preview-modal select,
+#image-preview-modal textarea,
+.modal.editor-page-modal,
+.modal.editor-page-modal *,
+.modal.editor-page-modal button,
+.modal.editor-page-modal input,
+.modal.editor-page-modal select,
+.modal.editor-page-modal textarea,
+.vector-popover,
+.vector-popover *,
+.vector-popover button,
+.vector-popover input,
+.vector-popover select,
+.vector-inline-size-input,
+.discard-dialog-overlay,
+.discard-dialog-overlay *,
+.discard-dialog-overlay button {
+  font-family: var(--font-family) !important;
 }
 
 #image-preview-modal.hidden,
@@ -80,6 +105,21 @@
   gap: 8px;
 }
 
+/* Master Mask Icon (.icon-mask) Self-contained Definition */
+.icon-mask {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  flex-shrink: 0;
+}
+
 /* Circular HUD Action Buttons (Theme Toggle & Hide HUD) */
 .hide-hud-btn {
   width: 45px;
@@ -105,6 +145,12 @@
   height: 25px;
   display: inline-block;
   background-color: var(--text-primary);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
   transition: background-color 0.2s ease;
 }
 
@@ -622,6 +668,7 @@ body.max-standalone-image-page {
   padding: 0 !important;
   overflow: hidden !important;
   background: var(--bg-primary, #090a0f) !important;
+  font-family: var(--font-family) !important;
 }
 
 body.max-standalone-image-page > img:not(#modal-image-preview) {

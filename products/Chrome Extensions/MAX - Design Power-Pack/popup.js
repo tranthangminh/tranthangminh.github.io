@@ -10,6 +10,7 @@ function initPopup() {
   });
 
   setupThemeToggle();
+  setupLanguageToggle();
   setupSidePanelButtons();
   initTabsListeners();
   initSubTabsListeners();
@@ -98,6 +99,17 @@ function setupThemeToggle() {
       applyTheme(changes.maxTheme.newValue);
     }
   });
+}
+
+function setupLanguageToggle() {
+  const langToggleBtn = document.getElementById('lang-toggle-btn');
+  if (langToggleBtn) {
+    langToggleBtn.addEventListener('click', () => {
+      if (window.i18n && typeof window.i18n.toggleLanguage === 'function') {
+        window.i18n.toggleLanguage();
+      }
+    });
+  }
 }
 
 if (document.readyState !== 'loading') {

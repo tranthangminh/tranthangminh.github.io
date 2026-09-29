@@ -26,8 +26,26 @@ namespace ModernAutoClicker
         private const int SW_SHOW = 5;
 
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            int waitForPid = 0;
+            if (args != null && args.Length >= 2 && args[0] == "--restart")
+            {
+                int.TryParse(args[1], out waitForPid);
+                if (waitForPid > 0)
+                {
+                    try
+                    {
+                        Process oldProc = Process.GetProcessById(waitForPid);
+                        if (oldProc != null && !oldProc.HasExited)
+                        {
+                            oldProc.WaitForExit(3000);
+                        }
+                    }
+                    catch { }
+                }
+            }
+
             // 1. Check if another live AutoClicker process is running
             try
             {
@@ -35,7 +53,7 @@ namespace ModernAutoClicker
                 Process[] processes = Process.GetProcessesByName(current.ProcessName);
                 foreach (Process p in processes)
                 {
-                    if (p.Id != current.Id)
+                    if (p.Id != current.Id && p.Id != waitForPid)
                     {
                         try
                         {

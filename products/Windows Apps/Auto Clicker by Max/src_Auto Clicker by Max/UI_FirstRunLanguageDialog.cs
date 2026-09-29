@@ -67,7 +67,7 @@ namespace ModernAutoClicker
                 PressedColor = _theme.BgPrimary,
                 BorderColor = _theme.BorderColor,
                 BorderWidth = 1,
-                ForeColor = Color.White,
+                ForeColor = _theme.TextPrimary,
                 Font = ThemeTokens.FontSegoe(13.5F, FontStyle.Bold)
             };
             _btnVietnamese.Click += (s, e) =>

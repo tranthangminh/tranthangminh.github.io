@@ -142,7 +142,10 @@ function initCountSyncObserver() {
       const text = summaryEl.textContent || '';
       const match = text.match(/\d+/);
       const count = match ? match[0] : '0';
-      subtabCountEl.textContent = `${count} ${tab.charAt(0).toUpperCase() + tab.slice(1)}`;
+      const label = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t(`downloader.${tab}Tab`)
+        : (tab.charAt(0).toUpperCase() + tab.slice(1));
+      subtabCountEl.textContent = `${count} ${label}`;
       
       const subtabBtn = subtabCountEl.closest('.sub-tab-btn');
       if (subtabBtn) {
@@ -160,5 +163,8 @@ function initCountSyncObserver() {
     // Observe text changes
     const observer = new MutationObserver(updateSubtabCount);
     observer.observe(summaryEl, { childList: true, characterData: true, subtree: true });
+
+    // Re-render when language changes
+    window.addEventListener('maxLanguageChanged', updateSubtabCount);
   });
 }

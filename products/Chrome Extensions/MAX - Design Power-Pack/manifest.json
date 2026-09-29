@@ -44,6 +44,7 @@
     {
       "matches": ["<all_urls>"],
       "js": [
+        "common/locales.js",
         "common/common_utils.js",
         "image_previewmodal/image_previewmodal-editor-state.js",
         "image_previewmodal/image_previewmodal-editor-math.js",

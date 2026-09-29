@@ -303,7 +303,7 @@
   }
 
   function executeAction(menuItemId, imageUrl) {
-    chrome.runtime.sendMessage({
+    safeSendMessage({
       action: 'execute_context_menu_action',
       menuItemId: menuItemId,
       imageUrl: imageUrl

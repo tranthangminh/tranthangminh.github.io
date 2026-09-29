@@ -30,6 +30,12 @@ namespace ModernAutoClicker.Advanced
                         return "Gõ Văn Bản:\nTự động gõ một chuỗi ký tự hoặc văn bản Unicode vào ô nhập liệu đang hoạt động.";
                     case MacroActionType.Delay:
                         return "Chờ Đợi (Delay):\nTạm dừng thực thi kịch bản (chuột đứng yên trong Hold, sau đó chờ hoặc di chuyển đến bước kế trong Delay).";
+                    case MacroActionType.RepeatTimer:
+                        return "Lặp / Bấm giờ (Vòng lặp khối):\n" +
+                               "Lặp lại các bước trước đó quay về bước chỉ định theo số lần hoặc thời gian đếm lùi:\n" +
+                               "• Số lần: Lặp lại N lần rồi nhảy sang bước kế tiếp.\n" +
+                               "• Bấm giờ: Lặp lại liên tục trong khoảng thời gian đã đặt (ví dụ: 00:05:00) rồi nhảy sang bước kế tiếp.\n" +
+                               "• Tự động reset bộ đếm/giờ an toàn khi bước sang bước mới.";
                     case MacroActionType.WaitColor:
                         return "Chờ Màu Xuất Hiện:\nTạm dừng thực thi cho đến khi mã màu HEX mục tiêu xuất hiện tại điểm hoặc trong vùng đã chọn (trong phạm vi sai số).";
                     case MacroActionType.IfColor:
@@ -74,6 +80,12 @@ namespace ModernAutoClicker.Advanced
                     return "Type Text:\nTypes a string of text or Unicode characters automatically into the active input field.";
                 case MacroActionType.Delay:
                     return "Delay:\nPauses script execution with mouse staying still during Hold, then waits or travels to next step during Delay.";
+                case MacroActionType.RepeatTimer:
+                    return "Repeat / Timer (Loop Block):\n" +
+                           "Repeats previous steps back to a target step based on count or duration:\n" +
+                           "• Times: Repeats the block N times, then proceeds to the next step.\n" +
+                           "• Timer: Repeats the block continuously for the specified duration (e.g. 00:05:00), then proceeds to the next step.\n" +
+                           "• Resets safely upon exiting the loop block.";
                 case MacroActionType.WaitColor:
                     return "Wait Color:\nPauses execution until the target HEX color appears at the point or within the selected area (Wait Area) within tolerance.";
                 case MacroActionType.IfColor:
@@ -201,7 +213,7 @@ namespace ModernAutoClicker.Advanced
                     case MacroActionType.MiddleClick:
                         if (isArea)
                         {
-                            return string.Format("Vùng Click Giữa / Cuộn (Click Ngẫu Nhiên trong Vùng):\nVùng: ({0}, {1}) đến ({2}, {3}) [{4}×{5} px] và nấc cuộn: {6}.\n• 0: Click chuột giữa ngẫu nhiên trong vùng\n• Dương (+): Cuộn lên\n• Âm (-): Cuộn xuống\nNhấp 🎯 để chọn.",
+                            return string.Format("Vùng Click Giữa / Cuộn (Click Ngẫu Nhiên trong Vùng):\nVùng: ({0}, {1}) đến ({2}, {3}) [{4} x {5} px] và nấc cuộn: {6}.\n• 0: Click chuột giữa ngẫu nhiên trong vùng\n• Dương (+): Cuộn lên\n• Âm (-): Cuộn xuống\nNhấp 🎯 để chọn.",
                                 step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH, step.ScrollStep);
                         }
                         return string.Format("Tọa Độ & Cuộn Chuột:\nTọa độ ({0}, {1}) và nấc cuộn: {2}.\n• 0: Click chuột giữa\n• Dương (+): Cuộn lên\n• Âm (-): Cuộn xuống\nNhấp 🎯 để chọn tọa độ.",
@@ -218,7 +230,7 @@ namespace ModernAutoClicker.Advanced
                     case MacroActionType.IfColorArea:
                         if (isArea || step.ActionType == MacroActionType.IfColorArea)
                         {
-                            return string.Format("Tìm Màu Trong Vùng:\nVùng quét ({0}, {1}) đến ({2}, {3}) [{4}×{5} px] khớp màu HEX {6} (Sai số ±{7}). Nhấp ô màu để đổi màu, 🎯 để chọn.",
+                            return string.Format("Tìm Màu Trong Vùng:\nVùng quét ({0}, {1}) đến ({2}, {3}) [{4} x {5} px] khớp màu HEX {6} (Sai số ±{7}). Nhấp ô màu để đổi màu, 🎯 để chọn.",
                                 step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH, step.ColorHex, step.Tolerance);
                         }
                         return string.Format("Kiểm Tra Màu Pixel:\nPixel ({0}, {1}) khớp màu HEX {2} (Sai số ±{3}). Nhấp ô màu để đổi màu, 🎯 để chọn.",
@@ -233,7 +245,7 @@ namespace ModernAutoClicker.Advanced
                     case MacroActionType.IfImage:
                         if (isArea)
                         {
-                            return string.Format("Tìm Hình Ảnh Trong Vùng:\nGiới hạn tìm ({0}, {1}) đến ({2}, {3}) [{4}×{5} px]. Độ khớp: {6}%. Nhấp ảnh thu nhỏ để cắt ảnh hoặc 🎯 để đặt vùng quét.",
+                            return string.Format("Tìm Hình Ảnh Trong Vùng:\nGiới hạn tìm ({0}, {1}) đến ({2}, {3}) [{4} x {5} px]. Độ khớp: {6}%. Nhấp ảnh thu nhỏ để cắt ảnh hoặc 🎯 để đặt vùng quét.",
                                 step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH, step.Similarity);
                         }
                         return string.Format("Tìm Hình Ảnh (Toàn Màn Hình):\nĐộ khớp: {0}%. Nhấp ảnh thu nhỏ để cắt ảnh hoặc 🎯 để giới hạn vùng tìm.",
@@ -241,7 +253,7 @@ namespace ModernAutoClicker.Advanced
                     default:
                         if (isArea)
                         {
-                            return string.Format("Mục Tiêu Vùng (Click Ngẫu Nhiên):\nVùng ({0}, {1}) đến ({2}, {3}) [{4}×{5} px]. Click ngẫu nhiên bên trong vùng mỗi lần. Nhấp 🎯 để chọn.",
+                            return string.Format("Mục Tiêu Vùng (Click Ngẫu Nhiên):\nVùng ({0}, {1}) đến ({2}, {3}) [{4} x {5} px]. Click ngẫu nhiên bên trong vùng mỗi lần. Nhấp 🎯 để chọn.",
                                 step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH);
                         }
                         return string.Format("Tọa Độ Mục Tiêu ({0}, {1}):\nNhấp vào tọa độ hoặc 🎯 để chọn với kính lúp phóng to.",
@@ -257,7 +269,7 @@ namespace ModernAutoClicker.Advanced
                 case MacroActionType.MiddleClick:
                     if (isArea)
                     {
-                        return string.Format("Area Middle Click / Scroll (Random Click in Area):\nArea: ({0}, {1}) to ({2}, {3}) [{4}×{5} px] and Scroll step: {6}.\n• 0: Random Middle Click in area\n• Positive (+): Scroll Up\n• Negative (-): Scroll Down\nClick 🎯 to pick.",
+                        return string.Format("Area Middle Click / Scroll (Random Click in Area):\nArea: ({0}, {1}) to ({2}, {3}) [{4} x {5} px] and Scroll step: {6}.\n• 0: Random Middle Click in area\n• Positive (+): Scroll Up\n• Negative (-): Scroll Down\nClick 🎯 to pick.",
                             step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH, step.ScrollStep);
                     }
                     return string.Format("Target & Scroll:\nCoordinates ({0}, {1}) and Scroll step: {2}.\n• 0: Middle Click\n• Positive (+): Scroll Up\n• Negative (-): Scroll Down\nClick 🎯 to pick coordinate.",
@@ -274,7 +286,7 @@ namespace ModernAutoClicker.Advanced
                 case MacroActionType.IfColorArea:
                     if (isArea || step.ActionType == MacroActionType.IfColorArea)
                     {
-                        return string.Format("Area Color Search:\nBounding box ({0}, {1}) to ({2}, {3}) [{4}×{5} px] matching HEX {6} (Tolerance ±{7}). Click swatch to change color, 🎯 to pick.",
+                        return string.Format("Area Color Search:\nBounding box ({0}, {1}) to ({2}, {3}) [{4} x {5} px] matching HEX {6} (Tolerance ±{7}). Click swatch to change color, 🎯 to pick.",
                             step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH, step.ColorHex, step.Tolerance);
                     }
                     return string.Format("Color Check:\nPixel ({0}, {1}) matching HEX {2} (Tolerance ±{3}). Click swatch to change color, 🎯 to pick.",
@@ -289,7 +301,7 @@ namespace ModernAutoClicker.Advanced
                 case MacroActionType.IfImage:
                     if (isArea)
                     {
-                        return string.Format("Template Image Search in Area:\nSearch bounds ({0}, {1}) to ({2}, {3}) [{4}×{5} px]. Sim: {6}%. Click thumbnail to crop image or 🎯 to set search area.",
+                        return string.Format("Template Image Search in Area:\nSearch bounds ({0}, {1}) to ({2}, {3}) [{4} x {5} px]. Sim: {6}%. Click thumbnail to crop image or 🎯 to set search area.",
                             step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH, step.Similarity);
                     }
                     return string.Format("Template Image Search (Full Screen):\nSim: {0}%. Click thumbnail to crop image or 🎯 to restrict search area.",
@@ -297,7 +309,7 @@ namespace ModernAutoClicker.Advanced
                 default:
                     if (isArea)
                     {
-                        return string.Format("Area Target (Random Click):\nBounding box ({0}, {1}) to ({2}, {3}) [{4}×{5} px]. Randomly clicks inside this area each time. Click 🎯 to pick.",
+                        return string.Format("Area Target (Random Click):\nBounding box ({0}, {1}) to ({2}, {3}) [{4} x {5} px]. Randomly clicks inside this area each time. Click 🎯 to pick.",
                             step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y, areaW, areaH);
                     }
                     return string.Format("Target Point ({0}, {1}):\nClick coordinate text or 🎯 to pick with magnifier crosshair.",
@@ -321,7 +333,7 @@ namespace ModernAutoClicker.Advanced
                     case "Action Type":
                         return "Loại Hành Động:\nNhấp tiêu đề để đổi hàng loạt Loại Hành Động cho các bước đang chọn (hoặc tất cả bước nếu chưa chọn dòng nào).";
                     case "Target":
-                        return "Tọa Độ Mục Tiêu / Phím Tắt (🎯):\nNhấp tiêu đề để chọn và gán hàng loạt Tọa Độ cho các bước đang chọn (hoặc tất cả bước nếu chưa chọn dòng nào).";
+                        return "Mục Tiêu / Cài Đặt (🎯):\nNhấp tiêu đề để chọn và gán hàng loạt Tọa Độ cho các bước đang chọn (hoặc tất cả bước nếu chưa chọn dòng nào).";
                     case "Hold":
                         return "Giữ (ms) - Thời Gian Hoàn Tất Bước:\n" +
                                "Thời gian thực thi để hoàn thành bước này (ví dụ: giữ nút chuột, giữ phím, hoặc thời gian kéo chuột).\n" +
@@ -352,7 +364,7 @@ namespace ModernAutoClicker.Advanced
                 case "Action Type":
                     return "Action Type:\nClick header to batch change Action Type for highlighted/selected steps (or all steps if none selected).";
                 case "Target":
-                    return "Target Coordinate / Key / Action Target (🎯):\nClick header to batch pick and set Target Coordinates for highlighted/selected steps (or all steps if none selected).";
+                    return "Target / Setting / Action Value (🎯):\nClick header to batch pick and set Target Coordinates for highlighted/selected steps (or all steps if none selected).";
                 case "Hold":
                     return "Hold (ms) - Step Completion Duration:\n" +
                            "Execution time to complete this step (e.g. mouse button hold, keystroke press, or drag duration).\n" +

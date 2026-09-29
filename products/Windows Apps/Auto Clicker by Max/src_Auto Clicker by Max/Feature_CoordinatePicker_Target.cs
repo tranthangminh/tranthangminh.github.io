@@ -167,6 +167,9 @@ namespace ModernAutoClicker
                 pickedColor = NativeMethods.GetPixelColor(pt.X, pt.Y);
             }
 
+            // Hide picker form so WindowFromPoint accurately detects the underlying target window
+            this.Visible = false;
+
             // Detect window under cursor
             NativeMethods.POINT nativePt = new NativeMethods.POINT { X = pt.X, Y = pt.Y };
             IntPtr hWnd = NativeMethods.WindowFromPoint(nativePt);
@@ -201,6 +204,15 @@ namespace ModernAutoClicker
                         title = sb.ToString().Trim();
                     }
 
+                    System.Text.StringBuilder sbCls = new System.Text.StringBuilder(256);
+                    NativeMethods.GetClassName(hWnd, sbCls, sbCls.Capacity);
+                    string cls = sbCls.ToString();
+                    if (cls == "Progman" || cls == "WorkerW")
+                    {
+                        title = "Windows Desktop";
+                        pName = "explorer";
+                    }
+
                     NativeMethods.POINT cPt = nativePt;
                     NativeMethods.ScreenToClient(hWnd, ref cPt);
                     clientPt = new Point(cPt.X, cPt.Y);
@@ -209,7 +221,8 @@ namespace ModernAutoClicker
                     {
                         Hwnd = hWnd,
                         ProcessName = pName,
-                        Title = title
+                        Title = title,
+                        ClassName = cls
                     };
                 }
             }
@@ -281,6 +294,9 @@ namespace ModernAutoClicker
             Point normA = new Point(Math.Min(ptA.X, ptB.X), Math.Min(ptA.Y, ptB.Y));
             Point normB = new Point(Math.Max(ptA.X, ptB.X), Math.Max(ptA.Y, ptB.Y));
 
+            // Hide picker form so WindowFromPoint accurately detects the underlying target window
+            this.Visible = false;
+
             // Detect window under cursor
             NativeMethods.POINT nativePtA = new NativeMethods.POINT { X = ptA.X, Y = ptA.Y };
             NativeMethods.POINT nativePtB = new NativeMethods.POINT { X = ptB.X, Y = ptB.Y };
@@ -317,6 +333,15 @@ namespace ModernAutoClicker
                         title = sb.ToString().Trim();
                     }
 
+                    System.Text.StringBuilder sbCls = new System.Text.StringBuilder(256);
+                    NativeMethods.GetClassName(hWnd, sbCls, sbCls.Capacity);
+                    string cls = sbCls.ToString();
+                    if (cls == "Progman" || cls == "WorkerW")
+                    {
+                        title = "Windows Desktop";
+                        pName = "explorer";
+                    }
+
                     NativeMethods.POINT cPtA = nativePtA;
                     NativeMethods.ScreenToClient(hWnd, ref cPtA);
                     clientPtA = new Point(cPtA.X, cPtA.Y);
@@ -329,7 +354,8 @@ namespace ModernAutoClicker
                     {
                         Hwnd = hWnd,
                         ProcessName = pName,
-                        Title = title
+                        Title = title,
+                        ClassName = cls
                     };
                 }
             }

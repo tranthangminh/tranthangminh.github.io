@@ -219,8 +219,13 @@ function renderCaptureHistory(items) {
   if (!grid) return;
 
   if (countBadge) {
-    countBadge.textContent = `${items.length} ${items.length === 1 ? 'item' : 'items'}`;
+    const itemWord = (window.i18n && typeof window.i18n.t === 'function')
+      ? (items.length === 1 ? window.i18n.t('common.item') : window.i18n.t('common.items'))
+      : (items.length === 1 ? 'item' : 'items');
+    countBadge.textContent = `${items.length} ${itemWord}`;
   }
+
+  window._lastRenderedHistory = items;
 
   if (!items || items.length === 0) {
     grid.innerHTML = '';
@@ -257,22 +262,29 @@ function renderCaptureHistory(items) {
     const rightBadge = isRecVideo ? 'VIDEO' : (item.width && item.height ? `${item.width}×${item.height}` : 'IMAGE');
 
     const hasLocalFile = !!item.downloadId;
-    const downloadTitle = hasLocalFile ? 'Show in folder' : 'Download';
+    const downloadTitle = hasLocalFile
+      ? ((window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.view') : 'Show in folder')
+      : ((window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.download') : 'Download');
     const downloadIcon = hasLocalFile
       ? `<span class="icon-mask" style="mask-image: url('svg/folder.svg'); -webkit-mask-image: url('svg/folder.svg');"></span>`
       : `<span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span>`;
 
-    const deleteBtnHtml = `<button class="action-icon-btn history-action-btn delete-history-btn" title="Remove from history" data-id="${item.id}">
+    const deleteTitle = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.delete') : 'Remove from history';
+    const viewTitle = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.view') : 'View';
+    const copyTitle = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.copy') : 'Copy image to clipboard';
+    const openTitle = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.openTab') : 'Open in new tab';
+
+    const deleteBtnHtml = `<button class="action-icon-btn history-action-btn delete-history-btn" title="${deleteTitle}" data-id="${item.id}">
         <span class="icon-mask" style="mask-image: url('svg/delete.svg'); -webkit-mask-image: url('svg/delete.svg');"></span>
       </button>`;
 
-    const actionBtnsHtml = `<button class="action-icon-btn history-action-btn view-history-btn" title="View" data-id="${item.id}">
+    const actionBtnsHtml = `<button class="action-icon-btn history-action-btn view-history-btn" title="${viewTitle}" data-id="${item.id}">
            <span class="icon-mask" style="mask-image: url('svg/eye.svg'); -webkit-mask-image: url('svg/eye.svg');"></span>
          </button>
-         <button class="action-icon-btn history-action-btn copy-history-btn" title="Copy image to clipboard" data-id="${item.id}">
+         <button class="action-icon-btn history-action-btn copy-history-btn" title="${copyTitle}" data-id="${item.id}">
            <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span>
          </button>
-         <button class="action-icon-btn history-action-btn open-history-btn" title="Open in new tab" data-id="${item.id}">
+         <button class="action-icon-btn history-action-btn open-history-btn" title="${openTitle}" data-id="${item.id}">
            <span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span>
          </button>
          <button class="action-icon-btn history-action-btn download-history-btn" title="${downloadTitle}" data-id="${item.id}">
@@ -480,3 +492,10 @@ async function copyImageToClipboard(src) {
     if (window.showToast) window.showToast('Failed to copy image');
   }
 }
+
+// Re-render history on language toggle
+window.addEventListener('maxLanguageChanged', () => {
+  if (window._lastRenderedHistory) {
+    renderCaptureHistory(window._lastRenderedHistory);
+  }
+});

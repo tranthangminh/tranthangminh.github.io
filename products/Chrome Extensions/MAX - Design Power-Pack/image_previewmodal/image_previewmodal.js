@@ -105,15 +105,18 @@ function initPreviewModal() {
     dialog.innerHTML = `
       <div class="modal-dialog discard-dialog-box">
         <div class="discard-dialog-icon">⚠️</div>
-        <h3 class="discard-dialog-title">Discard All Changes?</h3>
-        <p class="discard-dialog-msg">You have unsaved drawings or text edits. Are you sure you want to discard everything?</p>
+        <h3 class="discard-dialog-title" data-i18n="editor.discardTitle">Discard All Changes?</h3>
+        <p class="discard-dialog-msg" data-i18n="editor.discardMessage">You have unsaved drawings or text edits. Are you sure you want to discard everything?</p>
         <div class="discard-dialog-actions">
-          <button id="discard-cancel-btn" class="btn btn-secondary">Keep Editing</button>
-          <button id="discard-confirm-btn" class="btn btn-danger">Discard All</button>
+          <button id="discard-cancel-btn" class="btn btn-secondary" data-i18n="editor.discardKeep">Keep Editing</button>
+          <button id="discard-confirm-btn" class="btn btn-danger" data-i18n="editor.discardConfirm">Discard All</button>
         </div>
       </div>
     `;
     document.body.appendChild(dialog);
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(dialog);
+    }
 
     const cancelBtn = dialog.querySelector('#discard-cancel-btn');
     const confirmBtn = dialog.querySelector('#discard-confirm-btn');
@@ -141,6 +144,9 @@ function initPreviewModal() {
 
   function showDiscardDialog() {
     const dialog = createDiscardDialog();
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(dialog);
+    }
     dialog.classList.remove('hidden');
   }
 
@@ -681,11 +687,21 @@ function applyModalTheme(theme) {
       document.documentElement.setAttribute('data-theme', 'light');
       document.body.setAttribute('data-theme', 'light');
     }
-    if (themeBtn) themeBtn.title = 'Switch to Dark Theme';
+    if (themeBtn) {
+      themeBtn.title = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('editor.switchToDark')
+        : 'Switch to Dark Theme';
+    }
     if (iconMask) {
       const darkSvg = getSvgPath('dark-mode.svg');
       iconMask.style.maskImage = `url('${darkSvg}')`;
       iconMask.style.webkitMaskImage = `url('${darkSvg}')`;
+      iconMask.style.maskRepeat = 'no-repeat';
+      iconMask.style.webkitMaskRepeat = 'no-repeat';
+      iconMask.style.maskSize = 'contain';
+      iconMask.style.webkitMaskSize = 'contain';
+      iconMask.style.maskPosition = 'center';
+      iconMask.style.webkitMaskPosition = 'center';
     }
   } else {
     if (modal) modal.removeAttribute('data-theme');
@@ -693,11 +709,21 @@ function applyModalTheme(theme) {
       document.documentElement.removeAttribute('data-theme');
       document.body.removeAttribute('data-theme');
     }
-    if (themeBtn) themeBtn.title = 'Switch to Light Theme';
+    if (themeBtn) {
+      themeBtn.title = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('editor.switchToLight')
+        : 'Switch to Light Theme';
+    }
     if (iconMask) {
       const lightSvg = getSvgPath('light-mode.svg');
       iconMask.style.maskImage = `url('${lightSvg}')`;
       iconMask.style.webkitMaskImage = `url('${lightSvg}')`;
+      iconMask.style.maskRepeat = 'no-repeat';
+      iconMask.style.webkitMaskRepeat = 'no-repeat';
+      iconMask.style.maskSize = 'contain';
+      iconMask.style.webkitMaskSize = 'contain';
+      iconMask.style.maskPosition = 'center';
+      iconMask.style.webkitMaskPosition = 'center';
     }
   }
 }
@@ -762,7 +788,9 @@ function toggleHideHud(forceState = null) {
   const isHidden = modal.classList.contains('hud-hidden');
   const hideHudBtn = document.getElementById('modal-hide-hud-btn');
   if (hideHudBtn) {
-    hideHudBtn.title = isHidden ? 'Show HUD (H)' : 'Toggle Hide HUD (H)';
+    hideHudBtn.title = (window.i18n && typeof window.i18n.t === 'function')
+      ? (isHidden ? window.i18n.t('editor.showHud') : window.i18n.t('editor.hideHud'))
+      : (isHidden ? 'Show HUD (H)' : 'Hide HUD (H)');
   }
 
   try {
@@ -806,6 +834,24 @@ function applySavedHideHudState() {
   }
 }
 window.applySavedHideHudState = applySavedHideHudState;
+
+// Sync translations if language changes at runtime
+window.addEventListener('maxLanguageChanged', () => {
+  const modal = document.getElementById('image-preview-modal');
+  if (modal && window.i18n && typeof window.i18n.applyTranslations === 'function') {
+    window.i18n.applyTranslations(modal);
+    const hideHudBtn = document.getElementById('modal-hide-hud-btn');
+    if (hideHudBtn) {
+      const isHidden = modal.classList.contains('hud-hidden');
+      hideHudBtn.title = isHidden ? window.i18n.t('editor.showHud') : window.i18n.t('editor.hideHud');
+    }
+    const themeBtn = document.getElementById('modal-theme-toggle-btn');
+    if (themeBtn) {
+      const isLight = modal.getAttribute('data-theme') === 'light';
+      themeBtn.title = isLight ? window.i18n.t('editor.switchToDark') : window.i18n.t('editor.switchToLight');
+    }
+  }
+});
 
 // Expose functions globally
 window.initPreviewModal = initPreviewModal;

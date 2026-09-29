@@ -7,7 +7,7 @@ using ModernAutoClicker.Localization;
 
 namespace ModernAutoClicker.Advanced
 {
-    public class AdvancedTabPanel : RoundedPanel
+    public class AdvancedTabPanel : Panel
     {
         private ThemeTokens _theme;
 
@@ -15,6 +15,9 @@ namespace ModernAutoClicker.Advanced
         private ProfileTabControl profileTabBar;
         private List<MacroProfile> _profiles = new List<MacroProfile>();
         private int _activeProfileIndex = 0;
+
+        // Main Body Card ("Bảng Lớn") wrapping action buttons, table, and bottom options
+        private RoundedPanel pnlBodyCard;
 
         // Top Toolbar Controls
         private RoundedButton btnAddStep;
@@ -83,8 +86,8 @@ namespace ModernAutoClicker.Advanced
         {
             _theme = ThemeTokens.DarkTheme();
             this.Size = new Size(590, 482);
-            this.BorderRadius = _theme.RadiusMd;
-            this.BorderSize = 1;
+            this.DoubleBuffered = true;
+            this.BackColor = _theme.BgPrimary;
             _vfxOverdrive = new VFX_AsianDragonOverdrive();
             _vfxOverdrive.Attach(this);
 
@@ -109,6 +112,61 @@ namespace ModernAutoClicker.Advanced
             if (tableControl != null) tableControl.ApplyLanguage();
         }
 
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+
+            int w = this.Width;
+            int h = this.Height;
+            if (w <= 0 || h <= 0) return;
+
+            this.SuspendLayout();
+
+            // 1. Profile tabs & Template button outside on top (Y = 0, Height = 26)
+            if (profileTabBar != null) profileTabBar.Size = new Size(Math.Max(50, w - 86 - 6), 26);
+            if (btnTemplate != null) btnTemplate.Location = new Point(w - 86, 0);
+
+            // 2. The Main Body Card ("Bảng Lớn") wrapping all step controls (Y = 26)
+            int bodyCardH = Math.Max(150, h - 26);
+            if (pnlBodyCard != null)
+            {
+                pnlBodyCard.Location = new Point(0, 26);
+                pnlBodyCard.Size = new Size(w, bodyCardH);
+                pnlBodyCard.SuspendLayout();
+
+                int bw = pnlBodyCard.Width;
+                int bh = pnlBodyCard.Height;
+
+                // Toolbar right buttons (Y = 8)
+                if (btnLoadProfile != null) btnLoadProfile.Location = new Point(bw - 8 - 88, 8);
+                if (btnSaveProfile != null) btnSaveProfile.Location = new Point(bw - 8 - 88 - 6 - 88, 8);
+
+                // Macro table (Y = 38)
+                int tableH = Math.Max(100, bh - 38 - 34);
+                if (tableControl != null)
+                {
+                    tableControl.Location = new Point(8, 38);
+                    tableControl.Size = new Size(Math.Max(200, bw - 16), tableH);
+                }
+
+                // Bottom options (Y = bh - 26)
+                int optY = bh - 26;
+                if (lblLoop != null && lblLoop.Top != optY) lblLoop.Top = optY;
+                if (numLoop != null && numLoop.Top != optY - 1) numLoop.Top = optY - 1;
+                if (lblLoopHint != null && lblLoopHint.Top != optY) lblLoopHint.Top = optY;
+                if (lblRandJitter != null && lblRandJitter.Top != optY) lblRandJitter.Top = optY;
+                if (numRandJitter != null && numRandJitter.Top != optY - 1) numRandJitter.Top = optY - 1;
+                if (lblRandJitterUnit != null && lblRandJitterUnit.Top != optY) lblRandJitterUnit.Top = optY;
+                if (lblRandInterval != null && lblRandInterval.Top != optY) lblRandInterval.Top = optY;
+                if (numRandInterval != null && numRandInterval.Top != optY - 1) numRandInterval.Top = optY - 1;
+                if (lblRandIntervalUnit != null && lblRandIntervalUnit.Top != optY) lblRandIntervalUnit.Top = optY;
+
+                pnlBodyCard.ResumeLayout(true);
+            }
+
+            this.ResumeLayout(true);
+        }
+
         private void EnsureProfileExists()
         {
             if (_profiles == null) _profiles = new List<MacroProfile>();
@@ -127,11 +185,11 @@ namespace ModernAutoClicker.Advanced
 
         private void InitializeComponents()
         {
-            // 1. Profile Sub-Tab Bar & Template Button (Y = 6, Height = 28)
+            // 1. Profile Sub-Tab Bar & Template Button (outside, on top: Y = 0, Height = 26)
             profileTabBar = new ProfileTabControl
             {
-                Location = new Point(8, 6),
-                Size = new Size(574 - 90, 28)
+                Location = new Point(4, 0),
+                Size = new Size(590 - 86 - 8, 26)
             };
             profileTabBar.OnActiveTabChanged += (idx) => SwitchActiveProfile(idx);
             profileTabBar.OnTabRenamed += (idx, name) => RenameProfile(idx, name);
@@ -143,18 +201,29 @@ namespace ModernAutoClicker.Advanced
             btnTemplate = new ModernDropdownButton
             {
                 Text = "Template",
-                Location = new Point(8 + 574 - 86, 6),
-                Size = new Size(86, 28),
+                Location = new Point(590 - 86, 0),
+                Size = new Size(86, 26),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnTemplate.Click += (s, e) => ShowTemplateMenu();
 
-            // 2. Top Toolbar (Y = 36, Height = 24)
+            // 2. The Main Body Card ("Bảng Lớn") wrapping all step controls (Y = 26)
+            pnlBodyCard = new RoundedPanel
+            {
+                Location = new Point(0, 26),
+                Size = new Size(590, 482 - 26),
+                BorderRadius = _theme.RadiusMd,
+                BorderSize = 1,
+                BorderColor = _theme.BorderColor,
+                BackColor = _theme.BgSecondary
+            };
+
+            // Top Toolbar inside pnlBodyCard (Y = 8, Height = 24)
             // Left Side: Step-level operations
             btnAddStep = new RoundedButton
             {
                 Text = "➕ Add Step",
-                Location = new Point(8, 36),
+                Location = new Point(8, 8),
                 Size = new Size(96, 24),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
@@ -178,7 +247,7 @@ namespace ModernAutoClicker.Advanced
             btnCloneSelected = new RoundedButton
             {
                 Text = "Clone Step(s)",
-                Location = new Point(110, 36),
+                Location = new Point(110, 8),
                 Size = new Size(112, 24),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
@@ -191,7 +260,7 @@ namespace ModernAutoClicker.Advanced
             btnClearAll = new RoundedButton
             {
                 Text = "Clear All Steps",
-                Location = new Point(228, 36),
+                Location = new Point(228, 8),
                 Size = new Size(116, 24),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
@@ -201,11 +270,11 @@ namespace ModernAutoClicker.Advanced
                 UpdateStatus();
             };
 
-            // Right Side: Script file operations (aligned with Template button above)
+            // Right Side: Script file operations (aligned with right edge of body card)
             btnSaveProfile = new RoundedButton
             {
                 Text = "Save Script",
-                Location = new Point(400, 36),
+                Location = new Point(400, 8),
                 Size = new Size(88, 24),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
@@ -214,17 +283,17 @@ namespace ModernAutoClicker.Advanced
             btnLoadProfile = new RoundedButton
             {
                 Text = "Load Script",
-                Location = new Point(494, 36),
+                Location = new Point(494, 8),
                 Size = new Size(88, 24),
                 Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
             };
             btnLoadProfile.Click += (s, e) => LoadProfile();
 
-            // 3. Shared Macro Table Control (Y = 64, Height = 382)
+            // 3. Shared Macro Table Control inside pnlBodyCard (Y = 38, Height = 384)
             tableControl = new MacroTableControl
             {
-                Location = new Point(8, 64),
-                Size = new Size(574, 382)
+                Location = new Point(8, 38),
+                Size = new Size(574, 384)
             };
             tableControl.OnTableDataChanged += () =>
             {
@@ -348,13 +417,16 @@ namespace ModernAutoClicker.Advanced
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
-            this.Controls.AddRange(new Control[] {
-                profileTabBar, btnTemplate,
+            pnlBodyCard.Controls.AddRange(new Control[] {
                 btnAddStep, btnCloneSelected, btnSaveProfile, btnLoadProfile, btnClearAll,
                 tableControl,
                 lblLoop, numLoop, lblLoopHint,
                 lblRandJitter, numRandJitter, lblRandJitterUnit,
                 lblRandInterval, numRandInterval, lblRandIntervalUnit
+            });
+
+            this.Controls.AddRange(new Control[] {
+                profileTabBar, btnTemplate, pnlBodyCard
             });
 
             // Initialize with default Profile
@@ -781,9 +853,7 @@ namespace ModernAutoClicker.Advanced
         public void ApplyTheme(ThemeTokens t)
         {
             _theme = t;
-            this.BackColor = t.BgSecondary;
-            this.BorderColor = t.BorderColor;
-            this.BorderRadius = t.RadiusMd;
+            this.BackColor = t.BgPrimary;
 
             if (profileTabBar != null)
             {
@@ -825,6 +895,15 @@ namespace ModernAutoClicker.Advanced
             if (tableControl != null)
             {
                 tableControl.ApplyTheme(t);
+            }
+
+            if (pnlBodyCard != null)
+            {
+                pnlBodyCard.BackColor = t.BgSecondary;
+                pnlBodyCard.BorderColor = t.BorderColor;
+                pnlBodyCard.BorderRadius = t.RadiusMd;
+                pnlBodyCard.BorderSize = 1;
+                pnlBodyCard.Invalidate();
             }
 
             this.Invalidate();

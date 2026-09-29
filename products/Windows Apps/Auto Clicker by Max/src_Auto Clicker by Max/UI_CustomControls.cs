@@ -8,6 +8,11 @@ namespace ModernAutoClicker
 {
     public class DoubleBufferedTableLayoutPanel : TableLayoutPanel
     {
+        private const int WM_NCHITTEST = 0x0084;
+        private const int HTTRANSPARENT = -1;
+
+        public bool EnableBorderHitTestTransparent { get; set; }
+
         public DoubleBufferedTableLayoutPanel()
         {
             this.DoubleBuffered = true;
@@ -15,6 +20,24 @@ namespace ModernAutoClicker
                           ControlStyles.AllPaintingInWmPaint |
                           ControlStyles.OptimizedDoubleBuffer |
                           ControlStyles.ResizeRedraw, true);
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_NCHITTEST && EnableBorderHitTestTransparent)
+            {
+                int x = (short)(m.LParam.ToInt32() & 0xFFFF);
+                int y = (short)((m.LParam.ToInt32() >> 16) & 0xFFFF);
+                Point pt = this.PointToClient(new Point(x, y));
+                const int grip = 8;
+                if (pt.X <= grip || pt.X >= this.ClientSize.Width - grip ||
+                    pt.Y <= grip || pt.Y >= this.ClientSize.Height - grip)
+                {
+                    m.Result = (IntPtr)HTTRANSPARENT;
+                    return;
+                }
+            }
+            base.WndProc(ref m);
         }
     }
 
@@ -249,7 +272,17 @@ namespace ModernAutoClicker
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
-            Color parentBg = this.Parent != null ? this.Parent.BackColor : SystemColors.Control;
+            Color parentBg = SystemColors.Control;
+            Control p = this.Parent;
+            while (p != null)
+            {
+                if (p.BackColor != Color.Transparent && p.BackColor != Color.Empty)
+                {
+                    parentBg = p.BackColor;
+                    break;
+                }
+                p = p.Parent;
+            }
             using (SolidBrush bgBrush = new SolidBrush(parentBg))
             {
                 g.FillRectangle(bgBrush, this.ClientRectangle);

@@ -21,6 +21,15 @@ namespace ModernAutoClicker.Advanced
         public event Action<int, TimeSpan> OnProgressUpdated; // cycles, elapsed
         public event Action OnStopped;
 
+        private class RepeatTimerSession
+        {
+            public bool IsActive;
+            public int RemainingCount;
+            public DateTime Deadline;
+        }
+
+        private readonly Dictionary<string, RepeatTimerSession> _repeatTimerStates = new Dictionary<string, RepeatTimerSession>(StringComparer.OrdinalIgnoreCase);
+
         public void Start(MacroProfile profile, List<MacroProfile> allProfiles, bool freeMouseMode, bool smoothMouseMove = false)
         {
             if (_isRunning || profile == null) return;
@@ -60,6 +69,7 @@ namespace ModernAutoClicker.Advanced
             _isRunning = true;
             _totalCyclesCompleted = 0;
             _startTime = DateTime.Now;
+            _repeatTimerStates.Clear();
 
             int targetLoops = profile.LoopCount;
             int randIntervalMs = Math.Max(0, profile.RandomIntervalMs);
@@ -119,6 +129,36 @@ namespace ModernAutoClicker.Advanced
                             else if (step.ActionType == MacroActionType.Delay)
                             {
                                 stepDesc = string.Format("Delay {0}ms", step.DelayMs);
+                            }
+                            else if (step.ActionType == MacroActionType.RepeatTimer)
+                            {
+                                string key = !string.IsNullOrEmpty(step.Id) ? step.Id : i.ToString();
+                                RepeatTimerSession sess;
+                                _repeatTimerStates.TryGetValue(key, out sess);
+                                int targetStep = (step.RepeatTimerTargetStep > 0) ? step.RepeatTimerTargetStep : 1;
+                                if (step.RepeatTimerMode == 1) // Timer
+                                {
+                                    if (sess != null && sess.IsActive)
+                                    {
+                                        TimeSpan left = sess.Deadline - DateTime.Now;
+                                        if (left.TotalSeconds < 0) left = TimeSpan.Zero;
+                                        stepDesc = string.Format("Repeat/Timer: {0:D2}:{1:D2} left -> Step {2}",
+                                            (int)left.TotalMinutes, left.Seconds, targetStep);
+                                    }
+                                    else
+                                    {
+                                        int m = step.RepeatTimerSeconds / 60;
+                                        int s = step.RepeatTimerSeconds % 60;
+                                        stepDesc = string.Format("Repeat/Timer: {0:D2}:{1:D2} -> Step {2}",
+                                            m, s, targetStep);
+                                    }
+                                }
+                                else // Times
+                                {
+                                    int rem = (sess != null && sess.IsActive) ? sess.RemainingCount : step.RepeatCount;
+                                    stepDesc = string.Format("Repeat/Timer: {0}/{1} times -> Step {2}",
+                                        rem, step.RepeatCount, targetStep);
+                                }
                             }
                             OnStepExecuting(i, stepDesc);
                         }
@@ -570,6 +610,98 @@ namespace ModernAutoClicker.Advanced
                 return;
             }
 
+            // 6.5 RepeatTimer Action / Loop Block
+            if (step.ActionType == MacroActionType.RepeatTimer)
+            {
+                string key = !string.IsNullOrEmpty(step.Id) ? step.Id : i.ToString();
+                RepeatTimerSession sess;
+                lock (_repeatTimerStates)
+                {
+                    if (!_repeatTimerStates.TryGetValue(key, out sess) || sess == null || !sess.IsActive)
+                    {
+                        sess = new RepeatTimerSession();
+                        sess.IsActive = true;
+                        sess.RemainingCount = Math.Max(1, step.RepeatCount);
+                        int totalSec = Math.Max(1, step.RepeatTimerSeconds);
+                        sess.Deadline = DateTime.Now.AddSeconds(totalSec);
+                        _repeatTimerStates[key] = sess;
+                    }
+                }
+
+                int targetStep = (step.RepeatTimerTargetStep > 0) ? step.RepeatTimerTargetStep : 1;
+                int targetIdx = targetStep - 1;
+                if (targetIdx < 0 || targetIdx >= stepList.Count) targetIdx = 0;
+
+                bool shouldLoop = false;
+
+                if (step.RepeatTimerMode == 1) // Timer mode (Countdown duration)
+                {
+                    if (DateTime.Now < sess.Deadline)
+                    {
+                        shouldLoop = true;
+                    }
+                    else
+                    {
+                        // Time expired: advance to next step and reset
+                        shouldLoop = false;
+                        lock (_repeatTimerStates)
+                        {
+                            sess.IsActive = false;
+                            sess.RemainingCount = Math.Max(1, step.RepeatCount);
+                        }
+                    }
+                }
+                else // Times mode (Count down encounters)
+                {
+                    sess.RemainingCount--;
+                    if (sess.RemainingCount > 0)
+                    {
+                        shouldLoop = true;
+                    }
+                    else
+                    {
+                        // Remaining count reached 0: advance to next step and reset
+                        shouldLoop = false;
+                        lock (_repeatTimerStates)
+                        {
+                            sess.IsActive = false;
+                            sess.RemainingCount = Math.Max(1, step.RepeatCount);
+                        }
+                    }
+                }
+
+                int delay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
+                if (delay > 0 && _isRunning) Thread.Sleep(delay);
+
+                if (shouldLoop)
+                {
+                    i = targetIdx - 1; // Outer for-loop increments i, so next step will be targetIdx
+                }
+                else
+                {
+                    // Finished loop condition: check step.IfFalseStep
+                    // 0: Next Step (default), -1: Stop Script, >0: Jump to Step
+                    if (step.IfFalseStep == -1)
+                    {
+                        _isRunning = false;
+                        return;
+                    }
+                    else if (step.IfFalseStep > 0)
+                    {
+                        int jumpIdx = step.IfFalseStep - 1;
+                        if (jumpIdx >= 0 && jumpIdx < stepList.Count)
+                        {
+                            i = jumpIdx - 1;
+                        }
+                        else
+                        {
+                            i = stepList.Count;
+                        }
+                    }
+                }
+                return;
+            }
+
             // 7. Standard Action Execution
             int repeats = Math.Max(1, step.RepeatCount);
             for (int r = 0; r < repeats; r++)
@@ -644,6 +776,10 @@ namespace ModernAutoClicker.Advanced
                     _workerThread.Join(200);
                 }
                 catch { }
+            }
+            lock (_repeatTimerStates)
+            {
+                _repeatTimerStates.Clear();
             }
         }
     }

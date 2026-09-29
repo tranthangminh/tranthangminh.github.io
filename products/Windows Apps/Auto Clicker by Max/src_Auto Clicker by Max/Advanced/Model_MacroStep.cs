@@ -42,6 +42,11 @@ namespace ModernAutoClicker.Advanced
         public int Similarity { get; set; } // 50 - 100, default 90 (%)
         public int TimeoutSec { get; set; } // Default 10 (seconds) for WaitImage
 
+        // Repeat / Timer Loop Block Properties
+        public int RepeatTimerMode { get; set; } // 0 = Times (Số lần), 1 = Timer (Thời gian)
+        public int RepeatTimerSeconds { get; set; } // Total seconds, default 300 (00:05:00)
+        public int RepeatTimerTargetStep { get; set; } // 1-based target step number to loop back to, default 1
+
         // Runtime Cached Bitmap (Not serialized, freed when changed/disposed)
         private Bitmap _cachedBitmap;
         public Bitmap GetTemplateBitmap()
@@ -114,6 +119,9 @@ namespace ModernAutoClicker.Advanced
             ImageBase64 = "";
             Similarity = 90;
             TimeoutSec = 10;
+            RepeatTimerMode = 0;
+            RepeatTimerSeconds = 300;
+            RepeatTimerTargetStep = 1;
         }
 
         public MacroStep Clone()
@@ -143,7 +151,10 @@ namespace ModernAutoClicker.Advanced
                 RelativeToWindow = this.RelativeToWindow,
                 ImageBase64 = this.ImageBase64,
                 Similarity = this.Similarity,
-                TimeoutSec = this.TimeoutSec
+                TimeoutSec = this.TimeoutSec,
+                RepeatTimerMode = this.RepeatTimerMode,
+                RepeatTimerSeconds = this.RepeatTimerSeconds,
+                RepeatTimerTargetStep = this.RepeatTimerTargetStep
             };
         }
     }

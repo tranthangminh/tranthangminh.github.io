@@ -89,6 +89,20 @@ namespace ModernAutoClicker
         private const int WA_INACTIVE = 0;
         private bool _isWindowActive = true;
 
+        private const int WM_NCHITTEST = 0x0084;
+        private const int HTLEFT = 10;
+        private const int HTRIGHT = 11;
+        private const int HTTOP = 12;
+        private const int HTTOPLEFT = 13;
+        private const int HTTOPRIGHT = 14;
+        private const int HTBOTTOM = 15;
+        private const int HTBOTTOMLEFT = 16;
+        private const int HTBOTTOMRIGHT = 17;
+
+        private int _savedAsianWidth = 700;
+        private int _savedAsianHeight = 760;
+        private bool _isResizing = false;
+
         private string _simpleTargetProcessName = "";
         private string _simpleTargetWindowTitle = "";
         private bool _simpleRelativeToWindow = false;
@@ -337,7 +351,14 @@ namespace ModernAutoClicker
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            UpdateFormRegion();
+            if (_currentTabIndex == 2 && this.WindowState != FormWindowState.Minimized)
+            {
+                ApplyAsianDynamicLayout(this.ClientSize.Width, this.ClientSize.Height);
+            }
+            if (!_isResizing)
+            {
+                UpdateFormRegion();
+            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -478,12 +499,50 @@ namespace ModernAutoClicker
 
         protected override void WndProc(ref Message m)
         {
+            if (m.Msg == WM_NCHITTEST && _currentTabIndex == 2)
+            {
+                int x = (short)(m.LParam.ToInt32() & 0xFFFF);
+                int y = (short)((m.LParam.ToInt32() >> 16) & 0xFFFF);
+                Point pt = this.PointToClient(new Point(x, y));
+                const int grip = 8;
+
+                bool left = pt.X <= grip;
+                bool right = pt.X >= this.ClientSize.Width - grip;
+                bool top = pt.Y <= grip;
+                bool bottom = pt.Y >= this.ClientSize.Height - grip;
+
+                if (top && left) { m.Result = (IntPtr)HTTOPLEFT; return; }
+                if (top && right) { m.Result = (IntPtr)HTTOPRIGHT; return; }
+                if (bottom && left) { m.Result = (IntPtr)HTBOTTOMLEFT; return; }
+                if (bottom && right) { m.Result = (IntPtr)HTBOTTOMRIGHT; return; }
+                if (left) { m.Result = (IntPtr)HTLEFT; return; }
+                if (right) { m.Result = (IntPtr)HTRIGHT; return; }
+                if (top) { m.Result = (IntPtr)HTTOP; return; }
+                if (bottom) { m.Result = (IntPtr)HTBOTTOM; return; }
+            }
             if (m.Msg == WM_ENTERSIZEMOVE)
             {
+                _isResizing = true;
+                if (pnlTabAdvanced != null && pnlTabAdvanced.VFX != null && pnlTabAdvanced.VFX.IsActive)
+                {
+                    pnlTabAdvanced.VFX.Stop();
+                }
                 if (_windowTracker != null) _windowTracker.Pause();
             }
             else if (m.Msg == WM_EXITSIZEMOVE)
             {
+                _isResizing = false;
+                if (_currentTabIndex == 2 && this.WindowState != FormWindowState.Minimized)
+                {
+                    _savedAsianWidth = Math.Max(700, this.Width);
+                    _savedAsianHeight = Math.Max(760, this.Height);
+                    SaveSettings();
+                }
+                UpdateFormRegion();
+                if (_currentTabIndex == 2 && pnlTabAdvanced != null && pnlTabAdvanced.VFX != null)
+                {
+                    pnlTabAdvanced.VFX.Start();
+                }
                 if (_windowTracker != null)
                 {
                     _windowTracker.Resume();
@@ -578,7 +637,7 @@ namespace ModernAutoClicker
                                 NativeMethods.GetClassName(hWnd, sbClass, sbClass.Capacity);
                                 string className = sbClass.ToString();
 
-                                if (className != "Progman" && className != "WorkerW" && className != "Shell_TrayWnd" && className != "Windows.UI.Core.CoreWindow")
+                                if (className != "WorkerW" && className != "Shell_TrayWnd" && className != "Windows.UI.Core.CoreWindow")
                                 {
                                     string pName = "";
                                     try
@@ -595,6 +654,11 @@ namespace ModernAutoClicker
                                         var sb = new System.Text.StringBuilder(len + 1);
                                         NativeMethods.GetWindowText(hWnd, sb, sb.Capacity);
                                         title = sb.ToString().Trim();
+                                    }
+
+                                    if (className == "Progman")
+                                    {
+                                        title = "Windows Desktop";
                                     }
 
                                     if (!string.IsNullOrEmpty(pName))
@@ -709,15 +773,31 @@ namespace ModernAutoClicker
                 string appName = NativeMethods.GetProcessFriendlyName(_simpleTargetProcessName);
                 if (string.IsNullOrEmpty(appName)) appName = _simpleTargetProcessName;
 
+                string title = (_simpleTargetWindowTitle ?? "").Trim();
+                string display;
+                if (!string.IsNullOrEmpty(title) && !string.Equals(title, appName, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (title.IndexOf("BlueStacks", StringComparison.OrdinalIgnoreCase) >= 0)
+                        display = title;
+                    else
+                        display = string.Format("{0} - {1}", appName, title);
+                }
+                else
+                {
+                    display = appName;
+                }
+
+                if (display.Length > 24) display = display.Substring(0, 21) + "...";
+
                 btnSimpleTargetWindow.Image = IconCache.GetProcessIcon(_simpleTargetProcessName, _simpleTargetWindowTitle) ?? IconCache.GenericAppIcon;
-                btnSimpleTargetWindow.Text = appName;
-                btnSimpleTargetWindow.CustomTextColor = currentTheme != null ? currentTheme.CBlue : Color.White;
+                btnSimpleTargetWindow.Text = display;
+                btnSimpleTargetWindow.CustomTextColor = currentTheme != null ? currentTheme.CBlue : Color.Empty;
             }
             else
             {
                 btnSimpleTargetWindow.Image = IconCache.DesktopIcon;
                 btnSimpleTargetWindow.Text = Loc.IsVietnamese ? "Toàn màn hình (Desktop)" : "All Screens (Desktop)";
-                btnSimpleTargetWindow.CustomTextColor = currentTheme != null ? currentTheme.TextPrimary : Color.White;
+                btnSimpleTargetWindow.CustomTextColor = currentTheme != null ? currentTheme.TextPrimary : Color.Empty;
             }
             btnSimpleTargetWindow.Invalidate();
         }
@@ -1471,6 +1551,24 @@ namespace ModernAutoClicker
                 }
             }
 
+            if (!UacHelper.IsRunningAsAdmin() && prof.SimpleRelativeToWindow && tabHwnd != IntPtr.Zero && UacHelper.IsProcessElevated(tabHwnd))
+            {
+                DialogResult dr = MessageBox.Show(
+                    Loc.IsVietnamese 
+                        ? "Cửa sổ mục tiêu đang chạy với quyền Administrator.\nĐể gửi phím/chuột vào cửa sổ này, Auto Clicker cần quyền Administrator.\n\nBạn có muốn khởi động lại ứng dụng dưới quyền Administrator ngay bây giờ?"
+                        : "Target window is running with Administrator privileges.\nTo send input to this window, Auto Clicker requires Administrator privileges.\n\nWould you like to restart Auto Clicker as Administrator now?",
+                    "Administrator Required",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (dr == DialogResult.Yes)
+                {
+                    SaveSettings();
+                    UacHelper.RestartAsAdmin();
+                    return;
+                }
+            }
+
             ClickConfig clickConfig = new ClickConfig
             {
                 IntervalMs = Math.Max(1, prof.IntervalMs),
@@ -1530,6 +1628,45 @@ namespace ModernAutoClicker
             string scriptKey = !string.IsNullOrEmpty(prof.Name) ? prof.Name : "Script";
 
             if (_asianRunners.ContainsKey(scriptKey) && _asianRunners[scriptKey].IsRunning) return;
+
+            if (!UacHelper.IsRunningAsAdmin() && prof.Steps != null)
+            {
+                bool targetIsElevated = false;
+                foreach (var s in prof.Steps)
+                {
+                    if (s.Enabled && s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
+                    {
+                        IntPtr win = s.WindowHwnd;
+                        if (!NativeMethods.IsValidWindowHandle(win, s.ProcessName))
+                        {
+                            win = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                        }
+                        if (win != IntPtr.Zero && UacHelper.IsProcessElevated(win))
+                        {
+                            targetIsElevated = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (targetIsElevated)
+                {
+                    DialogResult dr = MessageBox.Show(
+                        Loc.IsVietnamese 
+                            ? "Cửa sổ mục tiêu trong kịch bản đang chạy với quyền Administrator.\nĐể gửi phím/chuột vào cửa sổ này, Auto Clicker cần quyền Administrator.\n\nBạn có muốn khởi động lại ứng dụng dưới quyền Administrator ngay bây giờ?"
+                            : "A target window in this script is running with Administrator privileges.\nTo send input to this window, Auto Clicker requires Administrator privileges.\n\nWould you like to restart Auto Clicker as Administrator now?",
+                        "Administrator Required",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning);
+
+                    if (dr == DialogResult.Yes)
+                    {
+                        SaveSettings();
+                        UacHelper.RestartAsAdmin();
+                        return;
+                    }
+                }
+            }
 
             var runner = new ModernAutoClicker.Advanced.MacroRunner();
             _asianRunners[scriptKey] = runner;
@@ -1932,7 +2069,7 @@ namespace ModernAutoClicker
                 if (isRunning)
                 {
                     btnSimpleTabs[i].BorderWidth = 2;
-                    btnSimpleTabs[i].BorderColor = Color.FromArgb(46, 204, 113);
+                    btnSimpleTabs[i].BorderColor = t.Success;
                 }
                 else
                 {
@@ -1949,8 +2086,8 @@ namespace ModernAutoClicker
                 else
                 {
                     btnSimpleTabs[i].NormalColor = t.BgElevated;
-                    btnSimpleTabs[i].HoverColor = isRunning ? Color.FromArgb(40, 180, 80) : t.AccentPrimary;
-                    btnSimpleTabs[i].ForeColor = isRunning ? Color.FromArgb(100, 255, 140) : t.TextSecondary;
+                    btnSimpleTabs[i].HoverColor = isRunning ? Color.FromArgb(180, t.Success) : t.AccentPrimary;
+                    btnSimpleTabs[i].ForeColor = isRunning ? t.Success : t.TextSecondary;
                 }
                 btnSimpleTabs[i].Invalidate();
             }
@@ -2012,6 +2149,9 @@ namespace ModernAutoClicker
                 }
             }
 
+            _savedAsianWidth = Math.Max(700, config.AsianWindowWidth);
+            _savedAsianHeight = Math.Max(760, config.AsianWindowHeight);
+
             if (config.IsAdvancedTab)
             {
                 SwitchTab(2);
@@ -2050,6 +2190,13 @@ namespace ModernAutoClicker
             config.IsDarkTheme = currentTheme.IsDark;
             config.IsAdvancedTab = !_isBasicTab;
             config.Language = Loc.CurrentLanguageCode;
+            if (_currentTabIndex == 2 && this.WindowState != FormWindowState.Minimized)
+            {
+                _savedAsianWidth = Math.Max(700, this.Width);
+                _savedAsianHeight = Math.Max(760, this.Height);
+            }
+            config.AsianWindowWidth = _savedAsianWidth;
+            config.AsianWindowHeight = _savedAsianHeight;
             config.AdvancedProfileJson = (pnlTabAdvanced != null) ? ModernAutoClicker.Advanced.MacroStorage.ProjectToJson(pnlTabAdvanced.GetAllProfiles(), pnlTabAdvanced.ActiveProfileIndex) : null;
 
             AppSettings.Save(config);

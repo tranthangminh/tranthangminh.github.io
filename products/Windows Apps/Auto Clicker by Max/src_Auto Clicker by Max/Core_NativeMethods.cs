@@ -211,6 +211,34 @@ namespace ModernAutoClicker
             uint downFlag = MOUSEEVENTF_LEFTDOWN;
             uint upFlag = MOUSEEVENTF_LEFTUP;
 
+            if (mouseBtn == 3) // Double Click
+            {
+                // Click 1
+                INPUT[] d1 = new INPUT[1];
+                d1[0].type = INPUT_MOUSE;
+                d1[0].u.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+                SendInput(1, d1, Marshal.SizeOf(typeof(INPUT)));
+                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
+                INPUT[] u1 = new INPUT[1];
+                u1[0].type = INPUT_MOUSE;
+                u1[0].u.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+                SendInput(1, u1, Marshal.SizeOf(typeof(INPUT)));
+
+                System.Threading.Thread.Sleep(30);
+
+                // Click 2
+                INPUT[] d2 = new INPUT[1];
+                d2[0].type = INPUT_MOUSE;
+                d2[0].u.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+                SendInput(1, d2, Marshal.SizeOf(typeof(INPUT)));
+                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
+                INPUT[] u2 = new INPUT[1];
+                u2[0].type = INPUT_MOUSE;
+                u2[0].u.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+                SendInput(1, u2, Marshal.SizeOf(typeof(INPUT)));
+                return;
+            }
+
             if (mouseBtn == 1) // Right
             {
                 downFlag = MOUSEEVENTF_RIGHTDOWN;
@@ -239,6 +267,9 @@ namespace ModernAutoClicker
         }
 
         [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
 
         [DllImport("user32.dll")]
@@ -247,6 +278,10 @@ namespace ModernAutoClicker
         public static IntPtr FindDeepestChild(IntPtr parent, POINT screenPt)
         {
             if (parent == IntPtr.Zero) return IntPtr.Zero;
+
+            // 0. Check registered Special App Adapters (BlueStacks, Desktop, etc.)
+            IntPtr specialChild = ModernAutoClicker.SpecialApps.SpecialAppRegistry.ResolveTargetHandle(parent, new Point(screenPt.X, screenPt.Y));
+            if (specialChild != IntPtr.Zero) return specialChild;
 
             // Check Desktop special case: Progman / WorkerW -> SHELLDLL_DefView -> SysListView32
             System.Text.StringBuilder sbClass = new System.Text.StringBuilder(256);
@@ -310,6 +345,12 @@ namespace ModernAutoClicker
             POINT clientPt = screenPt;
             ScreenToClient(targetHwnd, ref clientPt);
 
+            // Check if special adapter handles this target's background click
+            if (ModernAutoClicker.SpecialApps.SpecialAppRegistry.TryBackgroundClick(targetHwnd, new Point(clientPt.X, clientPt.Y), mouseBtn, holdMs))
+            {
+                return;
+            }
+
             IntPtr lParam = (IntPtr)(((clientPt.Y & 0xFFFF) << 16) | (clientPt.X & 0xFFFF));
 
             uint msgDown, msgUp;
@@ -326,6 +367,18 @@ namespace ModernAutoClicker
                 msgDown = 0x0207; // WM_MBUTTONDOWN
                 msgUp = 0x0208;   // WM_MBUTTONUP
                 wParam = (IntPtr)0x0010; // MK_MBUTTON
+            }
+            else if (mouseBtn == 3) // Double Click (Generic fallback)
+            {
+                PostMessage(targetHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
+                PostMessage(targetHwnd, 0x0201 /* WM_LBUTTONDOWN */, (IntPtr)0x0001, lParam);
+                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
+                PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
+                System.Threading.Thread.Sleep(30);
+                PostMessage(targetHwnd, 0x0203 /* WM_LBUTTONDBLCLK */, (IntPtr)0x0001, lParam);
+                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
+                PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
+                return;
             }
             else // Left
             {
@@ -365,6 +418,12 @@ namespace ModernAutoClicker
             POINT targetClientPt = screenPt;
             ScreenToClient(targetHwnd, ref targetClientPt);
 
+            // Check if special adapter handles this target's background click
+            if (ModernAutoClicker.SpecialApps.SpecialAppRegistry.TryBackgroundClick(targetHwnd, new Point(targetClientPt.X, targetClientPt.Y), mouseBtn, holdMs))
+            {
+                return;
+            }
+
             IntPtr lParam = (IntPtr)(((targetClientPt.Y & 0xFFFF) << 16) | (targetClientPt.X & 0xFFFF));
             uint msgDown, msgUp;
             IntPtr wParam;
@@ -380,6 +439,18 @@ namespace ModernAutoClicker
                 msgDown = 0x0207; // WM_MBUTTONDOWN
                 msgUp = 0x0208;   // WM_MBUTTONUP
                 wParam = (IntPtr)0x0010;
+            }
+            else if (mouseBtn == 3) // Double Click (Generic fallback)
+            {
+                PostMessage(targetHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
+                PostMessage(targetHwnd, 0x0201 /* WM_LBUTTONDOWN */, (IntPtr)0x0001, lParam);
+                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
+                PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
+                System.Threading.Thread.Sleep(30);
+                PostMessage(targetHwnd, 0x0203 /* WM_LBUTTONDBLCLK */, (IntPtr)0x0001, lParam);
+                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
+                PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
+                return;
             }
             else // Left
             {
@@ -558,6 +629,22 @@ namespace ModernAutoClicker
             var list = new System.Collections.Generic.List<WindowTargetInfo>();
             uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
             var seenKeys = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // 0. Explicitly include Windows Desktop
+            IntPtr progman = FindWindow("Progman", null);
+            if (progman != IntPtr.Zero && IsWindow(progman))
+            {
+                list.Add(new WindowTargetInfo
+                {
+                    Hwnd = progman,
+                    Title = "Windows Desktop",
+                    ProcessName = "explorer",
+                    FriendlyAppName = "Windows Desktop",
+                    ClassName = "Progman",
+                    AppIcon = IconCache.GetWindowAppIcon(progman)
+                });
+                seenKeys.Add(progman.ToInt64().ToString());
+            }
 
             EnumWindows((hWnd, lParam) =>
             {
@@ -747,6 +834,14 @@ namespace ModernAutoClicker
 
             if (string.IsNullOrEmpty(cleanProc) && string.IsNullOrEmpty(cleanTitle))
                 return IntPtr.Zero;
+
+            // Fast resolution for Windows Desktop
+            if (cleanTitle.Equals("Windows Desktop", StringComparison.OrdinalIgnoreCase) ||
+                cleanTitle.Equals("Program Manager", StringComparison.OrdinalIgnoreCase))
+            {
+                IntPtr pDesk = FindWindow("Progman", null);
+                if (pDesk != IntPtr.Zero && IsWindow(pDesk)) return pDesk;
+            }
 
             string cacheKey = string.Format("{0}|{1}", cleanProc, cleanTitle);
 

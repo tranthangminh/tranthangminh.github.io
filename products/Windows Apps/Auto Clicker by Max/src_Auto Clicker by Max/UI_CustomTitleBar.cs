@@ -15,6 +15,7 @@ namespace ModernAutoClicker
         private bool _isHoverMin = false;
         private bool _isHoverLang = false;
         private bool _isHoverTheme = false;
+        private bool _isHoverAdmin = false;
         private bool _isRunning = false;
         private ToolTip _toolTip;
         private string _currentTooltipText = "";
@@ -102,19 +103,29 @@ namespace ModernAutoClicker
             get { return new Rectangle(this.Width - BTN_WIDTH * 2 - 4 - PREF_BTN_SIZE - 4 - PREF_BTN_SIZE, (this.Height - PREF_BTN_SIZE) / 2, PREF_BTN_SIZE, PREF_BTN_SIZE); }
         }
 
+        private Rectangle AdminButtonRect
+        {
+            get
+            {
+                return new Rectangle(ThemeButtonRect.Left - 4 - PREF_BTN_SIZE, (this.Height - PREF_BTN_SIZE) / 2, PREF_BTN_SIZE, PREF_BTN_SIZE);
+            }
+        }
+
         private void TitleBar_MouseMove(object sender, MouseEventArgs e)
         {
             bool oldClose = _isHoverClose;
             bool oldMin = _isHoverMin;
             bool oldLang = _isHoverLang;
             bool oldTheme = _isHoverTheme;
+            bool oldAdmin = _isHoverAdmin;
 
             _isHoverClose = !_isRunning && CloseButtonRect.Contains(e.Location);
             _isHoverMin = MinButtonRect.Contains(e.Location);
             _isHoverLang = LangButtonRect.Contains(e.Location);
             _isHoverTheme = ThemeButtonRect.Contains(e.Location);
+            _isHoverAdmin = AdminButtonRect.Contains(e.Location);
 
-            if (_isHoverLang || _isHoverTheme)
+            if (_isHoverLang || _isHoverTheme || _isHoverAdmin)
             {
                 this.Cursor = Cursors.Hand;
             }
@@ -123,7 +134,7 @@ namespace ModernAutoClicker
                 this.Cursor = Cursors.Default;
             }
 
-            if (_isHoverClose != oldClose || _isHoverMin != oldMin || _isHoverLang != oldLang || _isHoverTheme != oldTheme)
+            if (_isHoverClose != oldClose || _isHoverMin != oldMin || _isHoverLang != oldLang || _isHoverTheme != oldTheme || _isHoverAdmin != oldAdmin)
             {
                 UpdateTooltips();
                 Invalidate();
@@ -142,6 +153,18 @@ namespace ModernAutoClicker
                 bool isDark = _theme != null && _theme.IsDark;
                 tip = isDark ? (Loc.IsVietnamese ? "Chuyển sang Giao diện Sáng" : "Switch to Light Mode") : (Loc.IsVietnamese ? "Chuyển sang Giao diện Tối" : "Switch to Dark Mode");
             }
+            else if (_isHoverAdmin)
+            {
+                bool isAdmin = UacHelper.IsRunningAsAdmin();
+                if (isAdmin)
+                {
+                    tip = Loc.IsVietnamese ? "Ứng dụng đang chạy với quyền Quản trị viên (Administrator)" : "Running with Administrator privileges";
+                }
+                else
+                {
+                    tip = Loc.IsVietnamese ? "Chạy quyền Administrator (Bấm để khởi động lại)" : "Run as Administrator (Click to restart)";
+                }
+            }
 
             if (tip != _currentTooltipText)
             {
@@ -156,6 +179,7 @@ namespace ModernAutoClicker
             _isHoverMin = false;
             _isHoverLang = false;
             _isHoverTheme = false;
+            _isHoverAdmin = false;
             _currentTooltipText = "";
             if (_toolTip != null) _toolTip.SetToolTip(this, null);
             this.Cursor = Cursors.Default;
@@ -166,7 +190,7 @@ namespace ModernAutoClicker
         {
             if (e.Button == MouseButtons.Left)
             {
-                if (CloseButtonRect.Contains(e.Location) || MinButtonRect.Contains(e.Location) || LangButtonRect.Contains(e.Location) || ThemeButtonRect.Contains(e.Location))
+                if (CloseButtonRect.Contains(e.Location) || MinButtonRect.Contains(e.Location) || LangButtonRect.Contains(e.Location) || ThemeButtonRect.Contains(e.Location) || AdminButtonRect.Contains(e.Location))
                 {
                     return;
                 }
@@ -228,6 +252,23 @@ namespace ModernAutoClicker
                         OnThemeToggleRequested();
                     }
                 }
+                else if (AdminButtonRect.Contains(e.Location))
+                {
+                    if (!UacHelper.IsRunningAsAdmin())
+                    {
+                        DialogResult dr = MessageBox.Show(
+                            Loc.IsVietnamese 
+                                ? "Bạn có muốn khởi động lại ứng dụng dưới quyền Quản trị viên (Administrator) không?" 
+                                : "Do you want to restart Auto Clicker with Administrator privileges?",
+                            "Administrator Rights",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question);
+                        if (dr == DialogResult.Yes)
+                        {
+                            UacHelper.RestartAsAdmin();
+                        }
+                    }
+                }
             }
         }
 
@@ -252,13 +293,55 @@ namespace ModernAutoClicker
                 g.DrawImage(appIcon, 10, (this.Height - 18) / 2, 18, 18);
             }
 
-            // 3. Title Text (Vertically Centered across full bar height, ending before theme button)
+            // 3. Title Text (Vertically Centered across full bar height, ending before admin button)
             using (Font titleFont = ThemeTokens.FontSegoe(12F, FontStyle.Bold))
             {
-                int textRightBound = Math.Max(50, this.Width - (BTN_WIDTH * 2 + PREF_BTN_SIZE * 2 + 20));
+                int textRightBound = Math.Max(50, AdminButtonRect.Left - 8);
                 Rectangle textRect = new Rectangle(34, 0, textRightBound - 34, this.Height);
                 TextRenderer.DrawText(g, _titleText, titleFont, textRect, t.TextPrimary, 
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
+            }
+
+            // 3.3. Admin Button [ 🛡️ ] (Turns golden background when running as Administrator)
+            Rectangle adminRect = AdminButtonRect;
+            bool isCurrentAdmin = UacHelper.IsRunningAsAdmin();
+            Rectangle adminVisual = new Rectangle(adminRect.X + 1, (this.Height - 30) / 2, 30, 30);
+
+            Color adminBg;
+            Color adminBorder;
+            Color iconColor;
+
+            if (isCurrentAdmin)
+            {
+                // Active Admin: Solid vibrant gold background, gold border, dark shield icon
+                adminBg = _isHoverAdmin ? Color.FromArgb(255, 210, 50) : Color.FromArgb(235, 175, 20);
+                adminBorder = _isHoverAdmin ? Color.FromArgb(255, 235, 100) : Color.FromArgb(255, 195, 40);
+                iconColor = Color.FromArgb(20, 20, 20); // Dark shield on bright gold background
+            }
+            else
+            {
+                // Non-Admin: Secondary background, gold highlight on hover
+                adminBg = _isHoverAdmin ? t.BgElevated : t.BgSecondary;
+                adminBorder = _isHoverAdmin ? Color.FromArgb(255, 180, 0) : t.BorderColor;
+                iconColor = _isHoverAdmin ? Color.FromArgb(255, 190, 40) : t.TextSecondary;
+            }
+
+            using (GraphicsPath aPath = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(adminVisual, 4))
+            {
+                using (SolidBrush aBrush = new SolidBrush(adminBg))
+                {
+                    g.FillPath(aBrush, aPath);
+                }
+                using (Pen aPen = new Pen(adminBorder, 1f))
+                {
+                    g.DrawPath(aPen, aPath);
+                }
+            }
+
+            using (Font shFont = ThemeTokens.FontSegoeSymbol(11F, FontStyle.Regular))
+            {
+                TextRenderer.DrawText(g, "🛡", shFont, adminVisual, iconColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
             }
 
             // 3.4. Theme Toggle Button (32x32)
@@ -299,9 +382,9 @@ namespace ModernAutoClicker
 
             // 3.5. Language Toggle Button [ VI ] / [ EN ] (32x32)
             Rectangle langRect = LangButtonRect;
-            Color langBg = _isHoverLang ? t.BgElevated : Color.FromArgb(16, 255, 255, 255);
+            Color langBg = _isHoverLang ? t.BgElevated : t.BgSecondary;
             Color langBorder = _isHoverLang ? t.AccentPrimary : t.BorderColor;
-            Color langFg = _isHoverLang ? t.AccentPrimary : t.TextSecondary;
+            Color langFg = _isHoverLang ? t.AccentPrimary : t.TextPrimary;
 
             Rectangle langVisual = new Rectangle(langRect.X + 1, (this.Height - 30) / 2, 30, 30);
             using (GraphicsPath langPath = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(langVisual, 4))
@@ -343,8 +426,8 @@ namespace ModernAutoClicker
             Color closeFg = _isRunning ? Color.FromArgb(70, t.TextSecondary) : t.TextSecondary;
             if (!_isRunning && _isHoverClose)
             {
-                // Modern Windows 11 red hover
-                using (SolidBrush closeHoverBrush = new SolidBrush(Color.FromArgb(232, 17, 35)))
+                // Modern theme danger red hover
+                using (SolidBrush closeHoverBrush = new SolidBrush(t.Danger))
                 {
                     g.FillRectangle(closeHoverBrush, closeRect);
                 }

@@ -74,13 +74,13 @@
       <div id="modal-edit-toolbar" class="edit-toolbar hidden">
         <div class="edit-toolbar-row">
           <!-- Idle / Selection Mode Button -->
-          <button id="edit-idle-mode-btn" class="btn-modal-edit btn-icon active" title="Selection Mode (Drag text to move)">
+          <button id="edit-idle-mode-btn" class="btn-modal-edit btn-icon active" title="Select (A)" data-i18n-title="editor.select">
             <span class="icon-mask" style="mask-image: url('${getIconUrl('cursor.svg')}'); -webkit-mask-image: url('${getIconUrl('cursor.svg')}');"></span>
           </button>
 
           <!-- Brush Tool Popover Trigger -->
           <div class="edit-tool-popover-wrapper">
-            <button id="edit-brush-tool-btn" class="btn-modal-edit btn-dropdown" title="Brush Settings">
+            <button id="edit-brush-tool-btn" class="btn-modal-edit btn-dropdown" title="Brush Tool (B)" data-i18n-title="editor.brush">
               <span class="icon-mask" style="mask-image: url('${getIconUrl('brush.svg')}'); -webkit-mask-image: url('${getIconUrl('brush.svg')}');"></span>
               <span class="dropdown-arrow">▼</span>
             </button>
@@ -88,7 +88,7 @@
 
           <!-- Shape Tool Popover Trigger -->
           <div class="edit-tool-popover-wrapper">
-            <button id="edit-shape-tool-btn" class="btn-modal-edit btn-dropdown" title="Shape Tool">
+            <button id="edit-shape-tool-btn" class="btn-modal-edit btn-dropdown" title="Shapes (M)" data-i18n-title="editor.shapes">
               <span class="icon-mask" style="mask-image: url('${getIconUrl('square.svg')}'); -webkit-mask-image: url('${getIconUrl('square.svg')}');"></span>
               <span class="dropdown-arrow">▼</span>
             </button>
@@ -97,20 +97,20 @@
             <div id="edit-shape-panel" class="edit-brush-panel edit-shape-panel hidden">
               <div class="brush-panel-section">
                 <div class="brush-panel-header">
-                  <span class="brush-panel-title">Shape Type</span>
+                  <span class="brush-panel-title" data-i18n="editor.shapeType">Shape Type</span>
                 </div>
                 <div class="shape-type-grid">
-                  <button id="shape-type-rect-btn" class="btn-radio shape-type-btn active" data-shape="rect" title="Polygon / Rectangle (M)">
+                  <button id="shape-type-rect-btn" class="btn-radio shape-type-btn active" data-shape="rect">
                     <span class="icon-mask" style="mask-image: url('${getIconUrl('square.svg')}'); -webkit-mask-image: url('${getIconUrl('square.svg')}');"></span>
-                    <span>Polygon (M)</span>
+                    <span data-i18n="editor.polygon">Polygon (M)</span>
                   </button>
-                  <button id="shape-type-ellipse-btn" class="btn-radio shape-type-btn" data-shape="ellipse" title="Ellipse (O / L)">
+                  <button id="shape-type-ellipse-btn" class="btn-radio shape-type-btn" data-shape="ellipse">
                     <span class="icon-mask" style="mask-image: url('${getIconUrl('circle.svg')}'); -webkit-mask-image: url('${getIconUrl('circle.svg')}');"></span>
-                    <span>Ellipse (O)</span>
+                    <span data-i18n="editor.ellipse">Ellipse (O)</span>
                   </button>
-                  <button id="shape-type-polygonal-btn" class="btn-radio shape-type-btn" data-shape="polygonal" title="Line Path Straight Lines (P)">
+                  <button id="shape-type-polygonal-btn" class="btn-radio shape-type-btn" data-shape="polygonal">
                     <span class="icon-mask" style="mask-image: url('${getIconUrl('polygonal.svg')}'); -webkit-mask-image: url('${getIconUrl('polygonal.svg')}');"></span>
-                    <span>Line Path (P)</span>
+                    <span data-i18n="editor.linePath">Line Path (P)</span>
                   </button>
                 </div>
               </div>
@@ -118,39 +118,39 @@
           </div>
 
           <!-- Text Tool Trigger -->
-          <button id="edit-text-tool-btn" class="btn-modal-edit btn-icon" title="Add Text">
+          <button id="edit-text-tool-btn" class="btn-modal-edit btn-icon" title="Text Tool (T)" data-i18n-title="editor.text">
             <span class="icon-mask" style="mask-image: url('${getIconUrl('text-tool.svg')}'); -webkit-mask-image: url('${getIconUrl('text-tool.svg')}');"></span>
           </button>
 
           <div class="edit-toolbar-divider"></div>
 
           <!-- Undo, Redo, Clear Buttons -->
-          <button id="edit-undo-btn" class="btn-modal-edit btn-icon" title="Undo (Ctrl+Z)">
+          <button id="edit-undo-btn" class="btn-modal-edit btn-icon" title="Undo (Ctrl+Z)" data-i18n-title="editor.undo">
             <span class="icon-mask" style="mask-image: url('${getIconUrl('undo.svg')}'); -webkit-mask-image: url('${getIconUrl('undo.svg')}');"></span>
           </button>
 
-          <button id="edit-redo-btn" class="btn-modal-edit btn-icon" title="Redo (Ctrl+Y / Ctrl+Shift+Z)">
+          <button id="edit-redo-btn" class="btn-modal-edit btn-icon" title="Redo (Ctrl+Y)" data-i18n-title="editor.redo">
             <span class="icon-mask" style="mask-image: url('${getIconUrl('redo.svg')}'); -webkit-mask-image: url('${getIconUrl('redo.svg')}');"></span>
           </button>
 
-          <button id="edit-clear-btn" class="btn-modal-edit btn-icon" title="Clear drawing">
+          <button id="edit-clear-btn" class="btn-modal-edit btn-icon" title="Clear Canvas" data-i18n-title="editor.clear">
             <span class="icon-mask" style="mask-image: url('${getIconUrl('clear.svg')}'); -webkit-mask-image: url('${getIconUrl('clear.svg')}');"></span>
           </button>
         </div>
 
         <!-- Row 2 for Download Edited & Close Modal -->
         <div class="edit-toolbar-row edit-toolbar-row-2">
-          <button id="edit-stop-brush-btn" class="edit-btn stop-brush-btn hidden" title="Stop Drawing & Return to Selection Mode">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('close.svg')}'); -webkit-mask-image: url('${getIconUrl('close.svg')}');"></span> Stop
+          <button id="edit-stop-brush-btn" class="edit-btn stop-brush-btn hidden" title="Stop Drawing" data-i18n-title="editor.stopDrawing">
+            <span class="icon-mask" style="mask-image: url('${getIconUrl('close.svg')}'); -webkit-mask-image: url('${getIconUrl('close.svg')}');"></span> <span data-i18n="editor.stop">Stop</span>
           </button>
           <div class="edit-save-group">
-            <button id="edit-copy-btn" class="edit-btn copy-btn" title="Copy edited image to clipboard">
-              <span class="icon-mask" style="mask-image: url('${getIconUrl('copy.svg')}'); -webkit-mask-image: url('${getIconUrl('copy.svg')}');"></span> <span>Copy<br>Edited</span>
+            <button id="edit-copy-btn" class="edit-btn copy-btn">
+              <span class="icon-mask" style="mask-image: url('${getIconUrl('copy.svg')}'); -webkit-mask-image: url('${getIconUrl('copy.svg')}');"></span> <span data-i18n-html="editor.copyEdited">Copy<br>Edited</span>
             </button>
-            <button id="edit-save-btn" class="edit-btn save-btn" title="Download edited image">
-              <span class="icon-mask" style="mask-image: url('${getIconUrl('download.svg')}'); -webkit-mask-image: url('${getIconUrl('download.svg')}');"></span> <span>Download<br>Edited</span>
+            <button id="edit-save-btn" class="edit-btn save-btn">
+              <span class="icon-mask" style="mask-image: url('${getIconUrl('download.svg')}'); -webkit-mask-image: url('${getIconUrl('download.svg')}');"></span> <span data-i18n-html="editor.downloadEdited">Download<br>Edited</span>
             </button>
-            <button id="edit-close-modal-btn" class="btn btn-icon edit-close-btn modal-close-btn" title="Close Modal">
+            <button id="edit-close-modal-btn" class="btn btn-icon edit-close-btn modal-close-btn" title="Close (Esc)" data-i18n-title="editor.close">
               <span class="icon-mask" style="mask-image: url('${getIconUrl('close.svg')}'); -webkit-mask-image: url('${getIconUrl('close.svg')}');"></span>
             </button>
           </div>
@@ -161,73 +161,78 @@
 
       <div class="modal-info-wrapper">
         <div class="modal-hud-controls">
-          <button id="modal-theme-toggle-btn" class="btn-icon hide-hud-btn modal-theme-toggle-btn" title="Toggle Studio Theme (Dark / Light)">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('light-mode.svg')}'); -webkit-mask-image: url('${getIconUrl('light-mode.svg')}');"></span>
+          <button id="modal-theme-toggle-btn" class="btn-icon hide-hud-btn modal-theme-toggle-btn" title="Toggle Studio Theme" data-i18n-title="editor.toggleTheme">
+            <span class="icon-mask" style="mask-image: url('${getIconUrl('light-mode.svg')}'); -webkit-mask-image: url('${getIconUrl('light-mode.svg')}'); mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; mask-size: contain; -webkit-mask-size: contain; mask-position: center; -webkit-mask-position: center;"></span>
           </button>
-          <button id="modal-hide-hud-btn" class="btn-icon hide-hud-btn" title="Toggle Hide HUD (H)">
+          <button id="modal-hide-hud-btn" class="btn-icon hide-hud-btn" title="Hide HUD (H)" data-i18n-title="editor.hideHud">
             <span class="icon-mask" style="mask-image: url('${getIconUrl('hide.svg')}'); -webkit-mask-image: url('${getIconUrl('hide.svg')}');"></span>
           </button>
         </div>
 
         <div class="modal-info">
+          <!-- Short Note Above Hints -->
+          <div class="modal-info-row modal-info-row-note">
+            <span class="modal-shortcut-note" data-i18n="editor.shortcutsActive">All shortcuts & image controls remain active</span>
+          </div>
+
           <!-- Row 1: Expandable Hotkey Hint Chips -->
           <div class="modal-info-row modal-info-row-hints modal-info-row-expandable">
-            <span class="modal-hint-chip" title="Press A for Selection Mode">
+            <span class="modal-hint-chip">
               <img src="${getIconUrl('cursor.svg')}" alt="Select" class="hint-icon-svg" />
               A: Select
             </span>
-            <span class="modal-hint-chip" title="Press B for Brush Tool">
+            <span class="modal-hint-chip">
               <img src="${getIconUrl('brush.svg')}" alt="Brush" class="hint-icon-svg" />
               B: Brush
             </span>
-            <span class="modal-hint-chip" title="Press T for Text Tool">
+            <span class="modal-hint-chip">
               <img src="${getIconUrl('text-tool.svg')}" alt="Text" class="hint-icon-svg" />
               T: Text
             </span>
-            <span class="modal-hint-chip" title="Press M for Polygon / Rectangle Tool">
+            <span class="modal-hint-chip">
               <img src="${getIconUrl('square.svg')}" alt="Polygon" class="hint-icon-svg" />
               M: Polygon
             </span>
-            <span class="modal-hint-chip" title="Press O for Ellipse Tool">
+            <span class="modal-hint-chip">
               <img src="${getIconUrl('circle.svg')}" alt="Ellipse" class="hint-icon-svg" />
               O: Ellipse
             </span>
-            <span class="modal-hint-chip" title="Press P for Line Path Tool">
+            <span class="modal-hint-chip">
               <img src="${getIconUrl('polygonal.svg')}" alt="Line Path" class="hint-icon-svg" />
               P: Line Path
             </span>
 
-            <span class="modal-hint-chip chip-purple" title="Press H to Toggle Hide HUD">
+            <span class="modal-hint-chip chip-purple">
               <img src="${getIconUrl('hide.svg')}" alt="Hide HUD" class="hint-icon-svg" />
               H: Hide HUD
             </span>
-            <span class="modal-hint-chip chip-purple" title="Press Ctrl+C to Copy Edited Image">
+            <span class="modal-hint-chip chip-purple">
               <img src="${getIconUrl('copy.svg')}" alt="Copy" class="hint-icon-svg" />
               Ctrl C: Copy Edited
             </span>
 
-            <span class="modal-hint-chip chip-cyan" title="Hold & Drag Middle Mouse Button to Pan Image">
+            <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('mouse.svg')}" alt="Pan" class="hint-icon-svg" />
               Middle: Pan
             </span>
-            <span class="modal-hint-chip chip-cyan" title="Scroll Mouse Wheel to Zoom In/Out">
+            <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('zoom.svg')}" alt="Zoom" class="hint-icon-svg" />
               Scroll: Zoom
             </span>
-            <span class="modal-hint-chip chip-cyan" title="Double Click Image to Quick Zoom In/Out">
+            <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('double-click.svg')}" alt="Fast Zoom" class="hint-icon-svg" />
               DblClick: Fast Zoom
             </span>
-            <span class="modal-hint-chip chip-cyan" title="Press 1 to Zoom 100% Natural Size">
+            <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('zoom.svg')}" alt="100%" class="hint-icon-svg" />
               1: 100%
             </span>
-            <span class="modal-hint-chip chip-cyan" title="Press 2 for Fit on Screen">
+            <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('fullscreen.svg')}" alt="Fit" class="hint-icon-svg" />
               2: Fit Screen
             </span>
 
-            <span class="modal-hint-chip chip-red" title="Press Escape to Close Modal">
+            <span class="modal-hint-chip chip-red">
               <img src="${getIconUrl('close.svg')}" alt="Close" class="hint-icon-svg" />
               ESC: Close
             </span>
@@ -241,23 +246,23 @@
           <!-- Row 3: Action Buttons -->
           <div class="modal-info-row modal-info-row-actions">
             <div class="modal-actions">
-              <button id="modal-copy-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Copy image to clipboard">
-                <span class="icon-mask" style="mask-image: url('${getIconUrl('copy.svg')}'); -webkit-mask-image: url('${getIconUrl('copy.svg')}'); width: 14px; height: 14px;"></span> Copy
+              <button id="modal-copy-btn" class="btn btn-secondary action-btn secondary-action-btn">
+                <span class="icon-mask" style="mask-image: url('${getIconUrl('copy.svg')}'); -webkit-mask-image: url('${getIconUrl('copy.svg')}'); width: 14px; height: 14px;"></span> <span data-i18n="editor.copy">Copy</span>
               </button>
               <button id="modal-download-btn" class="btn btn-primary action-btn">
-                <span class="icon-mask" style="mask-image: url('${getIconUrl('download.svg')}'); -webkit-mask-image: url('${getIconUrl('download.svg')}'); width: 14px; height: 14px;"></span> Download
+                <span class="icon-mask" style="mask-image: url('${getIconUrl('download.svg')}'); -webkit-mask-image: url('${getIconUrl('download.svg')}'); width: 14px; height: 14px;"></span> <span data-i18n="editor.download">Download</span>
               </button>
             </div>
           </div>
 
           <!-- Row 4: Search Image engines -->
           <div class="modal-info-row modal-info-row-search">
-            <span class="search-image-label">Search Image on:</span>
+            <span class="search-image-label" data-i18n="editor.searchOn">Search Image on:</span>
             <div class="search-image-actions">
-              <button id="modal-yandex-search-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Search Image on Yandex (Exact Full-Res)">
+              <button id="modal-yandex-search-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Search on Yandex" data-i18n-title="editor.searchYandex">
                 <span class="icon-mask" style="mask-image: url('${getIconUrl('yandex.svg')}'); -webkit-mask-image: url('${getIconUrl('yandex.svg')}'); width: 14px; height: 14px;"></span> Yandex
               </button>
-              <button id="modal-tineye-search-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Search Image on TinEye">
+              <button id="modal-tineye-search-btn" class="btn btn-secondary action-btn secondary-action-btn">
                 <span class="icon-mask" style="mask-image: url('${getIconUrl('tineye.svg')}'); -webkit-mask-image: url('${getIconUrl('tineye.svg')}'); width: 14px; height: 14px;"></span> TinEye
               </button>
             </div>
@@ -269,9 +274,15 @@
 
   function initThemeSync() {
     function applyTheme(theme) {
+      if (typeof window.applyModalTheme === 'function') {
+        window.applyModalTheme(theme);
+        return;
+      }
+      const modal = document.getElementById('image-preview-modal');
       const themeBtn = document.getElementById('modal-theme-toggle-btn');
       const iconMask = themeBtn ? themeBtn.querySelector('.icon-mask') : null;
       if (theme === 'light') {
+        if (modal) modal.setAttribute('data-theme', 'light');
         document.documentElement.setAttribute('data-theme', 'light');
         if (document.body) document.body.setAttribute('data-theme', 'light');
         if (themeBtn) themeBtn.title = 'Switch to Dark Theme';
@@ -279,8 +290,15 @@
           const darkSvg = getIconUrl('dark-mode.svg');
           iconMask.style.maskImage = `url('${darkSvg}')`;
           iconMask.style.webkitMaskImage = `url('${darkSvg}')`;
+          iconMask.style.maskRepeat = 'no-repeat';
+          iconMask.style.webkitMaskRepeat = 'no-repeat';
+          iconMask.style.maskSize = 'contain';
+          iconMask.style.webkitMaskSize = 'contain';
+          iconMask.style.maskPosition = 'center';
+          iconMask.style.webkitMaskPosition = 'center';
         }
       } else {
+        if (modal) modal.removeAttribute('data-theme');
         document.documentElement.removeAttribute('data-theme');
         if (document.body) document.body.removeAttribute('data-theme');
         if (themeBtn) themeBtn.title = 'Switch to Light Theme';
@@ -288,6 +306,12 @@
           const lightSvg = getIconUrl('light-mode.svg');
           iconMask.style.maskImage = `url('${lightSvg}')`;
           iconMask.style.webkitMaskImage = `url('${lightSvg}')`;
+          iconMask.style.maskRepeat = 'no-repeat';
+          iconMask.style.webkitMaskRepeat = 'no-repeat';
+          iconMask.style.maskSize = 'contain';
+          iconMask.style.webkitMaskSize = 'contain';
+          iconMask.style.maskPosition = 'center';
+          iconMask.style.webkitMaskPosition = 'center';
         }
       }
     }
@@ -314,6 +338,27 @@
     document.body.classList.add('max-standalone-image-page');
     document.documentElement.classList.add('max-standalone-image-page');
 
+    // Ensure Outfit font-face stylesheet exists dynamically with valid extension URL
+    if (!document.getElementById('max-font-face-style')) {
+      try {
+        const fontStyle = document.createElement('style');
+        fontStyle.id = 'max-font-face-style';
+        const fontUrl = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL)
+          ? chrome.runtime.getURL('Outfit/Outfit-VariableFont_wght.ttf')
+          : 'Outfit/Outfit-VariableFont_wght.ttf';
+        fontStyle.textContent = `
+          @font-face {
+            font-family: 'Outfit';
+            src: url('${fontUrl}') format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
+          }
+        `;
+        (document.head || document.documentElement).appendChild(fontStyle);
+      } catch (e) {}
+    }
+
     initThemeSync();
 
     // 1. Inject Modal DOM Container into body
@@ -324,9 +369,22 @@
       modal.className = 'modal editor-page-modal';
       modal.innerHTML = createModalHtml();
       document.body.appendChild(modal);
+      if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+        window.i18n.applyTranslations(modal);
+      }
     } else {
       modal.className = 'modal editor-page-modal';
       modal.classList.remove('hidden');
+    }
+
+    if (!window._maxImageStudioLangBound) {
+      window._maxImageStudioLangBound = true;
+      window.addEventListener('maxLanguageChanged', () => {
+        const m = document.getElementById('image-preview-modal');
+        if (m && window.i18n && typeof window.i18n.applyTranslations === 'function') {
+          window.i18n.applyTranslations(m);
+        }
+      });
     }
 
     // 2. Determine target image URL and filename
