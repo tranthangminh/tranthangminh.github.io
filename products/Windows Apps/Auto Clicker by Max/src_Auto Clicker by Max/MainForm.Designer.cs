@@ -65,7 +65,7 @@ namespace ModernAutoClicker
             this.AutoSize = true;
             this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Font = ThemeTokens.FontSegoe(12F, FontStyle.Regular);
+            this.Font = ThemeTokens.FontBase(FontStyle.Regular);
             this.FormBorderStyle = FormBorderStyle.None;
             this.MaximizeBox = false;
 
@@ -122,7 +122,7 @@ namespace ModernAutoClicker
                 Location = new Point(0, 0),
                 Size = new Size(34, 34),
                 BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontSegoeSymbol(13.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSegoeSymbol(ThemeTokens.FontSizeCard, FontStyle.Bold),
                 NormalColor = currentTheme.BgElevated,
                 ForeColor = currentTheme.TextSecondary
             };
@@ -134,7 +134,7 @@ namespace ModernAutoClicker
                 Location = new Point(40, 0),
                 Size = new Size(150, 34),
                 BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(13F, FontStyle.Bold)
+                Font = ThemeTokens.FontCard(FontStyle.Bold)
             };
             btnTabBasic.Click += (s, e) => SwitchTab(1);
 
@@ -144,7 +144,7 @@ namespace ModernAutoClicker
                 Location = new Point(196, 0),
                 Size = new Size(192, 34),
                 BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(13F, FontStyle.Bold)
+                Font = ThemeTokens.FontCard(FontStyle.Bold)
             };
             btnTabAdvanced.Click += (s, e) => SwitchTab(2);
             btnTabAdvanced.Paint += (s, e) =>
@@ -203,7 +203,7 @@ namespace ModernAutoClicker
                     Location = new Point(i * (tabBtnW + tabGap), 0),
                     Size = new Size(tabBtnW, 26),
                     BorderRadius = currentTheme.RadiusSm,
-                    Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                    Font = ThemeTokens.FontBase(FontStyle.Bold),
                     NormalColor = (i == _simpleTabIndex) ? currentTheme.AccentPrimary : currentTheme.BgElevated,
                     ForeColor = (i == _simpleTabIndex) ? Color.White : currentTheme.TextSecondary
                 };
@@ -218,8 +218,8 @@ namespace ModernAutoClicker
             lblHeaderClickMode.Location = new Point(10, 5);
             pnlClickMode.Controls.Add(lblHeaderClickMode);
 
-            radModePoints = new RadioButton { Text = "Point List", Checked = true, Location = new Point(10, 26), AutoSize = true, Font = ThemeTokens.FontSegoe(11.5F) };
-            radModeCursor = new RadioButton { Text = "Follow Cursor", Location = new Point(94, 26), AutoSize = true, Font = ThemeTokens.FontSegoe(11.5F) };
+            radModePoints = new RadioButton { Text = "Point List", Checked = true, Location = new Point(10, 26), AutoSize = true, Font = ThemeTokens.FontBase(FontStyle.Regular) };
+            radModeCursor = new RadioButton { Text = "Follow Cursor", Location = new Point(94, 26), AutoSize = true, Font = ThemeTokens.FontBase(FontStyle.Regular) };
             radModePoints.CheckedChanged += (s, e) => { if (radModePoints.Checked) SetSimpleClickMode(0); };
             radModeCursor.CheckedChanged += (s, e) => { if (radModeCursor.Checked) SetSimpleClickMode(1); };
 
@@ -236,7 +236,7 @@ namespace ModernAutoClicker
             {
                 Location = new Point(10, 26),
                 Size = new Size(176, 32),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             btnSimpleTargetWindow.Click += (s, e) => ShowSimpleTargetWindowMenu();
             pnlSimpleTarget.Controls.Add(btnSimpleTargetWindow);
@@ -299,7 +299,7 @@ namespace ModernAutoClicker
                 Location = new Point(8, 28),
                 Size = new Size(52, 22),
                 BorderRadius = currentTheme.RadiusSm,
-                Font = ThemeTokens.FontSegoe(10.5F, FontStyle.Bold)
+                Font = ThemeTokens.FontSmall(FontStyle.Bold)
             };
             btnClearList.Click += (s, e) => ClearPoints();
 
@@ -309,7 +309,7 @@ namespace ModernAutoClicker
                 Location = new Point(64, 28),
                 Size = new Size(52, 22),
                 BorderRadius = currentTheme.RadiusSm,
-                Font = ThemeTokens.FontSegoe(10.5F, FontStyle.Bold)
+                Font = ThemeTokens.FontSmall(FontStyle.Bold)
             };
             btnSaveList.Click += (s, e) => SavePointsToFile();
 
@@ -319,7 +319,7 @@ namespace ModernAutoClicker
                 Location = new Point(120, 28),
                 Size = new Size(54, 22),
                 BorderRadius = currentTheme.RadiusSm,
-                Font = ThemeTokens.FontSegoe(10.5F, FontStyle.Bold)
+                Font = ThemeTokens.FontSmall(FontStyle.Bold)
             };
             btnLoadList.Click += (s, e) => LoadPointsFromFile();
 
@@ -377,7 +377,7 @@ namespace ModernAutoClicker
                 Location = new Point(24, 0),
                 Size = new Size(118, 44),
                 BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(14F, FontStyle.Bold)
+                Font = ThemeTokens.FontCard(FontStyle.Bold)
             };
             btnStart.Click += (s, e) => ToggleStartStop();
 
@@ -388,7 +388,7 @@ namespace ModernAutoClicker
                 Location = new Point(148, 0),
                 Size = new Size(92, 44),
                 BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
+                Font = ThemeTokens.FontCard(FontStyle.Bold),
                 NormalColor = currentTheme.Danger,
                 HoverColor = currentTheme.CRed,
                 ForeColor = Color.White
@@ -401,7 +401,7 @@ namespace ModernAutoClicker
                 Location = new Point(242, 0),
                 Size = new Size(74, 44),
                 BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontCard(FontStyle.Bold),
                 NormalColor = currentTheme.BgElevated,
                 HoverColor = currentTheme.AccentPrimary,
                 ForeColor = currentTheme.TextPrimary
@@ -417,7 +417,7 @@ namespace ModernAutoClicker
             {
                 Size = new Size(388, 16),
                 Margin = new Padding(0, 2, 0, 4),
-                Font = ThemeTokens.GetMonospaceFont(10.5F),
+                Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeSmall),
                 TextAlign = ContentAlignment.MiddleLeft,
                 Text = "Ready"
             };
@@ -436,7 +436,8 @@ namespace ModernAutoClicker
                 Text = "Window on Top",
                 Checked = false,
                 Location = new Point(8, 7),
-                AutoSize = true
+                AutoSize = true,
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             chkAlwaysOnTop.CheckedChanged += (s, e) => { this.TopMost = chkAlwaysOnTop.Checked; };
 
@@ -445,17 +446,18 @@ namespace ModernAutoClicker
                 Text = "Show Map",
                 Checked = true,
                 Location = new Point(8, 27),
-                AutoSize = true
+                AutoSize = true,
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             chkShowMap.CheckedChanged += (s, e) => { SyncOverlay(); };
 
             btnMapOpacity = new RoundedButton
             {
                 Text = "60% ▾",
-                Location = new Point(88, 26),
+                Location = new Point(90, 26),
                 Size = new Size(48, 19),
                 BorderRadius = 3,
-                Font = ThemeTokens.FontSegoe(10.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSmall(FontStyle.Bold),
                 NormalColor = currentTheme.BgElevated,
                 ForeColor = currentTheme.TextSecondary,
                 HoverColor = currentTheme.AccentPrimary
@@ -466,7 +468,8 @@ namespace ModernAutoClicker
                 Text = "Free Mouse Mode",
                 Checked = true,
                 Location = new Point(8, 47),
-                AutoSize = true
+                AutoSize = true,
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             chkFreeMouse.CheckedChanged += (s, e) => UpdateTabStatus(_isBasicTab);
 
@@ -475,7 +478,8 @@ namespace ModernAutoClicker
                 Text = "Smooth Mouse Move",
                 Checked = true,
                 Location = new Point(8, 67),
-                AutoSize = true
+                AutoSize = true,
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
 
             // Hotkey Help Inset Cards (Independent CS Controls)
@@ -692,7 +696,7 @@ namespace ModernAutoClicker
                 chkShowMap.Location = new Point(8, 27);
                 if (btnMapOpacity != null)
                 {
-                    btnMapOpacity.Location = new Point(88, 26);
+                    btnMapOpacity.Location = new Point(90, 26);
                     btnMapOpacity.Size = new Size(48, 19);
                 }
                 chkFreeMouse.Location = new Point(8, 47);
@@ -1084,7 +1088,7 @@ namespace ModernAutoClicker
                 Text = title,
                 Location = new Point(14, 10),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(13.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontCard(FontStyle.Bold),
                 ForeColor = currentTheme.AccentPrimary
             };
         }
@@ -1096,7 +1100,7 @@ namespace ModernAutoClicker
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(12F),
+                Font = ThemeTokens.FontButton(FontStyle.Regular),
                 ForeColor = currentTheme.TextSecondary
             };
         }
@@ -1108,7 +1112,7 @@ namespace ModernAutoClicker
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(13F, FontStyle.Bold),
+                Font = ThemeTokens.FontCard(FontStyle.Bold),
                 ForeColor = currentTheme.TextPrimary
             };
         }
@@ -1120,7 +1124,7 @@ namespace ModernAutoClicker
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = ThemeTokens.GetMonospaceFont(11F),
+                Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeBase),
                 ForeColor = currentTheme.TextSecondary
             };
         }

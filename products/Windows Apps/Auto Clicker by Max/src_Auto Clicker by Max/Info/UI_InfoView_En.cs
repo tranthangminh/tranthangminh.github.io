@@ -60,7 +60,7 @@ namespace ModernAutoClicker.Info
                 Text = GetAppTitle(),
                 Location = new Point(48, 16),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(16F, FontStyle.Bold),
+                Font = ThemeTokens.FontTitle(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -69,7 +69,7 @@ namespace ModernAutoClicker.Info
                 Text = "This product is developed by Trần Thắng Minh (Max).",
                 Location = new Point(20, 46),
                 Size = new Size(348, 20),
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 UseMnemonic = false
             };
 
@@ -78,7 +78,7 @@ namespace ModernAutoClicker.Info
                 Text = "For feedback, feature requests, or support:",
                 Location = new Point(20, 68),
                 Size = new Size(348, 18),
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 UseMnemonic = false
             };
 
@@ -87,7 +87,7 @@ namespace ModernAutoClicker.Info
                 Text = "• Facebook:",
                 Location = new Point(20, 90),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -96,7 +96,7 @@ namespace ModernAutoClicker.Info
                 Text = "fb.me/maxiechen",
                 Location = new Point(136, 90),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             linkFb.LinkClicked += (s, e) =>
@@ -109,7 +109,7 @@ namespace ModernAutoClicker.Info
                 Text = "• More Products:",
                 Location = new Point(20, 112),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -118,12 +118,12 @@ namespace ModernAutoClicker.Info
                 Text = "tranthangminh.github.io/products",
                 Location = new Point(136, 112),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             linkWeb.LinkClicked += (s, e) =>
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://tranthangminh.github.io/products") { UseShellExecute = true }); } catch { }
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://tranthangminh.github.io/products.html?lang=en") { UseShellExecute = true }); } catch { }
             };
 
             lblSupportTitle = new Label
@@ -131,7 +131,7 @@ namespace ModernAutoClicker.Info
                 Text = "• Support me:",
                 Location = new Point(20, 134),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -140,7 +140,7 @@ namespace ModernAutoClicker.Info
                 Text = "ko-fi.com/maxiechen96",
                 Location = new Point(136, 134),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             linkSupport.LinkClicked += (s, e) =>
@@ -169,7 +169,7 @@ namespace ModernAutoClicker.Info
                 Location = new Point((388 - 180) / 2, 344),
                 Size = new Size(180, 32),
                 ForeColor = Color.White,
-                Font = ThemeTokens.FontSegoe(10F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnCheckUpdates.Click += (s, e) =>
@@ -207,7 +207,7 @@ namespace ModernAutoClicker.Info
                 Location = new Point(20, 380),
                 Size = new Size(348, 20),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontMicro(FontStyle.Regular),
                 UseMnemonic = false
             };
 
@@ -216,7 +216,7 @@ namespace ModernAutoClicker.Info
                 Text = "• Language:",
                 Location = new Point(20, 412),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -225,7 +225,7 @@ namespace ModernAutoClicker.Info
                 Text = "English",
                 Location = new Point(148, 408),
                 Size = new Size(96, 28),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnLangEn.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.English;
@@ -235,7 +235,7 @@ namespace ModernAutoClicker.Info
                 Text = "Tiếng Việt",
                 Location = new Point(252, 408),
                 Size = new Size(100, 28),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnLangVi.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.Vietnamese;

@@ -45,7 +45,7 @@ namespace ModernAutoClicker
                 HoverColor = _theme.AccentPrimaryHover,
                 PressedColor = _theme.BgElevated,
                 ForeColor = Color.White,
-                Font = ThemeTokens.FontSegoe(13.5F, FontStyle.Bold)
+                Font = ThemeTokens.FontCard(FontStyle.Bold)
             };
             _btnEnglish.Click += (s, e) =>
             {
@@ -68,7 +68,7 @@ namespace ModernAutoClicker
                 BorderColor = _theme.BorderColor,
                 BorderWidth = 1,
                 ForeColor = _theme.TextPrimary,
-                Font = ThemeTokens.FontSegoe(13.5F, FontStyle.Bold)
+                Font = ThemeTokens.FontCard(FontStyle.Bold)
             };
             _btnVietnamese.Click += (s, e) =>
             {
@@ -83,7 +83,7 @@ namespace ModernAutoClicker
                 Text = "Tip: You can switch language anytime via VI / EN on Title Bar",
                 Location = new Point(10, 78),
                 Size = new Size(320, 24),
-                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Italic),
+                Font = ThemeTokens.FontMicro(FontStyle.Italic),
                 ForeColor = _theme.TextTertiary,
                 BackColor = Color.Transparent,
                 TextAlign = ContentAlignment.MiddleCenter

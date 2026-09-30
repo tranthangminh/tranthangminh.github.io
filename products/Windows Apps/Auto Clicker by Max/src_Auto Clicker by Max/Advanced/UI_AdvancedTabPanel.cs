@@ -203,7 +203,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Template",
                 Location = new Point(590 - 86, 0),
                 Size = new Size(86, 26),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             btnTemplate.Click += (s, e) => ShowTemplateMenu();
 
@@ -225,7 +225,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "➕ Add Step",
                 Location = new Point(8, 8),
                 Size = new Size(96, 24),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             btnAddStep.Click += (s, e) =>
             {
@@ -249,7 +249,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Clone Step(s)",
                 Location = new Point(110, 8),
                 Size = new Size(112, 24),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             btnCloneSelected.Click += (s, e) =>
             {
@@ -262,7 +262,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Clear All Steps",
                 Location = new Point(228, 8),
                 Size = new Size(116, 24),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             btnClearAll.Click += (s, e) =>
             {
@@ -276,7 +276,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Save Script",
                 Location = new Point(400, 8),
                 Size = new Size(88, 24),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             btnSaveProfile.Click += (s, e) => SaveProfile();
 
@@ -285,7 +285,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Load Script",
                 Location = new Point(494, 8),
                 Size = new Size(88, 24),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             btnLoadProfile.Click += (s, e) => LoadProfile();
 
@@ -319,7 +319,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Loop:",
                 Location = new Point(8, 454),
                 Size = new Size(36, 20),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
@@ -332,7 +332,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 1,
                 AllowEmpty = true,
                 Value = 0,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -343,7 +343,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "(0=∞)",
                 Location = new Point(92, 454),
                 Size = new Size(42, 20),
-                Font = ThemeTokens.FontSegoe(10F),
+                Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
@@ -352,7 +352,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Jitter: ±",
                 Location = new Point(148, 454),
                 Size = new Size(52, 20),
-                Font = ThemeTokens.FontSegoe(11F),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
@@ -365,7 +365,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 1,
                 AllowEmpty = true,
                 Value = 0,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -380,7 +380,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "px",
                 Location = new Point(240, 454),
                 Size = new Size(20, 20),
-                Font = ThemeTokens.FontSegoe(11F),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
@@ -389,7 +389,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "Interval: ±",
                 Location = new Point(272, 454),
                 Size = new Size(62, 20),
-                Font = ThemeTokens.FontSegoe(11F),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
@@ -402,7 +402,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 5,
                 AllowEmpty = true,
                 Value = 0,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -413,7 +413,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "ms",
                 Location = new Point(376, 454),
                 Size = new Size(22, 20),
-                Font = ThemeTokens.FontSegoe(11F),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 

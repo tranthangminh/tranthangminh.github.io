@@ -16,9 +16,11 @@ namespace ModernAutoClicker.Info
         private LinkLabel linkFb;
         private Label lblWebTitle;
         private LinkLabel linkWeb;
-        private LinkLabel linkBunGioHeo;
         private Label lblSupportTitle;
         private LinkLabel linkSupport;
+        private Label lblBunGioHeoPrefix;
+        private LinkLabel linkBunGioHeo;
+        private Label lblBunGioHeoSuffix;
         private Panel picLogo;
         private RoundedButton btnCheckUpdates;
         private Label lblUpdateStatus;
@@ -61,7 +63,7 @@ namespace ModernAutoClicker.Info
                 Text = GetAppTitle(),
                 Location = new Point(48, 16),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(16F, FontStyle.Bold),
+                Font = ThemeTokens.FontTitle(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -70,7 +72,7 @@ namespace ModernAutoClicker.Info
                 Text = "Sản phẩm này được phát triển bởi Trần Thắng Minh (Max).",
                 Location = new Point(20, 46),
                 Size = new Size(348, 20),
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 UseMnemonic = false
             };
 
@@ -79,7 +81,7 @@ namespace ModernAutoClicker.Info
                 Text = "Góp ý, yêu cầu tính năng hoặc hỗ trợ:",
                 Location = new Point(20, 68),
                 Size = new Size(348, 18),
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 UseMnemonic = false
             };
 
@@ -88,7 +90,7 @@ namespace ModernAutoClicker.Info
                 Text = "• Facebook:",
                 Location = new Point(20, 90),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -97,7 +99,7 @@ namespace ModernAutoClicker.Info
                 Text = "fb.me/maxiechen",
                 Location = new Point(136, 90),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             linkFb.LinkClicked += (s, e) =>
@@ -110,7 +112,7 @@ namespace ModernAutoClicker.Info
                 Text = "• Sản phẩm khác:",
                 Location = new Point(20, 112),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -119,21 +121,21 @@ namespace ModernAutoClicker.Info
                 Text = "tranthangminh.github.io/products",
                 Location = new Point(136, 112),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             linkWeb.LinkClicked += (s, e) =>
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://tranthangminh.github.io/products") { UseShellExecute = true }); } catch { }
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://tranthangminh.github.io/products.html?lang=vi") { UseShellExecute = true }); } catch { }
             };
 
             // Mục Ủng Hộ Tác Giả (Text Link click mở popup QR) - Nằm trên Bún Giò Heo
             lblSupportTitle = new Label
             {
-                Text = "• Ủng hộ tác giả:",
+                Text = "• Ủng hộ tui:",
                 Location = new Point(20, 134),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -142,7 +144,7 @@ namespace ModernAutoClicker.Info
                 Text = "[Quét mã QR Ngân Hàng ↗]",
                 Location = new Point(136, 134),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             linkSupport.LinkClicked += (s, e) =>
@@ -154,22 +156,36 @@ namespace ModernAutoClicker.Info
             };
 
             // Mục Quán Bún Giò Heo Minh Nhật - Nằm dưới Ủng hộ tác giả
-            linkBunGioHeo = new LinkLabel
+            lblBunGioHeoPrefix = new Label
             {
-                Text = "• Ủng hộ Bún Giò Heo Minh Nhật nhà tui",
+                Text = "• Ủng hộ ",
                 Location = new Point(20, 156),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
-            int bgStart = linkBunGioHeo.Text.IndexOf("Bún Giò Heo Minh Nhật");
-            if (bgStart >= 0)
+
+            linkBunGioHeo = new LinkLabel
             {
-                linkBunGioHeo.LinkArea = new LinkArea(bgStart, "Bún Giò Heo Minh Nhật".Length);
-            }
+                Text = "Bún Giò Heo Minh Nhật",
+                Location = new Point(74, 156),
+                AutoSize = true,
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                UseMnemonic = false
+            };
             linkBunGioHeo.LinkClicked += (s, e) =>
             {
                 try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://maps.app.goo.gl/uAK6PqGx5X3GuMFF8") { UseShellExecute = true }); } catch { }
+            };
+
+            lblBunGioHeoSuffix = new Label
+            {
+                Text = "nhà tui",
+                Location = new Point(214, 156),
+                AutoSize = true,
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                UseMnemonic = false
             };
 
             // LOGO MAX SVG LỚN Ở VỊ TRÍ TRUNG TÂM (150 x 150) - CỐ ĐỊNH Y = 180
@@ -194,7 +210,7 @@ namespace ModernAutoClicker.Info
                 Location = new Point((388 - 180) / 2, 344),
                 Size = new Size(180, 32),
                 ForeColor = Color.White,
-                Font = ThemeTokens.FontSegoe(10F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnCheckUpdates.Click += (s, e) =>
@@ -232,7 +248,7 @@ namespace ModernAutoClicker.Info
                 Location = new Point(20, 380),
                 Size = new Size(348, 20),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Regular),
+                Font = ThemeTokens.FontMicro(FontStyle.Regular),
                 UseMnemonic = false
             };
 
@@ -241,7 +257,7 @@ namespace ModernAutoClicker.Info
                 Text = "• Ngôn ngữ:",
                 Location = new Point(20, 412),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -250,7 +266,7 @@ namespace ModernAutoClicker.Info
                 Text = "English",
                 Location = new Point(148, 408),
                 Size = new Size(96, 28),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnLangEn.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.English;
@@ -260,7 +276,7 @@ namespace ModernAutoClicker.Info
                 Text = "Tiếng Việt",
                 Location = new Point(252, 408),
                 Size = new Size(100, 28),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnLangVi.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.Vietnamese;
@@ -269,7 +285,7 @@ namespace ModernAutoClicker.Info
                 picAppIcon, lblInfoTitle, lblInfoAuthor, lblInfoContact,
                 lblFbTitle, linkFb, lblWebTitle, linkWeb,
                 lblSupportTitle, linkSupport,
-                linkBunGioHeo,
+                lblBunGioHeoPrefix, linkBunGioHeo, lblBunGioHeoSuffix,
                 picLogo,
                 btnCheckUpdates, lblUpdateStatus,
                 lblLangTitle, btnLangEn, btnLangVi
@@ -301,6 +317,8 @@ namespace ModernAutoClicker.Info
             if (lblFbTitle != null) lblFbTitle.ForeColor = t.TextSecondary;
             if (lblWebTitle != null) lblWebTitle.ForeColor = t.TextSecondary;
             if (lblSupportTitle != null) lblSupportTitle.ForeColor = t.TextSecondary;
+            if (lblBunGioHeoPrefix != null) lblBunGioHeoPrefix.ForeColor = t.TextSecondary;
+            if (lblBunGioHeoSuffix != null) lblBunGioHeoSuffix.ForeColor = t.TextSecondary;
 
             if (linkFb != null)
             {
@@ -314,18 +332,17 @@ namespace ModernAutoClicker.Info
                 linkWeb.ActiveLinkColor = t.AccentPrimaryHover;
                 linkWeb.VisitedLinkColor = t.AccentPrimary;
             }
-            if (linkBunGioHeo != null)
-            {
-                linkBunGioHeo.ForeColor = t.TextSecondary;
-                linkBunGioHeo.LinkColor = t.AccentPrimary;
-                linkBunGioHeo.ActiveLinkColor = t.AccentPrimaryHover;
-                linkBunGioHeo.VisitedLinkColor = t.AccentPrimary;
-            }
             if (linkSupport != null)
             {
                 linkSupport.LinkColor = t.AccentPrimary;
                 linkSupport.ActiveLinkColor = t.AccentPrimaryHover;
                 linkSupport.VisitedLinkColor = t.AccentPrimary;
+            }
+            if (linkBunGioHeo != null)
+            {
+                linkBunGioHeo.LinkColor = t.AccentPrimary;
+                linkBunGioHeo.ActiveLinkColor = t.AccentPrimaryHover;
+                linkBunGioHeo.VisitedLinkColor = t.AccentPrimary;
             }
 
             if (picAppIcon != null) picAppIcon.Invalidate();

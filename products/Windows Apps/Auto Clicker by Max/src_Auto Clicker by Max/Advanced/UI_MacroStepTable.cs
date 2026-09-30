@@ -277,7 +277,7 @@ namespace ModernAutoClicker.Advanced
                 Text = text,
                 Location = new Point(x, 2),
                 Size = new Size(width, 18),
-                Font = ThemeTokens.FontSegoe(10.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSmall(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
                 ForeColor = defaultColor,
                 Tag = interactive
@@ -1625,7 +1625,7 @@ namespace ModernAutoClicker.Advanced
                 Text = fieldLabel,
                 Location = new Point(20, 16),
                 Size = new Size(224, 20),
-                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
+                Font = ThemeTokens.FontButton(FontStyle.Bold),
                 ForeColor = theme.AccentPrimary
             };
 
@@ -1639,7 +1639,7 @@ namespace ModernAutoClicker.Advanced
                 Value = defaultVal,
                 BackColor = theme.BgTertiary,
                 ForeColor = theme.TextPrimary,
-                Font = ThemeTokens.FontSegoe(13.5F, FontStyle.Bold)
+                Font = ThemeTokens.FontCard(FontStyle.Bold)
             };
 
             btnApply = new RoundedButton
@@ -1648,7 +1648,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(20, 78),
                 Size = new Size(108, 28),
                 BorderRadius = theme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 NormalColor = theme.AccentPrimary,
                 HoverColor = theme.AccentPrimaryHover,
                 ForeColor = Color.White
@@ -1673,7 +1673,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(136, 78),
                 Size = new Size(108, 28),
                 BorderRadius = theme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 NormalColor = theme.BgElevated,
                 HoverColor = theme.BgTertiary,
                 ForeColor = theme.TextSecondary
@@ -1722,7 +1722,7 @@ namespace ModernAutoClicker.Advanced
                 Text = fieldLabel,
                 Location = new Point(20, 16),
                 Size = new Size(264, 20),
-                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
+                Font = ThemeTokens.FontButton(FontStyle.Bold),
                 ForeColor = theme.AccentPrimary
             };
 
@@ -1733,7 +1733,7 @@ namespace ModernAutoClicker.Advanced
                 Text = defaultVal ?? "",
                 BackColor = theme.BgTertiary,
                 ForeColor = theme.TextPrimary,
-                Font = ThemeTokens.FontSegoe(12.5F)
+                Font = ThemeTokens.FontButton(FontStyle.Regular)
             };
 
             btnApply = new RoundedButton
@@ -1742,7 +1742,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(20, 78),
                 Size = new Size(128, 28),
                 BorderRadius = theme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 NormalColor = theme.AccentPrimary,
                 HoverColor = theme.AccentPrimaryHover,
                 ForeColor = Color.White
@@ -1760,7 +1760,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(156, 78),
                 Size = new Size(128, 28),
                 BorderRadius = theme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 NormalColor = theme.BgElevated,
                 HoverColor = theme.BgTertiary,
                 ForeColor = theme.TextSecondary

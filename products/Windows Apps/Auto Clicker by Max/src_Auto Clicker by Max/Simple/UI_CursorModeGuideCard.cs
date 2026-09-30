@@ -30,7 +30,7 @@ namespace ModernAutoClicker.Simple
                 Text = Loc.CursorGuideBadge,
                 Location = new Point(8, 12),
                 Size = new Size(152, 20),
-                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
+                Font = ThemeTokens.FontButton(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -40,7 +40,7 @@ namespace ModernAutoClicker.Simple
                 Text = Loc.CursorGuideTitle,
                 Location = new Point(8, 36),
                 Size = new Size(152, 20),
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -50,7 +50,7 @@ namespace ModernAutoClicker.Simple
                 Text = Loc.CursorGuideDesc,
                 Location = new Point(8, 62),
                 Size = new Size(152, 95),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 TextAlign = ContentAlignment.TopLeft
             };
 
@@ -68,7 +68,7 @@ namespace ModernAutoClicker.Simple
                 Text = Loc.CursorGuideHotkeyKey,
                 Location = new Point(4, 8),
                 Size = new Size(144, 18),
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -77,7 +77,7 @@ namespace ModernAutoClicker.Simple
                 Text = Loc.CursorGuideHotkeyDesc,
                 Location = new Point(6, 28),
                 Size = new Size(140, 36),
-                Font = ThemeTokens.FontSegoe(10F, FontStyle.Regular),
+                Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.TopCenter
             };
 
@@ -89,7 +89,7 @@ namespace ModernAutoClicker.Simple
                 Text = Loc.CursorGuideTip,
                 Location = new Point(8, 244),
                 Size = new Size(152, 48),
-                Font = ThemeTokens.FontSegoe(10F, FontStyle.Regular),
+                Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.TopLeft
             };
 

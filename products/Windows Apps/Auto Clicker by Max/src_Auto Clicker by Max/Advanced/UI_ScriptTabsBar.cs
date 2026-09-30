@@ -153,7 +153,7 @@ namespace ModernAutoClicker.Advanced
                 Text = _title,
                 Location = new Point(8, 4),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleLeft,
                 Cursor = Cursors.Hand,
                 BackColor = Color.Transparent,
@@ -174,7 +174,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Text = "✕",
                 Size = new Size(16, 18),
-                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontMicro(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
                 Cursor = Cursors.Hand,
                 BackColor = Color.Transparent,
@@ -192,7 +192,7 @@ namespace ModernAutoClicker.Advanced
             txtEdit = new TextBox
             {
                 BorderStyle = BorderStyle.FixedSingle,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Visible = false,
                 MaxLength = 30
             };
@@ -465,7 +465,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "＋",
                 Size = new Size(24, 24),
                 Location = new Point(0, 1),
-                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
+                Font = ThemeTokens.FontButton(FontStyle.Bold),
                 BorderRadius = _theme.RadiusSm,
                 NormalColor = _theme.BgElevated,
                 ForeColor = _theme.TextPrimary,

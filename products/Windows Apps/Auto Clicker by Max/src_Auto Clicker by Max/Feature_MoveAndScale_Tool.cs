@@ -74,7 +74,7 @@ namespace ModernAutoClicker
                 Text = "Scale (Origin 0,0):",
                 Location = new Point(16, 12),
                 Size = new Size(220, 16),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 ForeColor = _theme.AccentPrimary
             };
 
@@ -86,7 +86,7 @@ namespace ModernAutoClicker
                 Maximum = 500,
                 Step = 1,
                 Value = 100,
-                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold)
+                Font = ThemeTokens.FontButton(FontStyle.Bold)
             };
             numScale.ApplyTheme(_theme);
             numScale.TextChanged += (s, e) =>
@@ -101,7 +101,7 @@ namespace ModernAutoClicker
                 Location = new Point(138, 32),
                 Size = new Size(96, 24),
                 BorderRadius = _theme.RadiusSm,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 NormalColor = _theme.BgElevated,
                 HoverColor = _theme.BgTertiary,
                 ForeColor = _theme.TextPrimary
@@ -118,7 +118,7 @@ namespace ModernAutoClicker
                 Text = "Move Step (px):",
                 Location = new Point(16, 64),
                 Size = new Size(220, 16),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 ForeColor = _theme.AccentPrimary
             };
 
@@ -143,7 +143,7 @@ namespace ModernAutoClicker
                 Text = "Bounds: 0, 0",
                 Location = new Point(12, 178),
                 Size = new Size(228, 16),
-                Font = ThemeTokens.GetMonospaceFont(10F),
+                Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeSmall),
                 ForeColor = _theme.TextTertiary,
                 TextAlign = ContentAlignment.MiddleCenter
             };
@@ -155,7 +155,7 @@ namespace ModernAutoClicker
                 Location = new Point(16, 200),
                 Size = new Size(106, 28),
                 BorderRadius = _theme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 NormalColor = _theme.BgElevated,
                 HoverColor = _theme.BgTertiary,
                 ForeColor = _theme.TextSecondary
@@ -168,7 +168,7 @@ namespace ModernAutoClicker
                 Location = new Point(128, 200),
                 Size = new Size(106, 28),
                 BorderRadius = _theme.RadiusMd,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 NormalColor = _theme.AccentPrimary,
                 HoverColor = _theme.AccentPrimaryHover,
                 ForeColor = Color.White
@@ -199,7 +199,7 @@ namespace ModernAutoClicker
                 Location = new Point(x, y),
                 Size = new Size(w, 22),
                 BorderRadius = _theme.RadiusSm,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             btn.Click += (s, e) =>
             {
@@ -233,7 +233,7 @@ namespace ModernAutoClicker
                 Location = new Point(x, y),
                 Size = new Size(w, h),
                 BorderRadius = _theme.RadiusSm,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 NormalColor = _theme.BgElevated,
                 HoverColor = _theme.AccentPrimary,
                 ForeColor = _theme.TextPrimary

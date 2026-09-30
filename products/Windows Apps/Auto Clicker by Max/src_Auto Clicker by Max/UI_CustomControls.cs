@@ -392,7 +392,7 @@ namespace ModernAutoClicker
 
                     g.DrawString(this.Text, this.Font, textBrush, topRect, sf);
 
-                    using (Font subFont = new Font(this.Font.FontFamily, 10.5F, FontStyle.Regular, GraphicsUnit.Pixel))
+                    using (Font subFont = new Font(this.Font.FontFamily, ThemeTokens.FontSizeSmall, FontStyle.Regular, GraphicsUnit.Pixel))
                     {
                         g.DrawString(_subtitle, subFont, textBrush, btmRect, sf);
                     }
@@ -524,7 +524,7 @@ namespace ModernAutoClicker
             Step = 1;
             AllowEmpty = false;
             this.TextAlign = HorizontalAlignment.Right;
-            this.Font = ThemeTokens.FontSegoe(13F, FontStyle.Bold);
+            this.Font = ThemeTokens.FontCard(FontStyle.Bold);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -741,7 +741,7 @@ namespace ModernAutoClicker
             this.DoubleBuffered = true;
             this.Cursor = Cursors.Hand;
             this.Size = new Size(116, 22);
-            this.Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular);
+            this.Font = ThemeTokens.FontBase(FontStyle.Regular);
         }
 
         public void ApplyTheme(ThemeTokens t)
@@ -789,7 +789,7 @@ namespace ModernAutoClicker
             _popupMenu = new ContextMenuStrip();
             _popupMenu.Renderer = new ModernMenuRenderer(_theme);
             _popupMenu.ShowImageMargin = false;
-            _popupMenu.Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Regular);
+            _popupMenu.Font = ThemeTokens.FontBase(FontStyle.Regular);
             _popupMenu.AutoSize = true;
 
             for (int i = 0; i < _items.Count; i++)
@@ -944,7 +944,7 @@ namespace ModernAutoClicker
                           ControlStyles.SupportsTransparentBackColor, true);
             this.DoubleBuffered = true;
             this.Cursor = Cursors.Hand;
-            this.Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold);
+            this.Font = ThemeTokens.FontBase(FontStyle.Bold);
         }
 
         public void ApplyTheme(ThemeTokens t)

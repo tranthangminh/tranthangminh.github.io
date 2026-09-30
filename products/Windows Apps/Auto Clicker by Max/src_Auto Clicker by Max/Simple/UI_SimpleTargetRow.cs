@@ -129,7 +129,7 @@ namespace ModernAutoClicker
                 Text = string.Format("#{0}", _index + 1),
                 Location = new Point(x, 0),
                 Size = new Size(24, 18),
-                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontMicro(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleLeft,
                 Cursor = Cursors.SizeAll
             };
@@ -144,7 +144,7 @@ namespace ModernAutoClicker
                 Text = string.Format("{0}, {1}", _point.X, _point.Y),
                 Location = new Point(x, 0),
                 Size = new Size(106, 18),
-                Font = ThemeTokens.GetMonospaceFont(10F),
+                Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeSmall),
                 TextAlign = ContentAlignment.MiddleLeft,
                 Cursor = Cursors.Hand
             };
@@ -160,7 +160,7 @@ namespace ModernAutoClicker
                 Text = "✕",
                 Location = new Point(140, 0),
                 Size = new Size(16, 18),
-                Font = ThemeTokens.FontSegoe(10.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontSmall(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
                 Cursor = Cursors.Hand,
                 ForeColor = _theme.Danger

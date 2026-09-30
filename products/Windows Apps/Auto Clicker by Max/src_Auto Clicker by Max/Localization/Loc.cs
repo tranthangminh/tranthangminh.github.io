@@ -215,7 +215,7 @@ namespace ModernAutoClicker.Localization
         // Bún Giò Heo & Smart QR Bank strings (Vietnamese localized info)
         public static string InfoBunGioHeoTitle { get { return "• Ủng hộ Bún Giò Heo Minh Nhật nhà tui"; } }
         public static string InfoGoogleMaps { get { return "[Google Maps ↗]"; } }
-        public static string InfoQrBankTitle { get { return "• Ủng hộ tác giả (Quét mã QR Ngân Hàng):"; } }
+        public static string InfoQrBankTitle { get { return "• Ủng hộ tui:"; } }
         public static string InfoQrPlaceholderTitle { get { return "[ Mã QR Bank ]"; } }
         public static string InfoQrPlaceholderNoImage { get { return "(Chưa có file qr-bank.svg)"; } }
         public static string InfoQrPlaceholderScanHint { get { return "Quét để chuyển khoản"; } }

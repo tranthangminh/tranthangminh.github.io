@@ -10,10 +10,8 @@ namespace ModernAutoClicker.Info
     public class QrModal : Form
     {
         private ThemeTokens _theme;
-        private Label lblTitle;
         private Button btnCloseIcon;
         private Panel pnlQrCard;
-        private Label lblQrHint;
         private Label lblThank;
         private RoundedButton btnClose;
 
@@ -31,7 +29,7 @@ namespace ModernAutoClicker.Info
             this.FormBorderStyle = FormBorderStyle.None;
             this.ShowInTaskbar = false;
             this.StartPosition = FormStartPosition.CenterParent;
-            this.Size = new Size(320, 420);
+            this.Size = new Size(320, 368);
             this.DoubleBuffered = true;
             this.KeyPreview = true;
 
@@ -58,32 +56,14 @@ namespace ModernAutoClicker.Info
 
         private void InitializeComponents()
         {
-            // Title
-            lblTitle = new Label
-            {
-                Text = "Ủng hộ tác giả (Chuyển khoản / QR)",
-                Location = new Point(16, 16),
-                Size = new Size(250, 20),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
-                UseMnemonic = false
-            };
-            lblTitle.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    ReleaseCapture();
-                    SendMessage(this.Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0);
-                }
-            };
-
             // Close Icon [✕]
             btnCloseIcon = new Button
             {
                 Text = "✕",
-                Location = new Point(282, 12),
+                Location = new Point(282, 10),
                 Size = new Size(26, 26),
                 FlatStyle = FlatStyle.Flat,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 Cursor = Cursors.Hand
             };
             btnCloseIcon.FlatAppearance.BorderSize = 0;
@@ -92,31 +72,20 @@ namespace ModernAutoClicker.Info
             // QR Display Card (240 x 240)
             pnlQrCard = new Panel
             {
-                Location = new Point((320 - 240) / 2, 48),
+                Location = new Point((320 - 240) / 2, 36),
                 Size = new Size(240, 240),
                 BackColor = Color.Transparent
             };
             pnlQrCard.Paint += DrawQrContent;
 
-            // Hint label
-            lblQrHint = new Label
-            {
-                Text = "Mở App Ngân Hàng hoặc Ví MoMo để quét mã",
-                Location = new Point(10, 298),
-                Size = new Size(300, 18),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Regular),
-                UseMnemonic = false
-            };
-
             // Thank you label
             lblThank = new Label
             {
-                Text = "Cảm ơn bạn đã ủng hộ tác giả!",
-                Location = new Point(10, 320),
-                Size = new Size(300, 20),
+                Text = "Cám ơn bạn đã ủng hộ tác giả!",
+                Location = new Point(10, 286),
+                Size = new Size(300, 22),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Font = ThemeTokens.FontSegoe(10F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 UseMnemonic = false
             };
 
@@ -124,16 +93,16 @@ namespace ModernAutoClicker.Info
             btnClose = new RoundedButton
             {
                 Text = "Đóng",
-                Location = new Point((320 - 110) / 2, 356),
+                Location = new Point((320 - 110) / 2, 318),
                 Size = new Size(110, 32),
-                Font = ThemeTokens.FontSegoe(10F, FontStyle.Bold),
+                Font = ThemeTokens.FontSmall(FontStyle.Bold),
                 ForeColor = Color.White,
                 Cursor = Cursors.Hand
             };
             btnClose.Click += (s, e) => this.Close();
 
             this.Controls.AddRange(new Control[] {
-                lblTitle, btnCloseIcon, pnlQrCard, lblQrHint, lblThank, btnClose
+                btnCloseIcon, pnlQrCard, lblThank, btnClose
             });
         }
 
@@ -245,19 +214,19 @@ namespace ModernAutoClicker.Info
             // Text placeholder
             using (StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
             {
-                using (Font fontTitle = ThemeTokens.FontSegoe(13F, FontStyle.Bold))
+                using (Font fontTitle = ThemeTokens.FontCard(FontStyle.Bold))
                 using (SolidBrush brushTitle = new SolidBrush(textPrimary))
                 {
                     g.DrawString("[ Mã QR Chuyển Khoản ]", fontTitle, brushTitle, new RectangleF(10, 116, w - 20, 24), sf);
                 }
 
-                using (Font fontSub = ThemeTokens.FontSegoe(10F, FontStyle.Regular))
+                using (Font fontSub = ThemeTokens.FontSmall(FontStyle.Regular))
                 using (SolidBrush brushSub = new SolidBrush(textSecondary))
                 {
                     g.DrawString("(Chưa có file qr-bank.svg)", fontSub, brushSub, new RectangleF(10, 148, w - 20, 20), sf);
                 }
 
-                using (Font fontGuide = ThemeTokens.FontSegoe(9F, FontStyle.Italic))
+                using (Font fontGuide = ThemeTokens.FontMicro(FontStyle.Italic))
                 using (SolidBrush brushGuide = new SolidBrush(accent))
                 {
                     g.DrawString("Thêm file qr-bank.svg vào thư mục Info/", fontGuide, brushGuide, new RectangleF(10, 174, w - 20, 36), sf);
@@ -346,14 +315,12 @@ namespace ModernAutoClicker.Info
 
             this.BackColor = t.BgSecondary;
 
-            if (lblTitle != null) lblTitle.ForeColor = t.TextPrimary;
             if (btnCloseIcon != null)
             {
                 btnCloseIcon.BackColor = Color.Transparent;
                 btnCloseIcon.ForeColor = t.TextSecondary;
             }
-            if (lblQrHint != null) lblQrHint.ForeColor = t.TextSecondary;
-            if (lblThank != null) lblThank.ForeColor = t.AccentPrimary;
+            if (lblThank != null) lblThank.ForeColor = t.TextPrimary;
 
             if (btnClose != null)
             {

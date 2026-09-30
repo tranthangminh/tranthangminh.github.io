@@ -413,7 +413,7 @@ namespace ModernAutoClicker
 
                 // Draw size badge
                 string dimText = IsImageSnippingMode ? string.Format("Template: {0} x {1} px", rw, rh) : string.Format("Area: {0} x {1} px", rw, rh);
-                using (Font dimFont = ThemeTokens.FontSegoe(12F, FontStyle.Bold))
+                using (Font dimFont = ThemeTokens.FontButton(FontStyle.Bold))
                 using (SolidBrush badgeBg = new SolidBrush(Color.FromArgb(200, 15, 23, 42)))
                 using (SolidBrush badgeText = new SolidBrush(Color.FromArgb(240, 240, 240)))
                 {
@@ -437,7 +437,7 @@ namespace ModernAutoClicker
                 text = string.Format("({0}, {1})   {2}\n[Click: Point | Drag: Area | Esc Cancel]", _currentMouse.X, _currentMouse.Y, hexStr);
             }
 
-            using (Font font = ThemeTokens.FontSegoe(12F, FontStyle.Bold))
+            using (Font font = ThemeTokens.FontButton(FontStyle.Bold))
             {
                 SizeF size = g.MeasureString(text, font);
                 float boxW = size.Width + (IsImageSnippingMode ? 16 : 36);

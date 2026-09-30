@@ -272,7 +272,7 @@ namespace ModernAutoClicker.Advanced
                 Text = (_index + 1).ToString(),
                 Location = new Point(x, 6),
                 Size = new Size(34, 22),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
                 Cursor = Cursors.SizeAll
             };
@@ -317,7 +317,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(x, 6),
                 Size = new Size(112, 22),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular)
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             PopulateActionTypes();
             cboActionType.ItemColorProvider = (idx) => GetActionTypeColor(GetActionTypeFromIndex(idx), _theme);
@@ -439,7 +439,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(x, 8),
                 Size = new Size(90, 18),
-                Font = ThemeTokens.GetMonospaceFont(9.5F),
+                Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro),
                 TextAlign = ContentAlignment.MiddleRight,
                 Cursor = Cursors.Hand
             };
@@ -475,7 +475,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "🎯",
                 Location = new Point(x + 94, 6),
                 Size = new Size(22, 22),
-                Font = ThemeTokens.FontSegoeSymbol(11F)
+                Font = ThemeTokens.FontSegoeSymbol(ThemeTokens.FontSizeBase)
             };
             btnPickCoord.Click += (s, e) => PickCoordinate();
 
@@ -487,7 +487,7 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 99,
                 Step = 1,
                 Value = _step.ScrollStep,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Visible = false
             };
             numScroll.TextChanged += (s, e) =>
@@ -502,7 +502,7 @@ namespace ModernAutoClicker.Advanced
                 Text = _step.KeyData,
                 Location = new Point(x, 6),
                 Size = new Size(116, 22),
-                Font = ThemeTokens.FontSegoe(11F),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 Visible = false
             };
             txtKeyData.KeyDown += (s, e) =>
@@ -580,7 +580,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(x, 6),
                 Size = new Size(116, 22),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 Visible = false
             };
             cboTargetScript.SelectedIndexChanged += (s, e) =>
@@ -659,7 +659,7 @@ namespace ModernAutoClicker.Advanced
                         dashedPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
                         g.DrawRectangle(dashedPen, 0, 0, 31, 19);
                     }
-                    using (Font symFont = ThemeTokens.FontSegoeSymbol(8.5F))
+                    using (Font symFont = ThemeTokens.FontSegoeSymbol(ThemeTokens.FontSizeMicro))
                     using (SolidBrush symBrush = new SolidBrush(_theme.TextTertiary))
                     {
                         g.DrawString("📷", symFont, symBrush, 5, 2);
@@ -688,7 +688,7 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 999999,
                 Step = 10,
                 Value = Math.Max(1, _step.HoldMs),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             numHold.TextChanged += (s, e) =>
             {
@@ -706,7 +706,7 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 100,
                 Step = 1,
                 Value = _step.Similarity > 0 ? _step.Similarity : 90,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Visible = false
             };
             numSimilarity.TextChanged += (s, e) =>
@@ -726,7 +726,7 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 999999,
                 Step = 10,
                 Value = Math.Max(0, _step.DelayMs),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             numDelay.TextChanged += (s, e) =>
             {
@@ -743,7 +743,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(38, 32),
                 Size = new Size(84, 20),
                 AutoSize = false,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight,
                 ForeColor = _theme.CGreen,
                 Visible = false
@@ -753,7 +753,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(124, 31),
                 Size = new Size(116, 22),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 CustomBackColor = Color.FromArgb(35, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B),
                 CustomBorderColor = Color.FromArgb(140, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B),
                 Visible = false
@@ -790,7 +790,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(242, 32),
                 Size = new Size(84, 20),
                 AutoSize = false,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight,
                 ForeColor = _theme.Danger,
                 Visible = false
@@ -800,7 +800,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(330, 31),
                 Size = new Size(128, 22),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 CustomBackColor = Color.FromArgb(35, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B),
                 CustomBorderColor = Color.FromArgb(140, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B),
                 Visible = false
@@ -840,7 +840,7 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 9999,
                 Step = 1,
                 Value = Math.Max(1, _step.RepeatCount),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             numRepeat.TextChanged += (s, e) =>
             {
@@ -858,7 +858,7 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 9999,
                 Step = 1,
                 Value = _step.TimeoutSec > 0 ? _step.TimeoutSec : 10,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 Visible = false
             };
             numTimeout.TextChanged += (s, e) =>
@@ -875,7 +875,7 @@ namespace ModernAutoClicker.Advanced
                 Text = "✕",
                 Location = new Point(x + 1, 5),
                 Size = new Size(24, 24),
-                Font = ThemeTokens.FontSegoe(12F, FontStyle.Bold),
+                Font = ThemeTokens.FontButton(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
                 Cursor = Cursors.Hand,
                 ForeColor = _theme.Danger
@@ -894,7 +894,7 @@ namespace ModernAutoClicker.Advanced
                 Text = _step.Note ?? "",
                 Location = new Point(x, 6),
                 Size = new Size(64, 22),
-                Font = ThemeTokens.FontSegoe(11F),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 MaxLength = 500
             };
             txtNote.TextChanged += (s, e) =>
@@ -914,7 +914,7 @@ namespace ModernAutoClicker.Advanced
                 Maximum = 999999,
                 Step = 1,
                 Value = Math.Max(1, _step.RepeatCount),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = HorizontalAlignment.Right,
                 Visible = false
             };
@@ -929,7 +929,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(218, 6),
                 Size = new Size(56, 22),
-                Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Bold),
+                Font = ThemeTokens.FontMicro(FontStyle.Bold),
                 Text = FormatSecondsToTime(_step.RepeatTimerSeconds > 0 ? _step.RepeatTimerSeconds : 300),
                 TextAlign = HorizontalAlignment.Right,
                 Visible = false
@@ -964,7 +964,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(278, 6),
                 Size = new Size(56, 22),
-                Font = ThemeTokens.FontSegoe(9F, FontStyle.Regular),
+                Font = ThemeTokens.FontMicro(FontStyle.Regular),
                 Visible = false
             };
             cboRepeatMode.SelectedIndexChanged += (s, e) =>
@@ -985,7 +985,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(38, 32),
                 Size = new Size(84, 20),
                 AutoSize = false,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight,
                 ForeColor = _theme.CGreen,
                 Visible = false
@@ -995,7 +995,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(124, 31),
                 Size = new Size(116, 22),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 CustomBackColor = Color.FromArgb(35, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B),
                 CustomBorderColor = Color.FromArgb(140, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B),
                 Visible = false
@@ -1017,7 +1017,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(242, 32),
                 Size = new Size(84, 20),
                 AutoSize = false,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight,
                 ForeColor = _theme.Danger,
                 Visible = false
@@ -1027,7 +1027,7 @@ namespace ModernAutoClicker.Advanced
             {
                 Location = new Point(330, 31),
                 Size = new Size(128, 22),
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
                 CustomBackColor = Color.FromArgb(35, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B),
                 CustomBorderColor = Color.FromArgb(140, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B),
                 Visible = false
@@ -1610,7 +1610,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX, 2);
                 lblCoord.Size = new Size(90, 30);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(8.5F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText();
 
@@ -1638,7 +1638,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 36, 8);
                 lblCoord.Size = new Size(56, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(8.5F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1666,7 +1666,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 20, 8);
                 lblCoord.Size = new Size(72, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(9F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1701,7 +1701,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 20, 8);
                 lblCoord.Size = new Size(72, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(9F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1734,7 +1734,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 34, 2);
                 lblCoord.Size = new Size(58, 30);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(8F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1778,7 +1778,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 34, 2);
                 lblCoord.Size = new Size(58, 30);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(8F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
@@ -1816,7 +1816,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX, 8);
                 lblCoord.Size = new Size(90, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(9.5F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(false);
 
@@ -1845,7 +1845,7 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX, 8);
                 lblCoord.Size = new Size(90, 18);
-                lblCoord.Font = ThemeTokens.GetMonospaceFont(9.5F);
+                lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(false);
 
@@ -2736,7 +2736,7 @@ namespace ModernAutoClicker.Advanced
                     Text = string.Format("Size: {0} x {1} px  |  Click anywhere or press ESC to close", bmp.Width, bmp.Height),
                     Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleCenter,
-                    Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Regular),
+                    Font = ThemeTokens.FontMicro(FontStyle.Regular),
                     ForeColor = _theme.TextSecondary
                 };
                 lblDim.Click += (s, e) => previewForm.Close();

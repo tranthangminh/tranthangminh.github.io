@@ -26,18 +26,18 @@ namespace ModernAutoClicker.Advanced
             this.Size = new Size(408, 74);
 
             // Left Section: Hotkeys
-            lblHelp1 = CreateKeyLabel("[F6]", 10, 8);
-            lblHelpVal1 = CreateTextLabel(Loc.HotkeyAdvF6, 46, 8);
+            lblHelp1 = CreateKeyLabel("[F6]", 6, 8);
+            lblHelpVal1 = CreateTextLabel(Loc.HotkeyAdvF6, 60, 8);
 
-            lblHelp2 = CreateKeyLabel("[F7]", 10, 30);
-            lblHelpVal2 = CreateTextLabel(Loc.HotkeyAdvF7, 46, 30);
+            lblHelp2 = CreateKeyLabel("[F7]", 6, 30);
+            lblHelpVal2 = CreateTextLabel(Loc.HotkeyAdvF7, 60, 30);
 
-            lblHelp3 = CreateKeyLabel("[SPACE]", 10, 52);
-            lblHelpVal3 = CreateTextLabel(Loc.HotkeyAdvSpace, 58, 52);
+            lblHelp3 = CreateKeyLabel("[SPACE]", 6, 52);
+            lblHelpVal3 = CreateTextLabel(Loc.HotkeyAdvSpace, 60, 52);
 
             // Right Section: Usage Tips
-            lblTip1 = CreateTextLabel(Loc.HotkeyAdvTip1, 146, 15);
-            lblTip2 = CreateTextLabel(Loc.HotkeyAdvTip2, 146, 41);
+            lblTip1 = CreateTextLabel(Loc.HotkeyAdvTip1, 148, 15);
+            lblTip2 = CreateTextLabel(Loc.HotkeyAdvTip2, 148, 41);
 
             this.Controls.AddRange(new Control[] {
                 lblHelp1, lblHelpVal1,
@@ -66,29 +66,31 @@ namespace ModernAutoClicker.Advanced
             Color divColor = _theme != null ? _theme.BorderColor : Color.FromArgb(40, 255, 255, 255);
             using (Pen pen = new Pen(divColor, 1))
             {
-                e.Graphics.DrawLine(pen, 136, 8, 136, 66);
+                e.Graphics.DrawLine(pen, 138, 8, 138, 66);
             }
         }
 
-        private Label CreateKeyLabel(string text, int x, int y)
+        private Label CreateKeyLabel(string text, int x, int y, int width = 50, int height = 15)
         {
             return new Label
             {
                 Text = text,
                 Location = new Point(x, y),
-                AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold)
+                Size = new Size(width, height),
+                AutoSize = false,
+                TextAlign = ContentAlignment.TopRight,
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
         }
 
-        private Label CreateTextLabel(string text, int x, int y, float pixelSize = 11F)
+        private Label CreateTextLabel(string text, int x, int y)
         {
             return new Label
             {
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(pixelSize, FontStyle.Regular)
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
         }
 
@@ -101,8 +103,10 @@ namespace ModernAutoClicker.Advanced
 
             if (lblHelp1 != null) lblHelp1.ForeColor = t.HotkeyBoxText;
             if (lblHelp2 != null) lblHelp2.ForeColor = t.HotkeyBoxText;
+            if (lblHelp3 != null) lblHelp3.ForeColor = t.HotkeyBoxText;
             if (lblHelpVal1 != null) lblHelpVal1.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
             if (lblHelpVal2 != null) lblHelpVal2.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
+            if (lblHelpVal3 != null) lblHelpVal3.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
 
             if (lblTip1 != null) lblTip1.ForeColor = t.TextSecondary;
             if (lblTip2 != null) lblTip2.ForeColor = t.TextSecondary;

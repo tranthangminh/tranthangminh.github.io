@@ -1140,7 +1140,7 @@ namespace ModernAutoClicker
                 ToolStripMenuItem item = new ToolStripMenuItem(lbl);
                 if (val == _mapOverlayOpacity)
                 {
-                    item.Font = ThemeTokens.FontSegoe(11F, FontStyle.Bold);
+                    item.Font = ThemeTokens.FontBase(FontStyle.Bold);
                 }
                 int chosenVal = val;
                 item.Click += (s, e) =>

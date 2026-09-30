@@ -294,7 +294,7 @@ namespace ModernAutoClicker
             }
 
             // 3. Title Text (Vertically Centered across full bar height, ending before admin button)
-            using (Font titleFont = ThemeTokens.FontSegoe(12F, FontStyle.Bold))
+            using (Font titleFont = ThemeTokens.FontButton(FontStyle.Bold))
             {
                 int textRightBound = Math.Max(50, AdminButtonRect.Left - 8);
                 Rectangle textRect = new Rectangle(34, 0, textRightBound - 34, this.Height);
@@ -338,7 +338,7 @@ namespace ModernAutoClicker
                 }
             }
 
-            using (Font shFont = ThemeTokens.FontSegoeSymbol(11F, FontStyle.Regular))
+            using (Font shFont = ThemeTokens.FontSegoeSymbol(ThemeTokens.FontSizeBase, FontStyle.Regular))
             {
                 TextRenderer.DrawText(g, "🛡", shFont, adminVisual, iconColor,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
@@ -373,7 +373,7 @@ namespace ModernAutoClicker
             else
             {
                 // Fallback emoji if SVG is missing
-                using (Font fbFont = ThemeTokens.FontSegoeSymbol(11F, FontStyle.Regular))
+                using (Font fbFont = ThemeTokens.FontSegoeSymbol(ThemeTokens.FontSizeBase, FontStyle.Regular))
                 {
                     TextRenderer.DrawText(g, t.IsDark ? "🔆" : "🌙", fbFont, themeVisual, t.AccentPrimary,
                         TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
@@ -398,7 +398,7 @@ namespace ModernAutoClicker
                     g.DrawPath(langPen, langPath);
                 }
             }
-            using (Font langFont = ThemeTokens.FontSegoe(9.5F, FontStyle.Bold))
+            using (Font langFont = ThemeTokens.FontMicro(FontStyle.Bold))
             {
                 string langStr = Loc.IsVietnamese ? "VI" : "EN";
                 TextRenderer.DrawText(g, langStr, langFont, langVisual, langFg,

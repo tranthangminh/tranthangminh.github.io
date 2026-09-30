@@ -464,7 +464,7 @@ namespace ModernAutoClicker
             using (SolidBrush blackBrush = new SolidBrush(Color.Black))
             using (SolidBrush whiteBrush = new SolidBrush(Color.White))
             using (SolidBrush highlightBrush = new SolidBrush(_accentColor))
-            using (Font numFont = new Font("Tahoma", 11.5F, FontStyle.Bold, GraphicsUnit.Pixel))
+            using (Font numFont = new Font("Tahoma", ThemeTokens.FontSizeBase, FontStyle.Bold, GraphicsUnit.Pixel))
             {
                 for (int i = 0; i < _points.Count; i++)
                 {
@@ -606,7 +606,7 @@ namespace ModernAutoClicker
             using (SolidBrush blackBrush = new SolidBrush(Color.Black))
             using (SolidBrush whiteBrush = new SolidBrush(Color.White))
             using (SolidBrush highlightBrush = new SolidBrush(selectBlue))
-            using (Font numFont = new Font("Tahoma", 11.5F, FontStyle.Bold, GraphicsUnit.Pixel))
+            using (Font numFont = new Font("Tahoma", ThemeTokens.FontSizeBase, FontStyle.Bold, GraphicsUnit.Pixel))
             {
                 for (int i = 0; i < _advancedSteps.Count; i++)
                 {

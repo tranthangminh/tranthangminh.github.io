@@ -213,7 +213,7 @@ namespace ModernAutoClicker
                     Text = Loc.IsVietnamese ? "🚀 Đã Có Phiên Bản Mới!" : "🚀 New Version Available!",
                     Location = new Point(20, 18),
                     AutoSize = true,
-                    Font = ThemeTokens.FontSegoe(13F, FontStyle.Bold),
+                    Font = ThemeTokens.FontCard(FontStyle.Bold),
                     ForeColor = theme.AccentPrimary
                 };
 
@@ -224,7 +224,7 @@ namespace ModernAutoClicker
                         : string.Format("A new version (v{0}) of Auto Clicker by Max is now available!\nYour current version is v{1}.\n\nWould you like to visit the website to download it now?", newVersion, AppInfo.Version),
                     Location = new Point(20, 48),
                     Size = new Size(340, 68),
-                    Font = ThemeTokens.FontSegoe(9.5F, FontStyle.Regular),
+                    Font = ThemeTokens.FontMicro(FontStyle.Regular),
                     ForeColor = theme.TextPrimary
                 };
 
@@ -237,7 +237,7 @@ namespace ModernAutoClicker
                     NormalColor = theme.AccentPrimary,
                     HoverColor = theme.AccentPrimaryHover,
                     ForeColor = Color.White,
-                    Font = ThemeTokens.FontSegoe(10F, FontStyle.Bold)
+                    Font = ThemeTokens.FontSmall(FontStyle.Bold)
                 };
                 btnDownload.Click += (s, e) =>
                 {
@@ -258,7 +258,7 @@ namespace ModernAutoClicker
                     NormalColor = theme.BgTertiary,
                     HoverColor = theme.BgElevated,
                     ForeColor = theme.TextSecondary,
-                    Font = ThemeTokens.FontSegoe(10F, FontStyle.Regular)
+                    Font = ThemeTokens.FontSmall(FontStyle.Regular)
                 };
                 btnLater.Click += (s, e) => dlg.Close();
 

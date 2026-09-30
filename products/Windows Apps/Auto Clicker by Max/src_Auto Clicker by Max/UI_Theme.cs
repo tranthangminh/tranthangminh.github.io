@@ -130,6 +130,16 @@ namespace ModernAutoClicker
             };
         }
 
+        // ========================================================
+        // Typography Scale Constants (Pixel-locked, DPI Immune)
+        // ========================================================
+        public static float FontSizeMicro   { get { return 9.5F; } }  // Badge, chip, sub-status, hint
+        public static float FontSizeSmall   { get { return 10.5F; } } // Caption, units, small labels
+        public static float FontSizeBase    { get { return 11.5F; } } // Regular text, info rows, main form labels
+        public static float FontSizeButton  { get { return 12.5F; } } // Primary & Secondary buttons
+        public static float FontSizeCard    { get { return 14.0F; } } // Group box, Card header
+        public static float FontSizeTitle   { get { return 16.0F; } } // Main App Title
+
         // Pixel-locked font helpers to guarantee DPI immunity across 100%, 125%, 150%+ display scales
         public static Font FontSegoe(float pixelSize, FontStyle style = FontStyle.Regular)
         {
@@ -139,6 +149,36 @@ namespace ModernAutoClicker
         public static Font FontSegoeSymbol(float pixelSize, FontStyle style = FontStyle.Regular)
         {
             return new Font("Segoe UI Symbol", pixelSize, style, GraphicsUnit.Pixel);
+        }
+
+        public static Font FontMicro(FontStyle style = FontStyle.Regular)
+        {
+            return FontSegoe(FontSizeMicro, style);
+        }
+
+        public static Font FontSmall(FontStyle style = FontStyle.Regular)
+        {
+            return FontSegoe(FontSizeSmall, style);
+        }
+
+        public static Font FontBase(FontStyle style = FontStyle.Regular)
+        {
+            return FontSegoe(FontSizeBase, style);
+        }
+
+        public static Font FontButton(FontStyle style = FontStyle.Bold)
+        {
+            return FontSegoe(FontSizeButton, style);
+        }
+
+        public static Font FontCard(FontStyle style = FontStyle.Bold)
+        {
+            return FontSegoe(FontSizeCard, style);
+        }
+
+        public static Font FontTitle(FontStyle style = FontStyle.Bold)
+        {
+            return FontSegoe(FontSizeTitle, style);
         }
 
         // Cross-platform Monospace font resolver with strict GraphicsUnit.Pixel

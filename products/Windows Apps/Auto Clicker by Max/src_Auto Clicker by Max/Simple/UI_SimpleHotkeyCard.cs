@@ -21,14 +21,14 @@ namespace ModernAutoClicker
             this.BorderSize = 0;
             this.Size = new Size(224, 74);
 
-            lblHelp1 = CreateKeyLabel("[F6]", 8, 8);
-            lblHelpVal1 = CreateTextLabel(Loc.HotkeySimpleF6, 54, 8);
+            lblHelp1 = CreateKeyLabel("[F6]", 6, 8);
+            lblHelpVal1 = CreateTextLabel(Loc.HotkeySimpleF6, 60, 8);
 
-            lblHelp2 = CreateKeyLabel("[F7]", 8, 30);
-            lblHelpVal2 = CreateTextLabel(Loc.HotkeySimpleF7, 54, 30);
+            lblHelp2 = CreateKeyLabel("[F7]", 6, 30);
+            lblHelpVal2 = CreateTextLabel(Loc.HotkeySimpleF7, 60, 30);
 
-            lblHelp3 = CreateKeyLabel("[SPACE]", 8, 52);
-            lblHelpVal3 = CreateTextLabel(Loc.HotkeySimpleSpace, 64, 52);
+            lblHelp3 = CreateKeyLabel("[SPACE]", 6, 52);
+            lblHelpVal3 = CreateTextLabel(Loc.HotkeySimpleSpace, 60, 52);
 
             this.Controls.AddRange(new Control[] {
                 lblHelp1, lblHelpVal1,
@@ -47,14 +47,16 @@ namespace ModernAutoClicker
             if (lblHelpVal3 != null) lblHelpVal3.Text = Loc.HotkeySimpleSpace;
         }
 
-        private Label CreateKeyLabel(string text, int x, int y)
+        private Label CreateKeyLabel(string text, int x, int y, int width = 50, int height = 15)
         {
             return new Label
             {
                 Text = text,
                 Location = new Point(x, y),
-                AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11.5F, FontStyle.Bold)
+                Size = new Size(width, height),
+                AutoSize = false,
+                TextAlign = ContentAlignment.TopRight,
+                Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
         }
 
@@ -65,7 +67,7 @@ namespace ModernAutoClicker
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = ThemeTokens.FontSegoe(11F, FontStyle.Regular)
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
         }
 
