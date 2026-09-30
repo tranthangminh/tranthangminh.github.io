@@ -339,7 +339,7 @@ body {
     padding-left: 18px;
     font-size: 0.9rem;
     line-height: 1.55;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 .actor-bullet-list li::before {
@@ -389,7 +389,7 @@ body {
 }
 
 .study-field-value {
-    color: var(--text-secondary);
+    color: var(--text-primary);
     line-height: 1.5;
 }
 
@@ -636,7 +636,7 @@ body {
     font-family: 'Montserrat', sans-serif;
     font-size: 0.95rem;
     line-height: 1.6;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     margin: 0;
 }
 

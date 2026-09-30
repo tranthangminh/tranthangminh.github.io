@@ -651,6 +651,15 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
+:root[data-theme="light"] .segmented-tabs-container--sticky,
+:root[data-theme="light"] .products-switch-container--sticky,
+:root[data-theme="light"] .segmented-tabs-container,
+.light-theme .segmented-tabs-container--sticky,
+.light-theme .products-switch-container--sticky,
+.light-theme .segmented-tabs-container {
+    box-shadow: 0 4px 12px var(--bg-100);
+}
+
 /* ==========================================================================
    Full-Width Segmented Tabs (.segmented-tabs--full-width, .products-switch--full-width)
    Dàn đều 100% bề ngang, chia đều cột cho các nút tab trên Desktop (> 680px)

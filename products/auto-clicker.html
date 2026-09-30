@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -27,19 +27,19 @@
 <meta name="twitter:description" content="Tải miễn phí Auto Clicker by Max: phần mềm tự động click chuột và macro cho Windows, hỗ trợ click ngầm không chiếm chuột, nhận diện pixel màu và phím tắt F6/F7.">
 <meta name="twitter:image" content="https://tranthangminh.github.io/products/Windows%20Apps/Auto%20Clicker%20by%20Max%20-%20Asian%20Mode.png">
 
-<link rel="icon" type="image/svg+xml" href="../svg/logo-MAX-favicon.svg">
+<link rel="icon" type="image/svg+xml" href="../svg/auto-clicker.svg">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;600;700;800;900&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../common/theme.css?v=20260929-1">
-<link rel="stylesheet" href="../common/shared-layout.css?v=20260929-1">
-<link rel="stylesheet" href="../common/shared-header.css?v=20260929-1">
-<link rel="stylesheet" href="../common/shared-footer.css?v=20260929-1">
-<link rel="stylesheet" href="../common/shared-book-now.css?v=20260929-1">
-<link rel="stylesheet" href="../common/shared-surfaces.css?v=20260929-1">
-<link rel="stylesheet" href="../common/shared-mobile-type-scale.css?v=20260929-1">
-<link rel="stylesheet" href="../common/shared-tabs.css?v=20260929-1">
-<link rel="stylesheet" href="../common/shared-spotlight.css?v=20260929-1">
-<link rel="stylesheet" href="../common/shared-product-detail.css?v=20260929-1">
-<link rel="stylesheet" href="auto-clicker.css?v=20260929-1">
+<link rel="stylesheet" href="../common/theme.css?v=20260930-1">
+<link rel="stylesheet" href="../common/shared-layout.css?v=20260930-1">
+<link rel="stylesheet" href="../common/shared-header.css?v=20260930-1">
+<link rel="stylesheet" href="../common/shared-footer.css?v=20260930-1">
+<link rel="stylesheet" href="../common/shared-book-now.css?v=20260930-1">
+<link rel="stylesheet" href="../common/shared-surfaces.css?v=20260930-1">
+<link rel="stylesheet" href="../common/shared-mobile-type-scale.css?v=20260930-1">
+<link rel="stylesheet" href="../common/shared-tabs.css?v=20260930-1">
+<link rel="stylesheet" href="../common/shared-spotlight.css?v=20260930-1">
+<link rel="stylesheet" href="../common/shared-product-detail.css?v=20260930-1">
+<link rel="stylesheet" href="auto-clicker.css?v=20260930-1">
 <script src="../common/shared-utils.js?v=20260929-1"></script>
 <script src="../common/shared-i18n.js?v=20260929-1"></script>
 <script src="../common/i18n-vi.js?v=20260929-1"></script>
@@ -74,9 +74,13 @@
                 <!-- Head -->
                 <!-- Head (Tiêu đề, thẻ badge, nút tải - Căn giữa trang 3 hàng) -->
                 <div class="tools-panel-head tools-panel-head--centered app-panel-head--centered">
-                    <h1 class="tools-panel-title" data-i18n="autoClicker.title">Auto Clicker by Max v1.1</h1>
+                    <h1 class="tools-panel-title app-header-title">
+                        <img class="app-title-icon" src="../svg/auto-clicker.svg" alt="Auto Clicker Logo" width="57" height="57" aria-hidden="true">
+                        <span data-i18n="autoClicker.title">Auto Clicker by Max v1.1</span>
+                    </h1>
                     <div class="app-meta-pills">
                         <span class="app-meta-pill" data-i18n="autoClicker.meta.portable">Portable</span>
+                        <span class="app-meta-pill" data-i18n="autoClicker.meta.fileSize">~660 KB</span>
                         <span class="app-meta-pill" data-i18n="autoClicker.meta.dotnet">C# .NET 4.0 Native</span>
                         <span class="app-meta-pill" data-i18n="autoClicker.meta.windowsApp">Windows App</span>
                     </div>
@@ -104,13 +108,9 @@
                                 <span class="segmented-tabs-icon segmented-tabs-icon--guide" aria-hidden="true"></span>
                                 <span class="segmented-tabs-text" data-i18n="productTabs.guide">Hướng Dẫn Sử Dụng</span>
                             </button>
-                            <button class="segmented-tabs-btn" type="button" data-tab="limits" aria-pressed="false" title="Cơ Chế &amp; Giới Hạn">
+                            <button class="segmented-tabs-btn" type="button" data-tab="limits" aria-pressed="false" title="Giới Hạn &amp; Yêu Cầu">
                                 <span class="segmented-tabs-icon segmented-tabs-icon--warning" aria-hidden="true"></span>
-                                <span class="segmented-tabs-text" data-i18n="productTabs.limits">Cơ Chế &amp; Giới Hạn</span>
-                            </button>
-                            <button class="segmented-tabs-btn" type="button" data-tab="requirements" aria-pressed="false" title="Yêu Cầu Hệ Thống">
-                                <span class="segmented-tabs-icon segmented-tabs-icon--requirements" aria-hidden="true"></span>
-                                <span class="segmented-tabs-text" data-i18n="productTabs.requirements">Yêu Cầu Hệ Thống</span>
+                                <span class="segmented-tabs-text" data-i18n="productTabs.limitsAndRequirements">Giới Hạn &amp; Yêu Cầu</span>
                             </button>
                         </div>
                         <div class="segmented-tabs-active-label" id="appDetailTabsActiveLabel" aria-live="polite">
@@ -134,6 +134,9 @@
                                 <li data-i18n-html="autoClicker.features.targetWindow"><strong>Khóa mục tiêu (Target Window):</strong> Chọn cửa sổ để bấm, không bị ảnh hưởng dù bị cửa sổ khác đè lên (lưu ý: không được Minimize cửa sổ).</li>
                                 <li data-i18n-html="autoClicker.features.runScript"><strong>Kịch bản lồng kịch bản (Run Script):</strong> Cho phép gọi kịch bản con trong kịch bản lớn. Ví dụ: kịch bản A gồm các lệnh 1, 2, 3, 4, 5; kịch bản B gồm các lệnh 10, 11, 12, gọi kịch bản A, rồi đến 13, 14.</li>
                                 <li data-i18n-html="autoClicker.features.moveScale"><strong>Tịnh tiến &amp; Co giãn hàng loạt (Move &amp; Scale):</strong> Di chuyển các điểm tịnh tiến hoặc co giãn kích thước mà không phải dời thủ công từng điểm.</li>
+                                <li data-i18n-html="autoClicker.features.imageRecognition"><strong>Nhận diện hình ảnh (Image Search):</strong> Tự động quét và tìm hình ảnh mục tiêu trên màn hình hoặc trong cửa sổ để click chính xác vào tâm ảnh.</li>
+                                <li data-i18n-html="autoClicker.features.batchOps"><strong>Thao tác hàng loạt (Batch Operations):</strong> Nhấp vào tiêu đề các cột trong bảng kịch bản để áp dụng thông số (đổi hành động, đổi cửa sổ, nhập Hold/Delay/Repeat) cho toàn bộ các dòng cùng lúc.</li>
+                                <li data-i18n-html="autoClicker.features.specialAdapters"><strong>Tương thích ứng dụng đặc thù (Special Adapters):</strong> Tối ưu hóa click ngầm ổn định cho giả lập Android (BlueStacks), Discord, Spotify, Windows Explorer...</li>
                             </ul>
                         </div>
 
@@ -172,10 +175,13 @@
 
                 <!-- Tab Pane 2: Hướng Dẫn Sử Dụng -->
                 <div class="app-tab-pane" data-tab-pane="guide">
-                    <!-- Phím tắt toàn cục -->
+                    <!-- Phím tắt toàn cục & Tham số cốt lõi -->
                     <section class="tools-detail-section" style="margin-top: 8px;">
-                        <h2 class="tools-detail-title" data-i18n="autoClicker.guide.hotkeysTitle">Các Phím Tắt Hệ Thống (Global Hotkeys)</h2>
-                        <p class="tools-detail-text" data-i18n="autoClicker.guide.hotkeysDesc">
+                        <div class="section-title-bar">
+                            <h2 class="section-title-bar-heading" data-i18n-html="autoClicker.guide.hotkeysTitle">Phím Tắt Hệ Thống &amp; Mẹo Chung (Global Hotkeys &amp; Tips)</h2>
+                            <span class="section-title-bar-line" aria-hidden="true"></span>
+                        </div>
+                        <p class="tools-detail-text" style="margin-bottom: 16px;" data-i18n="autoClicker.guide.hotkeysDesc">
                             Điều khiển nhanh các thao tác mọi lúc mọi nơi ngay cả khi đang chơi game hoặc ẩn cửa sổ:
                         </p>
                         <div class="app-table-wrapper" style="max-width: 680px;">
@@ -202,148 +208,230 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Core Parameters & Utilities Unified Card (2 rows x 3 columns) -->
+                        <div class="app-params-grid-card">
+                            <!-- Row 1: 3 Core Parameters -->
+                            <div class="app-param-cell">
+                                <div class="app-param-head">
+                                    <span class="app-param-badge" data-i18n="autoClicker.guide.params.loopBadge">0 = ∞</span>
+                                    <h4 class="app-param-name" data-i18n="autoClicker.guide.params.loopName">Vòng Lặp Kịch Bản (Loop)</h4>
+                                </div>
+                                <p class="app-param-desc" data-i18n-html="autoClicker.guide.params.loopDesc">
+                                    Mặc định là <code>0</code> để chạy vô hạn (Infinite). Nhập số cụ thể (ví dụ: <code>10</code>, <code>50</code>) để phần mềm tự động dừng sau đủ số chu kỳ.
+                                </p>
+                            </div>
+                            <div class="app-param-cell">
+                                <div class="app-param-head">
+                                    <span class="app-param-badge" data-i18n="autoClicker.guide.params.jitterBadge">± px</span>
+                                    <h4 class="app-param-name" data-i18n="autoClicker.guide.params.jitterName">Rung Lắc Tọa Độ (Jitter)</h4>
+                                </div>
+                                <p class="app-param-desc" data-i18n-html="autoClicker.guide.params.jitterDesc">
+                                    Tạo sai số ngẫu nhiên ±px xung quanh tọa độ click (ví dụ: <code>2</code> - <code>3</code> px). Giúp click tự nhiên như tay người thật, tránh bị game / Anti-cheat bắt bot.
+                                </p>
+                            </div>
+                            <div class="app-param-cell">
+                                <div class="app-param-head">
+                                    <span class="app-param-badge" data-i18n="autoClicker.guide.params.intervalBadge">± ms</span>
+                                    <h4 class="app-param-name" data-i18n="autoClicker.guide.params.intervalName">Biến Thiên Giãn Cách (Interval)</h4>
+                                </div>
+                                <p class="app-param-desc" data-i18n-html="autoClicker.guide.params.intervalDesc">
+                                    Tự động cộng/trừ ngẫu nhiên ±ms vào thời gian nghỉ giữa các bước (ví dụ: delay 250ms với Interval ±20ms sẽ dao động 230ms - 270ms), phá vỡ nhịp click máy móc.
+                                </p>
+                            </div>
+
+                            <!-- Row 2: 3 Footer Utilities -->
+                            <div class="app-param-cell app-param-cell--utility" data-i18n-html="autoClicker.guide.utilities.windowOnTop">
+                                <strong>Window on Top:</strong> Ghim cửa sổ Auto Clicker luôn nổi trên cùng mọi ứng dụng để tiện quan sát và điều khiển.
+                            </div>
+                            <div class="app-param-cell app-param-cell--utility" data-i18n-html="autoClicker.guide.utilities.showMap">
+                                <strong>Show Map (Overlay):</strong> Bật bản đồ hiển thị các điểm click phát sáng trên màn hình; có thể dùng chuột nắm kéo dời tọa độ điểm trực tiếp.
+                            </div>
+                            <div class="app-param-cell app-param-cell--utility" data-i18n-html="autoClicker.guide.utilities.smoothMouse">
+                                <strong>Smooth Mouse Move:</strong> Di chuyển con trỏ chuột lướt mượt mà có nội suy giữa các điểm thay vì dịch chuyển tức thời.
+                            </div>
+                        </div>
                     </section>
 
                     <!-- Simple Mode -->
-                    <section class="tools-detail-section" style="margin-top: 24px;">
-                        <div class="app-mode-card">
-                            <div class="app-mode-header">
-                                <span class="app-mode-icon">⚡</span>
-                                <h3 class="app-mode-title" data-i18n-html="autoClicker.guide.simpleTitle">Simple Mode (Cơ Bản &amp; Mì Ăn Liền)</h3>
+                    <section class="tools-detail-section" style="margin-top: 36px;">
+                        <div class="section-title-bar">
+                            <h2 class="section-title-bar-heading" data-i18n-html="autoClicker.guide.simpleTitle">Simple Mode (Cơ Bản &amp; Mì Ăn Liền)</h2>
+                            <span class="section-title-bar-line" aria-hidden="true"></span>
+                        </div>
+                        <div class="app-mode-body">
+                            <div>
+                                <p class="tools-detail-text" style="margin-top: 0;" data-i18n="autoClicker.guide.simpleDesc">
+                                    Phù hợp cho thao tác nhanh, mì ăn liền với kịch bản đơn giản. Hỗ trợ 2 chế độ Click Mode:
+                                </p>
+                                <ul class="tools-panel-list" style="padding-left: 16px; margin-top: 8px;">
+                                    <li data-i18n-html="autoClicker.guide.simplePointList"><strong>Point List:</strong> Cài đặt sẵn danh sách các tọa độ điểm (X, Y) và chạy tuần tự theo kịch bản.</li>
+                                    <li data-i18n-html="autoClicker.guide.simpleFollowClick"><strong>Follow Click:</strong> Spam click liên tục tự do ngay tại vị trí con trỏ chuột của bạn.</li>
+                                    <li data-i18n-html="autoClicker.guide.simpleSaveLoad"><strong>Save / Load:</strong> Xuất và nạp nhanh toàn bộ danh sách tọa độ ra file <code>.txt</code> để lưu trữ hoặc chia sẻ.</li>
+                                    <li data-i18n-html="autoClicker.guide.simpleClear"><strong>Clear:</strong> Xóa sạch toàn bộ danh sách điểm chỉ với 1 click để bắt đầu tạo danh sách mới.</li>
+                                </ul>
                             </div>
-                            <div class="app-mode-body">
-                                <div>
-                                    <p class="tools-detail-text" style="margin-top: 0;" data-i18n="autoClicker.guide.simpleDesc">
-                                        Phù hợp cho thao tác nhanh, mì ăn liền với kịch bản đơn giản. Hỗ trợ 2 chế độ Click Mode:
-                                    </p>
-                                    <ul class="tools-panel-list" style="padding-left: 16px; margin-top: 8px;">
-                                        <li data-i18n-html="autoClicker.guide.simplePointList"><strong>Point List:</strong> Cài đặt sẵn danh sách các tọa độ điểm (X, Y) và chạy tuần tự theo kịch bản.</li>
-                                        <li data-i18n-html="autoClicker.guide.simpleFollowClick"><strong>Follow Click:</strong> Spam click liên tục tự do ngay tại vị trí con trỏ chuột của bạn.</li>
-                                    </ul>
-                                </div>
-                                <div class="app-mode-media">
-                                    <img src="Windows%20Apps/Auto%20Clicker%20by%20Max%20-%20Simple%20Mode.png" alt="Auto Clicker by Max - Giao diện Simple Mode" loading="lazy">
-                                </div>
+                            <div class="app-mode-media">
+                                <img src="Windows%20Apps/Auto%20Clicker%20by%20Max%20-%20Simple%20Mode.png" alt="Auto Clicker by Max - Giao diện Simple Mode" loading="lazy">
                             </div>
                         </div>
                     </section>
 
                     <!-- Asian Mode -->
-                    <section class="tools-detail-section" style="margin-top: 24px;">
-                        <div class="app-mode-card">
-                            <div class="app-mode-header">
-                                <span class="app-mode-icon">🧠</span>
-                                <h3 class="app-mode-title" data-i18n="autoClicker.guide.asianTitle">Asian Mode (Engine Macro Kịch Bản Nâng Cao)</h3>
+                    <section class="tools-detail-section" style="margin-top: 36px;">
+                        <div class="section-title-bar">
+                            <h2 class="section-title-bar-heading" data-i18n="autoClicker.guide.asianTitle">Asian Mode (Engine Macro Kịch Bản Nâng Cao)</h2>
+                            <span class="section-title-bar-line" aria-hidden="true"></span>
+                        </div>
+                        <p class="tools-detail-text" style="margin: 0 0 16px;" data-i18n="autoClicker.guide.asianDesc">
+                            Cho phép tạo kịch bản nâng cao, phức tạp với nhiều nhánh xử lý thông minh. Dưới đây là 13 hành động Macro được hỗ trợ:
+                        </p>
+
+                        <!-- Pro Tips Card (Batch Editing & Selection) -->
+                        <div class="app-tips-card">
+                            <div class="app-tips-title">
+                                <span aria-hidden="true">💡</span>
+                                <span data-i18n-html="autoClicker.guide.asianTips.title">Mẹo Thao Tác Nhanh &amp; Chỉnh Sửa Hàng Loạt (Pro Tips &amp; Batch Editing)</span>
                             </div>
-                            <div class="app-mode-body">
-                                <div>
-                                    <p class="tools-detail-text" style="margin-top: 0;" data-i18n="autoClicker.guide.asianDesc">
-                                        Cho phép tạo kịch bản nâng cao, phức tạp với nhiều nhánh xử lý thông minh. Dưới đây là 11 hành động Macro được hỗ trợ:
-                                    </p>
+                            <div class="app-tips-grid">
+                                <div class="app-tip-item" data-i18n-html="autoClicker.guide.asianTips.tipSelect">
+                                    <strong>Chọn dòng (Multi-Select):</strong> Click vào tiêu đề cột <kbd class="app-kbd">No.</kbd> để chọn toàn bộ dòng. Giữ <kbd class="app-kbd">Shift</kbd> để chọn một dải dòng liên tục, hoặc giữ <kbd class="app-kbd">Ctrl</kbd> để chọn nhiều dòng rời rạc.
                                 </div>
-                                <div class="app-mode-media">
-                                    <img src="Windows%20Apps/Auto%20Clicker%20by%20Max%20-%20Asian%20Mode.png" alt="Auto Clicker by Max - Giao diện Asian Mode" loading="lazy">
+                                <div class="app-tip-item" data-i18n-html="autoClicker.guide.asianTips.tipBatch">
+                                    <strong>Sửa hàng loạt (Batch Header Edit):</strong> Nhấp chuột vào <strong>tiêu đề các cột</strong> (<kbd class="app-kbd">✔</kbd>, <kbd class="app-kbd">Win</kbd>, <kbd class="app-kbd">Action Type</kbd>, <kbd class="app-kbd">Hold</kbd>, <kbd class="app-kbd">Delay</kbd>, <kbd class="app-kbd">Rep</kbd>) để đổi thông số cho toàn bộ các dòng được chọn cùng lúc.
                                 </div>
-                            </div>
-
-                            <!-- 11 Actions Grid -->
-                            <div class="app-actions-grid">
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">01</span>
-                                        <h4 class="app-action-name">Left / Right / Double Click</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act1Desc">Thao tác nhấp chuột trái, chuột phải hoặc nhấp đúp chuột với thời gian đè giữ (Hold time) tùy chỉnh.</p>
+                                <div class="app-tip-item" data-i18n-html="autoClicker.guide.asianTips.tipClone">
+                                    <strong>Nhân bản bước (Clone Steps):</strong> Sau khi chọn các dòng cần lặp lại, bấm nút <kbd class="app-kbd">+ Clone Step(s)</kbd> để nhân đôi nhanh cụm bước đó xuống cuối kịch bản.
                                 </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">02</span>
-                                        <h4 class="app-action-name">Middle / Scroll</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n-html="autoClicker.guide.actions.act2Desc">Click hoặc cuộn chuột. Giá trị <code>0</code> là click chuột giữa, <code>&lt; 0</code> là cuộn xuống, <code>&gt; 0</code> là cuộn lên.</p>
-                                </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">03</span>
-                                        <h4 class="app-action-name">Drag &amp; Drop</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act3Desc">Click và kéo chuột từ điểm A sang điểm B với chuyển động nội suy tự nhiên.</p>
-                                </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">04</span>
-                                        <h4 class="app-action-name">Key Press</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n-html="autoClicker.guide.actions.act4Desc">Nhấn phím đơn hoặc tổ hợp phím tắt hệ thống (ví dụ: <code>Ctrl+C</code>, <code>Ctrl+V</code>, <code>Ctrl+Shift+A</code>).</p>
-                                </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">05</span>
-                                        <h4 class="app-action-name">Type Text</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act5Desc">Tự động gõ đoạn văn bản hoặc chuỗi ký tự bất kỳ vào ô nhập liệu.</p>
-                                </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">06</span>
-                                        <h4 class="app-action-name">Delay</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act6Desc">Đơn giản chỉ là chờ trễ. Có thể tận dụng bước này để thực hiện thao tác move chuột mà không kích hoạt click.</p>
-                                </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">07</span>
-                                        <h4 class="app-action-name">Wait Color</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n-html="autoClicker.guide.actions.act7Desc">Bạn set màu X là <code>#123456</code>, lệnh sẽ chờ đến lúc màu X xuất hiện trên màn hình mới thực hiện bước tiếp theo.</p>
-                                </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">08</span>
-                                        <h4 class="app-action-name">If Color</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act8Desc">Bạn set màu X tại tọa độ X:Y; lệnh sẽ kiểm tra nếu màu X đang ở trên điểm đó hay không. Đúng thì thực hiện lệnh A, Sai thì thực hiện lệnh B.</p>
-                                </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">09</span>
-                                        <h4 class="app-action-name">If Color Range</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act9Desc">Tương tự If Color, nhưng cho phép kiểm tra sự xuất hiện của màu mục tiêu trong cả một VÙNG tọa độ.</p>
-                                </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">10</span>
-                                        <h4 class="app-action-name">Wait Change</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act10Desc">Theo dõi điểm ảnh tại tọa độ X:Y; nếu màu tại điểm đó bị thay đổi so với ban đầu thì sẽ thực hiện lệnh tiếp theo.</p>
-                                </div>
-
-                                <div class="app-action-card">
-                                    <div class="app-action-head">
-                                        <span class="app-action-num">11</span>
-                                        <h4 class="app-action-name">Run Script</h4>
-                                    </div>
-                                    <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act11Desc">Cho phép chạy lồng nhiều kịch bản vào nhau. Ví dụ: Kịch bản A gồm các lệnh 1, 2, 3, 4, 5; Kịch bản B gồm lệnh 10, 11, 12, gọi kịch bản A, rồi đến 13, 14.</p>
+                                <div class="app-tip-item" data-i18n-html="autoClicker.guide.asianTips.tipTools">
+                                    <strong>Công cụ bổ trợ:</strong> Nút <kbd class="app-kbd">Move &amp; Scale</kbd> giúp dời cụm tọa độ hoặc co giãn tỷ lệ khi đổi độ phân giải. Menu <kbd class="app-kbd">Template ▾</kbd> &amp; <kbd class="app-kbd">Save/Load</kbd> hỗ trợ nạp kịch bản mẫu và lưu file <code>.json</code>.
                                 </div>
                             </div>
                         </div>
+
+                            <!-- Side-by-Side: 13 Actions alongside sticky window preview -->
+                            <div class="app-asian-layout">
+                                <div class="app-actions-grid app-actions-grid--asian">
+                                    <div class="app-action-card app-action-card--white">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">01</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act1Name">Left Click</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act1Desc">Thao tác nhấp chuột trái với thời gian đè giữ (Hold time) tùy chỉnh.</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--white">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">02</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act2Name">Right Click</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act2Desc">Nhấp chuột phải để mở menu ngữ cảnh hoặc thao tác lệnh phụ trong game.</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--white">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">03</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act3Name">Middle / Scroll</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n-html="autoClicker.guide.actions.act3Desc">Click chuột giữa (giá trị <code>0</code>) hoặc cuộn chuột (<code>&lt; 0</code>: cuộn xuống, <code>&gt; 0</code>: cuộn lên).</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--white">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">04</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act4Name">Double Click</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act4Desc">Nhấp đúp chuột trái nhanh với khoảng cách trễ và độ nhạy tối ưu.</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--white">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">05</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act5Name">Drag n Drop</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act5Desc">Click và kéo chuột từ điểm A sang điểm B với chuyển động nội suy tự nhiên.</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--orange">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">06</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act6Name">Key Press</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n-html="autoClicker.guide.actions.act6Desc">Nhấn phím đơn hoặc tổ hợp phím tắt hệ thống (ví dụ: <code>Ctrl+C</code>, <code>Ctrl+V</code>, <code>Alt+F4</code>).</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--orange">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">07</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act7Name">Type Text</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act7Desc">Tự động gõ đoạn văn bản hoặc chuỗi ký tự bất kỳ vào ô nhập liệu.</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--green">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">08</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act8Name">Delay</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act8Desc">Tạm dừng chờ trễ thời gian. Có thể tận dụng bước này để thực hiện thao tác move chuột mà không kích hoạt click.</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--green">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">09</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act9Name">Repeat / Timer</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act9Desc">Quản lý vòng lặp bước linh hoạt theo số lần lặp lại (Count) hoặc theo chu kỳ thời gian (Timer đếm ngược mm:ss).</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--blue">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">10</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act10Name">If Color</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act10Desc">Kiểm tra màu mục tiêu tại tọa độ hoặc trong một vùng (Khớp màu làm lệnh A, Sai làm lệnh B).</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--blue">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">11</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act11Name">Wait Color Change</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act11Desc">Theo dõi điểm ảnh tại tọa độ X:Y; nếu màu tại điểm đó bị thay đổi so với ban đầu thì mới thực hiện lệnh tiếp theo.</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--purple">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">12</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act12Name">If Image</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act12Desc">Tìm kiếm hình ảnh mẫu trên màn hình hoặc trong cửa sổ với độ tương đồng (Similarity %) tùy chỉnh và tự động click vào tâm ảnh.</p>
+                                    </div>
+
+                                    <div class="app-action-card app-action-card--yellow">
+                                        <div class="app-action-head">
+                                            <span class="app-action-num">13</span>
+                                            <h4 class="app-action-name" data-i18n="autoClicker.guide.actions.act13Name">Run Script</h4>
+                                        </div>
+                                        <p class="app-action-desc" data-i18n="autoClicker.guide.actions.act13Desc">Cho phép chạy lồng nhiều kịch bản vào nhau (Kịch bản A gọi Kịch bản B rồi chạy tiếp).</p>
+                                    </div>
+                                </div>
+
+                                <div class="app-mode-media app-asian-media">
+                                    <img src="Windows%20Apps/Auto%20Clicker%20by%20Max%20-%20Asian%20Mode.png" alt="Auto Clicker by Max - Giao diện Asian Mode" loading="lazy">
+                                </div>
+                            </div>
                     </section>
                 </div>
 
-                <!-- Tab Pane 2: Cơ Chế & Giới Hạn -->
+                <!-- Tab Pane 3: Giới Hạn & Yêu Cầu -->
                 <div class="app-tab-pane" data-tab-pane="limits">
+                    <!-- Cơ Chế & Giới Hạn Kỹ Thuật -->
                     <section class="tools-detail-section" style="margin-top: 8px;">
-                        <h2 class="tools-detail-title" data-i18n-html="autoClicker.limits.title">Cơ Chế &amp; Giới Hạn Kỹ Thuật</h2>
+                        <div class="section-title-bar">
+                            <h2 class="section-title-bar-heading" data-i18n-html="autoClicker.limits.title">Cơ Chế &amp; Giới Hạn Kỹ Thuật</h2>
+                            <span class="section-title-bar-line" aria-hidden="true"></span>
+                        </div>
                         
                         <div class="app-notice" style="margin-top: 14px;">
                             <span class="app-notice-title" data-i18n="autoClicker.limits.noticeTitle">⚠️ Lưu Ý Quan Trọng Về "Free Mouse Mode"</span>
@@ -358,12 +446,13 @@
                             </p>
                         </div>
                     </section>
-                </div>
 
-                <!-- Tab Pane 3: Yêu Cầu Hệ Thống -->
-                <div class="app-tab-pane" data-tab-pane="requirements">
-                    <section class="tools-detail-section" style="margin-top: 8px;">
-                        <h2 class="tools-detail-title" data-i18n-html="autoClicker.requirements.title">Yêu Cầu Hệ Thống &amp; Lưu Ý Khi Mở</h2>
+                    <!-- Yêu Cầu Hệ Thống & Lưu Ý Khi Mở -->
+                    <section class="tools-detail-section" style="margin-top: 36px;">
+                        <div class="section-title-bar">
+                            <h2 class="section-title-bar-heading" data-i18n-html="autoClicker.requirements.title">Yêu Cầu Hệ Thống &amp; Lưu Ý Khi Mở</h2>
+                            <span class="section-title-bar-line" aria-hidden="true"></span>
+                        </div>
                         <div class="app-table-wrapper" style="max-width: 680px;">
                             <table class="app-table">
                                 <thead>
@@ -387,7 +476,7 @@
                                     </tr>
                                     <tr>
                                         <td data-i18n-html="autoClicker.requirements.diskLabel"><strong>Dung lượng đĩa</strong></td>
-                                        <td data-i18n="autoClicker.requirements.diskVal">Chỉ ~330 KB (1 file thực thi duy nhất, không cần cài đặt)</td>
+                                        <td data-i18n="autoClicker.requirements.diskVal">Chỉ ~660 KB (1 file thực thi duy nhất, không cần cài đặt)</td>
                                     </tr>
                                     <tr>
                                         <td data-i18n-html="autoClicker.requirements.permLabel"><strong>Quyền hạn</strong></td>

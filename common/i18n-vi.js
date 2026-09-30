@@ -137,7 +137,8 @@
             description: 'Mô Tả',
             guide: 'Hướng Dẫn Sử Dụng',
             limits: 'Cơ Chế & Giới Hạn',
-            requirements: 'Yêu Cầu Hệ Thống'
+            requirements: 'Yêu Cầu Hệ Thống',
+            limitsAndRequirements: 'Giới Hạn & Yêu Cầu'
         },
         welcome: {
             home: {

@@ -35,7 +35,7 @@ body {
 .products-summary {
     margin: 0;
     line-height: 1.7;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 /* ==========================================================================
@@ -50,6 +50,11 @@ body {
     padding: 10px 0;
     margin-bottom: 24px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="light"] .products-switch-container,
+.light-theme .products-switch-container {
+    box-shadow: 0 4px 12px var(--bg-100);
 }
 
 /* ==========================================================================
@@ -268,7 +273,7 @@ body {
 .product-card-desc {
     font-size: var(--font-sm);
     line-height: 1.45;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     margin: 4px 0 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;

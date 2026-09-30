@@ -110,7 +110,7 @@ body {
 .tools-panel-summary {
     margin: 0;
     line-height: 1.7;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 .tools-panel-list {
@@ -119,7 +119,7 @@ body {
     display: grid;
     gap: 10px;
     line-height: 1.65;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 /* ==========================================================================
@@ -188,12 +188,12 @@ body {
     padding: 4px 10px;
     margin-left: 6px;
     border-radius: var(--border-radius-full);
-    background: var(--bg-overlay);
+    background: var(--bg-primary);
     border: 1px solid var(--border-color);
     font-size: var(--font-xs);
     font-weight: 700;
     letter-spacing: 0.02em;
-    color: var(--text-on-accent);
+    color: var(--text-primary);
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -201,10 +201,12 @@ body {
 .tools-download-badge .product-download-count {
     font-variant-numeric: tabular-nums;
     font-weight: 800;
+    color: var(--text-primary);
 }
 
 .tools-download-badge-label {
     white-space: nowrap;
+    color: var(--text-primary);
 }
 
 /* ==========================================================================
@@ -306,7 +308,7 @@ body {
 .app-table td {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     line-height: 1.5;
 }
 
@@ -377,7 +379,7 @@ body {
 .app-step-desc {
     margin: 0;
     font-size: var(--font-md);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     line-height: 1.6;
 }
 
@@ -411,7 +413,7 @@ body {
 .app-tip-desc {
     margin: 0;
     font-size: var(--font-md);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     line-height: 1.6;
 }
 
@@ -466,7 +468,7 @@ body {
 .app-notice-desc {
     margin: 0;
     font-size: var(--font-sm);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     line-height: 1.55;
 }
 
@@ -494,7 +496,7 @@ body {
 .app-privacy-text {
     margin: 0;
     font-size: var(--font-sm);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     line-height: 1.5;
 }
 
@@ -566,7 +568,7 @@ body {
 .tools-detail-text {
     margin: 0;
     line-height: 1.7;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 .tools-panel-summary,

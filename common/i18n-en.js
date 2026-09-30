@@ -137,7 +137,8 @@
             description: 'Description',
             guide: 'User Guide',
             limits: 'Mechanisms & Limits',
-            requirements: 'System Requirements'
+            requirements: 'System Requirements',
+            limitsAndRequirements: 'Limits & Requirements'
         },
         welcome: {
             home: {

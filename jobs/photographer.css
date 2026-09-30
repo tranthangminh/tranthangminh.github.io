@@ -28,7 +28,7 @@ body {
 .photographer-summary {
     margin: 0;
     line-height: 1.7;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 .photographer-meta {

@@ -376,7 +376,7 @@ a.intro-flow-item:hover .intro-flow-title {
 .intro-flow-desc {
     margin: 0;
     font-size: var(--font-xs);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     line-height: 1.4;
 }
 
@@ -483,7 +483,7 @@ a.skill-capsule-card:hover {
 
 .intro-featured-desc {
     font-size: var(--font-xs);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     line-height: 1.45;
 }
 
@@ -1028,7 +1028,7 @@ a.skill-capsule-card:hover {
 
 .actor-summary {
     line-height: 1.65;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 .actor-grid {

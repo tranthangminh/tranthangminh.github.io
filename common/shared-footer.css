@@ -176,9 +176,14 @@ body.actor-page-view .contact-page {
     font-size: 18px;
 }
 
+.social-more:not([open]) .social-more-list {
+    display: none;
+}
+
 .social-more-list {
     position: absolute;
-    left: 0;
+    left: auto;
+    right: 0;
     bottom: calc(100% + 10px);
     display: flex;
     align-items: center;
