@@ -13,7 +13,7 @@ namespace ModernAutoClicker
         private static string _version = null;
 
         /// <summary>
-        /// Gets the application version formatted as "Major.Minor" (e.g. "1.1").
+        /// Gets the application version formatted dynamically as "Major.Minor" or "Major.Minor.Build" (e.g. "1.1" or "1.1.1").
         /// Automatically extracted from AssemblyVersion in Properties/AssemblyInfo.cs.
         /// </summary>
         public static string Version
@@ -27,7 +27,18 @@ namespace ModernAutoClicker
                         Version v = Assembly.GetExecutingAssembly().GetName().Version;
                         if (v != null)
                         {
-                            _version = string.Format("{0}.{1}", v.Major, v.Minor);
+                            if (v.Revision > 0)
+                            {
+                                _version = string.Format("{0}.{1}.{2}.{3}", v.Major, v.Minor, v.Build, v.Revision);
+                            }
+                            else if (v.Build > 0)
+                            {
+                                _version = string.Format("{0}.{1}.{2}", v.Major, v.Minor, v.Build);
+                            }
+                            else
+                            {
+                                _version = string.Format("{0}.{1}", v.Major, v.Minor);
+                            }
                         }
                     }
                     catch { }

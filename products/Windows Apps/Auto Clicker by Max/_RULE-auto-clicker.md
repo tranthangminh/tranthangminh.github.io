@@ -18,13 +18,23 @@
 
 ## 1.3 Quản Lý Phiên Bản & Tiêu Đề Duy Nhất (Single Source of Truth)
 - **Tập trung hóa tuyệt đối:** Toàn bộ tiêu đề cửa sổ, tab thông tin (`InfoTab`), thanh tiêu đề tùy chỉnh (`CustomTitleBar`) và cơ chế phát hiện instance chạy ngầm (`Program.cs`) **bắt buộc phải gọi qua `AppInfo.Title` hoặc `AppInfo.Version`** (`Core_AppInfo.cs`).
+- **Định dạng phiên bản động (Dynamic Versioning):** Hàm `AppInfo.Version` tự động format dạng `Major.Minor` (nếu Build = 0, ví dụ `1.1`) hoặc `Major.Minor.Build` (nếu Build > 0, ví dụ `1.1.1`), triệt tiêu hoàn toàn lỗi app tự nhận sai số version khi nâng cấp.
 - **Cấm hardcode chuỗi phiên bản:** Tuyệt đối không gán cứng các chuỗi dạng `"Auto Clicker by Max vX.X"` vào các file giao diện.
 - **Nâng cấp phiên bản nhanh gọn:** Khi bump version ứng dụng, **chỉ sửa duy nhất tại `Properties/AssemblyInfo.cs`** (và `app.manifest`). Toàn bộ mã nguồn sẽ tự động phản ánh phiên bản mới 100%.
 
 ## 1.4 Kỷ Luật Kết Nối Mạng & Tự Động Cập Nhật (Network & Update Integrity)
 - **Kích hoạt TLS 1.2:** Vì .NET Framework 4.0 mặc định dùng SSL 3.0 / TLS 1.0 (bị GitHub Pages từ chối kết nối), mọi tác vụ tải web HTTPS **bắt buộc phải kích hoạt TLS 1.2** bằng `ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072;`.
+- **Cơ chế bóc tách phiên bản từ xa (Remote Version Parsing):**
+  - App tải trực tiếp mã nguồn HTML từ trang web sản phẩm: `https://tranthangminh.github.io/products/auto-clicker.html`.
+  - **Ưu tiên số 1 (Single Source of Truth):** Quét thẻ `<meta name="app-latest-version" content="(?<v>[\d\.]+)"]>` bằng Regex trên toàn bộ tài liệu HTML. **KHÔNG phụ thuộc vào số dòng cố định** (thẻ meta có thể nằm ở bất kỳ dòng nào trong thẻ `<head>`).
+  - **Ưu tiên số 2 (Fallback dự phòng):** Quét chuỗi tiêu đề `Auto Clicker by Max v(?<v>[\d\.]+)`.
+  - So sánh logic qua `NormalizeVersion`: So sánh trực tiếp giữa `remote > local` trong `System.Version` (ví dụ `1.1.1 > 1.1` $\rightarrow$ `HasUpdate = true`).
+- **Quy trình 3 bước chuẩn khi phát hành phiên bản mới:**
+  1. *Phía App C#:* Cập nhật version trong `Properties/AssemblyInfo.cs` (ví dụ `1.1.1.0`), chạy `build.bat` để biên dịch file `.exe` mới (tự động copy vào `products/Windows Apps/Auto Clicker by Max.exe`).
+  2. *Phía Website:* Cập nhật số phiên bản mới vào thuộc tính `content` của thẻ `<meta name="app-latest-version" content="...">` trong file `products/auto-clicker.html`.
+  3. *Phía Song ngữ & SEO:* Đồng bộ `title` trong `products/auto-clicker-i18n.js` và bump cache version `?v=...` trên HTML.
 - **Hoàn toàn bất đồng bộ (Zero UI Freeze):** Kiểm tra cập nhật phải chạy 100% trên Background Thread (`ThreadPool.QueueUserWorkItem`), không bao giờ làm trễ chu kỳ khởi động của Form.
-- **Giới hạn tần suất kiểm tra ngầm:** Silent check lúc mở app chỉ được phép gọi tối đa 1 lần / 24 giờ (`LastUpdateCheckDate`), tránh spam request lên trang web máy chủ.
+- **Giới hạn tần suất kiểm tra ngầm:** Silent check lúc mở app chỉ được phép gọi tối đa 1 lần / 24 giờ (`LastUpdateCheckDate`), tránh spam request lên trang web máy chủ. Kiểm tra thủ công (`isManual = true`) thì luôn thực thi ngay lập tức.
 
 ---
 

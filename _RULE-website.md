@@ -535,7 +535,22 @@ window.sharedSpotlight.init({
   - **Đặc tính CSS bắt buộc:** `flex-shrink: 0; border-radius: var(--border-radius-sm); object-fit: contain; vertical-align: middle;`.
   - **Bảo vệ Đa Ngôn Ngữ (i18n):** Chữ tên sản phẩm BẮT BUỘC phải được bọc trong `<span data-i18n="[appId].title">` (như đã quy định tại Mục 6), TUYỆT ĐỐI KHÔNG đặt `data-i18n` lên thẻ `<h1>` để tránh script ghi đè làm xóa sổ thẻ icon `<img>`.
 
-### 3. Vị Trí & Cấu Trúc Nút Kêu Gọi Hành Động (CTA Download Button & Centered Head)
+### 3. Quy Chuẩn Thẻ Meta Phiên Bản Ứng Dụng (`app-latest-version`) & Check Update Từ Xa
+- **Thẻ Meta Bắt Buộc Trong `<head>`:**
+  - Mọi trang chi tiết sản phẩm thuộc danh mục phần mềm tải về (`Windows Apps/`, `Plugins/`...) BẮT BUỘC phải khai báo thẻ meta này trong thẻ `<head>` (đặt ngay sau thẻ `canonical`):
+    ```html
+    <meta name="app-latest-version" content="1.1">
+    ```
+- **Mục Đích & Kiến Trúc Tách Biệt:**
+  - Thẻ này là **Single Source of Truth** máy đọc (Machine-readable) phục vụ cơ chế tự động kiểm tra phiên bản mới từ xa (Remote Update Checker) của ứng dụng client.
+  - **TUYỆT ĐỐI KHÔNG** phụ thuộc vào việc bóc tách chuỗi ở thẻ `<title>` hay `<h1>`. Tiêu đề sinh ra cho con người và SEO, rất dễ bị thay đổi copywriting, thêm bớt từ khóa marketing hoặc bị gãy regex do script chuyển ngữ đa ngôn ngữ (i18n).
+  - Client (.exe) tải trực tiếp mã nguồn HTML thô của trang chi tiết qua giao thức HTTPS (TLS 1.2), dùng regex quét thuộc tính `content` của `<meta name="app-latest-version">` để so sánh với version nội bộ (`NormalizeVersion`).
+- **Quy Trình Chuẩn Khi Phát Hành Phiên Bản Mới:**
+  1. *Phía C# App:* Khai báo version mới trong `Properties/AssemblyInfo.cs` (ví dụ `1.1.1.0`), sau đó chạy `build.bat` để biên dịch binary `.exe` mới.
+  2. *Phía Website:* Cập nhật số phiên bản mới vào thuộc tính `content` của thẻ `<meta name="app-latest-version" content="...">` trong file HTML.
+  3. *Phía Song Ngữ:* Cập nhật tiêu đề hiển thị trong `[name]-i18n.js` (cả khối `vi` và `en`) đồng bộ theo phiên bản mới.
+
+### 4. Vị Trí & Cấu Trúc Nút Kêu Gọi Hành Động (CTA Download Button & Centered Head)
 - **Bố cục Header Card 3 hàng căn giữa (`.tools-panel-head--centered`):**
   - **Hàng 1:** Tiêu đề sản phẩm `.tools-panel-title` kèm icon app (căn giữa hoàn toàn).
   - **Hàng 2:** Dải thẻ thông tin `.app-meta-pills` (căn giữa hoàn toàn).
@@ -549,7 +564,7 @@ window.sharedSpotlight.init({
     - **Tầng dưới:** Hiển thị chữ (`.tools-download-badge-label` mang `white-space: nowrap;`). Tuyệt đối KHÔNG để số một bên rồi chữ "lượt" và chữ "tải" bị bẻ thành 2 dòng riêng biệt làm méo mó thẻ.
 - Luôn tích hợp bộ đếm lượt tải (`.product-download-count`) đồng bộ qua `common/shared-download-counter.js`.
 
-### 4. Quy Chuẩn 3 Tab Tiêu Chuẩn Cho Phần Mềm (Product Detail Tabs Standard)
+### 5. Quy Chuẩn 3 Tab Tiêu Chuẩn Cho Phần Mềm (Product Detail Tabs Standard)
 Đối với các trang chi tiết ứng dụng/phần mềm Windows có nội dung phong phú, chuẩn hóa bố cục tinh gọn thành **3 Tab độc lập** sử dụng Segmented Tabs (`data-active-tab="description"` làm mặc định):
 
 1. **Tab 1: Mô Tả (`description` - Icon `svg/info.svg`):**
@@ -581,7 +596,7 @@ window.sharedSpotlight.init({
     ```
   - Đảm bảo khi người dùng cuộn xem các tab dài (hướng dẫn, mô tả...), dải chuyển tab luôn dính ngay dưới Header và không bị che khuất nội dung hay làm trôi vị trí điều hướng.
 
-### 5. Quy Chuẩn Thẻ Lưới Thống Nhất (Unified Grid Cards Standard)
+### 6. Quy Chuẩn Thẻ Lưới Thống Nhất (Unified Grid Cards Standard)
 Nhằm tạo nên diện mạo trực quan, chuyên nghiệp, cân đối và nhất quán cho mọi trang chi tiết sản phẩm:
 - **Bảng tra cứu thông số / Thông số kỹ thuật (Spec Grid):**
   - Bố cục lưới 2 hàng x 3 cột (`grid-template-columns: repeat(3, 1fr);`) trên Desktop hoặc 3 hàng x 2 cột trên Tablet. Tự động chuyển về 1 cột trên Mobile.
@@ -609,7 +624,7 @@ Nhằm tạo nên diện mạo trực quan, chuyên nghiệp, cân đối và nh
     ```
 - **Quy chuẩn Font Size Text Thống Nhất:** Văn bản mô tả trong các thẻ, danh sách, và bảng giữ ở mức chuẩn `13px - 14px`, tuyệt đối không dùng font quá cỡ gây mất cân đối giao diện.
 
-### 6. Quy Chuẩn Chống Tràn Màn Hình Mobile Tuyệt Đối (Mobile Zero-Overflow Standard)
+### 7. Quy Chuẩn Chống Tràn Màn Hình Mobile Tuyệt Đối (Mobile Zero-Overflow Standard)
 - **Container Khóa Cứng Độ Rộng:** Khung `.tools-panels` và các tab pane `.tools-panel` BẮT BUỘC phải nhận:
   ```css
   min-width: 0 !important;
@@ -623,7 +638,7 @@ Nhằm tạo nên diện mạo trực quan, chuyên nghiệp, cân đối và nh
 - **Cuộn Ngang Cho Bảng Dữ Liệu Lớn (`.app-table`):**
   - Bắt buộc bọc bảng trong một wrapper có `overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%;` để người dùng có thể vuốt ngang xem hết các cột dữ liệu mà không làm kéo giãn toàn trang.
 
-### 7. Quy Chuẩn Đa Ngôn Ngữ (i18n) Cho Trang Chi Tiết Sản Phẩm
+### 8. Quy Chuẩn Đa Ngôn Ngữ (i18n) Cho Trang Chi Tiết Sản Phẩm
 - **Thanh tab điều hướng danh mục:** Các nút tab điều hướng dùng nhãn khung chung `data-i18n="productTabs.[tabId]"` (được khai báo trong `common/i18n-*.js`):
   ```html
   <button class="segmented-tabs-btn" type="button" data-tab="description">
