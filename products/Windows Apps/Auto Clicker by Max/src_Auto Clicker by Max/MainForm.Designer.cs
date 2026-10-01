@@ -335,6 +335,7 @@ namespace ModernAutoClicker
                 SaveSettings();
                 UpdateStartButtonState();
                 if (!_isLoadingProfile) UpdateTabStatus(_isBasicTab);
+                UpdateSimpleTabButtons();
             };
             lstPoints.OnSelectionChanged += (idx) => SyncOverlay();
             lstPoints.OnPickCoordinateRequested += (idx) => PickCoordinateForSimple(idx);

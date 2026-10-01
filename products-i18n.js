@@ -84,6 +84,21 @@
             diceRoller: {
                 title: 'Dice Roller 3D',
                 aria: 'Lượt truy cập Dice Roller 3D'
+            },
+            tiermaker: {
+                title: 'TierMaker'
+            },
+            grainrad: {
+                title: 'Glitch Art Generator'
+            },
+            spriteFusionDestroy: {
+                title: 'Destroy Any Website'
+            },
+            bookOfShapes: {
+                title: 'Book of Shapes'
+            },
+            depthOfField: {
+                title: 'Depth of Field Simulator'
             }
         }
     };
@@ -167,6 +182,21 @@
             diceRoller: {
                 title: 'Dice Roller 3D',
                 aria: 'Dice Roller 3D visits'
+            },
+            tiermaker: {
+                title: 'TierMaker'
+            },
+            grainrad: {
+                title: 'Glitch Art Generator'
+            },
+            spriteFusionDestroy: {
+                title: 'Destroy Any Website'
+            },
+            bookOfShapes: {
+                title: 'Book of Shapes'
+            },
+            depthOfField: {
+                title: 'Depth of Field Simulator'
             }
         }
     };

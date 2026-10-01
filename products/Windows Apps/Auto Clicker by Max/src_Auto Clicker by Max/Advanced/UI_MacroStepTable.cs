@@ -190,7 +190,7 @@ namespace ModernAutoClicker.Advanced
             });
             pnlHeader.Controls.Add(_lblColRep); x += 30 + colGap;
 
-            _lblColDel = CreateColLabel(Loc.ColDel, x, 26, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
+            _lblColDel = CreateColLabel(Loc.ColDel, x, 34, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 if (targets == null || targets.Count == 0) return;
@@ -205,7 +205,7 @@ namespace ModernAutoClicker.Advanced
                     BatchDeleteRows(targets);
                 }
             });
-            pnlHeader.Controls.Add(_lblColDel); x += 26 + colGap;
+            pnlHeader.Controls.Add(_lblColDel); x += 34 + colGap;
 
             _lblColNote = CreateColLabel(Loc.ColNote, x, 72, true, MacroDescriptions.GetHeaderDescription("Note"), () =>
             {
@@ -1171,6 +1171,16 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
+        public void UpdateStepPointOnly(int stepIndex, bool isStart, Point newPt)
+        {
+            if (stepIndex >= 0 && stepIndex < _rows.Count)
+            {
+                if (isStart) _rows[stepIndex].Step.StartPoint = newPt;
+                else _rows[stepIndex].Step.EndPoint = newPt;
+                _rows[stepIndex].UpdateCoordinatesOnly();
+            }
+        }
+
         public void UpdateStepArea(int stepIndex, Point startPt, Point endPt)
         {
             if (stepIndex >= 0 && stepIndex < _rows.Count)
@@ -1178,6 +1188,16 @@ namespace ModernAutoClicker.Advanced
                 _rows[stepIndex].Step.StartPoint = startPt;
                 _rows[stepIndex].Step.EndPoint = endPt;
                 _rows[stepIndex].RefreshDisplay();
+            }
+        }
+
+        public void UpdateStepAreaOnly(int stepIndex, Point startPt, Point endPt)
+        {
+            if (stepIndex >= 0 && stepIndex < _rows.Count)
+            {
+                _rows[stepIndex].Step.StartPoint = startPt;
+                _rows[stepIndex].Step.EndPoint = endPt;
+                _rows[stepIndex].UpdateCoordinatesOnly();
             }
         }
 

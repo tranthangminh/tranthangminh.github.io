@@ -780,6 +780,17 @@ namespace ModernAutoClicker.Advanced
                     else if (idx == cboIfTrue.Items.Count - 1) _step.IfTrueStep = -1;
                     else if (idx >= 3) _step.IfTrueStep = idx - 2;
 
+                    if (_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea)
+                    {
+                        bool isClickTarget = (_step.IfTrueStep == -2);
+                        if (isClickTarget && _step.HoldMs <= 0) _step.HoldMs = 10;
+                        if (numHold != null)
+                        {
+                            numHold.Value = Math.Max(1, _step.HoldMs);
+                            numHold.Visible = isClickTarget;
+                        }
+                    }
+
                     if (OnStepChanged != null) OnStepChanged();
                 }
             };
@@ -869,11 +880,11 @@ namespace ModernAutoClicker.Advanced
             };
             x += 30 + colGap;
 
-            // 9. Delete Button "✕" (Width = 26px, centered 24px: x + 1)
+            // 9. Delete Button "✕" (Width = 34px, centered 24px: x + 5)
             btnDelete = new Label
             {
                 Text = "✕",
-                Location = new Point(x + 1, 5),
+                Location = new Point(x + 5, 5),
                 Size = new Size(24, 24),
                 Font = ThemeTokens.FontButton(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -886,7 +897,7 @@ namespace ModernAutoClicker.Advanced
             {
                 if (OnDeleteRequested != null) OnDeleteRequested(this);
             };
-            x += 26 + colGap;
+            x += 34 + colGap;
 
             // 10. Note / Ghi chú TextBox (Placed after Del, starts at x = 505)
             txtNote = new ModernTextBox
@@ -1408,6 +1419,24 @@ namespace ModernAutoClicker.Advanced
             this.Invalidate();
         }
 
+        public void UpdateCoordinatesOnly()
+        {
+            if (lblCoord != null)
+            {
+                bool compact = (_step.ActionType == MacroActionType.IfColor ||
+                                _step.ActionType == MacroActionType.IfColorArea ||
+                                _step.ActionType == MacroActionType.WaitColor ||
+                                _step.ActionType == MacroActionType.WaitImage ||
+                                _step.ActionType == MacroActionType.IfImage);
+                string text = GetCoordDisplayText(compact);
+                if (lblCoord.Text != text)
+                {
+                    lblCoord.Text = text;
+                    lblCoord.Invalidate();
+                }
+            }
+        }
+
         private string GetCoordDisplayText(bool compactForColorSwatch = false)
         {
             if (_step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage)
@@ -1676,9 +1705,15 @@ namespace ModernAutoClicker.Advanced
 
                 numScroll.Visible = false;
                 txtKeyData.Visible = false;
-                numHold.Visible = false;
+                bool isClickTarget = (_step.IfTrueStep == -2);
+                if (isClickTarget && _step.HoldMs <= 0) _step.HoldMs = 10;
+                if (numHold != null)
+                {
+                    numHold.Value = Math.Max(1, _step.HoldMs);
+                    numHold.Visible = isClickTarget;
+                }
                 numDelay.Visible = true;
-                numRepeat.Visible = false;
+                numRepeat.Visible = true;
 
                 if (lblIfMatch != null) lblIfMatch.Visible = true;
                 if (cboIfTrue != null) cboIfTrue.Visible = true;
@@ -1797,7 +1832,7 @@ namespace ModernAutoClicker.Advanced
 
                 numDelay.Visible = true;
 
-                numRepeat.Visible = false;
+                numRepeat.Visible = true;
                 numTimeout.Visible = false;
 
                 if (lblIfMatch != null) lblIfMatch.Visible = true;

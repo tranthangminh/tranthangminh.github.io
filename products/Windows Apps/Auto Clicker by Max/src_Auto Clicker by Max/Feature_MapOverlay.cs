@@ -137,6 +137,12 @@ namespace ModernAutoClicker
             }
             if (m.Msg == WM_NCHITTEST)
             {
+                if (_isDragging)
+                {
+                    m.Result = (IntPtr)HTCLIENT;
+                    return;
+                }
+
                 int x = (short)(m.LParam.ToInt32() & 0xFFFF);
                 int y = (short)((m.LParam.ToInt32() >> 16) & 0xFFFF);
                 Point clientPt = this.PointToClient(new Point(x, y));
@@ -272,6 +278,7 @@ namespace ModernAutoClicker
                 if (hitIdx != -1)
                 {
                     _isDragging = true;
+                    this.Capture = true;
                     _draggedPointIndex = hitIdx;
                     _draggedIsStartPoint = isStart;
                     _selectedIndex = hitIdx;
@@ -300,6 +307,7 @@ namespace ModernAutoClicker
                     _dragOffset = new Point(e.X - targetPt.X, e.Y - targetPt.Y);
                     this.Cursor = Cursors.SizeAll;
                     this.Invalidate();
+                    this.Update();
 
                     if (OnPointSelected != null)
                     {
@@ -327,6 +335,7 @@ namespace ModernAutoClicker
                         s.EndPoint = new Point(newPt.X + _dragAreaOffset.X, newPt.Y + _dragAreaOffset.Y);
 
                         this.Invalidate();
+                        this.Update();
                         if (OnAdvancedAreaMoved != null)
                         {
                             OnAdvancedAreaMoved(_draggedPointIndex, s.StartPoint, s.EndPoint);
@@ -338,6 +347,7 @@ namespace ModernAutoClicker
                         else s.EndPoint = newPt;
 
                         this.Invalidate();
+                        this.Update();
                         if (OnAdvancedPointMoved != null)
                         {
                             OnAdvancedPointMoved(_draggedPointIndex, _draggedIsStartPoint, newPt);
@@ -348,6 +358,7 @@ namespace ModernAutoClicker
                 {
                     _points[_draggedPointIndex] = newPt;
                     this.Invalidate();
+                    this.Update();
                     if (OnPointMoved != null)
                     {
                         OnPointMoved(_draggedPointIndex, newPt);
@@ -369,6 +380,7 @@ namespace ModernAutoClicker
             {
                 _isDragging = false;
                 _draggedPointIndex = -1;
+                this.Capture = false;
                 this.Cursor = Cursors.Default;
 
                 if (OnPointMoveFinished != null)

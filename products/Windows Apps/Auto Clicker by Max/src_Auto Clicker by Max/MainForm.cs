@@ -82,6 +82,7 @@ namespace ModernAutoClicker
         private List<Point> pointList { get { return lstPoints != null ? lstPoints.GetPoints() : new List<Point>(); } }
         private OverlayForm overlayForm;
         private int _mapOverlayOpacity = 60;
+        private bool _isOverlayDragDispatching = false;
 
         private const int WM_ACTIVATE = 0x0006;
         private const int WM_ACTIVATEAPP = 0x001C;
@@ -1008,35 +1009,43 @@ namespace ModernAutoClicker
             {
                 if (this.IsHandleCreated)
                 {
+                    if (_isOverlayDragDispatching) return;
+                    _isOverlayDragDispatching = true;
                     this.BeginInvoke((Action)(() =>
                     {
-                        if (pnlTabAdvanced != null && pnlTabAdvanced.Table != null)
+                        try
                         {
-                            Point savePt = newPt;
-                            var steps = pnlTabAdvanced.Table.GetSteps();
-                            if (steps != null && stepIdx >= 0 && stepIdx < steps.Count)
+                            if (pnlTabAdvanced != null && pnlTabAdvanced.Table != null)
                             {
-                                var s = steps[stepIdx];
-                                if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
+                                Point savePt = newPt;
+                                var steps = pnlTabAdvanced.Table.GetSteps();
+                                if (steps != null && stepIdx >= 0 && stepIdx < steps.Count)
                                 {
-                                    IntPtr hWnd = s.WindowHwnd;
-                                    if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
+                                    var s = steps[stepIdx];
+                                    if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
                                     {
-                                        hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
-                                        if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
-                                    }
-                                    if (hWnd != IntPtr.Zero)
-                                    {
-                                        NativeMethods.POINT np = new NativeMethods.POINT { X = newPt.X, Y = newPt.Y };
-                                        if (NativeMethods.ScreenToClient(hWnd, ref np))
+                                        IntPtr hWnd = s.WindowHwnd;
+                                        if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
                                         {
-                                            savePt = new Point(np.X, np.Y);
+                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                            if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
+                                        }
+                                        if (hWnd != IntPtr.Zero)
+                                        {
+                                            NativeMethods.POINT np = new NativeMethods.POINT { X = newPt.X, Y = newPt.Y };
+                                            if (NativeMethods.ScreenToClient(hWnd, ref np))
+                                            {
+                                                savePt = new Point(np.X, np.Y);
+                                            }
                                         }
                                     }
                                 }
+                                pnlTabAdvanced.Table.UpdateStepPointOnly(stepIdx, isStart, savePt);
                             }
-                            pnlTabAdvanced.Table.UpdateStepPoint(stepIdx, isStart, savePt);
-                            pnlTabAdvanced.UpdateStatus();
+                        }
+                        finally
+                        {
+                            _isOverlayDragDispatching = false;
                         }
                     }));
                 }
@@ -1046,38 +1055,46 @@ namespace ModernAutoClicker
             {
                 if (this.IsHandleCreated)
                 {
+                    if (_isOverlayDragDispatching) return;
+                    _isOverlayDragDispatching = true;
                     this.BeginInvoke((Action)(() =>
                     {
-                        if (pnlTabAdvanced != null && pnlTabAdvanced.Table != null)
+                        try
                         {
-                            Point saveStartPt = startPt;
-                            Point saveEndPt = endPt;
-                            var steps = pnlTabAdvanced.Table.GetSteps();
-                            if (steps != null && stepIdx >= 0 && stepIdx < steps.Count)
+                            if (pnlTabAdvanced != null && pnlTabAdvanced.Table != null)
                             {
-                                var s = steps[stepIdx];
-                                if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
+                                Point saveStartPt = startPt;
+                                Point saveEndPt = endPt;
+                                var steps = pnlTabAdvanced.Table.GetSteps();
+                                if (steps != null && stepIdx >= 0 && stepIdx < steps.Count)
                                 {
-                                    IntPtr hWnd = s.WindowHwnd;
-                                    if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
+                                    var s = steps[stepIdx];
+                                    if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
                                     {
-                                        hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
-                                        if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
-                                    }
-                                    if (hWnd != IntPtr.Zero)
-                                    {
-                                        NativeMethods.POINT npA = new NativeMethods.POINT { X = startPt.X, Y = startPt.Y };
-                                        NativeMethods.POINT npB = new NativeMethods.POINT { X = endPt.X, Y = endPt.Y };
-                                        if (NativeMethods.ScreenToClient(hWnd, ref npA) && NativeMethods.ScreenToClient(hWnd, ref npB))
+                                        IntPtr hWnd = s.WindowHwnd;
+                                        if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
                                         {
-                                            saveStartPt = new Point(npA.X, npA.Y);
-                                            saveEndPt = new Point(npB.X, npB.Y);
+                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                            if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
+                                        }
+                                        if (hWnd != IntPtr.Zero)
+                                        {
+                                            NativeMethods.POINT npA = new NativeMethods.POINT { X = startPt.X, Y = startPt.Y };
+                                            NativeMethods.POINT npB = new NativeMethods.POINT { X = endPt.X, Y = endPt.Y };
+                                            if (NativeMethods.ScreenToClient(hWnd, ref npA) && NativeMethods.ScreenToClient(hWnd, ref npB))
+                                            {
+                                                saveStartPt = new Point(npA.X, npA.Y);
+                                                saveEndPt = new Point(npB.X, npB.Y);
+                                            }
                                         }
                                     }
                                 }
+                                pnlTabAdvanced.Table.UpdateStepAreaOnly(stepIdx, saveStartPt, saveEndPt);
                             }
-                            pnlTabAdvanced.Table.UpdateStepArea(stepIdx, saveStartPt, saveEndPt);
-                            pnlTabAdvanced.UpdateStatus();
+                        }
+                        finally
+                        {
+                            _isOverlayDragDispatching = false;
                         }
                     }));
                 }
@@ -1089,6 +1106,10 @@ namespace ModernAutoClicker
                 {
                     this.BeginInvoke((Action)(() =>
                     {
+                        if (pnlTabAdvanced != null)
+                        {
+                            pnlTabAdvanced.UpdateStatus();
+                        }
                         SyncOverlay();
                     }));
                 }
@@ -2056,12 +2077,24 @@ namespace ModernAutoClicker
         private void UpdateSimpleTabButtons()
         {
             ThemeTokens t = currentTheme ?? ThemeTokens.DarkTheme();
+            AppSettings config = AppSettings.Load();
             for (int i = 0; i < 5; i++)
             {
                 if (btnSimpleTabs[i] == null) continue;
 
                 bool isRunning = _simpleEngines != null && _simpleEngines[i] != null && _simpleEngines[i].IsRunning;
                 bool isSelected = (i == _simpleTabIndex);
+
+                bool hasSteps = false;
+                if (i == _simpleTabIndex)
+                {
+                    hasSteps = (lstPoints != null && lstPoints.Count > 0);
+                }
+                else
+                {
+                    var prof = (config != null) ? config.GetProfile(i) : null;
+                    hasSteps = (prof != null && prof.Points != null && prof.Points.Count > 0);
+                }
 
                 string numStr = (i + 1).ToString();
                 btnSimpleTabs[i].Text = numStr;
@@ -2070,6 +2103,11 @@ namespace ModernAutoClicker
                 {
                     btnSimpleTabs[i].BorderWidth = 2;
                     btnSimpleTabs[i].BorderColor = t.Success;
+                }
+                else if (hasSteps)
+                {
+                    btnSimpleTabs[i].BorderWidth = 2;
+                    btnSimpleTabs[i].BorderColor = t.CBlue;
                 }
                 else
                 {
@@ -2086,8 +2124,8 @@ namespace ModernAutoClicker
                 else
                 {
                     btnSimpleTabs[i].NormalColor = t.BgElevated;
-                    btnSimpleTabs[i].HoverColor = isRunning ? Color.FromArgb(180, t.Success) : t.AccentPrimary;
-                    btnSimpleTabs[i].ForeColor = isRunning ? t.Success : t.TextSecondary;
+                    btnSimpleTabs[i].HoverColor = isRunning ? Color.FromArgb(180, t.Success) : (hasSteps ? Color.FromArgb(180, t.CBlue) : t.AccentPrimary);
+                    btnSimpleTabs[i].ForeColor = isRunning ? t.Success : (hasSteps ? t.CBlue : t.TextSecondary);
                 }
                 btnSimpleTabs[i].Invalidate();
             }

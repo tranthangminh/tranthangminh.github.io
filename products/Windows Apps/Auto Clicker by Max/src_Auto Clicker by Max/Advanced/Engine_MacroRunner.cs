@@ -410,7 +410,16 @@ namespace ModernAutoClicker.Advanced
                             }
                         }
 
-                        ActionExecutor.Execute(clickStep, freeMouseMode, randIntervalMs, randJitterPx);
+                        int clickReps = Math.Max(1, step.RepeatCount);
+                        for (int cr = 0; cr < clickReps; cr++)
+                        {
+                            if (!_isRunning) break;
+                            ActionExecutor.Execute(clickStep, freeMouseMode, randIntervalMs, randJitterPx);
+                            if (cr < clickReps - 1 && step.DelayMs > 0)
+                            {
+                                Thread.Sleep(ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs));
+                            }
+                        }
                     }
 
                     targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;
@@ -558,7 +567,16 @@ namespace ModernAutoClicker.Advanced
                             clickStep.StartPoint = foundCenter;
                         }
 
-                        ActionExecutor.Execute(clickStep, freeMouseMode, randIntervalMs, randJitterPx);
+                        int clickReps = Math.Max(1, step.RepeatCount);
+                        for (int cr = 0; cr < clickReps; cr++)
+                        {
+                            if (!_isRunning) break;
+                            ActionExecutor.Execute(clickStep, freeMouseMode, randIntervalMs, randJitterPx);
+                            if (cr < clickReps - 1 && step.DelayMs > 0)
+                            {
+                                Thread.Sleep(ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs));
+                            }
+                        }
                     }
 
                     targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;

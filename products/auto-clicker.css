@@ -208,7 +208,12 @@
 
 .app-actions-grid--asian {
     margin-top: 0;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.app-actions-grid--asian .app-action-card--break,
+.app-actions-grid--asian .app-action-card:nth-child(6) {
+    grid-column-start: 1;
 }
 
 @media (max-width: 960px) {
@@ -221,6 +226,10 @@
     }
     .app-actions-grid--asian {
         grid-template-columns: 1fr;
+    }
+    .app-actions-grid--asian .app-action-card--break,
+    .app-actions-grid--asian .app-action-card:nth-child(6) {
+        grid-column-start: auto;
     }
 }
 

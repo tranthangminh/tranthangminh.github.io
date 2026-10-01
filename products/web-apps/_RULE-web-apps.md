@@ -491,3 +491,58 @@ document.addEventListener('DOMContentLoaded', () => {
     renderApp();
 });
 ```
+
+---
+
+# PHẦN VI: QUY CHUẨN DÀNH CHO WEB APPS SƯU TẦM (CURATED EXTERNAL WEB TOOLS)
+
+## 1. Nguyên Tắc Phân Định Thứ Tự (Order Hierarchy)
+- **Web App Tự Làm (In-house):**
+  - Luôn chiếm các vị trí đầu tiên trong danh mục (Badge `01`, `02`, `03`...).
+  - Bắt buộc có file mã nguồn HTML/JS/CSS riêng, tuân thủ kiến trúc mô-đun hóa, độc lập và tích hợp hệ thống SSO / Cloud Sync.
+  - Thẻ phân loại (`product-card-tag`) cố định là `Web App` (sử dụng `data-i18n="productsCatalog.tags.webApp"`).
+- **Web App Sưu Tầm (Curated External):**
+  - Luôn nằm **SAU** toàn bộ các Web App do chính chủ phát triển (Badge `04`, `05`, `06`...).
+  - **Quy tắc tráo vị trí khi có app mới:** Khi tác giả phát triển thêm một Web App tự làm mới (ví dụ Web App số `04`), Web App mới này bắt buộc phải được chèn vào trước nhóm sưu tầm. Toàn bộ các Web App sưu tầm sẽ tự động dịch chuyển số Badge lùi về sau (`05`, `06`, `07`...).
+
+## 2. Kiến Trúc Lưu Trữ & Triệt Tiêu Mã Thừa (Zero Bloatware Architecture)
+- **Tuyệt đối KHÔNG tạo file code:** Không tạo các file `.html`, `.js`, `.css`, trang iframe hay trang redirect trung gian cho các web app sưu tầm. Việc mở web ngoài được thực hiện trực tiếp từ thẻ liên kết `<a>` trên trang danh mục (`products.html`).
+- **Thư mục tài nguyên ảnh riêng biệt:**
+  - Toàn bộ ảnh xem trước (Preview / Thumbnail / Share Image) của web app sưu tầm bắt buộc phải được lưu tập trung trong thư mục con:
+    ```text
+    products/web-apps/curated/
+    ├── [app-slug].png (hoặc .jpg / .svg)
+    ```
+  - Cấm lưu lẫn lộn ảnh của web sưu tầm ra thư mục gốc `products/web-apps/` để giữ gìn sự trong sạch của cây thư mục mã nguồn chính.
+
+## 3. Quy Chuẩn Thẻ Card & Tên Miền Rút Gọn
+- **Thuộc tính thẻ liên kết:** Thẻ bao ngoài `<a class="product-card" ...>` bắt buộc phải có thuộc tính `target="_blank" rel="noopener noreferrer"` để mở tab mới an toàn và không điều hướng rời khỏi portfolio.
+- **Tiêu đề (`product-card-title`):** Là tên thương hiệu hoặc tiêu đề chính thức của trang web đó (ví dụ: `TierMaker`, `Grainrad`, `Sprite Fusion: Destroy`...).
+- **Thẻ định danh tên miền (`product-card-tag`):**
+  - Phải là địa chỉ tên miền (Domain) trực tiếp của trang web đó.
+  - Bắt buộc lược bỏ giao thức (`https://`, `http://`) và dấu gạch chéo ở cuối (`/`).
+  - Ví dụ: `https://tiermaker.com/` ➔ `tiermaker.com`, `https://jherr.github.io/depth-of-field/` ➔ `jherr.github.io/depth-of-field`.
+  - Không gắn thuộc tính `data-i18n` lên `product-card-tag` này vì địa chỉ tên miền là định danh toàn cầu cố định.
+- **Ảnh xem trước (`product-card-media`):**
+  - Ưu tiên sử dụng chính ảnh Share Image (Open Graph `og:image` hoặc Twitter Card Image) chính chủ của tác giả trang web đó tải về máy.
+  - Tải về lưu local tại `products/web-apps/curated/` để đảm bảo tốc độ và tránh lỗi hotlink 403.
+- **Chân thẻ (`product-card-footer`):**
+  - Chỉ giữ lại biểu tượng mũi tên `.product-card-arrow` hướng sang phải.
+  - Không gắn các nút đếm số lượt truy cập nội bộ (`product-download-btn--web-app`) vì đây là liên kết ngoài, hệ thống đo lường không can thiệp vào máy chủ bên thứ ba.
+
+## 4. Quy Chuẩn Đăng Ký Từ Điển Song Ngữ (`products-i18n.js`)
+- Mọi Web App sưu tầm khi thêm vào thẻ card đều phải đăng ký khóa dịch trong `products-i18n.js` ở cả hai khối `vi` và `en` dưới nhóm `productsCatalog` (tối thiểu gồm trường `title`).
+
+## 5. Quy Chuẩn Bố Cục Lưới Danh Mục (Responsive Grid System trên `products.html`)
+- **Tỷ lệ khung hình cố định (Square 1:1):** Toàn bộ thẻ card thuộc nhóm Web Apps (cả app tự làm lẫn app sưu tầm) **BẮT BUỘC giữ nguyên tỷ lệ vuông 1:1** (`aspect-ratio: 1 / 1`) trên mọi kích thước màn hình.
+- **Phân bố số cột theo màn hình:**
+  - **PC / Desktop (> 1024px):** **4 Cột** (`grid-template-columns: repeat(4, minmax(0, 1fr))`, `gap: 16px`).
+  - **Tablet (769px – 1024px):** **3 Cột** (`grid-template-columns: repeat(3, minmax(0, 1fr))`, `gap: 14px`).
+  - **Mobile (≤ 768px):** **2 Cột** (`grid-template-columns: repeat(2, minmax(0, 1fr))`, `gap: 10px`), tương tự danh mục Sách nhưng **vẫn khóa cứng tỷ lệ vuông 1:1**.
+- **Quy tắc thích ứng Mobile tránh tràn thẻ (Mobile Micro-Typography):**
+  - Padding thân thẻ: Giảm còn `8px 10px`.
+  - Badge số: Giảm font size xuống `20px` (`width: 22px; height: 22px;`).
+  - Title: Font size `12px` (clamp 1 dòng). Tag: Font size `10px`.
+  - Đơn vị lượt truy cập (`.product-download-unit`): Ẩn trên mobile (`display: none;`) để nút đếm rút gọn chỉ gồm `[Icon] [Số]`, không bao giờ làm tràn thẻ hay vỡ hàng chân thẻ.
+
+

@@ -672,4 +672,27 @@ Nhằm tạo nên diện mạo trực quan, chuyên nghiệp, cân đối và nh
   - **LÝ DO:** Là ứng dụng nghiệp vụ / quản lý riêng tư, **TUYỆT ĐỐI KHÔNG ĐƯỢC ĐƯA LÊN** trang danh mục `products.html`.
   - Mọi AI Agent hay lập trình viên khi đồng bộ hay quét tự động danh mục sản phẩm **BẮT BUỘC PHẢI BỎ QUA** file `tinhtiennhanh.html`.
 
+### 3. Quy Chuẩn Nhóm Web Apps Sưu Tầm Bên Ngoài (Curated External Web Tools)
+- **Thứ tự hiển thị (Order Hierarchy):**
+  - Web App tự làm luôn nằm trước (Badge `01`, `02`, `03`...).
+  - Web App sưu tầm bên ngoài luôn nằm **SAU** toàn bộ Web App tự làm (hiện tại là `04` đến `08`). Khi có Web App tự làm mới, chèn vào trước nhóm sưu tầm và đẩy số thứ tự của nhóm sưu tầm lùi về sau.
+- **Quy cách Thẻ Card & Tên miền rút gọn:**
+  - `product-card-title`: Tên chính thức của trang web.
+  - `product-card-tag`: Tên miền (Domain) rút gọn, lược bỏ `https://` và dấu `/` cuối (ví dụ: `tiermaker.com`, `grainrad.com`, `destroy.spritefusion.com`, `bookofshapes.com`, `jherr.github.io/depth-of-field`).
+  - Thẻ `<a>` bắt buộc có `target="_blank" rel="noopener noreferrer"`.
+  - Chân thẻ (`.product-card-footer`) chỉ giữ mũi tên `.product-card-arrow`.
+- **Kiến trúc tài nguyên (Zero Bloatware):**
+  - Tuyệt đối không tạo file code `.html`/`.js`/`.css` cho web ngoài.
+  - Toàn bộ ảnh đại diện (Share Image / Open Graph) lưu tại thư mục riêng `products/web-apps/curated/`.
+
+### 4. Quy Chuẩn Bố Cục Lưới Web Apps (Responsive Grid System)
+- **Khóa cứng tỷ lệ vuông 1:1:** Thẻ sản phẩm Web Apps luôn giữ `aspect-ratio: 1 / 1` trên mọi kích thước màn hình.
+- **Phân bố số cột:**
+  - **PC / Desktop (> 1024px):** **4 Cột** (`repeat(4, minmax(0, 1fr))`, `gap: 16px`).
+  - **Tablet (769px – 1024px):** **3 Cột** (`repeat(3, minmax(0, 1fr))`, `gap: 14px`).
+  - **Mobile (≤ 768px):** **2 Cột** (`repeat(2, minmax(0, 1fr))`, `gap: 10px`), tương tự danh mục Sách nhưng **vẫn giữ nguyên tỷ lệ vuông 1:1**.
+- **Micro-typography trên Mobile:** Giảm padding thân thẻ (`8px 10px`), badge số `20px`, tiêu đề `12px`, ẩn chữ đơn vị dài `.product-download-unit` ("lượt truy cập") để chống tràn viền tuyệt đối.
+
+
+
 

@@ -85,6 +85,14 @@
   3. **Triệt tiêu sự kiện ngầm khi repopulate dropdown:** Mọi thao tác làm mới danh sách item (`Items.Clear()`, `Items.Add()`, gán `SelectedIndex`) trong controls hàng phải luôn được bọc trong cờ `_isBinding = true` (hoặc `_isLoading = true`) để ngăn chặn việc phát tín hiệu `OnStepChanged` / `OnTableDataChanged`.
   4. **Cấm đồng bộ dữ liệu khi đang Load:** Trong `UpdateStatus()` và các sự kiện lắng nghe bảng `OnTableDataChanged`, **CẤM TUYỆT ĐỐI** gọi `p.Steps = tableControl.GetSteps()` nếu `_isLoadingUI == true`.
 
+## 2.5 Nguyên Tắc Vàng Khi Kéo Thả Trực Quan Trên Màn Hình (Overlay Map Realtime Dragging Discipline)
+- **Tách biệt tuyệt đối giữa Render kéo chuột (Live Drag) và Commit dữ liệu (Data Commit):**
+  - **Trong lúc đang kéo (Dragging):** Chỉ cập nhật tọa độ hình học trong bộ nhớ của Overlay Form để render khung chữ nhật / điểm di chuyển trực tiếp 60 FPS (`this.Invalidate(); this.Update();`). **TUYỆT ĐỐI CẤM** gọi `RefreshDisplay()`, `PopulateIfJumpLists()`, decode bitmap, hoặc các hàm co giãn layout bảng của Main Form trên mỗi pixel di chuyển chuột. Nếu cần hiển thị tọa độ thay đổi trên bảng, chỉ cập nhật riêng text label (`UpdateCoordinatesOnly`).
+  - **Chỉ chốt dữ liệu khi buông chuột (`MouseUp` / `OnPointMoveFinished`):** Sau khi người dùng đã thả tay, mới thực hiện chuyển đổi tọa độ Win32 `ScreenToClient`, cập nhật dữ liệu vào `MacroStep`, gọi làm mới UI bảng 1 lần duy nhất và lưu cấu hình.
+- **Bắt buộc khóa luồng chuột (Mouse Capture & Anti-Transparency):**
+  - Khi bắt đầu drag (`OnMouseDown`), bắt buộc gọi `this.Capture = true`. Khi kết thúc (`OnMouseUp`), gọi `this.Capture = false`.
+  - Trong xử lý Win32 `WM_NCHITTEST`: Nếu `_isDragging == true`, bắt buộc trả về `(IntPtr)HTCLIENT` ngay lập tức! Tuyệt đối không gọi `GetPointAt()` khi đang drag, tránh việc con trỏ chuột vung nhanh ra ngoài viền khung làm cửa sổ bị phán quyết là `HTTRANSPARENT`, gây đứt gãy luồng sự kiện chuột và rơi chuột xuống ứng dụng bên dưới.
+
 ---
 
 # 3. QUẢN LÝ TIẾN TRÌNH & CỬA SỔ MỤC TIÊU (WINDOW TARGETING & CACHING)

@@ -421,9 +421,46 @@ body {
     padding: 12px 14px;
 }
 
+/* ==========================================================================
+   Web Apps Category: 4 Columns on PC, 3 on Tablet, 2 on Mobile (Square 1:1)
+   ========================================================================== */
+[data-product-section="web-apps"] .products-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+[data-product-section="web-apps"] .product-card {
+    aspect-ratio: 1 / 1;
+}
+
+[data-product-section="web-apps"] .product-card-body {
+    padding: 10px 14px;
+}
+
+[data-product-section="web-apps"] .product-card-badge {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    min-height: 26px;
+}
+
+[data-product-section="web-apps"] .product-card-title {
+    font-size: var(--font-sm);
+}
+
+[data-product-section="web-apps"] .product-card-tag {
+    font-size: 11px;
+}
+
 @media (max-width: 1024px) {
     [data-product-section="books"] .products-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    [data-product-section="web-apps"] .products-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
     }
 }
 
@@ -464,5 +501,68 @@ body {
         font-size: var(--font-xs);
         -webkit-line-clamp: 2;
         line-clamp: 2;
+    }
+
+    /* Web Apps: 2 Cột trên Mobile nhưng GIỮ NGUYÊN LAYOUT VUÔNG 1:1 */
+    [data-product-section="web-apps"] .products-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    [data-product-section="web-apps"] .product-card {
+        aspect-ratio: 1 / 1;
+    }
+
+    [data-product-section="web-apps"] .product-card-body {
+        padding: 8px 10px;
+    }
+
+    [data-product-section="web-apps"] .product-card-head {
+        gap: 6px;
+    }
+
+    [data-product-section="web-apps"] .product-card-badge {
+        font-size: 20px;
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        min-height: 22px;
+    }
+
+    [data-product-section="web-apps"] .product-card-title {
+        font-size: 12px;
+    }
+
+    [data-product-section="web-apps"] .product-card-tag {
+        font-size: 10px;
+        margin-top: 1px;
+    }
+
+    /* Ẩn chữ đơn vị dài trên thẻ vuông mobile để không tràn viền */
+    [data-product-section="web-apps"] .product-download-unit {
+        display: none;
+    }
+
+    [data-product-section="web-apps"] .product-download-btn {
+        height: 22px;
+        padding: 0 6px;
+        gap: 4px;
+    }
+
+    [data-product-section="web-apps"] .product-download-icon {
+        width: 12px;
+        height: 12px;
+        min-width: 12px;
+        min-height: 12px;
+        mask-size: 12px 12px;
+        -webkit-mask-size: 12px 12px;
+    }
+
+    [data-product-section="web-apps"] .product-download-count {
+        font-size: 11px;
+    }
+
+    [data-product-section="web-apps"] .product-card-arrow {
+        font-size: 14px;
     }
 }
