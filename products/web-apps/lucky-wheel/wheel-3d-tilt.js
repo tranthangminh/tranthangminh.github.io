@@ -2,8 +2,8 @@
  * Lucky Wheel - 3D Tilt Renderer (Chế Độ 3D Nghiêng)
  * 
  * Kiến trúc:
- * - Khối trụ 3D thể tích tương tự 3D Cylinder nhưng phối hợp cùng phép xoay 3D của wheel-wrapper.
- * - Độ dày (Extruded Cylinder Facets) mô phỏng thành khối trụ đồng nhất với màu nan quạt 2D.
+ * - Khối đĩa 3D thể tích nghiêng theo phối cảnh xoay 3D của wheel-wrapper.
+ * - Độ dày (Extruded Tilt Depth Facets) mô phỏng thành khối đĩa đồng nhất với màu nan quạt 2D.
  * - Độ dày có hiệu ứng biến thiên mượt mà từ 0% đến 100% khi chuyển từ 2D sang 3D.
  * - Tái sử dụng 100% bề mặt đĩa 2D chuẩn (engine.drawWheelDisc).
  * - Màu sắc viền kim loại xám thép đồng bộ tuyệt đối với style 2D.
@@ -64,14 +64,32 @@ window.LuckyWheel3DTilt = (function () {
         ctx.fill();
         ctx.restore();
 
-        // 2. Thành khối trụ xoay tròn theo nan quạt (Extruded Cylinder Facets giống 3D Cylinder)
+        // 2. Thành độ dày 3D xoay tròn theo nan quạt (Extruded Tilt Depth Facets)
         if (engine.slices && engine.slices.length > 0) {
+            const chaseIdx = engine.getSpinningChaseIndex ? engine.getSpinningChaseIndex() : -1;
+            const isWinnerCelebrating = (engine.winnerFlashIndex !== null);
+
             engine.slices.forEach((slice, idx) => {
                 const start = slice.startAngle;
                 const end = slice.endAngle;
                 // Lấy các đoạn cung nằm ở nửa dưới đường tròn [0, PI] (hướng đối diện góc nhìn)
                 const segs = engine.getVisibleArcSegments(start, end, engine.currentAngle);
-                const baseColor = slice.color || (engine.getDefaultColor ? engine.getDefaultColor(idx) : '#eab308');
+                const isWinner = (engine.winnerFlashIndex === idx);
+                const isChaseLit = (engine.isSpinning && idx === chaseIdx);
+                const sliceOriginalColor = slice.color || (engine.getDefaultColor ? engine.getDefaultColor(idx) : '#eab308');
+
+                let baseColor;
+                if (engine.winnerCelebrationState === 'flashing') {
+                    baseColor = isWinner ? sliceOriginalColor : engine.adjustBrightness(sliceOriginalColor, 0.28);
+                } else if (engine.winnerCelebrationState === 'fading_in') {
+                    const factor = (engine.celebrationFadeFactor !== undefined) ? engine.celebrationFadeFactor : 1.0;
+                    baseColor = isWinner ? sliceOriginalColor : engine.adjustBrightness(sliceOriginalColor, factor);
+                } else if (engine.isSpinning) {
+                    const spinDim = (typeof engine.getSpinDimFactor === 'function') ? engine.getSpinDimFactor() : 0.28;
+                    baseColor = isChaseLit ? sliceOriginalColor : engine.adjustBrightness(sliceOriginalColor, spinDim);
+                } else {
+                    baseColor = sliceOriginalColor;
+                }
 
                 segs.forEach(([t1, t2]) => {
                     ctx.save();

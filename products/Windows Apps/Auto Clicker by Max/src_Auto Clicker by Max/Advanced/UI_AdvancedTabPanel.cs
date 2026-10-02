@@ -919,7 +919,7 @@ namespace ModernAutoClicker.Advanced
 
         public void SetScriptEditingLocked(bool isLocked)
         {
-            if (tableControl != null) tableControl.Enabled = !isLocked;
+            if (tableControl != null) tableControl.SetEditingLocked(isLocked);
             if (btnAddStep != null) btnAddStep.Enabled = !isLocked;
             if (btnCloneSelected != null) btnCloneSelected.Enabled = !isLocked;
             if (btnClearAll != null) btnClearAll.Enabled = !isLocked;

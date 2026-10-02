@@ -93,6 +93,45 @@
   - Khi bắt đầu drag (`OnMouseDown`), bắt buộc gọi `this.Capture = true`. Khi kết thúc (`OnMouseUp`), gọi `this.Capture = false`.
   - Trong xử lý Win32 `WM_NCHITTEST`: Nếu `_isDragging == true`, bắt buộc trả về `(IntPtr)HTCLIENT` ngay lập tức! Tuyệt đối không gọi `GetPointAt()` khi đang drag, tránh việc con trỏ chuột vung nhanh ra ngoài viền khung làm cửa sổ bị phán quyết là `HTTRANSPARENT`, gây đứt gãy luồng sự kiện chuột và rơi chuột xuống ứng dụng bên dưới.
 
+## 2.6 Tách Biệt Tuyệt Đối Giữa Hold Time (ms) và Image Similarity (%)
+- **Không bao giờ dùng chung hoặc đè ô nhập liệu:** Cột **Hold** trên bảng macro thuộc về thời gian giữ chuột (`HoldMs`, đơn vị ms). Các bước có hành động click (bao gồm `IfColor` khi Click Target và `IfImage` khi Click Center) phải hiển thị đúng `numHold` (cho phép min = 1ms, mặc định 10ms).
+- **Bảo toàn dải an toàn cho độ tương đồng ảnh (Similarity):** Độ tương đồng ảnh `Similarity (%)` của `IfImage` phải nằm ở vị trí chuyên biệt (Line 2) và **bắt buộc duy trì trong dải an toàn từ 50% đến 100% (mặc định 90%)**. Tuyệt đối không hạ min của Similarity xuống dưới 50%, vì ở mức dưới 50% sai số màu quá lớn sẽ gây nhận diện sai và click bừa bãi ra màn hình.
+- **Tôn trọng 1ms trong Engine Runner:** Động cơ thực thi (`Engine_MacroRunner`) phải giữ nguyên thời gian giữ chuột xuống tối thiểu 1ms (`Math.Max(1, step.HoldMs)`), không được kẹp cứng 10ms hay 50ms làm mất tính chính xác của script người dùng.
+
+## 2.7 Phân Cấp Ưu Tiên Phím Tắt Ctrl + A Theo Ngữ Cảnh (Contextual Text Selection Discipline)
+- **Quy tắc bắt phím:** Container bảng macro (`MacroTableControl.ProcessCmdKey`) khi nhận thông điệp `Ctrl + A` **bắt buộc phải kiểm tra control đang focus trước**:
+  1. Nếu con trỏ chuột/focus đang nằm trong bất kỳ ô text hoặc số nào (`TextBoxBase`, `NumberInput`, inner Win32 `Edit` control): Bắt buộc ưu tiên gọi `SelectAll()` của ô nhập liệu đó và trả về `true` (xử lý nội bộ ô text, triệt tiêu việc lan truyền lên bảng).
+  2. Chỉ khi focus không nằm trong ô text/số (người dùng click ra nền bảng, chọn dòng, hoặc focus ngoài): Mới kích hoạt `SelectAll()` cho toàn bộ các dòng bước (steps) trong bảng.
+
+## 2.8 Chỉnh Sửa Hàng Loạt Tọa Độ Hỗ Trợ Cả Điểm Và Vùng (Bulk Range Coordinates Picking)
+- Khi người dùng chọn nhiều dòng và bấm vào header `Target` để chỉnh sửa hàng loạt:
+  - Hệ thống phải bắt sự kiện `OnTargetSelectedWithWindow` từ `CoordinatePicker`.
+  - Hỗ trợ đầy đủ cả 2 trường hợp: chấm 1 điểm duy nhất (Point A) hoặc kéo thả quét vùng diện tích (Area: StartPoint A -> EndPoint B).
+  - Tự động áp dụng thông tin cửa sổ mục tiêu (HWND, ProcessName, WindowTitle, Client Coordinates) và tự động nhận diện màu (`TargetColor`) cho các action điều kiện (`IfColor`, `WaitColor`, `IfColorArea`).
+  - Phải kiểm tra `SupportsCoordinates()` để loại trừ các action không có tọa độ (`Delay`, `KeyPress`, `TypeText`, `RunScript`, `RepeatTimer`).
+
+## 2.9 Cho Phép Cuộn Bảng Khi Script Đang Chạy (Scroll While Running Table Discipline)
+- Khi bắt đầu thực thi kịch bản (`Start` / `F6`), giao diện bảng bước `MacroTableControl` **tuyệt đối không được gán `Enabled = false`**.
+- Thay vào đó, gọi `tableControl.SetEditingLocked(true)`:
+  - Giữ `tableControl.Enabled = true` để toàn bộ luồng thông điệp chuột WinForms (`WM_MOUSEWHEEL`, click chọn dòng xem chi tiết, kéo thanh cuộn `ModernScrollBar`) tiếp tục hoạt động trơn tru.
+  - Khóa chỉnh sửa dữ liệu trên từng hàng `MacroRowControl.SetRowEditingLocked(true)` (disable các controls nhập liệu, dropdown, nút pick tọa độ, xóa dòng, kéo thả reorder dòng).
+  - Ngăn chặn triệt để tình trạng "đơ cuộn" khi kịch bản có hàng chục đến hàng trăm bước.
+
+## 2.10 Chống Nhiễu Lớp Phủ Bản Đồ Với Tính Năng Kiểm Tra Màu (Map Overlay Non-Interference)
+- Lớp phủ bản đồ `OverlayForm` không được phép che khuất hoặc làm thay đổi màu sắc tại tọa độ mục tiêu kiểm tra của các tác vụ `IfColor`, `WaitColor`:
+  - **Cấp độ OS (Display Affinity):** Bắt buộc thiết lập `SetWindowDisplayAffinity(this.Handle, WDA_EXCLUDEFROMCAPTURE)` (giá trị `0x00000011`) để loại trừ hoàn toàn cửa sổ overlay khỏi các lệnh chụp màn hình / đọc pixel GDI và DWM (`GetDC`, `GetPixel`, `BitBlt`, `PrintWindow`).
+  - **Cấp độ GDI (Hollow Reticle):** Tại tâm hồng tâm ngắm bắn `(cx, cy)`, bắt buộc khoét rỗng một vùng 3x3 pixel `new Rectangle(cx - 1, cy - 1, 3, 3)` bằng `g.ExcludeClip()`. Vùng này giữ nguyên màu trong suốt tuyệt đối (`Color.Magenta` / `TransparencyKey`), đảm bảo pixel thực tế của ứng dụng bên dưới luôn lộ diện 100%.
+
+## 2.11 Cơ Chế Lấy Mẫu Pixel & Vùng Ảnh Đa Tầng Bất Bại Cho Mọi Cửa Sổ Bị Che Khuất (Universal Background Pixel Sampling)
+- Để đồng bộ tính năng click ngầm và kiểm tra điều kiện trên **MỌI ứng dụng** (BlueStacks, Chrome, Discord, Games, trình giả lập Android, các ứng dụng DirectComposition / GPU accelerated):
+  - **Tách module độc lập:** Toàn bộ logic lấy mẫu pixel và vùng ảnh phải được đóng gói tập trung trong `Core_PixelSampler.cs` (`PixelSampler`), không viết rải rác hoặc phụ thuộc riêng lẻ vào `ActionExecutor`.
+  - **Tier 1 (Visible Fast Path - 0ms):** Nếu tọa độ điểm kiểm tra đang hiển thị trực tiếp (`WindowFromPoint(samplePt) == hWnd` hoặc cửa sổ con của nó), đọc trực tiếp từ Screen DC qua `GetDC(0)` để đạt tốc độ tối đa.
+  - **Tier 2 (DWM Surface Capture):** Khi cửa sổ bị cửa sổ khác đè lên, bị bóng cửa sổ khác phủ, hoặc nằm ngầm:
+    - Tìm top-level window gốc (`GetAncestor(hWnd, GA_ROOT)`).
+    - Gọi `PrintWindow(topHwnd, hMemDc, PW_RENDERFULLCONTENT)` (`0x00000002`). Đây là API Win32 tiêu chuẩn của DWM DirectComposition trích xuất đúng frame buffer bộ nhớ của GPU/DirectX/OpenGL kể cả khi ứng dụng bị che khuất hoàn toàn.
+  - **Tier 3 (Classic GDI Fallback):** Nếu Tier 2 không trích xuất được frame hợp lệ, fallback về `PrintWindow(..., PW_CLIENTONLY)` (`0x00000001`) hoặc Client DC.
+  - Giải phóng 100% tài nguyên GDI (`DeleteDC`, `DeleteObject`, `ReleaseDC`) ngay sau mỗi lần lấy mẫu, tuyệt đối không gây rò rỉ GDI handle.
+
 ---
 
 # 3. QUẢN LÝ TIẾN TRÌNH & CỬA SỔ MỤC TIÊU (WINDOW TARGETING & CACHING)

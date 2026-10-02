@@ -30,6 +30,7 @@ namespace ModernAutoClicker.Advanced
         private Panel pnlColorSwatch;
         private Panel pnlImageThumb;
         private NumberInput numSimilarity;
+        private Label lblSimilarity;
         private NumberInput numTimeout;
         private NumberInput numHold;
         private NumberInput numDelay;
@@ -178,6 +179,7 @@ namespace ModernAutoClicker.Advanced
 
         private void Row_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_isEditingLocked) return;
             if (_isMouseDown && (e.Button & MouseButtons.Left) == MouseButtons.Left)
             {
                 Point cur = Cursor.Position;
@@ -780,7 +782,7 @@ namespace ModernAutoClicker.Advanced
                     else if (idx == cboIfTrue.Items.Count - 1) _step.IfTrueStep = -1;
                     else if (idx >= 3) _step.IfTrueStep = idx - 2;
 
-                    if (_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea)
+                    if (_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage)
                     {
                         bool isClickTarget = (_step.IfTrueStep == -2);
                         if (isClickTarget && _step.HoldMs <= 0) _step.HoldMs = 10;
@@ -840,6 +842,18 @@ namespace ModernAutoClicker.Advanced
 
                     if (OnStepChanged != null) OnStepChanged();
                 }
+            };
+
+            lblSimilarity = new Label
+            {
+                Text = "Sim:",
+                Location = new Point(404, 32),
+                Size = new Size(34, 20),
+                AutoSize = false,
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleRight,
+                ForeColor = _theme.TextSecondary,
+                Visible = false
             };
 
             // 8. Repeat Count (Rep, Column Width = 30px)
@@ -1066,7 +1080,7 @@ namespace ModernAutoClicker.Advanced
             this.Controls.AddRange(new Control[] {
                 lblIndex, chkSelect, lblWindowIcon, cboActionType,
                 cboTargetScript, pnlColorSwatch, pnlImageThumb, lblCoord, btnPickCoord, numScroll, txtKeyData,
-                numHold, numSimilarity, numDelay, numRepeat, numTimeout, lblIfMatch, cboIfTrue, lblIfUnmatch, cboIfFalse, btnDelete, txtNote,
+                numHold, numSimilarity, lblSimilarity, numDelay, numRepeat, numTimeout, lblIfMatch, cboIfTrue, lblIfUnmatch, cboIfFalse, btnDelete, txtNote,
                 cboRepeatMode, numRepeatTimes, txtRepeatTime, lblLoopTo, cboLoopTarget, lblLoopFinished, cboLoopFinished
             });
 
@@ -1184,8 +1198,13 @@ namespace ModernAutoClicker.Advanced
 
             if (numSimilarity != null)
                 RowToolTipManager.SetToolTip(numSimilarity, Loc.IsVietnamese
-                    ? "Độ tương đồng (%):\nNgưỡng khớp chấp nhận được (50% - 100%, Mặc định: 90%)."
-                    : "Similarity (%):\nAcceptable match threshold (50% - 100%, Default: 90%).");
+                    ? "Độ tương đồng ảnh (%):\nNgưỡng khớp chấp nhận được (50% - 100%, Mặc định: 90%)."
+                    : "Template Similarity (%):\nAcceptable match threshold (50% - 100%, Default: 90%).");
+
+            if (lblSimilarity != null)
+                RowToolTipManager.SetToolTip(lblSimilarity, Loc.IsVietnamese
+                    ? "Độ tương đồng ảnh (%):\nNgưỡng khớp chấp nhận được (50% - 100%, Mặc định: 90%)."
+                    : "Template Similarity (%):\nAcceptable match threshold (50% - 100%, Default: 90%).");
 
             if (numTimeout != null)
                 RowToolTipManager.SetToolTip(numTimeout, Loc.IsVietnamese
@@ -1487,6 +1506,7 @@ namespace ModernAutoClicker.Advanced
             if (lblIfUnmatch != null) lblIfUnmatch.Visible = false;
             if (pnlImageThumb != null) pnlImageThumb.Visible = false;
             if (numSimilarity != null) numSimilarity.Visible = false;
+            if (lblSimilarity != null) lblSimilarity.Visible = false;
             if (numTimeout != null) numTimeout.Visible = false;
             if (cboRepeatMode != null) cboRepeatMode.Visible = false;
             if (numRepeatTimes != null) numRepeatTimes.Visible = false;
@@ -1709,16 +1729,38 @@ namespace ModernAutoClicker.Advanced
                 if (isClickTarget && _step.HoldMs <= 0) _step.HoldMs = 10;
                 if (numHold != null)
                 {
+                    numHold.Location = new Point(colX + colW + 2, 6);
+                    numHold.Width = 44;
                     numHold.Value = Math.Max(1, _step.HoldMs);
                     numHold.Visible = isClickTarget;
                 }
                 numDelay.Visible = true;
                 numRepeat.Visible = true;
 
-                if (lblIfMatch != null) lblIfMatch.Visible = true;
-                if (cboIfTrue != null) cboIfTrue.Visible = true;
-                if (lblIfUnmatch != null) lblIfUnmatch.Visible = true;
-                if (cboIfFalse != null) cboIfFalse.Visible = true;
+                if (lblIfMatch != null)
+                {
+                    lblIfMatch.Location = new Point(38, 32);
+                    lblIfMatch.Size = new Size(84, 20);
+                    lblIfMatch.Visible = true;
+                }
+                if (cboIfTrue != null)
+                {
+                    cboIfTrue.Location = new Point(124, 31);
+                    cboIfTrue.Size = new Size(116, 22);
+                    cboIfTrue.Visible = true;
+                }
+                if (lblIfUnmatch != null)
+                {
+                    lblIfUnmatch.Location = new Point(242, 32);
+                    lblIfUnmatch.Size = new Size(84, 20);
+                    lblIfUnmatch.Visible = true;
+                }
+                if (cboIfFalse != null)
+                {
+                    cboIfFalse.Location = new Point(330, 31);
+                    cboIfFalse.Size = new Size(128, 22);
+                    cboIfFalse.Visible = true;
+                }
                 PopulateIfJumpLists();
             }
             else if (_step.ActionType == MacroActionType.WaitColor)
@@ -1824,21 +1866,57 @@ namespace ModernAutoClicker.Advanced
                 numScroll.Visible = false;
                 txtKeyData.Visible = false;
 
-                numHold.Visible = false;
-                numSimilarity.Location = new Point(numHold.Location.X, 6);
-                numSimilarity.Width = 44;
-                numSimilarity.Value = _step.Similarity > 0 ? _step.Similarity : 90;
-                numSimilarity.Visible = true;
+                bool isClickTarget = (_step.IfTrueStep == -2);
+                if (isClickTarget && _step.HoldMs <= 0) _step.HoldMs = 10;
+                if (numHold != null)
+                {
+                    numHold.Location = new Point(colX + colW + 2, 6);
+                    numHold.Width = 44;
+                    numHold.Value = Math.Max(1, _step.HoldMs);
+                    numHold.Visible = isClickTarget;
+                }
 
                 numDelay.Visible = true;
-
                 numRepeat.Visible = true;
                 numTimeout.Visible = false;
 
-                if (lblIfMatch != null) lblIfMatch.Visible = true;
-                if (cboIfTrue != null) cboIfTrue.Visible = true;
-                if (lblIfUnmatch != null) lblIfUnmatch.Visible = true;
-                if (cboIfFalse != null) cboIfFalse.Visible = true;
+                if (lblIfMatch != null)
+                {
+                    lblIfMatch.Location = new Point(38, 32);
+                    lblIfMatch.Size = new Size(60, 20);
+                    lblIfMatch.Visible = true;
+                }
+                if (cboIfTrue != null)
+                {
+                    cboIfTrue.Location = new Point(102, 31);
+                    cboIfTrue.Size = new Size(110, 22);
+                    cboIfTrue.Visible = true;
+                }
+                if (lblIfUnmatch != null)
+                {
+                    lblIfUnmatch.Location = new Point(216, 32);
+                    lblIfUnmatch.Size = new Size(70, 20);
+                    lblIfUnmatch.Visible = true;
+                }
+                if (cboIfFalse != null)
+                {
+                    cboIfFalse.Location = new Point(290, 31);
+                    cboIfFalse.Size = new Size(110, 22);
+                    cboIfFalse.Visible = true;
+                }
+                if (lblSimilarity != null)
+                {
+                    lblSimilarity.Location = new Point(404, 32);
+                    lblSimilarity.Size = new Size(34, 20);
+                    lblSimilarity.Visible = true;
+                }
+                if (numSimilarity != null)
+                {
+                    numSimilarity.Location = new Point(440, 31);
+                    numSimilarity.Width = 40;
+                    numSimilarity.Value = _step.Similarity > 0 ? _step.Similarity : 90;
+                    numSimilarity.Visible = true;
+                }
                 PopulateIfJumpLists();
             }
             else if (_step.ActionType == MacroActionType.WaitChange)
@@ -2243,7 +2321,49 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
-        private void ApplyPickedCoordinates(Point screenA, Point screenB, Color color, NativeMethods.WindowTargetInfo winInfo, Point clientPtA, Point clientPtB, bool isArea)
+        public bool SupportsCoordinates()
+        {
+            if (_step == null) return false;
+            return _step.ActionType != MacroActionType.Delay &&
+                   _step.ActionType != MacroActionType.KeyPress &&
+                   _step.ActionType != MacroActionType.TypeText &&
+                   _step.ActionType != MacroActionType.RunScript &&
+                   _step.ActionType != MacroActionType.RepeatTimer;
+        }
+
+        private bool _isEditingLocked = false;
+        public bool IsEditingLocked { get { return _isEditingLocked; } }
+
+        public void SetRowEditingLocked(bool isLocked)
+        {
+            _isEditingLocked = isLocked;
+            bool enableInputs = !isLocked;
+            if (chkSelect != null) chkSelect.Enabled = enableInputs;
+            if (cboActionType != null) cboActionType.Enabled = enableInputs;
+            if (cboTargetScript != null) cboTargetScript.Enabled = enableInputs;
+            if (btnPickCoord != null) btnPickCoord.Enabled = enableInputs;
+            if (numScroll != null) numScroll.Enabled = enableInputs;
+            if (txtKeyData != null) txtKeyData.Enabled = enableInputs;
+            if (pnlColorSwatch != null) pnlColorSwatch.Enabled = enableInputs;
+            if (pnlImageThumb != null) pnlImageThumb.Enabled = enableInputs;
+            if (numSimilarity != null) numSimilarity.Enabled = enableInputs;
+            if (numTimeout != null) numTimeout.Enabled = enableInputs;
+            if (numHold != null) numHold.Enabled = enableInputs;
+            if (numDelay != null) numDelay.Enabled = enableInputs;
+            if (numRepeat != null) numRepeat.Enabled = enableInputs;
+            if (cboIfTrue != null) cboIfTrue.Enabled = enableInputs;
+            if (cboIfFalse != null) cboIfFalse.Enabled = enableInputs;
+            if (cboRepeatMode != null) cboRepeatMode.Enabled = enableInputs;
+            if (cboLoopFinished != null) cboLoopFinished.Enabled = enableInputs;
+            if (numRepeatTimes != null) numRepeatTimes.Enabled = enableInputs;
+            if (txtRepeatTime != null) txtRepeatTime.Enabled = enableInputs;
+            if (cboLoopTarget != null) cboLoopTarget.Enabled = enableInputs;
+            if (btnDelete != null) btnDelete.Enabled = enableInputs;
+            if (txtNote != null) txtNote.Enabled = enableInputs;
+            if (lblWindowIcon != null) lblWindowIcon.Enabled = enableInputs;
+        }
+
+        public void ApplyPickedCoordinates(Point screenA, Point screenB, Color color, NativeMethods.WindowTargetInfo winInfo, Point clientPtA, Point clientPtB, bool isArea)
         {
             Point finalA = screenA;
             Point finalB = screenB;
@@ -2463,8 +2583,9 @@ namespace ModernAutoClicker.Advanced
 
         public void UpdateHoldValue(int val)
         {
-            _step.HoldMs = val;
-            if (numHold != null) numHold.Value = val;
+            int safeVal = Math.Max(1, val);
+            _step.HoldMs = safeVal;
+            if (numHold != null) numHold.Value = safeVal;
         }
 
         public void UpdateDelayValue(int val)
@@ -2574,6 +2695,7 @@ namespace ModernAutoClicker.Advanced
                 cboIfFalse.CustomBorderColor = Color.FromArgb(borderAlpha, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B);
                 cboIfFalse.ApplyTheme(_theme);
             }
+            if (lblSimilarity != null) lblSimilarity.ForeColor = _theme.TextSecondary;
             if (numSimilarity != null) numSimilarity.ApplyTheme(_theme);
             if (numTimeout != null) numTimeout.ApplyTheme(_theme);
             if (cboRepeatMode != null) cboRepeatMode.ApplyTheme(_theme);

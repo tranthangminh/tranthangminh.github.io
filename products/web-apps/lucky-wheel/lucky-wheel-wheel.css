@@ -17,10 +17,194 @@
     transition: background 0.5s ease;
 }
 
+/* ==========================================================================
+   AMBIENT STAGE LIGHTS & SPOTLIGHTS (Zero-Lag GPU Accelerated)
+   ========================================================================== */
+
+/* 1. Ambient Background Glow Orbs (Behind wheel: z-index 1) */
+.stage-ambient-lights {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.ambient-orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+.ambient-orb-gold {
+    width: 480px;
+    height: 480px;
+    top: -120px;
+    left: -100px;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.12) 0%, rgba(245, 158, 11, 0.04) 45%, transparent 70%);
+    animation: ambientFloat1 12s ease-in-out infinite alternate;
+}
+
+.ambient-orb-cyan {
+    width: 520px;
+    height: 520px;
+    top: 8%;
+    right: -130px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.11) 0%, rgba(14, 165, 233, 0.035) 45%, transparent 70%);
+    animation: ambientFloat2 15s ease-in-out infinite alternate;
+}
+
+.ambient-orb-ruby {
+    width: 460px;
+    height: 460px;
+    bottom: -90px;
+    left: 18%;
+    background: radial-gradient(circle, rgba(244, 63, 94, 0.09) 0%, rgba(225, 29, 72, 0.03) 45%, transparent 70%);
+    animation: ambientFloat3 13.5s ease-in-out infinite alternate;
+}
+
+@keyframes ambientFloat1 {
+    0%   { transform: translate(0, 0) scale(1); opacity: 0.75; }
+    50%  { transform: translate(32px, 22px) scale(1.12); opacity: 1; }
+    100% { transform: translate(-22px, 36px) scale(0.95); opacity: 0.7; }
+}
+
+@keyframes ambientFloat2 {
+    0%   { transform: translate(0, 0) scale(1.05); opacity: 0.7; }
+    50%  { transform: translate(-36px, 26px) scale(0.92); opacity: 1; }
+    100% { transform: translate(22px, -22px) scale(1.1); opacity: 0.65; }
+}
+
+@keyframes ambientFloat3 {
+    0%   { transform: translate(0, 0) scale(0.95); opacity: 0.65; }
+    50%  { transform: translate(26px, -32px) scale(1.15); opacity: 1; }
+    100% { transform: translate(-32px, 16px) scale(1); opacity: 0.75; }
+}
+
+/* 2. Top-Down Circular Spotlights (Tied to Wheel Size for 100% Web/Mobile Uniformity) */
+.stage-spotlights {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--wheel-size, 520px);
+    height: var(--wheel-size, 520px);
+    max-width: var(--wheel-size, 520px);
+    max-height: var(--wheel-size, 520px);
+    aspect-ratio: 1 / 1;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    overflow: visible;
+    z-index: 25; /* Always on top of wheel, casino ring, center hub, and pointer */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+/* Activated strictly when wheel starts spinning */
+body.wheel-is-spinning .stage-spotlights {
+    opacity: 1;
+    visibility: visible;
+}
+
+.spotlight-circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+    mix-blend-mode: screen;
+    top: 50%;
+    left: 50%;
+    aspect-ratio: 1 / 1; /* Guarantees 1:1 circular ratio under all viewports */
+    filter: blur(16px); /* Ultra-soft buttery edge feathering - zero GPU lag */
+}
+
+/* Spot 1: Largest (100% of wheel) - Elegant Casino Gold */
+.spot-circle-1 {
+    width: 100%;
+    height: 100%;
+    margin-top: -50%;
+    margin-left: -50%;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.48) 0%, rgba(251, 191, 36, 0.32) 30%, rgba(251, 191, 36, 0.12) 62%, rgba(251, 191, 36, 0.03) 85%, transparent 100%);
+    animation: spotCircleRun1 3.4s ease-in-out infinite alternate;
+}
+
+/* Spot 2: Medium-Large (~86% of wheel) - Electric Cyan Neon */
+.spot-circle-2 {
+    width: 86%;
+    height: 86%;
+    margin-top: -43%;
+    margin-left: -43%;
+    background: radial-gradient(circle, rgba(0, 242, 254, 0.46) 0%, rgba(0, 242, 254, 0.30) 30%, rgba(0, 242, 254, 0.12) 62%, rgba(0, 242, 254, 0.03) 85%, transparent 100%);
+    animation: spotCircleRun2 2.8s ease-in-out infinite alternate;
+}
+
+/* Spot 3: Medium-Small (~72% of wheel) - Vegas Hot Pink */
+.spot-circle-3 {
+    width: 72%;
+    height: 72%;
+    margin-top: -36%;
+    margin-left: -36%;
+    background: radial-gradient(circle, rgba(255, 0, 127, 0.45) 0%, rgba(255, 0, 127, 0.28) 30%, rgba(255, 0, 127, 0.11) 62%, rgba(255, 0, 127, 0.03) 85%, transparent 100%);
+    animation: spotCircleRun3 3.1s ease-in-out infinite alternate;
+}
+
+/* Spot 4: Smallest (~60% of wheel) - Pure Stage Warm White */
+.spot-circle-4 {
+    width: 60%;
+    height: 60%;
+    margin-top: -30%;
+    margin-left: -30%;
+    background: radial-gradient(circle, rgba(255, 251, 235, 0.52) 0%, rgba(255, 251, 235, 0.34) 30%, rgba(255, 251, 235, 0.14) 62%, rgba(255, 251, 235, 0.04) 85%, transparent 100%);
+    animation: spotCircleRun4 2.3s ease-in-out infinite alternate;
+}
+
+/* Responsive percentage-based sweeping motions + independent strobe flickers */
+@keyframes spotCircleRun1 {
+    0%   { transform: translate(-42%, -32%) scale(0.95); opacity: 0.15; }
+    22%  { opacity: 0.72; transform: translate(-8%, -38%) scale(1.08); }
+    40%  { opacity: 0.28; transform: translate(36%, -20%) scale(0.94); }
+    62%  { opacity: 0.76; transform: translate(28%, 32%) scale(1.06); }
+    80%  { opacity: 0.20; transform: translate(-30%, 24%) scale(0.92); }
+    100% { transform: translate(42%, -6%) scale(1.0); opacity: 0.68; }
+}
+
+@keyframes spotCircleRun2 {
+    0%   { transform: translate(40%, 26%) scale(1.08); opacity: 0.75; }
+    18%  { opacity: 0.12; transform: translate(18%, -36%) scale(0.9); }
+    38%  { opacity: 0.72; transform: translate(-38%, -18%) scale(1.1); }
+    60%  { opacity: 0.28; transform: translate(-26%, 36%) scale(0.92); }
+    82%  { opacity: 0.78; transform: translate(34%, -6%) scale(1.05); }
+    100% { transform: translate(-6%, -34%) scale(0.92); opacity: 0.16; }
+}
+
+@keyframes spotCircleRun3 {
+    0%   { transform: translate(-26%, 42%) scale(0.92); opacity: 0.20; }
+    15%  { opacity: 0.78; transform: translate(-42%, 10%) scale(1.12); }
+    35%  { opacity: 0.16; transform: translate(6%, -38%) scale(0.9); }
+    55%  { opacity: 0.72; transform: translate(44%, 14%) scale(1.15); }
+    75%  { opacity: 0.22; transform: translate(-24%, -28%) scale(0.92); }
+    100% { transform: translate(32%, -32%) scale(1.02); opacity: 0.75; }
+}
+
+@keyframes spotCircleRun4 {
+    0%   { transform: translate(38%, -36%) scale(1.15); opacity: 0.75; }
+    16%  { opacity: 0.10; transform: translate(-36%, -28%) scale(0.85); }
+    34%  { opacity: 0.80; transform: translate(32%, 36%) scale(1.18); }
+    52%  { opacity: 0.14; transform: translate(-40%, 28%) scale(0.88); }
+    70%  { opacity: 0.72; transform: translate(4%, 6%) scale(1.1); }
+    88%  { opacity: 0.18; transform: translate(26%, -22%) scale(0.92); }
+    100% { transform: translate(-38%, -6%) scale(1.02); opacity: 0.70; }
+}
+
+
 /* Wheel Canvas Wrapper (Cụm máy 3D nguyên khối) */
 .wheel-wrapper {
     position: relative;
-    width: 100%;
+    width: auto;
     max-width: 100%;
     height: calc(100% - 60px);
     max-height: calc(100vh - 140px);
@@ -150,19 +334,23 @@
     50%, 100% { opacity: 1; }
 }
 
-/* Winning Celebration State: High-voltage victory strobe */
-.casino-lights-ring.is-winning .casino-bulb {
-    animation: casinoWinCelebration 0.2s infinite alternate ease-in-out !important;
+/* Winning Celebration State: High-voltage victory strobe (100% GPU Compositor - Zero Rasterize Lag) */
+.casino-lights-ring.is-winning .casino-bulb,
+.casino-center-lights.is-winning .casino-bulb,
+.winner-marquee-board.is-winning .casino-bulb {
+    filter: drop-shadow(0 0 6px var(--bulb-bright)) drop-shadow(0 0 12px var(--bulb-glow));
+    will-change: opacity, transform;
+    animation: casinoWinCelebration 0.22s infinite alternate ease-in-out !important;
 }
 
 @keyframes casinoWinCelebration {
     0% {
         opacity: 1;
-        filter: drop-shadow(0 0 10px #ffe066) drop-shadow(0 0 20px #f59e0b);
+        transform: scale(1.12);
     }
     100% {
-        opacity: 0.35;
-        filter: drop-shadow(0 0 3px #ffe066);
+        opacity: 0.22;
+        transform: scale(0.92);
     }
 }
 
@@ -282,7 +470,8 @@
     top: 50%;
 }
 .wheel-stage.mode-2d .wheel-center-btn,
-.wheel-stage.mode-2d .casino-center-lights {
+.wheel-stage.mode-2d .casino-center-lights,
+.wheel-stage.mode-2d .stage-spotlights {
     top: 50%;
 }
 
@@ -317,44 +506,195 @@
     top: 50%;
 }
 .wheel-stage.mode-3d-tilt .wheel-center-btn,
-.wheel-stage.mode-3d-tilt .casino-center-lights {
+.wheel-stage.mode-3d-tilt .casino-center-lights,
+.wheel-stage.mode-3d-tilt .stage-spotlights {
     top: 50%;
 }
 
-/* --------------------------------------------------------------------------
-   Mode 3: 3D Khối Trụ (Arcade Deluxe - Bám Sát Hình 2)
-   - Background Arcade Neon Bokeh lung linh hoài niệm phòng game cổ điển
-   - Bệ đỡ đồng thau vững chãi, thành vàng kim loại và tâm ngọc bích
-   -------------------------------------------------------------------------- */
-.wheel-stage.mode-3d-cylinder {
-    background: 
-        radial-gradient(circle at 16% 24%, rgba(56, 189, 248, 0.22) 0%, transparent 35%),
-        radial-gradient(circle at 84% 26%, rgba(192, 132, 242, 0.24) 0%, transparent 38%),
-        radial-gradient(circle at 50% 12%, rgba(245, 158, 11, 0.2) 0%, transparent 42%),
-        radial-gradient(circle at 22% 76%, rgba(236, 72, 153, 0.16) 0%, transparent 36%),
-        radial-gradient(circle at 80% 72%, rgba(16, 185, 129, 0.15) 0%, transparent 36%),
-        radial-gradient(ellipse at 50% 45%, #182030 0%, #0d121c 65%, #07090f 100%);
-    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.85);
+/* ==========================================================================
+   WINNER NEON MARQUEE CELEBRATION SIGN (Drop-Down Vegas Marquee)
+   ========================================================================== */
+
+.winner-marquee-board {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translate3d(-50%, -240%, 0);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 35;
+    width: min(440px, calc(100vw - 32px));
+    aspect-ratio: 440 / 200;
+    transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
-.wheel-stage.mode-3d-cylinder .wheel-wrapper {
-    perspective: none;
+
+/* Slide down into view with spring bounce */
+.winner-marquee-board.is-visible {
+    transform: translate3d(-50%, 0, 0);
+    opacity: 1;
 }
-.wheel-stage.mode-3d-cylinder #wheelCanvas {
-    transform: none;
-    filter: drop-shadow(0 24px 42px rgba(0, 0, 0, 0.8));
+
+/* Smooth exit when hiding */
+.winner-marquee-board.is-closing {
+    transform: translate3d(-50%, -240%, 0);
+    opacity: 0;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
-.wheel-stage.mode-3d-cylinder .wheel-ground-shadow {
-    opacity: 0.6;
-    bottom: -10px;
-    transform: translateX(-50%) scale(1.08);
-    filter: blur(26px);
+
+.marquee-lights-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+    filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.85));
 }
-.wheel-stage.mode-3d-cylinder .wheel-pointer-container {
-    top: calc(50% - 24px); /* Khớp chuẩn xác theo trục elip trên của khối trụ */
-    transform: translate(-50%, -50%) rotate(45deg) translateX(calc(var(--wheel-radius, 240px) + 24px));
+
+/* Neon Badge Straddling Top Border (Cấn lên mép trên) */
+.winner-neon-badge {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.wheel-stage.mode-3d-cylinder .wheel-center-btn,
-.wheel-stage.mode-3d-cylinder .casino-center-lights {
-    top: calc(50% - 24px);
-    transform: translate(-50%, -50%);
+
+/* Neon Tube Capsule Frame (Dual-glow glass tube border) */
+.neon-tube-frame {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 26px;
+    background: #090b12;
+    border-radius: 9999px;
+    border: 2px solid #ff2a85;
+    box-shadow:
+        0 0 4px #ffffff,
+        0 0 10px #ff2a85,
+        0 0 22px rgba(255, 42, 133, 0.75),
+        inset 0 0 8px rgba(255, 42, 133, 0.4),
+        0 4px 16px rgba(0, 0, 0, 0.9);
+    transition: filter 0.3s ease;
 }
+
+/* Authentic Neon Tube Text (Classic Neon Glass Effect) */
+.neon-winner-text {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 1;
+    letter-spacing: 4.5px;
+    text-transform: uppercase;
+    color: #ffffff;
+    -webkit-text-stroke: 1.1px #ff2a85;
+    text-shadow:
+        0 0 3px #ffffff,
+        0 0 8px #ff2a85,
+        0 0 18px #ff2a85,
+        0 0 32px #e11d48,
+        0 0 50px #e11d48;
+    user-select: none;
+}
+
+/* When Winning: Vibrant Neon Pulsing Energy (GPU Compositor Accelerated - No Blur Repaint) */
+.winner-marquee-board.is-winning .neon-tube-frame {
+    will-change: opacity, filter;
+    animation: marqueeNeonGlowPulse 0.4s infinite alternate ease-in-out;
+}
+
+.winner-marquee-board.is-winning .neon-winner-text {
+    will-change: opacity, filter;
+    animation: marqueeNeonTextPulse 0.4s infinite alternate ease-in-out;
+}
+
+@keyframes marqueeNeonGlowPulse {
+    0% {
+        opacity: 1;
+        filter: brightness(1.2) contrast(1.08);
+    }
+    100% {
+        opacity: 0.82;
+        filter: brightness(0.95);
+    }
+}
+
+@keyframes marqueeNeonTextPulse {
+    0% {
+        opacity: 1;
+        filter: brightness(1.22);
+    }
+    100% {
+        opacity: 0.84;
+        filter: brightness(0.92);
+    }
+}
+
+/* Center Winner Prize Content (Multi-line Support & Auto-fit) */
+.winner-marquee-content {
+    position: absolute;
+    top: 48px;
+    left: 30px;
+    right: 30px;
+    bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+}
+
+.winner-prize-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: clamp(20px, 5.2vw, 34px);
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    line-height: 1.25;
+    text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.95),
+        0 0 16px rgba(255, 255, 255, 0.4);
+    max-width: 100%;
+    max-height: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    white-space: normal;
+    text-overflow: ellipsis;
+    user-select: none;
+}
+
+/* Mobile Responsiveness for Marquee Board */
+@media (max-width: 768px) {
+    .winner-marquee-board {
+        top: 14px;
+        width: min(390px, calc(100vw - 24px));
+    }
+    .neon-tube-frame {
+        padding: 5px 20px;
+    }
+    .neon-winner-text {
+        font-size: 17px;
+        letter-spacing: 3.5px;
+    }
+    .winner-marquee-content {
+        top: 42px;
+        left: 24px;
+        right: 24px;
+        bottom: 14px;
+    }
+    .winner-prize-name {
+        font-size: clamp(16px, 4.5vw, 24px);
+        line-height: 1.22;
+    }
+}
+
+

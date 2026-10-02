@@ -84,6 +84,16 @@ namespace ModernAutoClicker
                           ControlStyles.SupportsTransparentBackColor, true);
         }
 
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            try
+            {
+                NativeMethods.SetWindowDisplayAffinity(this.Handle, NativeMethods.WDA_EXCLUDEFROMCAPTURE);
+            }
+            catch { }
+        }
+
         // CRITICAL: Prevent OverlayForm from ever stealing focus when shown or clicked!
         protected override bool ShowWithoutActivation
         {
@@ -402,6 +412,11 @@ namespace ModernAutoClicker
             {
                 this.CreateHandle();
             }
+            try
+            {
+                NativeMethods.SetWindowDisplayAffinity(this.Handle, NativeMethods.WDA_EXCLUDEFROMCAPTURE);
+            }
+            catch { }
             NativeMethods.SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
             NativeMethods.ShowWindow(this.Handle, NativeMethods.SW_SHOWNOACTIVATE);
         }
@@ -681,62 +696,73 @@ namespace ModernAutoClicker
                 }
             }
 
-            // LAYER 0: LIVE EXECUTING GLOW (Vibrant Red / Danger Ring & Underlay)
-            if (isExecuting)
+            // HOLLOW RETICLE: Exclude 3x3 center so the exact target pixel (cx, cy) remains 100% transparent Color.Magenta.
+            // This prevents the overlay's red glow, white crosshair, or black border from ever interfering with IfColor or screen pixel sampling.
+            GraphicsState gState = g.Save();
+            g.ExcludeClip(new Rectangle(cx - 1, cy - 1, 3, 3));
+            try
             {
-                Color execColor = Color.FromArgb(239, 68, 68); // Live Active Red
-                using (SolidBrush execBrush = new SolidBrush(execColor))
+                // LAYER 0: LIVE EXECUTING GLOW (Vibrant Red / Danger Ring & Underlay)
+                if (isExecuting)
                 {
-                    g.FillRectangle(execBrush, cx - arm - 6, cy - 7, (arm * 2) + 13, 15);
-                    g.FillRectangle(execBrush, cx - 7, cy - arm - 6, 15, (arm * 2) + 13);
-
-                    for (int ox = -6; ox <= 6; ox++)
+                    Color execColor = Color.FromArgb(239, 68, 68); // Live Active Red
+                    using (SolidBrush execBrush = new SolidBrush(execColor))
                     {
-                        for (int oy = -6; oy <= 6; oy++)
+                        g.FillRectangle(execBrush, cx - arm - 6, cy - 7, (arm * 2) + 13, 15);
+                        g.FillRectangle(execBrush, cx - 7, cy - arm - 6, 15, (arm * 2) + 13);
+
+                        for (int ox = -6; ox <= 6; ox++)
                         {
-                            int maxDist = Math.Max(Math.Abs(ox), Math.Abs(oy));
-                            if (maxDist >= 2 && maxDist <= 6)
+                            for (int oy = -6; oy <= 6; oy++)
                             {
-                                g.DrawString(text, font, execBrush, nx + ox, ny + oy, StringFormat.GenericTypographic);
+                                int maxDist = Math.Max(Math.Abs(ox), Math.Abs(oy));
+                                if (maxDist >= 2 && maxDist <= 6)
+                                {
+                                    g.DrawString(text, font, execBrush, nx + ox, ny + oy, StringFormat.GenericTypographic);
+                                }
                             }
                         }
                     }
                 }
-            }
-            // LAYER 1: SELECTION HIGHLIGHT UNDERLAY
-            else if (isSelected)
-            {
-                g.FillRectangle(highlightBrush, cx - arm - 4, cy - 5, (arm * 2) + 9, 11);
-                g.FillRectangle(highlightBrush, cx - 5, cy - arm - 4, 11, (arm * 2) + 9);
-
-                for (int ox = -5; ox <= 5; ox++)
+                // LAYER 1: SELECTION HIGHLIGHT UNDERLAY
+                else if (isSelected)
                 {
-                    for (int oy = -5; oy <= 5; oy++)
+                    g.FillRectangle(highlightBrush, cx - arm - 4, cy - 5, (arm * 2) + 9, 11);
+                    g.FillRectangle(highlightBrush, cx - 5, cy - arm - 4, 11, (arm * 2) + 9);
+
+                    for (int ox = -5; ox <= 5; ox++)
                     {
-                        int maxDist = Math.Max(Math.Abs(ox), Math.Abs(oy));
-                        if (maxDist >= 2 && maxDist <= 5)
+                        for (int oy = -5; oy <= 5; oy++)
                         {
-                            g.DrawString(text, font, highlightBrush, nx + ox, ny + oy, StringFormat.GenericTypographic);
+                            int maxDist = Math.Max(Math.Abs(ox), Math.Abs(oy));
+                            if (maxDist >= 2 && maxDist <= 5)
+                            {
+                                g.DrawString(text, font, highlightBrush, nx + ox, ny + oy, StringFormat.GenericTypographic);
+                            }
                         }
                     }
                 }
+
+                // LAYER 2: 1px BLACK OUTLINE
+                g.FillRectangle(blackBrush, cx - arm, cy - 1, (arm * 2) + 1, 3);
+                g.FillRectangle(blackBrush, cx - 1, cy - arm, 3, (arm * 2) + 1);
+
+                int[] dx = new int[] { -1, 0, 1, -1, 1, -1, 0, 1 };
+                int[] dy = new int[] { -1, -1, -1, 0, 0, 1, 1, 1 };
+                for (int k = 0; k < 8; k++)
+                {
+                    g.DrawString(text, font, blackBrush, nx + dx[k], ny + dy[k], StringFormat.GenericTypographic);
+                }
+
+                // LAYER 3: 1px WHITE CORE
+                g.FillRectangle(whiteBrush, cx - arm + 1, cy, (arm * 2) - 1, 1);
+                g.FillRectangle(whiteBrush, cx, cy - arm + 1, 1, (arm * 2) - 1);
+                g.DrawString(text, font, whiteBrush, nx, ny, StringFormat.GenericTypographic);
             }
-
-            // LAYER 2: 1px BLACK OUTLINE
-            g.FillRectangle(blackBrush, cx - arm, cy - 1, (arm * 2) + 1, 3);
-            g.FillRectangle(blackBrush, cx - 1, cy - arm, 3, (arm * 2) + 1);
-
-            int[] dx = new int[] { -1, 0, 1, -1, 1, -1, 0, 1 };
-            int[] dy = new int[] { -1, -1, -1, 0, 0, 1, 1, 1 };
-            for (int k = 0; k < 8; k++)
+            finally
             {
-                g.DrawString(text, font, blackBrush, nx + dx[k], ny + dy[k], StringFormat.GenericTypographic);
+                g.Restore(gState);
             }
-
-            // LAYER 3: 1px WHITE CORE
-            g.FillRectangle(whiteBrush, cx - arm + 1, cy, (arm * 2) - 1, 1);
-            g.FillRectangle(whiteBrush, cx, cy - arm + 1, 1, (arm * 2) - 1);
-            g.DrawString(text, font, whiteBrush, nx, ny, StringFormat.GenericTypographic);
         }
 
         public static string GetAdvancedStepLabel(ModernAutoClicker.Advanced.MacroStep s, int index, bool isStart)

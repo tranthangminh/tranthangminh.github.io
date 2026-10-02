@@ -261,19 +261,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (window.LuckyWheelWinnerModal) {
-        window.LuckyWheelWinnerModal.init({
-            onSpinAgain: triggerSpin,
-            onHideWinner: (winner) => {
-                const target = slices.find(s => s.id === winner.id);
-                if (target) {
-                    target.enabled = false;
-                    saveState();
-                    if (window.LuckyWheelSlices) window.LuckyWheelSlices.renderSlices();
-                    wheelEngine.setSlices(slices);
-                }
-            }
-        });
+    // Confetti Engine for celebration effects directly on canvas
+    let confettiInstance = null;
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    if (confettiCanvas && window.ConfettiEngine) {
+        confettiInstance = new window.ConfettiEngine(confettiCanvas);
     }
 
     // Sync wheel with initial slice data
@@ -282,6 +274,57 @@ document.addEventListener('DOMContentLoaded', () => {
     // --------------------------------------------------------------------------
     // 6. SPIN ACTION & WINNER HANDLING
     // --------------------------------------------------------------------------
+    let winnerMarqueeTimer = null;
+    const winnerMarqueeBoard = document.getElementById('winnerMarqueeBoard');
+    const winnerMarqueeName = document.getElementById('winnerMarqueeName');
+
+    function showWinnerMarquee(winner) {
+        if (!winnerMarqueeBoard || !winnerMarqueeName) return;
+        if (winnerMarqueeTimer) {
+            clearTimeout(winnerMarqueeTimer);
+            winnerMarqueeTimer = null;
+        }
+
+        const rawText = winner ? (winner.text || '') : '';
+        winnerMarqueeName.textContent = rawText;
+
+        // Dynamic font sizing based on text length to guarantee clean multi-line fit:
+        const len = rawText.length;
+        if (len <= 10) {
+            winnerMarqueeName.style.fontSize = 'clamp(26px, 6.2vw, 36px)';
+            winnerMarqueeName.style.lineHeight = '1.2';
+        } else if (len <= 20) {
+            winnerMarqueeName.style.fontSize = 'clamp(20px, 4.8vw, 26px)';
+            winnerMarqueeName.style.lineHeight = '1.25';
+        } else if (len <= 35) {
+            winnerMarqueeName.style.fontSize = 'clamp(17px, 3.8vw, 21px)';
+            winnerMarqueeName.style.lineHeight = '1.28';
+        } else {
+            winnerMarqueeName.style.fontSize = 'clamp(14px, 3.2vw, 17px)';
+            winnerMarqueeName.style.lineHeight = '1.3';
+        }
+
+        winnerMarqueeBoard.classList.remove('is-closing');
+        winnerMarqueeBoard.classList.add('is-winning');
+        winnerMarqueeBoard.classList.add('is-visible');
+
+        // Automatically pull back up after 5 seconds per request
+        winnerMarqueeTimer = setTimeout(() => {
+            hideWinnerMarquee();
+        }, 5000);
+    }
+
+    function hideWinnerMarquee() {
+        if (!winnerMarqueeBoard) return;
+        if (winnerMarqueeTimer) {
+            clearTimeout(winnerMarqueeTimer);
+            winnerMarqueeTimer = null;
+        }
+        winnerMarqueeBoard.classList.remove('is-visible');
+        winnerMarqueeBoard.classList.remove('is-winning');
+        winnerMarqueeBoard.classList.add('is-closing');
+    }
+
     function triggerSpin() {
         if (wheelEngine.isSpinning) return;
         const activeSlices = slices.filter(s => s.enabled !== false);
@@ -291,8 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Close any open modals
-        if (window.LuckyWheelWinnerModal) window.LuckyWheelWinnerModal.close();
+        // Close any open modals, winner marquee, and stop previous confetti
+        hideWinnerMarquee();
+        if (confettiInstance) confettiInstance.stop();
         const bulkEditModal = document.getElementById('bulkEditModal');
         if (bulkEditModal) bulkEditModal.classList.remove('is-open');
 
@@ -318,6 +362,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.remove('wheel-is-spinning');
         lastWinnerSlice = winner;
 
+        // Show drop-down winner neon marquee board for 5 seconds
+        showWinnerMarquee(winner);
+
         const casinoRing = document.getElementById('casinoLightsRing');
         const casinoCenter = document.getElementById('casinoCenterLights');
         if (casinoRing) {
@@ -325,18 +372,19 @@ document.addEventListener('DOMContentLoaded', () => {
             casinoRing.classList.add('is-winning');
             setTimeout(() => {
                 casinoRing.classList.remove('is-winning');
-            }, 3500);
+            }, 5000);
         }
         if (casinoCenter) {
             casinoCenter.classList.remove('is-spinning');
             casinoCenter.classList.add('is-winning');
             setTimeout(() => {
                 casinoCenter.classList.remove('is-winning');
-            }, 3500);
+            }, 5000);
         }
 
-        // Play celebrations
+        // Play celebrations & fireworks
         window.soundEngine.playWin();
+        if (confettiInstance) confettiInstance.fire(48);
 
         // Record history
         if (window.LuckyWheelHistory) {
@@ -352,11 +400,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (window.LuckyWheelSlices) window.LuckyWheelSlices.renderSlices();
                 wheelEngine.setSlices(slices);
             }
-        }
-
-        // Display Winner Modal
-        if (window.LuckyWheelWinnerModal) {
-            window.LuckyWheelWinnerModal.show(winner, settings.eliminationMode);
         }
     }
 
@@ -789,7 +832,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Display mode (Standard 2D)
     function updateDisplayModeUI() {
         if (wheelStage) {
-            wheelStage.classList.remove('mode-3d-tilt', 'mode-3d-cylinder');
+            wheelStage.classList.remove('mode-3d-tilt');
             wheelStage.classList.add('mode-2d');
         }
         if (wheelEngine) {

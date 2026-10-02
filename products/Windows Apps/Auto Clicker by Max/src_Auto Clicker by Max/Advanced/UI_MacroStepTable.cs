@@ -35,6 +35,17 @@ namespace ModernAutoClicker.Advanced
         private ThemeTokens _theme;
         private ToolTip _headerToolTip;
         private MacroRowDragFilter _dragFilter = null;
+        private bool _isEditingLocked = false;
+        public bool IsEditingLocked { get { return _isEditingLocked; } }
+
+        public void SetEditingLocked(bool isLocked)
+        {
+            _isEditingLocked = isLocked;
+            foreach (var r in _rows)
+            {
+                if (r != null) r.SetRowEditingLocked(isLocked);
+            }
+        }
 
         public event Action OnTableDataChanged;
         public event Action<int> OnSelectionChanged;
@@ -148,7 +159,7 @@ namespace ModernAutoClicker.Advanced
                 string prompt = Loc.IsVietnamese
                     ? string.Format("Nhập Thời gian Giữ (ms) cho {0} bước:\n(Thời gian hoàn thành từng bước)", targets.Count)
                     : string.Format("Enter Hold Duration (ms) for {0} steps:\n(Time to complete each step)", targets.Count);
-                PromptBatchNumber(title, prompt, 0, 999999, 10, (val) =>
+                PromptBatchNumber(title, prompt, 1, 999999, 10, (val) =>
                 {
                     foreach (MacroRowControl r in targets) r.UpdateHoldValue(val);
                     if (OnTableDataChanged != null) OnTableDataChanged();
@@ -290,7 +301,11 @@ namespace ModernAutoClicker.Advanced
                 lbl.MouseLeave += (s, e) => { lbl.ForeColor = _theme != null ? _theme.AccentPrimary : Color.FromArgb(96, 165, 250); };
                 if (clickAction != null)
                 {
-                    lbl.Click += (s, e) => clickAction();
+                    lbl.Click += (s, e) =>
+                    {
+                        if (_isEditingLocked) return;
+                        clickAction();
+                    };
                 }
             }
             else
@@ -474,55 +489,17 @@ namespace ModernAutoClicker.Advanced
 
         public void BatchSetTargetCoordinates()
         {
-            if (_rows.Count == 0) return;
+            if (_isEditingLocked || _rows.Count == 0) return;
             var targets = GetTargetRowsForBatch();
+            if (targets == null || targets.Count == 0) return;
 
             CoordinatePicker picker = new CoordinatePicker();
-            picker.OnPointSelectedWithWindow += (screenPt, color, winInfo, clientPt) =>
+            picker.OnTargetSelectedWithWindow += (screenA, screenB, color, winInfo, clientPtA, clientPtB, isArea) =>
             {
                 foreach (MacroRowControl r in targets)
                 {
-                    Point finalPt = screenPt;
-                    if (r.Step.RelativeToWindow)
-                    {
-                        IntPtr hWnd = r.Step.WindowHwnd;
-                        if (!NativeMethods.IsValidWindowHandle(hWnd, r.Step.ProcessName))
-                        {
-                            if (winInfo != null && winInfo.Hwnd != IntPtr.Zero && NativeMethods.IsValidWindowHandle(winInfo.Hwnd, winInfo.ProcessName))
-                            {
-                                hWnd = winInfo.Hwnd;
-                                r.Step.WindowHwnd = hWnd;
-                                r.Step.ProcessName = winInfo.ProcessName;
-                                r.Step.WindowTitle = winInfo.Title;
-                            }
-                            else
-                            {
-                                hWnd = NativeMethods.FindWindowByTarget(r.Step.ProcessName, r.Step.WindowTitle);
-                                if (hWnd != IntPtr.Zero) r.Step.WindowHwnd = hWnd;
-                            }
-                        }
-
-                        if (hWnd != IntPtr.Zero)
-                        {
-                            NativeMethods.POINT np = new NativeMethods.POINT { X = screenPt.X, Y = screenPt.Y };
-                            if (NativeMethods.ScreenToClient(hWnd, ref np))
-                            {
-                                finalPt = new Point(np.X, np.Y);
-                            }
-                        }
-                        else if (winInfo != null)
-                        {
-                            finalPt = clientPt;
-                            r.Step.WindowHwnd = winInfo.Hwnd;
-                            r.Step.ProcessName = winInfo.ProcessName;
-                            r.Step.WindowTitle = winInfo.Title;
-                        }
-                    }
-                    r.UpdateStartPoint(finalPt);
-                    if (r.Step.ActionType == MacroActionType.WaitColor || r.Step.ActionType == MacroActionType.IfColor)
-                    {
-                        r.UpdateColor(color);
-                    }
+                    if (r == null || !r.SupportsCoordinates()) continue;
+                    r.ApplyPickedCoordinates(screenA, screenB, color, winInfo, clientPtA, clientPtB, isArea);
                 }
                 if (OnTableDataChanged != null) OnTableDataChanged();
             };
@@ -533,6 +510,7 @@ namespace ModernAutoClicker.Advanced
 
         public void AddStep(MacroStep step = null)
         {
+            if (_isEditingLocked) return;
             AddStepInternal(step);
             ReorderRows();
             SelectRow(_rows.Count - 1);
@@ -562,7 +540,7 @@ namespace ModernAutoClicker.Advanced
 
         public void DuplicateSelectedSteps()
         {
-            if (_rows.Count == 0) return;
+            if (_isEditingLocked || _rows.Count == 0) return;
 
             List<MacroRowControl> targets = GetTargetRowsForBatch();
             if (targets == null || targets.Count == 0) return;
@@ -641,6 +619,7 @@ namespace ModernAutoClicker.Advanced
         {
             MacroRowControl row = new MacroRowControl(step, index, _theme);
             row.SetAvailableScripts(_availableScripts);
+            row.SetRowEditingLocked(_isEditingLocked);
             row.Width = pnlContent.Width;
             row.AllowDrop = true;
             row.OnDeleteRequested += (r) => RemoveRow(r);
@@ -673,6 +652,7 @@ namespace ModernAutoClicker.Advanced
                 row.Width = pnlContent.Width;
                 row.BindStep(step, index);
                 row.SetAvailableScripts(_availableScripts);
+                row.SetRowEditingLocked(_isEditingLocked);
                 isNewlyCreated = false;
                 return row;
             }
@@ -718,7 +698,7 @@ namespace ModernAutoClicker.Advanced
 
         public void MoveRow(int srcIndex, int targetIndex)
         {
-            if (srcIndex < 0 || srcIndex >= _rows.Count || targetIndex < 0 || targetIndex >= _rows.Count || srcIndex == targetIndex) return;
+            if (_isEditingLocked || srcIndex < 0 || srcIndex >= _rows.Count || targetIndex < 0 || targetIndex >= _rows.Count || srcIndex == targetIndex) return;
 
             SelectOnly(srcIndex);
             MoveSelectedRows(targetIndex, targetIndex > srcIndex);
@@ -726,7 +706,7 @@ namespace ModernAutoClicker.Advanced
 
         public void MoveSelectedRows(int targetIdx, bool dropBelow)
         {
-            if (_rows.Count <= 1 || targetIdx < 0 || targetIdx >= _rows.Count) return;
+            if (_isEditingLocked || _rows.Count <= 1 || targetIdx < 0 || targetIdx >= _rows.Count) return;
 
             if (_selectedIndices.Count == 0)
             {
@@ -810,7 +790,7 @@ namespace ModernAutoClicker.Advanced
 
         public void StartRowDrag(int srcIndex)
         {
-            if (srcIndex < 0 || srcIndex >= _rows.Count || _rows.Count <= 1) return;
+            if (_isEditingLocked || srcIndex < 0 || srcIndex >= _rows.Count || _rows.Count <= 1) return;
 
             if (!_selectedIndices.Contains(srcIndex))
             {
@@ -1074,6 +1054,7 @@ namespace ModernAutoClicker.Advanced
 
         public void DeleteSelectedRow()
         {
+            if (_isEditingLocked) return;
             List<MacroRowControl> targets = new List<MacroRowControl>();
             foreach (MacroRowControl r in _rows)
             {
@@ -1095,6 +1076,7 @@ namespace ModernAutoClicker.Advanced
 
         public void RemoveRow(MacroRowControl row)
         {
+            if (_isEditingLocked) return;
             if (_rows.Contains(row))
             {
                 int removedIdx = _rows.IndexOf(row);
@@ -1136,7 +1118,7 @@ namespace ModernAutoClicker.Advanced
 
         public void BatchDeleteRows(List<MacroRowControl> targets)
         {
-            if (targets == null || targets.Count == 0) return;
+            if (_isEditingLocked || targets == null || targets.Count == 0) return;
 
             pnlContent.SuspendLayout();
             try
@@ -1575,10 +1557,117 @@ namespace ModernAutoClicker.Advanced
             this.Invalidate();
         }
 
+        private bool HandleTextControlSelectAll()
+        {
+            Form form = this.FindForm();
+            Control focused = null;
+
+            try
+            {
+                IntPtr hFocus = NativeMethods.GetFocus();
+                if (hFocus != IntPtr.Zero)
+                {
+                    focused = Control.FromHandle(hFocus);
+                }
+            }
+            catch { }
+
+            if (focused == null && form != null)
+            {
+                focused = GetDeepActiveControl(form);
+            }
+
+            if (focused == null) return false;
+
+            // 1. Direct TextBoxBase (TextBox, ModernTextBox, RichTextBox)
+            if (focused is TextBoxBase)
+            {
+                ((TextBoxBase)focused).SelectAll();
+                return true;
+            }
+
+            // 2. Direct NumberInput
+            if (focused is NumberInput)
+            {
+                ((NumberInput)focused).SelectAll();
+                return true;
+            }
+
+            // 3. Child control inside NumberInput (e.g. inner edit box)
+            if (focused.Parent is NumberInput)
+            {
+                ((NumberInput)focused.Parent).SelectAll();
+                return true;
+            }
+
+            // 4. Type name matching for custom or nested edit boxes
+            string typeName = focused.GetType().Name;
+            if (typeName.IndexOf("TextBox", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                typeName.IndexOf("NumberInput", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                typeName.IndexOf("UpDownEdit", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                try
+                {
+                    var mi = focused.GetType().GetMethod("SelectAll", Type.EmptyTypes);
+                    if (mi != null)
+                    {
+                        mi.Invoke(focused, null);
+                        return true;
+                    }
+                }
+                catch { }
+
+                if (focused is TextBoxBase)
+                {
+                    ((TextBoxBase)focused).SelectAll();
+                    return true;
+                }
+            }
+
+            // 5. Win32 Edit control check via GetClassName and EM_SETSEL
+            try
+            {
+                IntPtr hFocus = NativeMethods.GetFocus();
+                if (hFocus != IntPtr.Zero)
+                {
+                    System.Text.StringBuilder className = new System.Text.StringBuilder(64);
+                    if (NativeMethods.GetClassName(hFocus, className, className.Capacity) > 0)
+                    {
+                        string cls = className.ToString().ToLowerInvariant();
+                        if (cls == "edit" || cls.Contains("edit"))
+                        {
+                            NativeMethods.SendMessage(hFocus, 0x00B1 /* EM_SETSEL */, (IntPtr)0, (IntPtr)(-1));
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return false;
+        }
+
+        private static Control GetDeepActiveControl(ContainerControl container)
+        {
+            if (container == null) return null;
+            Control c = container.ActiveControl;
+            while (c is ContainerControl)
+            {
+                Control child = ((ContainerControl)c).ActiveControl;
+                if (child == null) break;
+                c = child;
+            }
+            return c;
+        }
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == (Keys.Control | Keys.A))
             {
+                if (HandleTextControlSelectAll())
+                {
+                    return true;
+                }
                 SelectAll();
                 return true;
             }

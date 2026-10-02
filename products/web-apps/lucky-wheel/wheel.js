@@ -12,7 +12,7 @@ class LuckyWheelEngine {
 
         this.slices = [];
         this.sizingMode = options.sizingMode || 'weighted'; // 'weighted' | 'equal' | 'equal_weighted'
-        this.displayMode = options.displayMode || '2d'; // '2d' | '3d_tilt' | '3d_cylinder'
+        this.displayMode = options.displayMode || '2d'; // '2d' | '3d_tilt'
         this.spinDuration = options.spinDuration || 5000; // ms
 
         // Rotation angles in radians
@@ -39,6 +39,13 @@ class LuckyWheelEngine {
         this._modeAnimId = null;
         this._isTransitioning = false;
         this._transitionSourceMode = null;
+
+        // Winning slice celebration & gradual fade-in state
+        this.winnerFlashIndex = null;
+        this.winnerFlashStartTime = 0;
+        this.winnerCelebrationState = 'idle'; // 'idle' | 'flashing' | 'fading_in'
+        this.celebrationFadeFactor = 1.0;
+        this._winnerFlashAnimId = null;
 
         // High DPI setup
         this.resize();
@@ -105,6 +112,7 @@ class LuckyWheelEngine {
      * Update active slices
      */
     setSlices(slices) {
+        this.stopWinnerFlash();
         this.slices = slices.filter(s => s.enabled !== false);
         this.calculateAngles();
         this._discCacheValid = false;
@@ -121,7 +129,7 @@ class LuckyWheelEngine {
     }
 
     /**
-     * Set display mode ('2d' | '3d_tilt' | '3d_cylinder') with smooth thickness transition (0% - 100%)
+     * Set display mode ('2d' | '3d_tilt') with smooth thickness transition (0% - 100%)
      */
     setDisplayMode(mode) {
         if (this.displayMode === mode) return;
@@ -129,8 +137,8 @@ class LuckyWheelEngine {
         const prevMode = this.displayMode;
         this.displayMode = mode;
 
-        const isTo3D = (mode === '3d_tilt' || mode === '3d_cylinder');
-        const isFrom3D = (prevMode === '3d_tilt' || prevMode === '3d_cylinder');
+        const isTo3D = (mode === '3d_tilt');
+        const isFrom3D = (prevMode === '3d_tilt');
 
         if (this._modeAnimId) {
             cancelAnimationFrame(this._modeAnimId);
@@ -252,11 +260,192 @@ class LuckyWheelEngine {
     }
 
     /**
+     * Start celebration strobe flash on winning slice (flashes 5s, then other slices fade in gradually over 1.5s)
+     */
+    startWinnerFlash(index) {
+        if (this._winnerFlashAnimId) {
+            cancelAnimationFrame(this._winnerFlashAnimId);
+            this._winnerFlashAnimId = null;
+        }
+        if (index === null || index === undefined || index < 0 || !this.slices || index >= this.slices.length) return;
+        this.winnerFlashIndex = index;
+        this.winnerFlashStartTime = performance.now();
+        this.winnerCelebrationState = 'flashing';
+        this.celebrationFadeFactor = 0.28;
+
+        const flashDuration = 5000; // 5 seconds strobe flash per request
+        const fadeInDuration = 1500; // 1.5 seconds gradual fade-in of other slices per request
+
+        // Immediately render first frame of celebration so there is zero gap or brightness spike
+        this.draw();
+
+        const loop = (now) => {
+            if (this.winnerCelebrationState === 'idle') return;
+
+            const elapsed = now - this.winnerFlashStartTime;
+
+            if (elapsed < flashDuration) {
+                // Phase 1: 5 seconds of winning slice strobe flash, other slices stay darkened
+                this.winnerCelebrationState = 'flashing';
+                this.celebrationFadeFactor = 0.28;
+                this.draw();
+                this._winnerFlashAnimId = requestAnimationFrame(loop);
+            } else if (elapsed < flashDuration + fadeInDuration) {
+                // Phase 2: Strobe stops, other slices smoothly fade in from 0.28 to 1.0 over 1.5s
+                this.winnerCelebrationState = 'fading_in';
+                const fadeElapsed = elapsed - flashDuration;
+                const q = Math.min(1, fadeElapsed / fadeInDuration);
+                const ease = 1 - Math.pow(1 - q, 3); // Cubic ease-out
+                this.celebrationFadeFactor = 0.28 + (1.0 - 0.28) * ease;
+                this.draw();
+                this._winnerFlashAnimId = requestAnimationFrame(loop);
+            } else {
+                // Phase 3: Complete, return to full vibrant idle state
+                this.stopWinnerFlash();
+            }
+        };
+
+        this._winnerFlashAnimId = requestAnimationFrame(loop);
+    }
+
+    /**
+     * Stop winning slice celebration and reset to normal idle state
+     */
+    stopWinnerFlash() {
+        if (this._winnerFlashAnimId) {
+            cancelAnimationFrame(this._winnerFlashAnimId);
+            this._winnerFlashAnimId = null;
+        }
+        const wasActive = (this.winnerCelebrationState !== 'idle' || this.winnerFlashIndex !== null);
+        this.winnerCelebrationState = 'idle';
+        this.winnerFlashIndex = null;
+        this.celebrationFadeFactor = 1.0;
+        if (wasActive) {
+            this.draw();
+        }
+    }
+
+    /**
+     * Calculate gradual dimming factor for slices when spin starts (1.0 down to 0.28 over 1.5s)
+     * @returns {number} dim factor between 0.28 and 1.0
+     */
+    getSpinDimFactor() {
+        if (!this.isSpinning) return 1.0;
+        const elapsed = performance.now() - this.spinStartTime;
+        const fadeDuration = 1500; // 1.5 seconds gradual dimming per request
+        const q = Math.min(1.0, Math.max(0, elapsed / fadeDuration));
+        const ease = 1 - Math.pow(1 - q, 2); // Smooth quadratic ease-out
+        return 1.0 - (1.0 - 0.28) * ease;
+    }
+
+    /**
+     * Get the slice index currently lit by the counter-rotational chase light
+     * Guaranteed to make exactly 15 full reverse revolutions and land PRECISELY on the winning slice right at standstill
+     * @returns {number} slice index or -1 if not spinning
+     */
+    getSpinningChaseIndex() {
+        if (!this.isSpinning || !this.slices || this.slices.length === 0) return -1;
+
+        const numSlices = this.slices.length;
+        const now = performance.now();
+        const elapsed = now - this.spinStartTime;
+        const progress = Math.min(elapsed / this.spinDuration, 1);
+        const ease = 1 - Math.pow(1 - progress, 4);
+
+        let winCenter = 0;
+        if (this.winningIndex !== null && this.winningIndex >= 0 && this.winningIndex < numSlices) {
+            const ws = this.slices[this.winningIndex];
+            winCenter = ws.startAngle + ws.span / 2;
+        }
+
+        // Exactly 15 full reverse revolutions per user request, decelerating smoothly to land on winner
+        const K = 15;
+        const chaseAngle = winCenter + (1 - ease) * (K * Math.PI * 2);
+
+        let norm = chaseAngle % (Math.PI * 2);
+        if (norm < 0) norm += Math.PI * 2;
+
+        for (let i = 0; i < numSlices; i++) {
+            const s = this.slices[i];
+            if (norm >= s.startAngle && norm < s.endAngle) {
+                return i;
+            }
+        }
+        return (this.winningIndex !== null && this.winningIndex >= 0) ? this.winningIndex : numSlices - 1;
+    }
+
+    /**
+     * Draw running chase light highlight on slices while spinning (travels 15 reverse laps and lands on winner)
+     * @param {CanvasRenderingContext2D} ctx - Transformed context (centered at 0, 0, rotated with wheel)
+     * @param {number} r - Wheel radius
+     */
+    drawSpinningChaseHighlight(ctx, r) {
+        if (!this.isSpinning || !this.slices || this.slices.length === 0) return;
+
+        const activeIdx = this.getSpinningChaseIndex();
+        if (activeIdx === -1) return;
+
+        const numSlices = this.slices.length;
+        const now = performance.now();
+        const elapsed = now - this.spinStartTime;
+        const progress = Math.min(elapsed / this.spinDuration, 1);
+        const ease = 1 - Math.pow(1 - progress, 4);
+
+        let winCenter = 0;
+        if (this.winningIndex !== null && this.winningIndex >= 0 && this.winningIndex < numSlices) {
+            const ws = this.slices[this.winningIndex];
+            winCenter = ws.startAngle + ws.span / 2;
+        }
+        const K = 15; // Exactly 15 full reverse revolutions
+        const chaseAngle = winCenter + (1 - ease) * (K * Math.PI * 2);
+
+        let norm = chaseAngle % (Math.PI * 2);
+        if (norm < 0) norm += Math.PI * 2;
+
+        const activeSlice = this.slices[activeIdx];
+        const span = activeSlice.span || ((Math.PI * 2) / numSlices);
+        const sliceMid = activeSlice.startAngle + span / 2;
+        let diff = Math.abs(norm - sliceMid);
+        if (diff > Math.PI) diff = Math.PI * 2 - diff;
+        const proximity = Math.max(0.45, 1 - (diff / (span / 2)) * 0.55);
+
+        const start = activeSlice.startAngle;
+        const end = activeSlice.endAngle;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, r, start, end);
+        ctx.closePath();
+
+        // Glowing luminous wash (radiant white to warm champagne gold)
+        const chaseGrad = ctx.createRadialGradient(0, 0, r * 0.15, 0, 0, r);
+        chaseGrad.addColorStop(0, `rgba(255, 255, 255, ${0.62 * proximity})`);
+        chaseGrad.addColorStop(0.5, `rgba(254, 240, 138, ${0.45 * proximity})`);
+        chaseGrad.addColorStop(1, `rgba(255, 255, 255, ${0.68 * proximity})`);
+        ctx.fillStyle = chaseGrad;
+        ctx.fill();
+
+        // Glowing neon golden perimeter along the slice wedge
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 * proximity})`;
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 14 * proximity;
+        ctx.stroke();
+
+        // Re-draw slice text on top of the chase wash in crisp white
+        this.drawSliceText(ctx, activeSlice, start, end, r, '#ffffff');
+
+        ctx.restore();
+    }
+
+    /**
      * Start spinning to a determined or random winner
      */
     spin(forcedWinnerIndex = null) {
         if (this.isSpinning || !this.slices || this.slices.length === 0) return false;
 
+        this.stopWinnerFlash();
         this.isSpinning = true;
         this.spinStartTime = performance.now();
         this.startAngle = this.currentAngle % (Math.PI * 2);
@@ -354,7 +543,10 @@ class LuckyWheelEngine {
             this.isSpinning = false;
             this.pointerDeflection = 0;
             this.pointerVelocity = 0;
-            this.draw();
+
+            // Trigger continuous celebration strobe flash on the winning slice
+            // (startWinnerFlash draws the darkened flashing frame immediately, eliminating any 1-frame brightness glitch)
+            this.startWinnerFlash(this.winningIndex);
 
             if (this.onSpinEnd) {
                 this.onSpinEnd(this.winningSlice, this.winningIndex);
@@ -445,9 +637,7 @@ class LuckyWheelEngine {
             ? (this._transitionSourceMode || '3d_tilt')
             : this.displayMode;
 
-        if (effectiveMode === '3d_cylinder' && window.LuckyWheel3DCylinder) {
-            window.LuckyWheel3DCylinder.draw(this);
-        } else if (effectiveMode === '3d_tilt' && window.LuckyWheel3DTilt) {
+        if (effectiveMode === '3d_tilt' && window.LuckyWheel3DTilt) {
             window.LuckyWheel3DTilt.draw(this);
         } else {
             this.drawFlatWheel();
@@ -496,9 +686,17 @@ class LuckyWheelEngine {
         // 3. Draw Rotating Slices
         ctx.rotate(this.currentAngle);
 
+        const chaseIdx = this.getSpinningChaseIndex();
+        const isFlashing = (this.winnerCelebrationState === 'flashing');
+        const isFadingIn = (this.winnerCelebrationState === 'fading_in');
+        const fadeFactor = (this.celebrationFadeFactor !== undefined) ? this.celebrationFadeFactor : 1.0;
+
         this.slices.forEach((slice, idx) => {
             const start = slice.startAngle;
             const end = slice.endAngle;
+            const isWinner = (this.winnerFlashIndex === idx);
+            const isChaseLit = (this.isSpinning && idx === chaseIdx);
+            const sliceOriginalColor = slice.color || this.getDefaultColor(idx);
 
             // Draw slice wedge
             ctx.beginPath();
@@ -506,18 +704,95 @@ class LuckyWheelEngine {
             ctx.arc(0, 0, r, start, end);
             ctx.closePath();
 
-            // Fill color
-            ctx.fillStyle = slice.color || this.getDefaultColor(idx);
+            // Determine slice background color & text:
+            let sliceFill;
+            let sliceTextOverride = null;
+            let sliceStroke = '#0f172a';
+
+            if (isFlashing) {
+                // When winner is celebrating with strobe flash (for 3 seconds):
+                if (isWinner) {
+                    sliceFill = sliceOriginalColor;
+                    sliceTextOverride = '#ffffff';
+                } else {
+                    // Non-winning slices use their darkened original colors (identical to spin)
+                    sliceFill = this.adjustBrightness(sliceOriginalColor, 0.28);
+                    sliceTextOverride = 'rgba(255, 255, 255, 0.45)';
+                    sliceStroke = 'rgba(0, 0, 0, 0.45)';
+                }
+            } else if (isFadingIn) {
+                // When flashing finishes: other slices gradually brighten up to 100%!
+                if (isWinner) {
+                    sliceFill = sliceOriginalColor;
+                    sliceTextOverride = '#ffffff';
+                } else {
+                    sliceFill = this.adjustBrightness(sliceOriginalColor, fadeFactor);
+                    const textAlpha = Math.min(1.0, 0.45 + 0.55 * ((fadeFactor - 0.28) / (1.0 - 0.28)));
+                    sliceTextOverride = (fadeFactor < 0.96) ? `rgba(255, 255, 255, ${textAlpha.toFixed(2)})` : null;
+                    sliceStroke = (fadeFactor < 0.96) ? 'rgba(0, 0, 0, 0.45)' : '#0f172a';
+                }
+            } else if (this.isSpinning) {
+                // While wheel is actively spinning:
+                if (isChaseLit) {
+                    // The slice under the chase light shines in full vibrant original color!
+                    sliceFill = sliceOriginalColor;
+                    sliceTextOverride = '#ffffff';
+                } else {
+                    // Other slices gradually fade out from 1.0 down to 0.28 over 1.5s per request
+                    const spinDim = this.getSpinDimFactor();
+                    sliceFill = (spinDim >= 0.99) ? sliceOriginalColor : this.adjustBrightness(sliceOriginalColor, spinDim);
+                    const spinTextAlpha = Math.min(1.0, 0.45 + 0.55 * ((spinDim - 0.28) / (1.0 - 0.28)));
+                    sliceTextOverride = (spinDim < 0.96) ? `rgba(255, 255, 255, ${spinTextAlpha.toFixed(2)})` : null;
+                    sliceStroke = (spinDim < 0.96) ? 'rgba(0, 0, 0, 0.45)' : '#0f172a';
+                }
+            } else {
+                // Idle state (before spinning or after winner celebration): full vibrant color
+                sliceFill = sliceOriginalColor;
+            }
+
+            ctx.fillStyle = sliceFill;
             ctx.fill();
+
+            // Winning Slice Celebration Flash (Continuous rhythmic strobe during flash phase)
+            if (isWinner && isFlashing) {
+                const elapsed = performance.now() - this.winnerFlashStartTime;
+                const phase = (Math.sin(elapsed * 0.018) + 1) / 2; // 0 to 1 pulsating strobe (~4.5 Hz)
+                if (phase > 0.12) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.arc(0, 0, r, start, end);
+                    ctx.closePath();
+
+                    const flashGrad = ctx.createRadialGradient(0, 0, r * 0.15, 0, 0, r);
+                    flashGrad.addColorStop(0, `rgba(255, 255, 255, ${0.75 * phase})`);
+                    flashGrad.addColorStop(0.5, `rgba(254, 240, 138, ${0.55 * phase})`);
+                    flashGrad.addColorStop(1, `rgba(255, 255, 255, ${0.75 * phase})`);
+                    ctx.fillStyle = flashGrad;
+                    ctx.fill();
+
+                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.95 * phase})`;
+                    ctx.shadowColor = '#fbbf24';
+                    ctx.shadowBlur = Math.round(8 * phase);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
 
             // Slice divider line
             ctx.lineWidth = 2;
-            ctx.strokeStyle = '#0f172a';
+            ctx.strokeStyle = sliceStroke;
             ctx.stroke();
 
             // Draw radial text
-            this.drawSliceText(ctx, slice, start, end, r);
+            this.drawSliceText(ctx, slice, start, end, r, sliceTextOverride);
         });
+
+        // 3b. Draw spinning chase highlight on active slice
+        if (this.isSpinning) {
+            this.drawSpinningChaseHighlight(ctx, r);
+        }
 
         // 4. Draw Pegs (Chốt ghim) at slice boundaries
         this.slices.forEach(slice => {
@@ -559,29 +834,7 @@ class LuckyWheelEngine {
     drawFlatWheel() {
         const ctx = this.ctx;
         ctx.clearRect(0, 0, this.width, this.height);
-
-        // During spinning: use cached disc image (rotate it) — saves all slice/text/peg draw calls
-        if (this.isSpinning && this._discCache && this._discCacheValid) {
-            const cx = this.centerX;
-            const cy = this.centerY;
-            const size = this.width;
-
-            // Draw static rim shadow (outside rotation) from cache
-            ctx.drawImage(this._discRimCache, 0, 0, size, size);
-
-            // Draw rotating disc from cache
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(this.currentAngle);
-            ctx.drawImage(this._discCache, -cx, -cy, size, size);
-            ctx.restore();
-
-            // Draw hub on top (always centered, no rotation)
-            this.drawCenterHub(ctx, cx, cy);
-        } else {
-            this.drawWheelDisc();
-        }
-
+        this.drawWheelDisc();
         this.drawPointer();
     }
 
@@ -697,13 +950,13 @@ class LuckyWheelEngine {
      * Scales dynamically with screen size / wheel radius, supports up to 36px font,
      * auto 2-line wrapping for long items, and enforces a minimum floor (11px).
      */
-    drawSliceText(ctx, slice, start, end, radius) {
+    drawSliceText(ctx, slice, start, end, radius, overrideColor = null) {
         ctx.save();
         const midAngle = start + (end - start) / 2;
         ctx.rotate(midAngle);
 
-        // Calculate contrasting font color
-        const fontColor = this.getContrastColor(slice.color || '#3b82f6');
+        // Calculate contrasting font color (or use overrideColor for dimmed state)
+        const fontColor = overrideColor || this.getContrastColor(slice.color || '#3b82f6');
         ctx.fillStyle = fontColor;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
@@ -758,7 +1011,7 @@ class LuckyWheelEngine {
         }
 
         // 4. Drop shadow for crisp readability
-        ctx.shadowColor = fontColor === '#ffffff' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.45)';
+        ctx.shadowColor = overrideColor ? 'rgba(0,0,0,0.65)' : (fontColor === '#ffffff' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.45)');
         ctx.shadowBlur = 3;
         ctx.shadowOffsetX = 1;
         ctx.shadowOffsetY = 1;
@@ -975,7 +1228,7 @@ class ConfettiEngine {
         this.canvas.height = window.innerHeight;
     }
 
-    fire(count = 140) {
+    fire(count = 48) {
         this.resize();
         this.particles = [];
         this.isActive = true;

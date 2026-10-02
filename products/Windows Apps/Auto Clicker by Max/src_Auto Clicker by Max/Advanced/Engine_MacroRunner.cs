@@ -243,7 +243,7 @@ namespace ModernAutoClicker.Advanced
                         int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
                         Rectangle scanRect = new Rectangle(ax, ay, aw, ah);
 
-                        Point foundPt = ActionExecutor.FindMatchingPixelInArea(scanRect, step.TargetColor, tol);
+                        Point foundPt = PixelSampler.FindMatchingPixelInArea(step, scanRect, step.TargetColor, tol);
                         if (foundPt != Point.Empty)
                         {
                             break;
@@ -252,7 +252,7 @@ namespace ModernAutoClicker.Advanced
                     else
                     {
                         Point samplePt = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
-                        Color curr = NativeMethods.GetPixelColor(samplePt.X, samplePt.Y);
+                        Color curr = PixelSampler.GetPixelColor(step, samplePt);
                         if (ActionExecutor.MatchesColor(curr, step.TargetColor, tol))
                         {
                             break;
@@ -289,7 +289,7 @@ namespace ModernAutoClicker.Advanced
                 while (_isRunning && template != null)
                 {
                     Point foundCenter;
-                    if (ActionExecutor.FindTemplateInArea(scanRect, template, sim, out foundCenter))
+                    if (PixelSampler.FindTemplateInArea(step, scanRect, template, sim, out foundCenter))
                     {
                         break;
                     }
@@ -310,11 +310,11 @@ namespace ModernAutoClicker.Advanced
             {
                 int tol = step.Tolerance > 0 ? step.Tolerance : 10;
                 Point samplePt = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
-                Color baseColor = NativeMethods.GetPixelColor(samplePt.X, samplePt.Y);
+                Color baseColor = PixelSampler.GetPixelColor(step, samplePt);
                 while (_isRunning)
                 {
                     samplePt = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
-                    Color curr = NativeMethods.GetPixelColor(samplePt.X, samplePt.Y);
+                    Color curr = PixelSampler.GetPixelColor(step, samplePt);
                     if (!ActionExecutor.MatchesColor(curr, baseColor, tol))
                     {
                         break;
@@ -344,7 +344,7 @@ namespace ModernAutoClicker.Advanced
                     int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
                     Rectangle scanRect = new Rectangle(ax, ay, aw, ah);
 
-                    Point foundPt = ActionExecutor.FindMatchingPixelInArea(scanRect, step.TargetColor, tol);
+                    Point foundPt = PixelSampler.FindMatchingPixelInArea(step, scanRect, step.TargetColor, tol);
                     if (foundPt != Point.Empty)
                     {
                         matched = true;
@@ -359,7 +359,7 @@ namespace ModernAutoClicker.Advanced
                 else
                 {
                     samplePt = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
-                    Color curr = NativeMethods.GetPixelColor(samplePt.X, samplePt.Y);
+                    Color curr = PixelSampler.GetPixelColor(step, samplePt);
                     matched = ActionExecutor.MatchesColor(curr, step.TargetColor, tol);
                 }
 
@@ -380,7 +380,7 @@ namespace ModernAutoClicker.Advanced
                     {
                         MacroStep clickStep = step.Clone();
                         clickStep.ActionType = MacroActionType.LeftClick;
-                        clickStep.HoldMs = Math.Max(10, step.HoldMs);
+                        clickStep.HoldMs = Math.Max(1, step.HoldMs);
                         clickStep.EndPoint = Point.Empty; // Click at the exact found pixel point
 
                         if (isArea)
@@ -520,7 +520,7 @@ namespace ModernAutoClicker.Advanced
 
                 if (template != null)
                 {
-                    matched = ActionExecutor.FindTemplateInArea(scanRect, template, sim, out foundCenter);
+                    matched = PixelSampler.FindTemplateInArea(step, scanRect, template, sim, out foundCenter);
                 }
 
                 int jumpAction = matched ? step.IfTrueStep : step.IfFalseStep;
@@ -540,7 +540,7 @@ namespace ModernAutoClicker.Advanced
                     {
                         MacroStep clickStep = step.Clone();
                         clickStep.ActionType = MacroActionType.LeftClick;
-                        clickStep.HoldMs = Math.Max(10, step.HoldMs);
+                        clickStep.HoldMs = Math.Max(1, step.HoldMs);
                         clickStep.EndPoint = Point.Empty;
 
                         if (step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))

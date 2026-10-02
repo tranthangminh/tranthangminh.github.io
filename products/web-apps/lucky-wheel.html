@@ -47,10 +47,127 @@
     <main class="app-layout">
         <!-- Main Column: Wheel Stage -->
         <section class="wheel-stage mode-2d" id="wheelStage" aria-label="Wheel Stage">
+            <!-- Ambient Stage Background Glow Lights (Zero-lag GPU-only) -->
+            <div class="stage-ambient-lights" aria-hidden="true">
+                <div class="ambient-orb ambient-orb-gold"></div>
+                <div class="ambient-orb ambient-orb-cyan"></div>
+                <div class="ambient-orb ambient-orb-ruby"></div>
+            </div>
+
             <!-- Ground Shadow for 3D Modes (Floor ambient shadow) -->
             <div class="wheel-ground-shadow" id="wheelGroundShadow" aria-hidden="true"></div>
 
+            <!-- Winner Neon Marquee Celebration Board (Slide Down from Top) -->
+            <div class="winner-marquee-board" id="winnerMarqueeBoard" aria-live="polite">
+                <!-- SVG Outer Border with 24 Casino Lights & Metallic Bezel -->
+                <svg class="marquee-lights-svg" viewBox="0 0 440 200" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="marqueePlateGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#161a29" />
+                            <stop offset="45%" stop-color="#0f121d" />
+                            <stop offset="100%" stop-color="#070910" />
+                        </linearGradient>
+                        <linearGradient id="marqueeBezelGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#475569" />
+                            <stop offset="50%" stop-color="#64748b" />
+                            <stop offset="100%" stop-color="#1e293b" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Metallic Base Plate with Bezel Rim -->
+                    <rect class="marquee-bezel-outer" x="14" y="30" width="412" height="158" rx="22" fill="#090d16" stroke="url(#marqueeBezelGrad)" stroke-width="3" />
+                    <rect class="marquee-plate-body" x="18" y="34" width="404" height="150" rx="18" fill="url(#marqueePlateGrad)" />
+                    <rect class="marquee-inner-rim" x="24" y="40" width="392" height="138" rx="14" fill="none" stroke="#d4af37" stroke-width="1.2" stroke-dasharray="3 5" opacity="0.45" />
+
+                    <!-- 24 Bulb Sockets (Metallic Base) -->
+                    <g class="marquee-bulb-sockets" fill="#1e293b" stroke="#090d16" stroke-width="1.5">
+                        <!-- Top Side (Left of badge) -->
+                        <circle cx="46" cy="32" r="7.5" />
+                        <circle cx="84" cy="32" r="7.5" />
+                        <circle cx="122" cy="32" r="7.5" />
+                        <!-- Top Side (Right of badge) -->
+                        <circle cx="318" cy="32" r="7.5" />
+                        <circle cx="356" cy="32" r="7.5" />
+                        <circle cx="394" cy="32" r="7.5" />
+                        <!-- Right Side -->
+                        <circle cx="424" cy="62" r="7.5" />
+                        <circle cx="424" cy="94" r="7.5" />
+                        <circle cx="424" cy="126" r="7.5" />
+                        <circle cx="424" cy="158" r="7.5" />
+                        <!-- Bottom Side -->
+                        <circle cx="394" cy="186" r="7.5" />
+                        <circle cx="355" cy="186" r="7.5" />
+                        <circle cx="316" cy="186" r="7.5" />
+                        <circle cx="277" cy="186" r="7.5" />
+                        <circle cx="238" cy="186" r="7.5" />
+                        <circle cx="202" cy="186" r="7.5" />
+                        <circle cx="163" cy="186" r="7.5" />
+                        <circle cx="124" cy="186" r="7.5" />
+                        <circle cx="85" cy="186" r="7.5" />
+                        <circle cx="46" cy="186" r="7.5" />
+                        <!-- Left Side -->
+                        <circle cx="16" cy="158" r="7.5" />
+                        <circle cx="16" cy="126" r="7.5" />
+                        <circle cx="16" cy="94" r="7.5" />
+                        <circle cx="16" cy="62" r="7.5" />
+                    </g>
+
+                    <!-- 24 Casino Bulbs (Reusing Classes & Keyframe Animations) -->
+                    <g class="marquee-bulb-lights">
+                        <!-- Top Side (Left of badge) -->
+                        <circle class="casino-bulb bulb-even bulb-gold" cx="46" cy="32" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-ruby" cx="84" cy="32" r="5.5" />
+                        <circle class="casino-bulb bulb-even bulb-cyan" cx="122" cy="32" r="5.5" />
+                        <!-- Top Side (Right of badge) -->
+                        <circle class="casino-bulb bulb-odd bulb-amber" cx="318" cy="32" r="5.5" />
+                        <circle class="casino-bulb bulb-even bulb-gold" cx="356" cy="32" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-ruby" cx="394" cy="32" r="5.5" />
+                        <!-- Right Side -->
+                        <circle class="casino-bulb bulb-even bulb-cyan" cx="424" cy="62" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-amber" cx="424" cy="94" r="5.5" />
+                        <circle class="casino-bulb bulb-even bulb-gold" cx="424" cy="126" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-ruby" cx="424" cy="158" r="5.5" />
+                        <!-- Bottom Side -->
+                        <circle class="casino-bulb bulb-even bulb-cyan" cx="394" cy="186" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-amber" cx="355" cy="186" r="5.5" />
+                        <circle class="casino-bulb bulb-even bulb-gold" cx="316" cy="186" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-ruby" cx="277" cy="186" r="5.5" />
+                        <circle class="casino-bulb bulb-even bulb-cyan" cx="238" cy="186" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-amber" cx="202" cy="186" r="5.5" />
+                        <circle class="casino-bulb bulb-even bulb-gold" cx="163" cy="186" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-ruby" cx="124" cy="186" r="5.5" />
+                        <circle class="casino-bulb bulb-even bulb-cyan" cx="85" cy="186" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-amber" cx="46" cy="186" r="5.5" />
+                        <!-- Left Side -->
+                        <circle class="casino-bulb bulb-even bulb-gold" cx="16" cy="158" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-ruby" cx="16" cy="126" r="5.5" />
+                        <circle class="casino-bulb bulb-even bulb-cyan" cx="16" cy="94" r="5.5" />
+                        <circle class="casino-bulb bulb-odd bulb-amber" cx="16" cy="62" r="5.5" />
+                    </g>
+                </svg>
+
+                <!-- Top Overlapping "WINNER" Neon Tube Badge -->
+                <div class="winner-neon-badge">
+                    <div class="neon-tube-frame">
+                        <span class="neon-winner-text">WINNER</span>
+                    </div>
+                </div>
+
+                <!-- Center Winner Prize Content -->
+                <div class="winner-marquee-content">
+                    <div class="winner-prize-name" id="winnerMarqueeName"></div>
+                </div>
+            </div>
+
             <div class="wheel-wrapper" id="wheelWrapper">
+                <!-- Sweeping Stage Spotlights (Tied to Wheel Wrapper for 100% Responsive Uniformity) -->
+                <div class="stage-spotlights" aria-hidden="true">
+                    <div class="spotlight-circle spot-circle-1"></div>
+                    <div class="spotlight-circle spot-circle-2"></div>
+                    <div class="spotlight-circle spot-circle-3"></div>
+                    <div class="spotlight-circle spot-circle-4"></div>
+                </div>
+
                 <!-- Casino Vegas Light Ring (Blinking & Chasing Lights) -->
                 <div class="casino-lights-ring" id="casinoLightsRing" aria-hidden="true">
                     <svg class="casino-lights-svg" id="casinoLightsSvg" viewBox="0 0 540 540">
@@ -318,38 +435,36 @@
         </aside>
     </main>
 
-    <!-- Modal: Winner Announcement -->
-    <div class="modal-backdrop" id="winnerModal" role="dialog" aria-modal="true" aria-labelledby="winnerHeading">
-        <div class="modal-card">
-            <div class="modal-header">
-                <span class="modal-title" id="winnerHeading" data-i18n="winner.heading">🏆 Kết Quả</span>
-                <button type="button" class="modal-close-btn" id="winnerModalCloseBtn" aria-label="Close Modal">&times;</button>
-            </div>
-            <div class="winner-content">
-                <div class="winner-trophy">🎉</div>
-                <div class="winner-subtitle" data-i18n="winner.subtitle">CHÚC MỪNG CHIẾN THẮNG!</div>
-                <div class="winner-name" id="winnerName">Prize Name</div>
-            </div>
-            <div class="winner-actions">
-                <button type="button" class="btn btn-primary btn-lg" id="modalSpinAgainBtn">
-                    <span>⚡</span> <span data-i18n="winner.spinAgain">Quay Tiếp</span>
-                </button>
-                <button type="button" class="btn btn-secondary" id="modalRemoveWinnerBtn">
-                    <span>🚫</span> <span data-i18n="winner.hide">Ẩn Ô Này Khỏi Vòng</span>
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal: Bulk Edit -->
+    <!-- Modal: Bulk Edit (Spreadsheet Table) -->
     <div class="modal-backdrop" id="bulkEditModal" role="dialog" aria-modal="true" aria-labelledby="bulkEditHeading">
-        <div class="modal-card">
+        <div class="modal-card bulk-modal-card">
             <div class="modal-header">
                 <h3 class="modal-title" id="bulkEditHeading" data-i18n="bulk.heading">Chỉnh Sửa Hàng Loạt</h3>
                 <button type="button" class="modal-close-btn" id="bulkEditCloseBtn" aria-label="Close Modal">&times;</button>
             </div>
-            <textarea class="bulk-textarea" id="bulkEditTextarea" placeholder="Nhập mỗi ô một dòng&#10;Có thể thêm trọng số: Tên ô : 2" data-i18n-placeholder="bulk.placeholder" spellcheck="false"></textarea>
-            <p class="bulk-hint" data-i18n="bulk.hint">Gợi ý: Định dạng <code>Tên</code> hoặc <code>Tên : Trọng_số</code> (mỗi ô một dòng).</p>
+            <div class="bulk-toolbar">
+                <div class="bulk-item-counter">
+                    <span id="bulkValidCount">0</span> <span data-i18n="bulk.itemsCount">ô</span>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm" id="bulkClearAllBtn" data-i18n="bulk.clearAll">Xóa Hết</button>
+            </div>
+            <div class="bulk-table-container">
+                <table class="bulk-table">
+                    <thead>
+                        <tr>
+                            <th class="col-stt">#</th>
+                            <th class="col-name" data-i18n="bulk.tableName">Tên Ô</th>
+                            <th class="col-weight" data-i18n="bulk.tableWeight">Trọng Số</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="bulkTableBody">
+                        <!-- Populated dynamically by slices.js -->
+                    </tbody>
+                </table>
+            </div>
+            <p class="bulk-hint" id="bulkHintText" data-i18n="bulk.hint">💡 Bấm Enter để xuống dòng tiếp theo. Có thể dán (paste) trực tiếp danh sách nhiều dòng vào cột Tên hoặc Trọng số.</p>
             <div class="modal-actions">
                 <button type="button" class="btn btn-ghost" id="bulkEditCancelBtn" data-i18n="bulk.cancel">Hủy</button>
                 <button type="button" class="btn btn-primary" id="bulkEditApplyBtn" data-i18n="bulk.apply">Áp Dụng</button>
@@ -400,13 +515,11 @@
     <!-- Lucky Wheel Core Scripts -->
     <script src="./lucky-wheel/audio.js"></script>
     <script src="./lucky-wheel/wheel-3d-tilt.js"></script>
-    <script src="./lucky-wheel/wheel-3d-cylinder.js"></script>
     <script src="./lucky-wheel/wheel.js"></script>
     <script src="./lucky-wheel/lucky-wheel-i18n.js"></script>
     <script src="./lucky-wheel/presets.js"></script>
     <script src="./lucky-wheel/history.js"></script>
     <script src="./lucky-wheel/slices.js"></script>
-    <script src="./lucky-wheel/winner-modal.js"></script>
     <script src="./lucky-wheel/app.js"></script>
     <!-- Shared Web App Visit Counter -->
     <script src="../../common/shared-webapp-counter.js" data-webapp-id="webapp-luckywheel"></script>

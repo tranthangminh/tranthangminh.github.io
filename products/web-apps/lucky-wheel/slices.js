@@ -20,7 +20,9 @@ window.LuckyWheelSlices = (function () {
 
     let bulkEditOpenBtn = null;
     let bulkEditModal = null;
-    let bulkEditTextarea = null;
+    let bulkTableBody = null;
+    let bulkValidCount = null;
+    let bulkClearAllBtn = null;
     let bulkEditApplyBtn = null;
     let bulkEditCancelBtn = null;
     let bulkEditCloseBtn = null;
@@ -44,7 +46,9 @@ window.LuckyWheelSlices = (function () {
 
         bulkEditOpenBtn = document.getElementById('bulkEditOpenBtn');
         bulkEditModal = document.getElementById('bulkEditModal');
-        bulkEditTextarea = document.getElementById('bulkEditTextarea');
+        bulkTableBody = document.getElementById('bulkTableBody');
+        bulkValidCount = document.getElementById('bulkValidCount');
+        bulkClearAllBtn = document.getElementById('bulkClearAllBtn');
         bulkEditApplyBtn = document.getElementById('bulkEditApplyBtn');
         bulkEditCancelBtn = document.getElementById('bulkEditCancelBtn');
         bulkEditCloseBtn = document.getElementById('bulkEditCloseBtn');
@@ -67,45 +71,332 @@ window.LuckyWheelSlices = (function () {
             sortSelect.addEventListener('change', handleSortChange);
         }
 
-        // Bulk Edit Modal
+        // ======================================================================
+        // Bulk Edit Modal - Spreadsheet Table Logic
+        // ======================================================================
+        function escapeAttr(text) {
+            if (text === undefined || text === null) return '';
+            return String(text).replace(/"/g, '&quot;');
+        }
+
+        function escapeHtml(text) {
+            if (text === undefined || text === null) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function autoResizeTextarea(el) {
+            if (!el || el.tagName !== 'TEXTAREA') return;
+            el.style.height = 'auto';
+            const newHeight = Math.min(74, Math.max(32, el.scrollHeight));
+            el.style.height = newHeight + 'px';
+            el.style.overflowY = el.scrollHeight > 74 ? 'auto' : 'hidden';
+        }
+
+        function createBulkTableRow(text = '', weight = 1) {
+            const tr = document.createElement('tr');
+            tr.className = 'bulk-row';
+            const isWeightValid = weight !== undefined && weight !== null && !isNaN(weight) && weight >= 1;
+            const wVal = isWeightValid ? weight : 1;
+            const i18n = window.LuckyWheelI18n;
+            const namePlaceholder = i18n ? i18n.t('bulk.namePlaceholder') : 'Nhập tên ô...';
+
+            tr.innerHTML = `
+                <td class="cell-stt"></td>
+                <td>
+                    <textarea class="bulk-cell-input bulk-name-input" data-col="name" placeholder="${namePlaceholder}" autocomplete="off" spellcheck="false" rows="1">${escapeHtml(text)}</textarea>
+                </td>
+                <td>
+                    <input type="number" min="1" class="bulk-cell-input bulk-weight-input" data-col="weight" value="${wVal}" placeholder="1" autocomplete="off">
+                </td>
+                <td>
+                    <button type="button" class="bulk-row-del-btn" aria-label="Xóa dòng" title="Xóa dòng">&times;</button>
+                </td>
+            `;
+
+            const ta = tr.querySelector('textarea.bulk-name-input');
+            if (ta && text) {
+                setTimeout(() => autoResizeTextarea(ta), 0);
+            }
+            return tr;
+        }
+
+        function updateBulkRowIndicesAndCount() {
+            if (!bulkTableBody) return;
+            const rows = Array.from(bulkTableBody.children);
+            let validCount = 0;
+
+            // Đếm số dòng trống liên tiếp ở cuối
+            let trailingEmptyCount = 0;
+            for (let i = rows.length - 1; i >= 0; i--) {
+                const nameInput = rows[i].querySelector('[data-col="name"]');
+                if (nameInput && nameInput.value.trim() === '') {
+                    trailingEmptyCount++;
+                } else {
+                    break;
+                }
+            }
+
+            rows.forEach((tr, idx) => {
+                const sttCell = tr.querySelector('.cell-stt');
+                if (sttCell) sttCell.textContent = idx + 1;
+
+                const nameInput = tr.querySelector('[data-col="name"]');
+                const isNameEmpty = nameInput ? nameInput.value.trim() === '' : true;
+                if (!isNameEmpty) {
+                    validCount++;
+                }
+
+                if (idx >= rows.length - trailingEmptyCount) {
+                    tr.classList.add('is-trailing-empty');
+                } else {
+                    tr.classList.remove('is-trailing-empty');
+                }
+            });
+
+            if (bulkValidCount) {
+                bulkValidCount.textContent = validCount;
+            }
+        }
+
+        function ensureTrailingEmptyRows() {
+            if (!bulkTableBody) return;
+            const rows = Array.from(bulkTableBody.children);
+
+            let emptyCount = 0;
+            for (let i = rows.length - 1; i >= 0; i--) {
+                const nameInput = rows[i].querySelector('[data-col="name"]');
+                if (nameInput && nameInput.value.trim() === '') {
+                    emptyCount++;
+                } else {
+                    break;
+                }
+            }
+
+            // Luôn đảm bảo có đúng 2 dòng trống ở cuối cùng
+            while (emptyCount < 2) {
+                const newTr = createBulkTableRow('', 1);
+                bulkTableBody.appendChild(newTr);
+                emptyCount++;
+            }
+
+            updateBulkRowIndicesAndCount();
+        }
+
         if (bulkEditOpenBtn) {
             bulkEditOpenBtn.addEventListener('click', () => {
-                bulkEditTextarea.value = slices.map(s => {
-                    return (s.weight && s.weight > 1) ? `${s.text} : ${s.weight}` : s.text;
-                }).join('\n');
+                if (bulkTableBody) {
+                    bulkTableBody.innerHTML = '';
+                    if (slices && slices.length > 0) {
+                        slices.forEach(s => {
+                            bulkTableBody.appendChild(createBulkTableRow(s.text, s.weight || 1));
+                        });
+                    }
+                    ensureTrailingEmptyRows();
+
+                    // Auto resize all textareas
+                    bulkTableBody.querySelectorAll('textarea.bulk-name-input').forEach(ta => {
+                        autoResizeTextarea(ta);
+                    });
+                }
                 openModal(bulkEditModal);
+                setTimeout(() => {
+                    if (bulkTableBody) {
+                        const firstInput = bulkTableBody.querySelector('[data-col="name"]');
+                        if (firstInput) {
+                            firstInput.focus();
+                            if (firstInput.select) firstInput.select();
+                        }
+                    }
+                }, 50);
+            });
+        }
+
+        if (bulkClearAllBtn) {
+            bulkClearAllBtn.addEventListener('click', () => {
+                if (!bulkTableBody) return;
+                bulkTableBody.innerHTML = '';
+                ensureTrailingEmptyRows();
+                const firstInput = bulkTableBody.querySelector('[data-col="name"]');
+                if (firstInput) firstInput.focus();
+            });
+        }
+
+        if (bulkTableBody) {
+            // Khi gõ: tự động co giãn textarea và kiểm tra luôn giữ 2 dòng trống ở cuối
+            bulkTableBody.addEventListener('input', (e) => {
+                const target = e.target;
+                if (!target || !target.classList.contains('bulk-cell-input')) return;
+                if (target.tagName === 'TEXTAREA') {
+                    autoResizeTextarea(target);
+                }
+                if (target.getAttribute('data-col') === 'name') {
+                    ensureTrailingEmptyRows();
+                } else {
+                    updateBulkRowIndicesAndCount();
+                }
+            });
+
+            // Khi rời khỏi ô Weight: nếu để trống thì tự động điền lại giá trị 1
+            bulkTableBody.addEventListener('focusout', (e) => {
+                const target = e.target;
+                if (!target || !target.classList.contains('bulk-cell-input')) return;
+                if (target.getAttribute('data-col') === 'weight') {
+                    const val = target.value.trim();
+                    if (val === '' || isNaN(val) || parseInt(val, 10) < 1) {
+                        target.value = '1';
+                    }
+                }
+            });
+
+            // Phím Enter & Phím Mũi tên lên/xuống tịnh tiến
+            bulkTableBody.addEventListener('keydown', (e) => {
+                const curInput = e.target;
+                if (!curInput || !curInput.classList.contains('bulk-cell-input')) return;
+
+                const col = curInput.getAttribute('data-col');
+                const curTr = curInput.closest('tr');
+                if (!curTr) return;
+
+                if (e.key === 'Enter') {
+                    // Shift + Enter trong textarea: cho phép xuống dòng thủ công trong ô
+                    if (e.shiftKey && curInput.tagName === 'TEXTAREA') {
+                        setTimeout(() => autoResizeTextarea(curInput), 10);
+                        return;
+                    }
+
+                    // Enter thông thường: nhảy tịnh tiến xuống dòng dưới cùng cột
+                    e.preventDefault();
+                    let nextTr = curTr.nextElementSibling;
+                    if (!nextTr) {
+                        ensureTrailingEmptyRows();
+                        nextTr = curTr.nextElementSibling;
+                    }
+                    if (nextTr) {
+                        const nextInput = nextTr.querySelector(`[data-col="${col}"]`);
+                        if (nextInput) {
+                            nextInput.focus();
+                            if (nextInput.select) nextInput.select();
+                        }
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    const nextTr = curTr.nextElementSibling;
+                    if (nextTr) {
+                        e.preventDefault();
+                        const nextInput = nextTr.querySelector(`[data-col="${col}"]`);
+                        if (nextInput) nextInput.focus();
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    const prevTr = curTr.previousElementSibling;
+                    if (prevTr) {
+                        e.preventDefault();
+                        const prevInput = prevTr.querySelector(`[data-col="${col}"]`);
+                        if (prevInput) prevInput.focus();
+                    }
+                }
+            });
+
+            // Dán tịnh tiến danh sách nhiều dòng (Paste fill-down)
+            bulkTableBody.addEventListener('paste', (e) => {
+                const curInput = e.target;
+                if (!curInput || !curInput.classList.contains('bulk-cell-input')) return;
+
+                const pasteText = (e.clipboardData || window.clipboardData).getData('text');
+                if (!pasteText) return;
+
+                // Nếu có chứa ký tự xuống dòng hoặc tab thì xử lý tịnh tiến
+                if (pasteText.includes('\n') || pasteText.includes('\r') || pasteText.includes('\t')) {
+                    e.preventDefault();
+                    const lines = pasteText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                    if (lines.length === 0) return;
+
+                    const col = curInput.getAttribute('data-col');
+                    let targetTr = curInput.closest('tr');
+
+                    for (let i = 0; i < lines.length; i++) {
+                        if (!targetTr) {
+                            targetTr = createBulkTableRow('', 1);
+                            bulkTableBody.appendChild(targetTr);
+                        }
+                        const line = lines[i];
+                        const nameInput = targetTr.querySelector('[data-col="name"]');
+                        const weightInput = targetTr.querySelector('[data-col="weight"]');
+
+                        if (col === 'name') {
+                            if (line.includes('\t')) {
+                                // Paste từ Excel 2 cột (Tên \t Trọng số)
+                                const parts = line.split('\t');
+                                if (nameInput) nameInput.value = parts[0].trim();
+                                if (weightInput) weightInput.value = Math.max(1, parseInt(parts[1].trim(), 10) || 1);
+                            } else if (line.includes(':')) {
+                                // Hỗ trợ định dạng cũ Tên : Trọng số
+                                const parts = line.split(':');
+                                if (nameInput) nameInput.value = parts[0].trim();
+                                if (weightInput) weightInput.value = Math.max(1, parseInt(parts[1].trim(), 10) || 1);
+                            } else {
+                                if (nameInput) nameInput.value = line;
+                            }
+                            if (nameInput && nameInput.tagName === 'TEXTAREA') {
+                                autoResizeTextarea(nameInput);
+                            }
+                        } else if (col === 'weight') {
+                            const w = Math.max(1, parseInt(line, 10) || 1);
+                            if (weightInput) weightInput.value = w;
+                        }
+
+                        targetTr = targetTr.nextElementSibling;
+                    }
+
+                    ensureTrailingEmptyRows();
+                }
+            });
+
+            // Xóa dòng khi bấm nút ×
+            bulkTableBody.addEventListener('click', (e) => {
+                const delBtn = e.target.closest('.bulk-row-del-btn');
+                if (!delBtn) return;
+                const tr = delBtn.closest('tr');
+                if (tr) {
+                    tr.remove();
+                    ensureTrailingEmptyRows();
+                }
             });
         }
 
         if (bulkEditApplyBtn) {
             bulkEditApplyBtn.addEventListener('click', () => {
-                const raw = bulkEditTextarea.value.trim();
-                const i18n = window.LuckyWheelI18n;
-                if (!raw) {
-                    alert(i18n ? i18n.t('bulk.emptyAlert') : 'Please enter at least one item.');
-                    return;
-                }
+                if (!bulkTableBody) return;
+                const rows = Array.from(bulkTableBody.children);
+                const newItems = [];
 
-                const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                if (lines.length < 2) {
-                    alert(i18n ? i18n.t('bulk.minAlert') : 'Please provide at least 2 items.');
+                rows.forEach(tr => {
+                    const nameInput = tr.querySelector('[data-col="name"]');
+                    const weightInput = tr.querySelector('[data-col="weight"]');
+                    const text = nameInput ? nameInput.value.trim() : '';
+
+                    // Ô trống sẽ tự động được bỏ qua (kể cả 2 dòng trống ở đáy)
+                    if (text.length > 0) {
+                        const weight = weightInput ? Math.max(1, parseInt(weightInput.value.trim(), 10) || 1) : 1;
+                        newItems.push({ text, weight });
+                    }
+                });
+
+                const i18n = window.LuckyWheelI18n;
+                if (newItems.length < 2) {
+                    alert(i18n ? i18n.t('bulk.minAlert') : 'Vui lòng nhập ít nhất 2 ô.');
                     return;
                 }
 
                 slices.length = 0;
-                lines.forEach((line, idx) => {
-                    let text = line;
-                    let weight = 1;
-                    if (line.includes(':')) {
-                        const parts = line.split(':');
-                        text = parts[0].trim();
-                        weight = Math.max(1, parseInt(parts[1].trim(), 10) || 1);
-                    }
+                newItems.forEach((item, idx) => {
                     slices.push({
                         id: 's_' + Date.now() + '_' + idx,
-                        text: text,
+                        text: item.text,
                         color: PALETTE[idx % PALETTE.length],
-                        weight: weight,
+                        weight: item.weight,
                         enabled: true
                     });
                 });

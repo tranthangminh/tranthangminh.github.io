@@ -59,6 +59,9 @@ namespace ModernAutoClicker
         public static extern bool ReleaseCapture();
 
         [DllImport("user32.dll")]
+        public static extern IntPtr GetFocus();
+
+        [DllImport("user32.dll")]
         public static extern IntPtr GetWindowDC(IntPtr hWnd);
 
         [StructLayout(LayoutKind.Sequential)]
@@ -202,6 +205,45 @@ namespace ModernAutoClicker
 
         [DllImport("user32.dll")]
         public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        public static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        public static extern bool IsChild(IntPtr hWndParent, IntPtr hWnd);
+
+        public const uint WDA_NONE = 0x00000000;
+        public const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity);
+
+        public const uint PW_CLIENTONLY = 0x00000001;
+        public const uint PW_RENDERFULLCONTENT = 0x00000002;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool PrintWindow(IntPtr hWnd, IntPtr hdcBlt, uint nFlags);
+
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern IntPtr CreateCompatibleBitmap(IntPtr hdc, int nWidth, int nHeight);
+
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hgdiobj);
+
+        [DllImport("gdi32.dll")]
+        public static extern bool DeleteDC(IntPtr hdc);
+
+        [DllImport("gdi32.dll")]
+        public static extern bool DeleteObject(IntPtr hObject);
 
         [DllImport("user32.dll")]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -485,15 +527,6 @@ namespace ModernAutoClicker
 
         [DllImport("user32.dll")]
         public static extern bool IsIconic(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        public static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
-
-        [DllImport("user32.dll")]
-        public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
-
-        [DllImport("user32.dll")]
-        public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
         public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 

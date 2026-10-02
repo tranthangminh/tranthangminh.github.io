@@ -226,11 +226,9 @@ body {
 /* Main Symmetrical Layout: Wheel Stage (Flex Center) + Unified Control Panels (Right) */
 .app-layout {
     display: flex;
-    gap: 20px;
     max-width: 1680px;
     width: 100%;
     margin: 0 auto;
-    padding: 12px 18px;
     flex: 1;
     min-height: 0; /* Crucial flex child constraint to prevent overflow */
     height: calc(100vh - 52px);
@@ -259,12 +257,15 @@ body {
     max-width: 410px;
     min-width: 350px;
     flex: 0 10 410px;
+    height: calc(100% - 28px);
+    margin: 14px 14px 14px 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     transition: margin-right 0.42s cubic-bezier(0.4, 0, 0.2, 1),
                 transform 0.42s cubic-bezier(0.4, 0, 0.2, 1),
                 opacity 0.35s ease;
+    padding: 14px;
 }
 
 /* When Panel is Hidden: Smooth slide out right & fade, allowing wheel stage to expand and dead-center */
@@ -482,16 +483,15 @@ body.wheel-is-spinning .control-panels * {
 /* Responsive Media Queries */
 /* Tablet Mode (700px - 1199px): Unified 2-Tab Panel */
 @media (max-width: 1199px) and (min-width: 700px) {
-    .app-layout {
-        gap: 14px;
-        padding: 10px 14px;
-    }
 
     .control-panels {
         width: 410px;
         max-width: 410px;
         min-width: 350px;
         flex: 0 10 410px;
+        height: calc(100% - 28px);
+        margin: 14px 14px 14px 0;
+        padding: 14px;
     }
 
     .wheel-controls {
@@ -516,8 +516,6 @@ body.wheel-is-spinning .control-panels * {
         flex-direction: column !important;
         height: auto !important;
         overflow: visible !important;
-        padding: 12px;
-        gap: 16px;
     }
 
     .wheel-stage {
@@ -539,9 +537,12 @@ body.wheel-is-spinning .control-panels * {
         height: auto !important;
         min-height: 800px !important;
         min-width: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
+        width: calc(100% - 28px) !important;
+        max-width: calc(100% - 28px) !important;
+        margin: 12px 14px 28px 14px !important;
+        padding: 14px !important;
         flex: none !important;
+        align-self: center !important;
     }
 
     .tab-pane {
