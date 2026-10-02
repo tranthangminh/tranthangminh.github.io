@@ -32,12 +32,12 @@
                 togglePanel: 'Control Panel'
             },
             slices: {
-                quickPreset: '⚡ Preset Template...',
-                sortPlaceholder: '🔃 Sort...',
-                sortAZ: '🔤 A → Z',
-                sortZA: '🔤 Z → A',
-                sortWeightDesc: '⚖️ Weight ↓',
-                sortWeightAsc: '⚖️ Weight ↑',
+                quickPreset: 'Preset Template...',
+                sortPlaceholder: 'Sort...',
+                sortAZ: 'A → Z',
+                sortZA: 'Z → A',
+                sortWeightDesc: 'Weight ↓',
+                sortWeightAsc: 'Weight ↑',
                 bulkEdit: 'Bulk Edit',
                 placeholder: 'Enter slice name...',
                 newPlaceholder: '+ Type to add new slice...',
@@ -98,12 +98,12 @@
                 minSlices: 'Please add at least 2 active slices to spin the wheel!'
             },
             presetsList: {
-                prizes: '🎁 Prize Draw (Weighted)',
-                food: '🍕 Food Picker',
-                decision: '🤔 Decision Maker (Yes / No)',
-                numbers: '🔢 Lucky Numbers 1-10',
-                standup: '👥 Team Standup',
-                dice: '🎲 Dice Roll (1-6)'
+                prizes: 'Prize Draw (Weighted)',
+                food: 'Food Picker',
+                decision: 'Decision Maker (Yes / No)',
+                numbers: 'Lucky Numbers 1-10',
+                standup: 'Team Standup',
+                dice: 'Dice Roll (1-6)'
             },
             presets: {
                 newPreset: 'Save Preset',
@@ -151,12 +151,12 @@
                 togglePanel: 'Bảng Điều Khiển'
             },
             slices: {
-                quickPreset: '⚡ Mẫu có sẵn...',
-                sortPlaceholder: '🔃 Sắp xếp...',
-                sortAZ: '🔤 A → Z',
-                sortZA: '🔤 Z → A',
-                sortWeightDesc: '⚖️ Trọng số ↓',
-                sortWeightAsc: '⚖️ Trọng số ↑',
+                quickPreset: 'Mẫu có sẵn...',
+                sortPlaceholder: 'Sắp xếp...',
+                sortAZ: 'A → Z',
+                sortZA: 'Z → A',
+                sortWeightDesc: 'Trọng số ↓',
+                sortWeightAsc: 'Trọng số ↑',
                 bulkEdit: 'Sửa Hàng Loạt',
                 placeholder: 'Nhập tên ô mới...',
                 newPlaceholder: '+ Nhập để thêm ô mới...',
@@ -217,12 +217,12 @@
                 minSlices: 'Vui lòng bật ít nhất 2 ô để có thể quay vòng!'
             },
             presetsList: {
-                prizes: '🎁 Vòng Quay Trúng Thưởng',
-                food: '🍕 Hôm Nay Ăn Gì',
-                decision: '🤔 Chọn Lựa (Có / Không)',
-                numbers: '🔢 Số May Mắn 1-10',
-                standup: '👥 Chọn Người Báo Cáo',
-                dice: '🎲 Xúc Xắc (1-6)'
+                prizes: 'Vòng Quay Trúng Thưởng',
+                food: 'Hôm Nay Ăn Gì',
+                decision: 'Chọn Lựa (Có / Không)',
+                numbers: 'Số May Mắn 1-10',
+                standup: 'Chọn Người Báo Cáo',
+                dice: 'Xúc Xắc (1-6)'
             },
             presets: {
                 newPreset: 'Lưu Mẫu',

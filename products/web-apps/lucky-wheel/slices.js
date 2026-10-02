@@ -9,6 +9,8 @@ window.LuckyWheelSlices = (function () {
     let wheelEngine = null;
     let saveStateCallback = null;
     let PALETTE = [];
+    const ICON_SHOW = '👁️';
+    const ICON_HIDE = '🙈';
 
     let slicesListEl = null;
     let sliceCountBadge = null;
@@ -473,10 +475,10 @@ window.LuckyWheelSlices = (function () {
         const hasDisabled = slices.some(s => s.enabled === false);
         const i18n = window.LuckyWheelI18n;
         if (hasDisabled) {
-            toggleAllIcon.textContent = '👁️';
+            toggleAllIcon.textContent = ICON_SHOW;
             toggleAllText.textContent = i18n ? i18n.t('slices.showAll') : 'Hiện Hết';
         } else {
-            toggleAllIcon.textContent = '🙈';
+            toggleAllIcon.textContent = ICON_HIDE;
             toggleAllText.textContent = i18n ? i18n.t('slices.hideAll') : 'Ẩn Hết';
         }
     }
@@ -536,8 +538,8 @@ window.LuckyWheelSlices = (function () {
                 <span class="slice-text">${escapeHtml(slice.text)}</span>
                 <input type="number" class="slice-weight-input" value="${displayWeight}" min="1" max="100" ${isEqualMode ? 'disabled' : ''}>
                 <div class="slice-actions">
-                    <button type="button" class="btn-item-action btn-toggle">
-                        ${slice.enabled === false ? '⚪' : '🟢'}
+                    <button type="button" class="btn-item-action btn-toggle" aria-label="Bật/Tắt ô này">
+                        ${slice.enabled === false ? ICON_HIDE : ICON_SHOW}
                     </button>
                     <button type="button" class="btn-item-action btn-delete">✕</button>
                 </div>

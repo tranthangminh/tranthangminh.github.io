@@ -302,7 +302,7 @@ body.wheel-is-spinning .control-panels * {
     align-items: center;
     gap: 6px;
     margin-bottom: 12px;
-    padding-bottom: 8px;
+    padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color, #3a3a3a);
     flex-shrink: 0;
 }
@@ -333,10 +333,8 @@ body.wheel-is-spinning .control-panels * {
 }
 
 .unified-tab-btn.is-active {
-    background: var(--bg-elevated, #464646);
-    color: var(--c-cyan, #8DF2F2);
-    border-color: var(--c-cyan, #8DF2F2);
-    box-shadow: 0 0 8px rgba(141, 242, 242, 0.25);
+    background: var(--c-cyan, #464646);
+    color: var(--bg-primary, #8DF2F2);
 }
 
 .unified-tab-btn .badge {
@@ -405,15 +403,13 @@ body.wheel-is-spinning .control-panels * {
 }
 
 .btn-primary {
-    background: var(--accent-primary, #e50914);
-    color: var(--text-on-accent, #ffffff);
-    box-shadow: 0 4px 14px rgba(229, 9, 20, 0.4);
+    background: var(--c-cyan, #e50914);
+    color: var(--bg-100, #ffffff);
     flex: 1.5;
 }
 
 .btn-primary:hover {
-    background: var(--accent-primary-hover, #ff2a35);
-    box-shadow: 0 6px 18px rgba(229, 9, 20, 0.55);
+    background: var(--c-purple-bg, #ff2a35);
 }
 
 .btn-secondary {
@@ -490,8 +486,7 @@ body.wheel-is-spinning .control-panels * {
         min-width: 350px;
         flex: 0 10 410px;
         height: calc(100% - 28px);
-        margin: 14px 14px 14px 0;
-        padding: 14px;
+        padding: 0 14px 14px 14px;
     }
 
     .wheel-controls {
@@ -539,7 +534,7 @@ body.wheel-is-spinning .control-panels * {
         min-width: 0 !important;
         width: calc(100% - 28px) !important;
         max-width: calc(100% - 28px) !important;
-        margin: 12px 14px 28px 14px !important;
+        margin: 0 14px 28px 14px !important;
         padding: 14px !important;
         flex: none !important;
         align-self: center !important;

@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!optgroup) return;
         const opt = optgroup.querySelector(`option[value="${presetId}"]`);
         if (opt) {
-            opt.textContent = `⭐ ${name} (${count})`;
+            opt.textContent = `${name} (${count})`;
         }
     }
 
@@ -492,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 customPresets.forEach(cp => {
                     const opt = document.createElement('option');
                     opt.value = cp.id;
-                    opt.textContent = `⭐ ${cp.name} (${cp.slices ? cp.slices.length : 0})`;
+                    opt.textContent = `${cp.name} (${cp.slices ? cp.slices.length : 0})`;
                     customPresetsOptgroup.appendChild(opt);
                 });
             }
