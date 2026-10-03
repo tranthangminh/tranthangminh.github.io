@@ -17,6 +17,7 @@ namespace ModernAutoClicker.SpecialApps
         {
             // Register built-in adapters in priority order
             _adapters.Add(new BlueStacksAdapter());
+            _adapters.Add(new GooglePlayGamesAdapter());
             _adapters.Add(new DesktopAdapter());
             _adapters.Add(new WindowsExplorerAdapter());
         }

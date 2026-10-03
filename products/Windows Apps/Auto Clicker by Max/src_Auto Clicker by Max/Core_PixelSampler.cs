@@ -15,41 +15,77 @@ namespace ModernAutoClicker
     /// </summary>
     public static class PixelSampler
     {
+        private static IntPtr GetWindowUnderOurOverlay(NativeMethods.POINT pt)
+        {
+            uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+            IntPtr wnd = NativeMethods.WindowFromPoint(pt);
+            while (wnd != IntPtr.Zero)
+            {
+                uint pid;
+                NativeMethods.GetWindowThreadProcessId(wnd, out pid);
+                if (pid != myPid && pid != 0)
+                {
+                    return wnd;
+                }
+                wnd = NativeMethods.GetWindow(wnd, 2 /* GW_HWNDNEXT */);
+            }
+            return IntPtr.Zero;
+        }
+
         /// <summary>
         /// Gets the pixel color for a macro step. If the target window is specified and currently
-        /// occluded by another window, samples directly from the target window's background surface.
+        /// occluded by another window or Map Overlay, samples directly from the target window's background surface.
         /// </summary>
         public static Color GetPixelColor(MacroStep step, Point sampleScreenPt)
         {
             if (sampleScreenPt == Point.Empty) return Color.Black;
 
+            IntPtr hWnd = IntPtr.Zero;
             if (step != null && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
             {
-                IntPtr hWnd = step.WindowHwnd;
+                hWnd = step.WindowHwnd;
                 if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
                 {
                     hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
                     if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
                 }
+            }
 
-                if (hWnd != IntPtr.Zero)
+            NativeMethods.POINT sPt = new NativeMethods.POINT { X = sampleScreenPt.X, Y = sampleScreenPt.Y };
+            IntPtr topAtPt = NativeMethods.WindowFromPoint(sPt);
+            uint topPid = 0;
+            if (topAtPt != IntPtr.Zero) NativeMethods.GetWindowThreadProcessId(topAtPt, out topPid);
+            uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+            bool isOurOverlay = (topPid == myPid);
+
+            if (hWnd != IntPtr.Zero)
+            {
+                bool isDirectlyVisible = !isOurOverlay &&
+                                         (topAtPt == hWnd ||
+                                          NativeMethods.IsChild(hWnd, topAtPt) ||
+                                          (topAtPt != IntPtr.Zero && NativeMethods.GetTopLevelWindow(topAtPt) == NativeMethods.GetTopLevelWindow(hWnd)));
+
+                // Fast Path: Point is directly visible on screen (not covered by an unrelated window or our overlay)
+                if (isDirectlyVisible)
                 {
-                    NativeMethods.POINT sPt = new NativeMethods.POINT { X = sampleScreenPt.X, Y = sampleScreenPt.Y };
-                    IntPtr topAtPt = NativeMethods.WindowFromPoint(sPt);
+                    return NativeMethods.GetPixelColor(sampleScreenPt.X, sampleScreenPt.Y);
+                }
 
-                    bool isDirectlyVisible = (topAtPt == hWnd ||
-                                              NativeMethods.IsChild(hWnd, topAtPt) ||
-                                              (topAtPt != IntPtr.Zero && NativeMethods.GetTopLevelWindow(topAtPt) == NativeMethods.GetTopLevelWindow(hWnd)));
-
-                    // Fast Path: Point is directly visible on screen (not covered by an unrelated window)
-                    if (isDirectlyVisible)
-                    {
-                        return NativeMethods.GetPixelColor(sampleScreenPt.X, sampleScreenPt.Y);
-                    }
-
-                    // Background Path: Point is occluded by another window -> Sample from target's backing surface
+                // Background Path: Point is occluded by another window or our Map Overlay -> Sample from target's backing surface
+                Color bgCol;
+                if (TrySampleWindowPixel(hWnd, sampleScreenPt, out bgCol))
+                {
+                    return bgCol;
+                }
+            }
+            else if (isOurOverlay)
+            {
+                // RelativeToWindow is off, but Map Overlay is covering the sampled pixel -> Bypass overlay
+                IntPtr underWnd = GetWindowUnderOurOverlay(sPt);
+                if (underWnd != IntPtr.Zero)
+                {
                     Color bgCol;
-                    if (TrySampleWindowPixel(hWnd, sampleScreenPt, out bgCol))
+                    if (TrySampleWindowPixel(underWnd, sampleScreenPt, out bgCol))
                     {
                         return bgCol;
                     }
@@ -189,6 +225,14 @@ namespace ModernAutoClicker
             int height = bottom - top;
             if (width <= 0 || height <= 0) return null;
 
+            Point centerPt = new Point(left + width / 2, top + height / 2);
+            NativeMethods.POINT sCenterPt = new NativeMethods.POINT { X = centerPt.X, Y = centerPt.Y };
+            IntPtr topAtPt = NativeMethods.WindowFromPoint(sCenterPt);
+            uint topPid = 0;
+            if (topAtPt != IntPtr.Zero) NativeMethods.GetWindowThreadProcessId(topAtPt, out topPid);
+            uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+            bool isOurOverlay = (topPid == myPid);
+
             // Check if covered window background capture is required
             if (step != null && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
             {
@@ -201,19 +245,25 @@ namespace ModernAutoClicker
 
                 if (hWnd != IntPtr.Zero)
                 {
-                    Point centerPt = new Point(left + width / 2, top + height / 2);
-                    NativeMethods.POINT sPt = new NativeMethods.POINT { X = centerPt.X, Y = centerPt.Y };
-                    IntPtr topAtPt = NativeMethods.WindowFromPoint(sPt);
-
-                    bool isDirectlyVisible = (topAtPt == hWnd ||
-                                              NativeMethods.IsChild(hWnd, topAtPt) ||
-                                              (topAtPt != IntPtr.Zero && NativeMethods.GetTopLevelWindow(topAtPt) == NativeMethods.GetTopLevelWindow(hWnd)));
+                    bool isDirectlyVisible = !isOurOverlay &&
+                                              (topAtPt == hWnd ||
+                                               NativeMethods.IsChild(hWnd, topAtPt) ||
+                                               (topAtPt != IntPtr.Zero && NativeMethods.GetTopLevelWindow(topAtPt) == NativeMethods.GetTopLevelWindow(hWnd)));
 
                     if (!isDirectlyVisible)
                     {
                         Bitmap bgBmp = TryCaptureWindowArea(hWnd, new Rectangle(left, top, width, height));
                         if (bgBmp != null) return bgBmp;
                     }
+                }
+            }
+            else if (isOurOverlay)
+            {
+                IntPtr underWnd = GetWindowUnderOurOverlay(sCenterPt);
+                if (underWnd != IntPtr.Zero)
+                {
+                    Bitmap bgBmp = TryCaptureWindowArea(underWnd, new Rectangle(left, top, width, height));
+                    if (bgBmp != null) return bgBmp;
                 }
             }
 

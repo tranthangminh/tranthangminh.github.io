@@ -147,9 +147,14 @@ namespace ModernAutoClicker
             {
                 InitialDelay = 150,
                 ReshowDelay = 100,
-                AutoPopDelay = 6000,
+                AutoPopDelay = 12000,
                 ShowAlways = true
             };
+
+            if (chkFreeMouse != null)
+            {
+                _startToolTip.SetToolTip(chkFreeMouse, Loc.ChkFreeMouseTooltip);
+            }
 
             if (btnMapOpacity != null)
             {

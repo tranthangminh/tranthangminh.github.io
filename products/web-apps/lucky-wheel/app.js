@@ -384,7 +384,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Play celebrations & fireworks
         window.soundEngine.playWin();
-        if (confettiInstance) confettiInstance.fire(48);
+
+        // Calculate marquee board position for confetti explosion right as it drops down
+        let originX = window.innerWidth / 2;
+        let originY = 120;
+        if (winnerMarqueeBoard) {
+            const rect = winnerMarqueeBoard.getBoundingClientRect();
+            if (rect.width > 0) {
+                originX = rect.left + rect.width / 2;
+                originY = Math.max(90, rect.top + rect.height / 2);
+            }
+        }
+
+        // Delay ~220ms so fireworks burst right when the marquee drops into place
+        setTimeout(() => {
+            if (confettiInstance) confettiInstance.fire(32, originX, originY);
+        }, 220);
 
         // Record history
         if (window.LuckyWheelHistory) {

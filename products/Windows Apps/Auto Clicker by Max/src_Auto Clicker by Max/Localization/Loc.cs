@@ -122,6 +122,31 @@ namespace ModernAutoClicker.Localization
         public static string ChkShowMap { get { return IsVietnamese ? "Hiện Map" : "Show Map"; } }
         public static string ChkFreeMouse { get { return IsVietnamese ? "Chuột Tự Do" : "Free Mouse Mode"; } }
         public static string ChkSmoothMove { get { return IsVietnamese ? "Di chuột mượt" : "Smooth Mouse Move"; } }
+        public static string ChkFreeMouseTooltip
+        {
+            get
+            {
+                return IsVietnamese
+                    ? "Free Mouse Mode (Click ngầm không chiếm chuột):\n" +
+                      "Cho phép tự động click dưới nền ngay cả khi cửa sổ mục tiêu bị che khuất hoặc không active.\n\n" +
+                      "Các ứng dụng và trình giả lập đã được hỗ trợ tối ưu:\n" +
+                      " • BlueStacks 5 (HD-Player)\n" +
+                      " • Google Play Games trên PC (crosvm)\n" +
+                      " • Windows Desktop (Màn hình chính & biểu tượng)\n" +
+                      " • File Explorer (Quản lý tệp Windows)\n" +
+                      " • Các ứng dụng Win32 & trình duyệt thông thường (Chrome, Edge, Firefox, Notepad...)\n\n" +
+                      "* Lưu ý: Nếu app mục tiêu chạy quyền Administrator, hãy chạy Auto Clicker bằng Administrator để click hoạt động."
+                    : "Free Mouse Mode (Background click without stealing physical cursor):\n" +
+                      "Allows clicking in the background even when the target window is covered or unfocused.\n\n" +
+                      "Supported & optimized applications:\n" +
+                      " • BlueStacks 5 (HD-Player)\n" +
+                      " • Google Play Games on PC (crosvm)\n" +
+                      " • Windows Desktop (Desktop icons)\n" +
+                      " • File Explorer (CabinetWClass)\n" +
+                      " • Standard Win32 apps & web browsers (Chrome, Edge, Firefox, Notepad...)\n\n" +
+                      "* Note: If the target app runs as Administrator, run Auto Clicker as Administrator as well.";
+            }
+        }
 
         // ========================================================
         // 8. HOTKEY CARDS

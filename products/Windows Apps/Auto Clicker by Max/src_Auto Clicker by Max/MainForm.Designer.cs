@@ -286,9 +286,9 @@ namespace ModernAutoClicker
                 lblCurrentTimeTitle, lblCurrentTimeVal
             });
 
-            // 4. Target List Card (Right: 184 x 342)
-            pnlList = CreateCard(184, 342);
-            pnlList.Location = new Point(204, 0);
+            // 4. Target List Card (Right: 184 x 312, lowered to Y = 30 to align with pnlClickMode)
+            pnlList = CreateCard(184, 312);
+            pnlList.Location = new Point(204, 30);
             lblHeaderList = CreateHeader("Target (0 Points)");
             lblHeaderList.Location = new Point(10, 8);
             pnlList.Controls.Add(lblHeaderList);
@@ -326,7 +326,7 @@ namespace ModernAutoClicker
             lstPoints = new PointListControl
             {
                 Location = new Point(8, 54),
-                Size = new Size(168, 280)
+                Size = new Size(168, 250)
             };
             lstPoints.OnPointListChanged += () =>
             {
@@ -872,7 +872,14 @@ namespace ModernAutoClicker
                 // Checkboxes
                 if (chkAlwaysOnTop != null) chkAlwaysOnTop.Text = Loc.ChkAlwaysOnTop;
                 if (chkShowMap != null) chkShowMap.Text = Loc.ChkShowMap;
-                if (chkFreeMouse != null) chkFreeMouse.Text = Loc.ChkFreeMouse;
+                if (chkFreeMouse != null)
+                {
+                    chkFreeMouse.Text = Loc.ChkFreeMouse;
+                    if (_startToolTip != null)
+                    {
+                        _startToolTip.SetToolTip(chkFreeMouse, Loc.ChkFreeMouseTooltip);
+                    }
+                }
                 if (chkSmoothMove != null) chkSmoothMove.Text = Loc.ChkSmoothMove;
 
                 // Status info

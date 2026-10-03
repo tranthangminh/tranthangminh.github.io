@@ -14,10 +14,10 @@
     <!-- Shared SSO Authentication & Cloud Sync Styles -->
     <link rel="stylesheet" href="../../common/shared-auth.css">
     <!-- Lucky Wheel Custom Component Styles -->
-    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel.css">
-    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel-wheel.css">
-    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel-slices.css">
-    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel-modals.css">
+    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel.css?v=1.0.3">
+    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel-wheel.css?v=1.0.3">
+    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel-slices.css?v=1.0.3">
+    <link rel="stylesheet" href="./lucky-wheel/lucky-wheel-modals.css?v=1.0.3">
 </head>
 <body>
     <!-- Confetti Overlay Canvas -->
@@ -160,12 +160,16 @@
             </div>
 
             <div class="wheel-wrapper" id="wheelWrapper">
-                <!-- Sweeping Stage Spotlights (Tied to Wheel Wrapper for 100% Responsive Uniformity) -->
-                <div class="stage-spotlights" aria-hidden="true">
-                    <div class="spotlight-circle spot-circle-1"></div>
-                    <div class="spotlight-circle spot-circle-2"></div>
-                    <div class="spotlight-circle spot-circle-3"></div>
-                    <div class="spotlight-circle spot-circle-4"></div>
+                <!-- Rear Sweeping Spotlights (Behind Wheel - Lighting up Stage Background) -->
+                <div class="stage-spotlights stage-spotlights-back" aria-hidden="true">
+                    <div class="spotlight-circle spot-circle-back-1"></div>
+                    <div class="spotlight-circle spot-circle-back-2"></div>
+                </div>
+
+                <!-- Front Sweeping Spotlights (In Front of Wheel - Sweeping Slices) -->
+                <div class="stage-spotlights stage-spotlights-front" aria-hidden="true">
+                    <div class="spotlight-circle spot-circle-front-1"></div>
+                    <div class="spotlight-circle spot-circle-front-2"></div>
                 </div>
 
                 <!-- Casino Vegas Light Ring (Blinking & Chasing Lights) -->
@@ -513,14 +517,14 @@
     <script src="../../common/shared-auth.js"></script>
 
     <!-- Lucky Wheel Core Scripts -->
-    <script src="./lucky-wheel/audio.js"></script>
-    <script src="./lucky-wheel/wheel-3d-tilt.js"></script>
-    <script src="./lucky-wheel/wheel.js"></script>
-    <script src="./lucky-wheel/lucky-wheel-i18n.js"></script>
-    <script src="./lucky-wheel/presets.js"></script>
-    <script src="./lucky-wheel/history.js"></script>
-    <script src="./lucky-wheel/slices.js"></script>
-    <script src="./lucky-wheel/app.js"></script>
+    <script src="./lucky-wheel/audio.js?v=1.0.3"></script>
+    <script src="./lucky-wheel/wheel-3d-tilt.js?v=1.0.3"></script>
+    <script src="./lucky-wheel/wheel.js?v=1.0.3"></script>
+    <script src="./lucky-wheel/lucky-wheel-i18n.js?v=1.0.3"></script>
+    <script src="./lucky-wheel/presets.js?v=1.0.3"></script>
+    <script src="./lucky-wheel/history.js?v=1.0.3"></script>
+    <script src="./lucky-wheel/slices.js?v=1.0.3"></script>
+    <script src="./lucky-wheel/app.js?v=1.0.3"></script>
     <!-- Shared Web App Visit Counter -->
     <script src="../../common/shared-webapp-counter.js" data-webapp-id="webapp-luckywheel"></script>
 </body>

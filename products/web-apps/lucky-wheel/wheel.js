@@ -1228,28 +1228,32 @@ class ConfettiEngine {
         this.canvas.height = window.innerHeight;
     }
 
-    fire(count = 48) {
+    fire(count = 32, originX = null, originY = null) {
         this.resize();
         this.particles = [];
         this.isActive = true;
 
         const colors = ['#ef4444', '#f97316', '#eab308', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff'];
+        const cx = originX !== null ? originX : (window.innerWidth / 2);
+        const cy = originY !== null ? originY : (window.innerHeight * 0.22);
 
         for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 5 + Math.random() * 11;
             this.particles.push({
-                x: window.innerWidth / 2 + (Math.random() - 0.5) * 200,
-                y: window.innerHeight * 0.45,
-                w: 8 + Math.random() * 8,
-                h: 5 + Math.random() * 6,
+                x: cx + (Math.random() - 0.5) * 180,
+                y: cy + (Math.random() - 0.5) * 50,
+                w: 7 + Math.random() * 7,
+                h: 5 + Math.random() * 5,
                 color: colors[Math.floor(Math.random() * colors.length)],
-                vx: (Math.random() - 0.5) * 16,
-                vy: -8 - Math.random() * 12,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 2.5,
                 rot: Math.random() * 360,
                 rotSpeed: (Math.random() - 0.5) * 18,
-                gravity: 0.35 + Math.random() * 0.25,
-                drag: 0.985,
+                gravity: 0.32 + Math.random() * 0.20,
+                drag: 0.982,
                 opacity: 1,
-                decay: 0.007 + Math.random() * 0.009
+                decay: 0.007 + Math.random() * 0.008
             });
         }
 

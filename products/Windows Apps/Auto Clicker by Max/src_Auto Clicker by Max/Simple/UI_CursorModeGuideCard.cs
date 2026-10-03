@@ -21,15 +21,15 @@ namespace ModernAutoClicker.Simple
             theme = theme ?? ThemeTokens.DarkTheme();
             this.BorderRadius = theme.RadiusMd;
             this.BorderSize = 1;
-            this.Size = new Size(168, 306);
+            this.Size = new Size(168, 276);
             this.Padding = new Padding(8);
 
             // 1. Warning Badge
             lblBadge = new Label
             {
                 Text = Loc.CursorGuideBadge,
-                Location = new Point(8, 12),
-                Size = new Size(152, 20),
+                Location = new Point(8, 8),
+                Size = new Size(152, 18),
                 Font = ThemeTokens.FontButton(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
@@ -38,8 +38,8 @@ namespace ModernAutoClicker.Simple
             lblTitle = new Label
             {
                 Text = Loc.CursorGuideTitle,
-                Location = new Point(8, 36),
-                Size = new Size(152, 20),
+                Location = new Point(8, 28),
+                Size = new Size(152, 18),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
@@ -48,8 +48,8 @@ namespace ModernAutoClicker.Simple
             lblDesc = new Label
             {
                 Text = Loc.CursorGuideDesc,
-                Location = new Point(8, 62),
-                Size = new Size(152, 95),
+                Location = new Point(8, 50),
+                Size = new Size(152, 80),
                 Font = ThemeTokens.FontBase(FontStyle.Regular),
                 TextAlign = ContentAlignment.TopLeft
             };
@@ -57,8 +57,8 @@ namespace ModernAutoClicker.Simple
             // 4. Highlighted Hotkey Box
             pnlHotkeyBox = new RoundedPanel
             {
-                Location = new Point(8, 164),
-                Size = new Size(152, 70),
+                Location = new Point(8, 134),
+                Size = new Size(152, 64),
                 BorderRadius = theme.RadiusSm,
                 BorderSize = 0
             };
@@ -66,7 +66,7 @@ namespace ModernAutoClicker.Simple
             lblHotkeyKey = new Label
             {
                 Text = Loc.CursorGuideHotkeyKey,
-                Location = new Point(4, 8),
+                Location = new Point(4, 6),
                 Size = new Size(144, 18),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
@@ -75,8 +75,8 @@ namespace ModernAutoClicker.Simple
             lblHotkeyDesc = new Label
             {
                 Text = Loc.CursorGuideHotkeyDesc,
-                Location = new Point(6, 28),
-                Size = new Size(140, 36),
+                Location = new Point(6, 26),
+                Size = new Size(140, 32),
                 Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.TopCenter
             };
@@ -87,8 +87,8 @@ namespace ModernAutoClicker.Simple
             lblTip = new Label
             {
                 Text = Loc.CursorGuideTip,
-                Location = new Point(8, 244),
-                Size = new Size(152, 48),
+                Location = new Point(8, 204),
+                Size = new Size(152, 64),
                 Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.TopLeft
             };

@@ -21,6 +21,17 @@ html, body {
     overflow: hidden; /* No page scrollbar on PC & tablet */
 }
 
+/* Fullscreen Confetti Celebration Overlay */
+#confettiCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 40;
+}
+
 body {
     font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
     background-color: var(--bg-primary, #191919);
