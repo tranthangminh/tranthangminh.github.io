@@ -731,3 +731,8 @@ Nhằm tạo nên diện mạo trực quan, chuyên nghiệp, cân đối và nh
 - **Tối ưu ảnh (Next-Gen & Strip EXIF):** Ưu tiên WebP, loại bỏ siêu dữ liệu EXIF thừa, tuyệt đối không dùng ảnh gốc 2000px làm icon 40px, luôn đảm bảo `displayed_aspect_ratio` khớp với `natural_aspect_ratio` (dùng `object-fit: cover`).
 - **Phân biệt cảnh báo ảo trên GitHub Pages:** Bỏ qua các cảnh báo do đặc thù hosting miễn phí (`www.`, SPF record, Ads.txt, chu kỳ 90 ngày của Let's Encrypt SSL) theo quy định tại `_RULE-seo.md`.
 
+### 7. Quy Chuẩn Nạp Script & Tính Toàn Vẹn Khung Render (No Defer on Head Scripts)
+- Toàn bộ các script nền tảng dùng chung tại `<head>` (`shared-utils.js`, `shared-i18n.js`, `shared-header.js`, `shared-page.js`, và các file `*-images.js`) bắt buộc phải được nạp đồng bộ chuẩn (KHÔNG gắn thuộc tính `defer`).
+- **Nguyên nhân cốt lõi:** Các script điều khiển giao diện đặt ở cuối `<body>` (`home.js`, `artist.js`, `photographer.js`...) phụ thuộc tức thì vào các namespace và đối tượng toàn cục do các file trên khởi tạo. Nếu gắn `defer` vào `<head>`, trình duyệt sẽ trì hoãn thực thi các file nền tảng sau khi DOM parse xong, khiến script cuối trang chạy trước và gây ra lỗi `Uncaught ReferenceError / TypeError`, làm sập toàn bộ Fixed Header, Footer Menu và Bộ sưu tập ảnh.
+
+
