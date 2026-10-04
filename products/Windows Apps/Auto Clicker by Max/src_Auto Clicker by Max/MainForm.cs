@@ -107,6 +107,12 @@ namespace ModernAutoClicker
         private string _simpleTargetProcessName = "";
         private string _simpleTargetWindowTitle = "";
         private bool _simpleRelativeToWindow = false;
+        private int[] _simpleTargetWindowIndices = new int[5];
+        private int _simpleTargetWindowIndex
+        {
+            get { return (_simpleTabIndex >= 0 && _simpleTabIndex < 5) ? _simpleTargetWindowIndices[_simpleTabIndex] : 0; }
+            set { if (_simpleTabIndex >= 0 && _simpleTabIndex < 5) _simpleTargetWindowIndices[_simpleTabIndex] = value; }
+        }
         private IntPtr[] _simpleTargetHwnds = new IntPtr[5];
         private IntPtr _simpleTargetHwnd
         {
@@ -283,6 +289,7 @@ namespace ModernAutoClicker
             _windowTracker.SimpleTargetHwnd = () => _simpleTargetHwnd;
             _windowTracker.SimpleTargetProcessName = () => _simpleTargetProcessName;
             _windowTracker.SimpleTargetWindowTitle = () => _simpleTargetWindowTitle;
+            _windowTracker.SimpleTargetWindowIndex = () => _simpleTargetWindowIndex;
             _windowTracker.GetAdvancedSteps = () => (pnlTabAdvanced != null && pnlTabAdvanced.Table != null) ? pnlTabAdvanced.Table.GetSteps() : null;
             _windowTracker.OnPositionsChanged += () => SyncOverlay();
             _windowTracker.Start();
@@ -302,6 +309,7 @@ namespace ModernAutoClicker
             UpdateFormRegion();
             SyncOverlay();
             UpdateTabStatus(_isBasicTab);
+            UpdateRunningState();
             UpdateStartButtonState();
 
             // First-launch language prompt
@@ -595,7 +603,7 @@ namespace ModernAutoClicker
                         IntPtr hWnd = _simpleTargetHwnd;
                         if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
                         {
-                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
                             if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
                         }
                         if (hWnd != IntPtr.Zero)
@@ -727,6 +735,7 @@ namespace ModernAutoClicker
                 _simpleTargetHwnd = IntPtr.Zero;
                 _simpleTargetProcessName = "";
                 _simpleTargetWindowTitle = "";
+                _simpleTargetWindowIndex = 0;
                 UpdateSimpleTargetWindowButtonDisplay();
                 SyncOverlay();
                 SaveSettings();
@@ -755,6 +764,7 @@ namespace ModernAutoClicker
                         _simpleTargetHwnd = targetWin.Hwnd;
                         _simpleTargetProcessName = targetWin.ProcessName;
                         _simpleTargetWindowTitle = targetWin.Title;
+                        _simpleTargetWindowIndex = targetWin.WindowIndex;
                         if (targetWin.AppIcon != null)
                         {
                             IconCache.CacheProcessIcon(targetWin.ProcessName, targetWin.AppIcon);
@@ -793,7 +803,12 @@ namespace ModernAutoClicker
                     display = appName;
                 }
 
-                if (display.Length > 24) display = display.Substring(0, 21) + "...";
+                if (_simpleTargetWindowIndex > 0)
+                {
+                    display = string.Format("{0} ({1})", display, _simpleTargetWindowIndex);
+                }
+
+                if (display.Length > 27) display = display.Substring(0, 24) + "...";
 
                 btnSimpleTargetWindow.Image = IconCache.GetProcessIcon(_simpleTargetProcessName, _simpleTargetWindowTitle) ?? IconCache.GenericAppIcon;
                 btnSimpleTargetWindow.Text = display;
@@ -866,11 +881,12 @@ namespace ModernAutoClicker
                             _simpleTargetHwnd = hWnd;
                             _simpleTargetProcessName = winInfo.ProcessName;
                             _simpleTargetWindowTitle = winInfo.Title;
+                            _simpleTargetWindowIndex = winInfo.WindowIndex;
                             UpdateSimpleTargetWindowButtonDisplay();
                         }
                         else
                         {
-                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
                             if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
                         }
                     }
@@ -992,7 +1008,7 @@ namespace ModernAutoClicker
                                 IntPtr hWnd = _simpleTargetHwnd;
                                 if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
                                 {
-                                    hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                                    hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
                                     if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
                                 }
                                 if (hWnd != IntPtr.Zero)
@@ -1032,7 +1048,7 @@ namespace ModernAutoClicker
                                         IntPtr hWnd = s.WindowHwnd;
                                         if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
                                         {
-                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex);
                                             if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
                                         }
                                         if (hWnd != IntPtr.Zero)
@@ -1079,7 +1095,7 @@ namespace ModernAutoClicker
                                         IntPtr hWnd = s.WindowHwnd;
                                         if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
                                         {
-                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex);
                                             if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
                                         }
                                         if (hWnd != IntPtr.Zero)
@@ -1213,7 +1229,7 @@ namespace ModernAutoClicker
                         IntPtr hWnd = _simpleTargetHwnd;
                         if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
                         {
-                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
                             if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
                         }
                         foreach (var p in pts)
@@ -1254,7 +1270,7 @@ namespace ModernAutoClicker
                                     IntPtr hWnd = s.WindowHwnd;
                                     if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
                                     {
-                                        hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                                        hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex);
                                         if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
                                     }
                                     if (hWnd != IntPtr.Zero)
@@ -1570,7 +1586,7 @@ namespace ModernAutoClicker
             IntPtr tabHwnd = (tabIndex >= 0 && tabIndex < 5) ? _simpleTargetHwnds[tabIndex] : IntPtr.Zero;
             if (prof.SimpleRelativeToWindow && !NativeMethods.IsValidWindowHandle(tabHwnd, prof.SimpleTargetProcessName))
             {
-                tabHwnd = NativeMethods.FindWindowByTarget(prof.SimpleTargetProcessName, prof.SimpleTargetWindowTitle);
+                tabHwnd = NativeMethods.FindWindowByTarget(prof.SimpleTargetProcessName, prof.SimpleTargetWindowTitle, prof.SimpleTargetWindowIndex);
                 if (tabHwnd != IntPtr.Zero && tabIndex >= 0 && tabIndex < 5)
                 {
                     _simpleTargetHwnds[tabIndex] = tabHwnd;
@@ -1607,6 +1623,7 @@ namespace ModernAutoClicker
                 TargetHwnd = tabHwnd,
                 TargetProcessName = prof.SimpleTargetProcessName,
                 TargetWindowTitle = prof.SimpleTargetWindowTitle,
+                TargetWindowIndex = prof.SimpleTargetWindowIndex,
                 RelativeToWindow = prof.SimpleRelativeToWindow,
                 PointsList = (clickMode == 0 && prof.Points != null && prof.Points.Count > 0) ? new List<Point>(prof.Points) : null
             };
@@ -1665,7 +1682,7 @@ namespace ModernAutoClicker
                         IntPtr win = s.WindowHwnd;
                         if (!NativeMethods.IsValidWindowHandle(win, s.ProcessName))
                         {
-                            win = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle);
+                            win = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex);
                         }
                         if (win != IntPtr.Zero && UacHelper.IsProcessElevated(win))
                         {
@@ -1792,6 +1809,7 @@ namespace ModernAutoClicker
         public void StopAll()
         {
             if (this.IsDisposed || !this.IsHandleCreated) return;
+            if (!IsAnyRunning) return;
             if (this.InvokeRequired)
             {
                 this.BeginInvoke((Action)(() => StopAll()));
@@ -1945,6 +1963,7 @@ namespace ModernAutoClicker
             }
 
             if (titleBar != null) titleBar.IsRunning = IsAnyRunning;
+            if (btnStopAll != null) btnStopAll.Enabled = IsAnyRunning;
         }
 
         public void SwitchSimpleTab(int targetIdx)
@@ -1996,6 +2015,7 @@ namespace ModernAutoClicker
             prof.SimpleClickMode = (radModeCursor != null && radModeCursor.Checked) ? 1 : 0;
             prof.SimpleTargetProcessName = _simpleTargetProcessName ?? "";
             prof.SimpleTargetWindowTitle = _simpleTargetWindowTitle ?? "";
+            prof.SimpleTargetWindowIndex = _simpleTargetWindowIndex;
             prof.SimpleRelativeToWindow = _simpleRelativeToWindow;
             prof.Points = (lstPoints != null) ? lstPoints.GetPoints() : new List<Point>();
 
@@ -2027,12 +2047,13 @@ namespace ModernAutoClicker
 
                 _simpleTargetProcessName = prof.SimpleTargetProcessName ?? "";
                 _simpleTargetWindowTitle = prof.SimpleTargetWindowTitle ?? "";
+                _simpleTargetWindowIndex = prof.SimpleTargetWindowIndex;
                 _simpleRelativeToWindow = prof.SimpleRelativeToWindow;
                 if (_simpleRelativeToWindow && index >= 0 && index < 5)
                 {
                     if (!NativeMethods.IsValidWindowHandle(_simpleTargetHwnds[index], _simpleTargetProcessName))
                     {
-                        _simpleTargetHwnds[index] = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle);
+                        _simpleTargetHwnds[index] = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
                     }
                 }
                 UpdateSimpleTargetWindowButtonDisplay();
@@ -2220,6 +2241,7 @@ namespace ModernAutoClicker
             prof.SimpleClickMode = (radModeCursor != null && radModeCursor.Checked) ? 1 : 0;
             prof.SimpleTargetProcessName = _simpleTargetProcessName ?? "";
             prof.SimpleTargetWindowTitle = _simpleTargetWindowTitle ?? "";
+            prof.SimpleTargetWindowIndex = _simpleTargetWindowIndex;
             prof.SimpleRelativeToWindow = _simpleRelativeToWindow;
             prof.Points = (lstPoints != null) ? lstPoints.GetPoints() : new List<Point>();
 

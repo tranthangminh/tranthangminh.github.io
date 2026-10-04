@@ -18,8 +18,11 @@ namespace ModernAutoClicker.Advanced
         public Point EndPoint { get; set; }
         public int HoldMs { get; set; }
         public int DelayMs { get; set; }
+        public int BaseHoldMs { get; set; }
+        public int BaseDelayMs { get; set; }
         public int RepeatCount { get; set; }
         public int ScrollStep { get; set; }
+        public int DragButton { get; set; } // 0: Left, 1: Right, 2: Middle
         public string KeyData { get; set; }
         public string Note { get; set; }
 
@@ -36,6 +39,7 @@ namespace ModernAutoClicker.Advanced
         public string WindowTitle { get; set; }
         public string ProcessName { get; set; }
         public bool RelativeToWindow { get; set; }
+        public int WindowIndex { get; set; }
 
         // Image Recognition Properties
         public string ImageBase64 { get; set; }
@@ -103,8 +107,11 @@ namespace ModernAutoClicker.Advanced
             EndPoint = Point.Empty;
             HoldMs = 10;
             DelayMs = 240;
+            BaseHoldMs = 10;
+            BaseDelayMs = 240;
             RepeatCount = 1;
             ScrollStep = 0;
+            DragButton = 0;
             KeyData = "Space";
             Note = "";
             TargetColor = Color.FromArgb(0, 255, 0);
@@ -116,6 +123,7 @@ namespace ModernAutoClicker.Advanced
             WindowTitle = "";
             ProcessName = "";
             RelativeToWindow = false;
+            WindowIndex = 0;
             ImageBase64 = "";
             Similarity = 90;
             TimeoutSec = 10;
@@ -136,8 +144,11 @@ namespace ModernAutoClicker.Advanced
                 EndPoint = this.EndPoint,
                 HoldMs = this.HoldMs,
                 DelayMs = this.DelayMs,
+                BaseHoldMs = this.BaseHoldMs > 0 ? this.BaseHoldMs : this.HoldMs,
+                BaseDelayMs = this.BaseDelayMs >= 0 ? this.BaseDelayMs : this.DelayMs,
                 RepeatCount = this.RepeatCount,
                 ScrollStep = this.ScrollStep,
+                DragButton = this.DragButton,
                 KeyData = this.KeyData,
                 Note = this.Note,
                 TargetColor = this.TargetColor,
@@ -149,6 +160,7 @@ namespace ModernAutoClicker.Advanced
                 WindowTitle = this.WindowTitle,
                 ProcessName = this.ProcessName,
                 RelativeToWindow = this.RelativeToWindow,
+                WindowIndex = this.WindowIndex,
                 ImageBase64 = this.ImageBase64,
                 Similarity = this.Similarity,
                 TimeoutSec = this.TimeoutSec,

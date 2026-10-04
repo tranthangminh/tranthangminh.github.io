@@ -259,6 +259,7 @@ namespace ModernAutoClicker.Localization
         public static string AdvLblLoop { get { return IsVietnamese ? "Lặp:" : "Loop:"; } }
         public static string AdvLblJitter { get { return IsVietnamese ? "Độ lệch: ±" : "Jitter: ±"; } }
         public static string AdvLblInterval { get { return IsVietnamese ? "Khoảng cách: ±" : "Interval: ±"; } }
+        public static string AdvLblSpeed { get { return IsVietnamese ? "Tốc độ:" : "Speed:"; } }
 
         // ========================================================
         // 12. MACRO STEP ACTION TYPE NAMES

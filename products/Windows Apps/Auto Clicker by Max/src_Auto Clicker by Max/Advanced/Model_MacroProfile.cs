@@ -10,9 +10,11 @@ namespace ModernAutoClicker.Advanced
         public int LoopCount { get; set; } // 0 = Infinite, > 0 = N times
         public int RandomIntervalMs { get; set; } // ± N ms deviation
         public int RandomJitterPx { get; set; } // ± N px coordinate offset radius
+        public int SpeedPercent { get; set; } // Runtime & script scale speed % (default 100)
         public string DefaultWindowTitle { get; set; }
         public string DefaultProcessName { get; set; }
         public bool DefaultRelativeToWindow { get; set; }
+        public int DefaultWindowIndex { get; set; }
         public List<MacroStep> Steps { get; set; }
 
         public MacroProfile()
@@ -22,9 +24,11 @@ namespace ModernAutoClicker.Advanced
             LoopCount = 0;
             RandomIntervalMs = 0;
             RandomJitterPx = 0;
+            SpeedPercent = 100;
             DefaultWindowTitle = "";
             DefaultProcessName = "";
             DefaultRelativeToWindow = false;
+            DefaultWindowIndex = 0;
             Steps = new List<MacroStep>();
         }
 

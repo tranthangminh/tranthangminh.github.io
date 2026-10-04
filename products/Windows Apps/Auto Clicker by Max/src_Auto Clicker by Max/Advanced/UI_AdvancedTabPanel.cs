@@ -37,6 +37,9 @@ namespace ModernAutoClicker.Advanced
         private Label lblRandInterval;
         private NumberInput numRandInterval;
         private Label lblRandIntervalUnit;
+        private Label lblSpeed;
+        private NumberInput numSpeed;
+        private Label lblSpeedUnit;
 
         // Table (Shared across all profiles)
         private MacroTableControl tableControl;
@@ -108,6 +111,7 @@ namespace ModernAutoClicker.Advanced
             if (lblLoop != null) lblLoop.Text = Loc.AdvLblLoop;
             if (lblRandJitter != null) lblRandJitter.Text = Loc.AdvLblJitter;
             if (lblRandInterval != null) lblRandInterval.Text = Loc.AdvLblInterval;
+            if (lblSpeed != null) lblSpeed.Text = Loc.AdvLblSpeed;
 
             if (tableControl != null) tableControl.ApplyLanguage();
         }
@@ -160,6 +164,9 @@ namespace ModernAutoClicker.Advanced
                 if (lblRandInterval != null && lblRandInterval.Top != optY) lblRandInterval.Top = optY;
                 if (numRandInterval != null && numRandInterval.Top != optY - 1) numRandInterval.Top = optY - 1;
                 if (lblRandIntervalUnit != null && lblRandIntervalUnit.Top != optY) lblRandIntervalUnit.Top = optY;
+                if (lblSpeed != null && lblSpeed.Top != optY) lblSpeed.Top = optY;
+                if (numSpeed != null && numSpeed.Top != optY - 1) numSpeed.Top = optY - 1;
+                if (lblSpeedUnit != null && lblSpeedUnit.Top != optY) lblSpeedUnit.Top = optY;
 
                 pnlBodyCard.ResumeLayout(true);
             }
@@ -239,6 +246,11 @@ namespace ModernAutoClicker.Advanced
                         step.ProcessName = cur.DefaultProcessName;
                         step.WindowTitle = cur.DefaultWindowTitle;
                     }
+                    if (cur.SpeedPercent > 0 && cur.SpeedPercent != 100)
+                    {
+                        step.HoldMs = Math.Max(1, (int)Math.Round(step.BaseHoldMs * 100.0 / cur.SpeedPercent));
+                        step.DelayMs = Math.Max(0, (int)Math.Round(step.BaseDelayMs * 100.0 / cur.SpeedPercent));
+                    }
                 }
                 tableControl.AddStep(step);
                 UpdateStatus();
@@ -303,13 +315,14 @@ namespace ModernAutoClicker.Advanced
                     if (OnActiveScriptChanged != null) OnActiveScriptChanged();
                 }
             };
-            tableControl.OnDefaultWindowBatchChanged += (rel, proc, title) =>
+            tableControl.OnDefaultWindowBatchChanged += (rel, proc, title, winIdx) =>
             {
                 if (_activeProfileIndex >= 0 && _activeProfileIndex < _profiles.Count)
                 {
                     _profiles[_activeProfileIndex].DefaultRelativeToWindow = rel;
                     _profiles[_activeProfileIndex].DefaultProcessName = proc ?? "";
                     _profiles[_activeProfileIndex].DefaultWindowTitle = title ?? "";
+                    _profiles[_activeProfileIndex].DefaultWindowIndex = winIdx;
                 }
             };
 
@@ -417,12 +430,53 @@ namespace ModernAutoClicker.Advanced
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
+            lblSpeed = new Label
+            {
+                Text = Loc.AdvLblSpeed,
+                Location = new Point(410, 454),
+                Size = new Size(50, 20),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
+                TextAlign = ContentAlignment.MiddleRight
+            };
+
+            numSpeed = new NumberInput
+            {
+                Location = new Point(464, 453),
+                Size = new Size(42, 22),
+                Minimum = 10,
+                Maximum = 2000,
+                Step = 10,
+                AllowEmpty = false,
+                Value = 100,
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                BorderStyle = BorderStyle.FixedSingle,
+                TextAlign = HorizontalAlignment.Center
+            };
+            numSpeed.TextChanged += (s, e) =>
+            {
+                if (_isLoadingUI) return;
+                int speedVal = numSpeed.Value;
+                if (speedVal < 10) speedVal = 10;
+                if (speedVal > 2000) speedVal = 2000;
+                ApplySpeedPercentToCurrentProfile(speedVal);
+            };
+
+            lblSpeedUnit = new Label
+            {
+                Text = "%",
+                Location = new Point(508, 454),
+                Size = new Size(18, 20),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
             pnlBodyCard.Controls.AddRange(new Control[] {
                 btnAddStep, btnCloneSelected, btnSaveProfile, btnLoadProfile, btnClearAll,
                 tableControl,
                 lblLoop, numLoop, lblLoopHint,
                 lblRandJitter, numRandJitter, lblRandJitterUnit,
-                lblRandInterval, numRandInterval, lblRandIntervalUnit
+                lblRandInterval, numRandInterval, lblRandIntervalUnit,
+                lblSpeed, numSpeed, lblSpeedUnit
             });
 
             this.Controls.AddRange(new Control[] {
@@ -447,6 +501,7 @@ namespace ModernAutoClicker.Advanced
                 _profiles[_activeProfileIndex].LoopCount = numLoop != null ? numLoop.Value : 0;
                 _profiles[_activeProfileIndex].RandomIntervalMs = numRandInterval != null ? numRandInterval.Value : 0;
                 _profiles[_activeProfileIndex].RandomJitterPx = numRandJitter != null ? numRandJitter.Value : 0;
+                _profiles[_activeProfileIndex].SpeedPercent = numSpeed != null ? numSpeed.Value : 100;
             }
         }
 
@@ -478,6 +533,7 @@ namespace ModernAutoClicker.Advanced
                 if (numLoop != null) numLoop.Value = p.LoopCount;
                 if (numRandJitter != null) numRandJitter.Value = p.RandomJitterPx;
                 if (numRandInterval != null) numRandInterval.Value = p.RandomIntervalMs;
+                if (numSpeed != null) numSpeed.Value = p.SpeedPercent > 0 ? p.SpeedPercent : 100;
 
                 UpdateStatus();
             }
@@ -541,6 +597,7 @@ namespace ModernAutoClicker.Advanced
                 LoopCount = src.LoopCount,
                 RandomIntervalMs = src.RandomIntervalMs,
                 RandomJitterPx = src.RandomJitterPx,
+                SpeedPercent = src.SpeedPercent,
                 Steps = new List<MacroStep>()
             };
             foreach (MacroStep s in src.Steps)
@@ -552,6 +609,36 @@ namespace ModernAutoClicker.Advanced
             ReloadProfileTabs(index + 1);
 
             if (OnActiveScriptChanged != null) OnActiveScriptChanged();
+        }
+
+        private void ApplySpeedPercentToCurrentProfile(int newSpeed)
+        {
+            if (_activeProfileIndex < 0 || _activeProfileIndex >= _profiles.Count) return;
+            var prof = _profiles[_activeProfileIndex];
+            prof.SpeedPercent = newSpeed;
+
+            var steps = tableControl.GetSteps();
+            for (int i = 0; i < steps.Count; i++)
+            {
+                var s = steps[i];
+                if (s == null) continue;
+                if (s.BaseHoldMs <= 0) s.BaseHoldMs = Math.Max(1, s.HoldMs);
+                if (s.BaseDelayMs <= 0 && s.DelayMs > 0) s.BaseDelayMs = s.DelayMs;
+
+                if (newSpeed == 100)
+                {
+                    s.HoldMs = Math.Max(1, s.BaseHoldMs);
+                    s.DelayMs = Math.Max(0, s.BaseDelayMs);
+                }
+                else
+                {
+                    s.HoldMs = Math.Max(1, (int)Math.Round(s.BaseHoldMs * 100.0 / newSpeed));
+                    s.DelayMs = Math.Max(0, (int)Math.Round(s.BaseDelayMs * 100.0 / newSpeed));
+                }
+            }
+
+            tableControl.RefreshAllTimingDisplays(newSpeed);
+            UpdateStatus();
         }
 
         public void ReorderProfile(int fromIndex, int toIndex)
@@ -874,19 +961,19 @@ namespace ModernAutoClicker.Advanced
             }
             if (btnTemplate != null) btnTemplate.ApplyTheme(t);
 
-            Label[] labels = new Label[] { lblLoop, lblRandJitter, lblRandInterval };
+            Label[] labels = new Label[] { lblLoop, lblRandJitter, lblRandInterval, lblSpeed };
             foreach (Label lbl in labels)
             {
                 if (lbl != null) lbl.ForeColor = t.TextSecondary;
             }
 
-            Label[] hintLabels = new Label[] { lblLoopHint, lblRandJitterUnit, lblRandIntervalUnit };
+            Label[] hintLabels = new Label[] { lblLoopHint, lblRandJitterUnit, lblRandIntervalUnit, lblSpeedUnit };
             foreach (Label lbl in hintLabels)
             {
                 if (lbl != null) lbl.ForeColor = t.TextTertiary;
             }
 
-            NumberInput[] numInputs = new NumberInput[] { numLoop, numRandJitter, numRandInterval };
+            NumberInput[] numInputs = new NumberInput[] { numLoop, numRandJitter, numRandInterval, numSpeed };
             foreach (NumberInput num in numInputs)
             {
                 if (num != null) num.ApplyTheme(t);

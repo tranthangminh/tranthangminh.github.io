@@ -20,8 +20,8 @@ namespace ModernAutoClicker
         private ToolTip _toolTip;
         private string _currentTooltipText = "";
 
-        private const int BTN_WIDTH = 44;
-        private const int PREF_BTN_SIZE = 32;
+        private const int BTN_WIDTH = 34;
+        private const int PREF_BTN_SIZE = 30;
         private const int TITLE_HEIGHT = 32;
 
         public event Action OnCloseRequested;
@@ -100,7 +100,7 @@ namespace ModernAutoClicker
 
         private Rectangle ThemeButtonRect
         {
-            get { return new Rectangle(this.Width - BTN_WIDTH * 2 - 4 - PREF_BTN_SIZE - 4 - PREF_BTN_SIZE, (this.Height - PREF_BTN_SIZE) / 2, PREF_BTN_SIZE, PREF_BTN_SIZE); }
+            get { return new Rectangle(LangButtonRect.Left - 4 - PREF_BTN_SIZE, (this.Height - PREF_BTN_SIZE) / 2, PREF_BTN_SIZE, PREF_BTN_SIZE); }
         }
 
         private Rectangle AdminButtonRect
@@ -286,44 +286,41 @@ namespace ModernAutoClicker
                 g.FillRectangle(bgBrush, this.ClientRectangle);
             }
 
-            // 2. App Icon (18x18)
+            // 2. App Icon (18x18, aligned with Info button [ i ] below at X = 0)
             Image appIcon = SvgFileRenderer.GetAppIconImage(18);
             if (appIcon != null)
             {
-                g.DrawImage(appIcon, 10, (this.Height - 18) / 2, 18, 18);
+                g.DrawImage(appIcon, 0, (this.Height - 18) / 2, 18, 18);
             }
 
             // 3. Title Text (Vertically Centered across full bar height, ending before admin button)
             using (Font titleFont = ThemeTokens.FontButton(FontStyle.Bold))
             {
-                int textRightBound = Math.Max(50, AdminButtonRect.Left - 8);
-                Rectangle textRect = new Rectangle(34, 0, textRightBound - 34, this.Height);
+                int textRightBound = Math.Max(50, AdminButtonRect.Left - 6);
+                Rectangle textRect = new Rectangle(22, 0, textRightBound - 22, this.Height);
                 TextRenderer.DrawText(g, _titleText, titleFont, textRect, t.TextPrimary, 
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
             }
 
-            // 3.3. Admin Button [ 🛡️ ] (Turns golden background when running as Administrator)
+            // 3.3. Admin Button [ admin.svg ] (Turns golden amber background when running as Administrator)
             Rectangle adminRect = AdminButtonRect;
             bool isCurrentAdmin = UacHelper.IsRunningAsAdmin();
-            Rectangle adminVisual = new Rectangle(adminRect.X + 1, (this.Height - 30) / 2, 30, 30);
+            Rectangle adminVisual = new Rectangle(adminRect.X, (this.Height - PREF_BTN_SIZE) / 2, PREF_BTN_SIZE, PREF_BTN_SIZE);
 
             Color adminBg;
             Color adminBorder;
-            Color iconColor;
 
             if (isCurrentAdmin)
             {
-                // Active Admin: Solid vibrant gold background, gold border, dark shield icon
-                adminBg = _isHoverAdmin ? Color.FromArgb(255, 210, 50) : Color.FromArgb(235, 175, 20);
-                adminBorder = _isHoverAdmin ? Color.FromArgb(255, 235, 100) : Color.FromArgb(255, 195, 40);
-                iconColor = Color.FromArgb(20, 20, 20); // Dark shield on bright gold background
+                // Active Admin: Changed background color (golden amber recognition)
+                adminBg = _isHoverAdmin ? Color.FromArgb(235, 160, 20) : Color.FromArgb(210, 140, 10);
+                adminBorder = _isHoverAdmin ? Color.FromArgb(255, 190, 40) : Color.FromArgb(245, 180, 30);
             }
             else
             {
-                // Non-Admin: Secondary background, gold highlight on hover
+                // Non-Admin: Secondary background, hover elevated
                 adminBg = _isHoverAdmin ? t.BgElevated : t.BgSecondary;
-                adminBorder = _isHoverAdmin ? Color.FromArgb(255, 180, 0) : t.BorderColor;
-                iconColor = _isHoverAdmin ? Color.FromArgb(255, 190, 40) : t.TextSecondary;
+                adminBorder = _isHoverAdmin ? t.AccentPrimary : t.BorderColor;
             }
 
             using (GraphicsPath aPath = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(adminVisual, 4))
@@ -338,18 +335,30 @@ namespace ModernAutoClicker
                 }
             }
 
-            using (Font shFont = ThemeTokens.FontSegoeSymbol(ThemeTokens.FontSizeBase, FontStyle.Regular))
+            // Draw Admin SVG Icon (16x16) centered inside with text-primary color
+            Image adminIcon = SvgFileRenderer.GetCachedTintedIcon("admin.svg", 16, 16, t.TextPrimary);
+            if (adminIcon != null)
             {
-                TextRenderer.DrawText(g, "🛡", shFont, adminVisual, iconColor,
-                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+                int iconX = adminVisual.X + (adminVisual.Width - 16) / 2;
+                int iconY = adminVisual.Y + (adminVisual.Height - 16) / 2;
+                g.DrawImage(adminIcon, iconX, iconY, 16, 16);
+            }
+            else
+            {
+                // Fallback emoji if SVG is missing
+                using (Font shFont = ThemeTokens.FontSegoeSymbol(ThemeTokens.FontSizeBase, FontStyle.Regular))
+                {
+                    TextRenderer.DrawText(g, "🛡", shFont, adminVisual, t.TextPrimary,
+                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+                }
             }
 
-            // 3.4. Theme Toggle Button (32x32)
+            // 3.4. Theme Toggle Button (30x30)
             Rectangle themeRect = ThemeButtonRect;
             Color themeBg = _isHoverTheme ? t.TextSecondary : t.TextPrimary;
             Color themeBorder = _isHoverTheme ? t.AccentPrimary : t.BorderColor;
 
-            Rectangle themeVisual = new Rectangle(themeRect.X + 1, (this.Height - 30) / 2, 30, 30);
+            Rectangle themeVisual = new Rectangle(themeRect.X, (this.Height - PREF_BTN_SIZE) / 2, PREF_BTN_SIZE, PREF_BTN_SIZE);
             using (GraphicsPath themePath = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(themeVisual, 4))
             {
                 using (SolidBrush themeBrush = new SolidBrush(themeBg))
@@ -362,13 +371,13 @@ namespace ModernAutoClicker
                 }
             }
 
-            // Draw Theme SVG Icon (18x18) centered inside
-            Image themeIcon = SvgFileRenderer.GetThemeIconImage(t.IsDark, 18);
+            // Draw Theme SVG Icon (16x16) centered inside
+            Image themeIcon = SvgFileRenderer.GetThemeIconImage(t.IsDark, 16);
             if (themeIcon != null)
             {
-                int iconX = themeVisual.X + (themeVisual.Width - 18) / 2;
-                int iconY = themeVisual.Y + (themeVisual.Height - 18) / 2;
-                g.DrawImage(themeIcon, iconX, iconY, 18, 18);
+                int iconX = themeVisual.X + (themeVisual.Width - 16) / 2;
+                int iconY = themeVisual.Y + (themeVisual.Height - 16) / 2;
+                g.DrawImage(themeIcon, iconX, iconY, 16, 16);
             }
             else
             {
@@ -380,13 +389,13 @@ namespace ModernAutoClicker
                 }
             }
 
-            // 3.5. Language Toggle Button [ VI ] / [ EN ] (32x32)
+            // 3.5. Language Toggle Button [ VI ] / [ EN ] (30x30)
             Rectangle langRect = LangButtonRect;
             Color langBg = _isHoverLang ? t.BgElevated : t.BgSecondary;
             Color langBorder = _isHoverLang ? t.AccentPrimary : t.BorderColor;
             Color langFg = _isHoverLang ? t.AccentPrimary : t.TextPrimary;
 
-            Rectangle langVisual = new Rectangle(langRect.X + 1, (this.Height - 30) / 2, 30, 30);
+            Rectangle langVisual = new Rectangle(langRect.X, (this.Height - PREF_BTN_SIZE) / 2, PREF_BTN_SIZE, PREF_BTN_SIZE);
             using (GraphicsPath langPath = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(langVisual, 4))
             {
                 using (SolidBrush langBrush = new SolidBrush(langBg))

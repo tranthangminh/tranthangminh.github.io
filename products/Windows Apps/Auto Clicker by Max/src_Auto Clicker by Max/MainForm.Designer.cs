@@ -392,7 +392,8 @@ namespace ModernAutoClicker
                 Font = ThemeTokens.FontCard(FontStyle.Bold),
                 NormalColor = currentTheme.Danger,
                 HoverColor = currentTheme.CRed,
-                ForeColor = Color.White
+                ForeColor = Color.White,
+                Enabled = false
             };
             btnStopAll.Click += (s, e) => StopAll();
 

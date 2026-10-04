@@ -321,37 +321,9 @@ namespace ModernAutoClicker
         {
             if (parent == IntPtr.Zero) return IntPtr.Zero;
 
-            // 0. Check registered Special App Adapters (BlueStacks, Desktop, etc.)
+            // 0. Check registered Special App Adapters (BlueStacks, Desktop, Chromium, etc.)
             IntPtr specialChild = ModernAutoClicker.SpecialApps.SpecialAppRegistry.ResolveTargetHandle(parent, new Point(screenPt.X, screenPt.Y));
             if (specialChild != IntPtr.Zero) return specialChild;
-
-            // Check Desktop special case: Progman / WorkerW -> SHELLDLL_DefView -> SysListView32
-            System.Text.StringBuilder sbClass = new System.Text.StringBuilder(256);
-            GetClassName(parent, sbClass, sbClass.Capacity);
-            string cls = sbClass.ToString();
-            if (cls == "Progman" || cls == "WorkerW")
-            {
-                IntPtr shellView = FindWindowEx(parent, IntPtr.Zero, "SHELLDLL_DefView", null);
-                if (shellView == IntPtr.Zero)
-                {
-                    IntPtr worker = IntPtr.Zero;
-                    do
-                    {
-                        worker = FindWindowEx(IntPtr.Zero, worker, "WorkerW", null);
-                        if (worker != IntPtr.Zero)
-                        {
-                            shellView = FindWindowEx(worker, IntPtr.Zero, "SHELLDLL_DefView", null);
-                            if (shellView != IntPtr.Zero) break;
-                        }
-                    } while (worker != IntPtr.Zero);
-                }
-                if (shellView != IntPtr.Zero)
-                {
-                    IntPtr listView = FindWindowEx(shellView, IntPtr.Zero, "SysListView32", null);
-                    if (listView != IntPtr.Zero) return listView;
-                    return shellView;
-                }
-            }
 
             // Recursive search down child window tree (up to 12 levels)
             IntPtr current = parent;
@@ -412,7 +384,6 @@ namespace ModernAutoClicker
             }
             else if (mouseBtn == 3) // Double Click (Generic fallback)
             {
-                PostMessage(targetHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
                 PostMessage(targetHwnd, 0x0201 /* WM_LBUTTONDOWN */, (IntPtr)0x0001, lParam);
                 if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
                 PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
@@ -429,19 +400,16 @@ namespace ModernAutoClicker
                 wParam = (IntPtr)0x0001; // MK_LBUTTON
             }
 
-            // 1. Send WM_MOUSEMOVE first so browser/app/emulator registers mouse position over the element
-            PostMessage(targetHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
-            
-            // 2. Send Button Down
+            // 1. Send Button Down (Omit WM_MOUSEMOVE to prevent WM_SETCURSOR cursor fluttering)
             PostMessage(targetHwnd, msgDown, wParam, lParam);
             
-            // 3. Hold duration (default 10ms or <= interval)
+            // 2. Hold duration (default 10ms or <= interval)
             if (holdMs > 0)
             {
                 System.Threading.Thread.Sleep(holdMs);
             }
             
-            // 4. Send Button Up
+            // 3. Send Button Up
             PostMessage(targetHwnd, msgUp, IntPtr.Zero, lParam);
         }
 
@@ -484,7 +452,6 @@ namespace ModernAutoClicker
             }
             else if (mouseBtn == 3) // Double Click (Generic fallback)
             {
-                PostMessage(targetHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
                 PostMessage(targetHwnd, 0x0201 /* WM_LBUTTONDOWN */, (IntPtr)0x0001, lParam);
                 if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
                 PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
@@ -501,7 +468,6 @@ namespace ModernAutoClicker
                 wParam = (IntPtr)0x0001;
             }
 
-            PostMessage(targetHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
             PostMessage(targetHwnd, msgDown, wParam, lParam);
             if (holdMs > 0)
             {
@@ -788,30 +754,57 @@ namespace ModernAutoClicker
             }, IntPtr.Zero);
 
             // Differentiate windows that share the exact same ProcessName and Title
-            var titleCounts = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var groups = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<WindowTargetInfo>>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in list)
             {
                 string key = string.Format("{0}|{1}", item.ProcessName, item.Title);
-                int cnt;
-                titleCounts.TryGetValue(key, out cnt);
-                titleCounts[key] = cnt + 1;
+                System.Collections.Generic.List<WindowTargetInfo> group;
+                if (!groups.TryGetValue(key, out group))
+                {
+                    group = new System.Collections.Generic.List<WindowTargetInfo>();
+                    groups[key] = group;
+                }
+                group.Add(item);
             }
 
-            var titleIndices = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            foreach (var item in list)
+            foreach (var kvp in groups)
             {
-                string key = string.Format("{0}|{1}", item.ProcessName, item.Title);
-                if (titleCounts[key] > 1)
+                var group = kvp.Value;
+                if (group.Count > 1)
                 {
-                    int idx;
-                    titleIndices.TryGetValue(key, out idx);
-                    idx++;
-                    titleIndices[key] = idx;
-                    item.WindowIndex = idx;
+                    // Deterministic stable sorting by PID ascending, then HWND ascending
+                    group.Sort((a, b) =>
+                    {
+                        uint pidA, pidB;
+                        GetWindowThreadProcessId(a.Hwnd, out pidA);
+                        GetWindowThreadProcessId(b.Hwnd, out pidB);
+                        int cmp = pidA.CompareTo(pidB);
+                        if (cmp != 0) return cmp;
+                        return a.Hwnd.ToInt64().CompareTo(b.Hwnd.ToInt64());
+                    });
+
+                    for (int i = 0; i < group.Count; i++)
+                    {
+                        group[i].WindowIndex = i + 1;
+                    }
                 }
             }
 
             return list;
+        }
+
+        public static int ResolveWindowIndex(IntPtr hWnd)
+        {
+            if (hWnd == IntPtr.Zero) return 0;
+            var windows = GetOpenWindows();
+            foreach (var win in windows)
+            {
+                if (win.Hwnd == hWnd)
+                {
+                    return win.WindowIndex;
+                }
+            }
+            return 0;
         }
 
         public static bool IsValidWindowHandle(IntPtr hWnd, string procName = null)
@@ -851,7 +844,7 @@ namespace ModernAutoClicker
 
         private static readonly System.Collections.Generic.Dictionary<string, TargetWindowCacheEntry> _targetWindowCache = new System.Collections.Generic.Dictionary<string, TargetWindowCacheEntry>(StringComparer.OrdinalIgnoreCase);
 
-        public static IntPtr FindWindowByTarget(string procName, string windowTitle)
+        public static IntPtr FindWindowByTarget(string procName, string windowTitle, int windowIndex = 0)
         {
             string cleanProc = (procName ?? "").Trim();
             if (cleanProc.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -876,7 +869,7 @@ namespace ModernAutoClicker
                 if (pDesk != IntPtr.Zero && IsWindow(pDesk)) return pDesk;
             }
 
-            string cacheKey = string.Format("{0}|{1}", cleanProc, cleanTitle);
+            string cacheKey = string.Format("{0}|{1}|{2}", cleanProc, cleanTitle, windowIndex);
 
             lock (_targetWindowCache)
             {
@@ -919,7 +912,7 @@ namespace ModernAutoClicker
                 }
             }
 
-            IntPtr exactMatch = IntPtr.Zero;
+            System.Collections.Generic.List<IntPtr> matchingHwnds = new System.Collections.Generic.List<IntPtr>();
             IntPtr processMatch = IntPtr.Zero;
 
             EnumWindows((hWnd, lParam) =>
@@ -950,8 +943,7 @@ namespace ModernAutoClicker
 
                     if (titleMatch && (targetPids.Count == 0 || isPidMatch))
                     {
-                        exactMatch = hWnd;
-                        return false; // Stop immediately on exact match
+                        matchingHwnds.Add(hWnd);
                     }
                     else if (isPidMatch && processMatch == IntPtr.Zero && len > 0)
                     {
@@ -961,7 +953,36 @@ namespace ModernAutoClicker
                 return true;
             }, IntPtr.Zero);
 
-            IntPtr resultHwnd = (exactMatch != IntPtr.Zero) ? exactMatch : processMatch;
+            // Deterministic stable sorting by PID ascending, then HWND ascending
+            if (matchingHwnds.Count > 1)
+            {
+                matchingHwnds.Sort((a, b) =>
+                {
+                    uint pidA, pidB;
+                    GetWindowThreadProcessId(a, out pidA);
+                    GetWindowThreadProcessId(b, out pidB);
+                    int cmp = pidA.CompareTo(pidB);
+                    if (cmp != 0) return cmp;
+                    return a.ToInt64().CompareTo(b.ToInt64());
+                });
+            }
+
+            IntPtr resultHwnd = IntPtr.Zero;
+            if (matchingHwnds.Count > 0)
+            {
+                if (windowIndex > 0 && windowIndex <= matchingHwnds.Count)
+                {
+                    resultHwnd = matchingHwnds[windowIndex - 1];
+                }
+                else
+                {
+                    resultHwnd = matchingHwnds[0];
+                }
+            }
+            else
+            {
+                resultHwnd = processMatch;
+            }
 
             lock (_targetWindowCache)
             {

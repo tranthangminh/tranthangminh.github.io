@@ -253,6 +253,25 @@ namespace ModernAutoClicker
                 }
             }
         }
+
+        protected override void OnRenderImageMargin(System.Windows.Forms.ToolStripRenderEventArgs e)
+        {
+            using (SolidBrush b = new SolidBrush(_theme.BgSecondary))
+            {
+                e.Graphics.FillRectangle(b, e.AffectedBounds);
+            }
+        }
+
+        protected override void OnRenderItemImage(System.Windows.Forms.ToolStripItemImageRenderEventArgs e)
+        {
+            if (e.Image != null)
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                e.Graphics.DrawImage(e.Image, e.ImageRectangle);
+            }
+        }
     }
 
     public class ModernMenuColorTable : System.Windows.Forms.ProfessionalColorTable

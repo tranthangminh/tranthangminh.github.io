@@ -390,7 +390,7 @@ namespace ModernAutoClicker.Advanced
                                 IntPtr hWnd = step.WindowHwnd;
                                 if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
                                 {
-                                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
                                     if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
                                 }
                                 if (hWnd != IntPtr.Zero)
@@ -548,7 +548,7 @@ namespace ModernAutoClicker.Advanced
                             IntPtr hWnd = step.WindowHwnd;
                             if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
                             {
-                                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
                                 if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
                             }
                             if (hWnd != IntPtr.Zero)

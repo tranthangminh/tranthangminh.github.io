@@ -222,7 +222,8 @@ namespace ModernAutoClicker
                         Hwnd = hWnd,
                         ProcessName = pName,
                         Title = title,
-                        ClassName = cls
+                        ClassName = cls,
+                        WindowIndex = NativeMethods.ResolveWindowIndex(hWnd)
                     };
                 }
             }
@@ -355,7 +356,8 @@ namespace ModernAutoClicker
                         Hwnd = hWnd,
                         ProcessName = pName,
                         Title = title,
-                        ClassName = cls
+                        ClassName = cls,
+                        WindowIndex = NativeMethods.ResolveWindowIndex(hWnd)
                     };
                 }
             }

@@ -31,9 +31,11 @@ namespace ModernAutoClicker.Advanced
             sb.AppendLine(string.Format("  \"LoopCount\": {0},", profile.LoopCount));
             sb.AppendLine(string.Format("  \"RandomIntervalMs\": {0},", profile.RandomIntervalMs));
             sb.AppendLine(string.Format("  \"RandomJitterPx\": {0},", profile.RandomJitterPx));
+            sb.AppendLine(string.Format("  \"SpeedPercent\": {0},", profile.SpeedPercent > 0 ? profile.SpeedPercent : 100));
             sb.AppendLine(string.Format("  \"DefaultWindowTitle\": \"{0}\",", Escape(profile.DefaultWindowTitle)));
             sb.AppendLine(string.Format("  \"DefaultProcessName\": \"{0}\",", Escape(profile.DefaultProcessName)));
             sb.AppendLine(string.Format("  \"DefaultRelativeToWindow\": {0},", profile.DefaultRelativeToWindow ? "true" : "false"));
+            sb.AppendLine(string.Format("  \"DefaultWindowIndex\": {0},", profile.DefaultWindowIndex));
             sb.AppendLine("  \"Steps\": [");
 
             if (profile.Steps != null && profile.Steps.Count > 0)
@@ -53,8 +55,11 @@ namespace ModernAutoClicker.Advanced
                     sb.AppendLine(string.Format("      \"EndY\": {0},", s.EndPoint.Y));
                     sb.AppendLine(string.Format("      \"HoldMs\": {0},", s.HoldMs));
                     sb.AppendLine(string.Format("      \"DelayMs\": {0},", s.DelayMs));
+                    sb.AppendLine(string.Format("      \"BaseHoldMs\": {0},", s.BaseHoldMs > 0 ? s.BaseHoldMs : s.HoldMs));
+                    sb.AppendLine(string.Format("      \"BaseDelayMs\": {0},", s.BaseDelayMs >= 0 ? s.BaseDelayMs : s.DelayMs));
                     sb.AppendLine(string.Format("      \"RepeatCount\": {0},", s.RepeatCount));
                     sb.AppendLine(string.Format("      \"ScrollStep\": {0},", s.ScrollStep));
+                    sb.AppendLine(string.Format("      \"DragButton\": {0},", s.DragButton));
                     sb.AppendLine(string.Format("      \"KeyData\": \"{0}\",", Escape(s.KeyData)));
                     sb.AppendLine(string.Format("      \"ColorHex\": \"{0}\",", Escape(!string.IsNullOrEmpty(s.ColorHex) ? s.ColorHex : "#00FF00")));
                     sb.AppendLine(string.Format("      \"Tolerance\": {0},", s.Tolerance));
@@ -63,6 +68,7 @@ namespace ModernAutoClicker.Advanced
                     sb.AppendLine(string.Format("      \"WindowTitle\": \"{0}\",", Escape(s.WindowTitle)));
                     sb.AppendLine(string.Format("      \"ProcessName\": \"{0}\",", Escape(s.ProcessName)));
                     sb.AppendLine(string.Format("      \"RelativeToWindow\": {0},", s.RelativeToWindow ? "true" : "false"));
+                    sb.AppendLine(string.Format("      \"WindowIndex\": {0},", s.WindowIndex));
                     sb.AppendLine(string.Format("      \"ImageBase64\": \"{0}\",", Escape(s.ImageBase64)));
                     sb.AppendLine(string.Format("      \"Similarity\": {0},", s.Similarity > 0 ? s.Similarity : 90));
                     sb.AppendLine(string.Format("      \"TimeoutSec\": {0},", s.TimeoutSec > 0 ? s.TimeoutSec : 10));
@@ -94,9 +100,11 @@ namespace ModernAutoClicker.Advanced
                 sb.AppendLine(string.Format("      \"LoopCount\": {0},", profile.LoopCount));
                 sb.AppendLine(string.Format("      \"RandomIntervalMs\": {0},", profile.RandomIntervalMs));
                 sb.AppendLine(string.Format("      \"RandomJitterPx\": {0},", profile.RandomJitterPx));
+                sb.AppendLine(string.Format("      \"SpeedPercent\": {0},", profile.SpeedPercent > 0 ? profile.SpeedPercent : 100));
                 sb.AppendLine(string.Format("      \"DefaultWindowTitle\": \"{0}\",", Escape(profile.DefaultWindowTitle)));
                 sb.AppendLine(string.Format("      \"DefaultProcessName\": \"{0}\",", Escape(profile.DefaultProcessName)));
                 sb.AppendLine(string.Format("      \"DefaultRelativeToWindow\": {0},", profile.DefaultRelativeToWindow ? "true" : "false"));
+                sb.AppendLine(string.Format("      \"DefaultWindowIndex\": {0},", profile.DefaultWindowIndex));
                 sb.AppendLine("      \"Steps\": [");
 
                 if (profile.Steps != null && profile.Steps.Count > 0)
@@ -116,8 +124,11 @@ namespace ModernAutoClicker.Advanced
                         sb.AppendLine(string.Format("          \"EndY\": {0},", s.EndPoint.Y));
                         sb.AppendLine(string.Format("          \"HoldMs\": {0},", s.HoldMs));
                         sb.AppendLine(string.Format("          \"DelayMs\": {0},", s.DelayMs));
+                        sb.AppendLine(string.Format("          \"BaseHoldMs\": {0},", s.BaseHoldMs > 0 ? s.BaseHoldMs : s.HoldMs));
+                        sb.AppendLine(string.Format("          \"BaseDelayMs\": {0},", s.BaseDelayMs >= 0 ? s.BaseDelayMs : s.DelayMs));
                         sb.AppendLine(string.Format("          \"RepeatCount\": {0},", s.RepeatCount));
                         sb.AppendLine(string.Format("          \"ScrollStep\": {0},", s.ScrollStep));
+                        sb.AppendLine(string.Format("          \"DragButton\": {0},", s.DragButton));
                         sb.AppendLine(string.Format("          \"KeyData\": \"{0}\",", Escape(s.KeyData)));
                         sb.AppendLine(string.Format("          \"ColorHex\": \"{0}\",", Escape(!string.IsNullOrEmpty(s.ColorHex) ? s.ColorHex : "#00FF00")));
                         sb.AppendLine(string.Format("          \"Tolerance\": {0},", s.Tolerance));
@@ -126,6 +137,7 @@ namespace ModernAutoClicker.Advanced
                         sb.AppendLine(string.Format("          \"WindowTitle\": \"{0}\",", Escape(s.WindowTitle)));
                         sb.AppendLine(string.Format("          \"ProcessName\": \"{0}\",", Escape(s.ProcessName)));
                         sb.AppendLine(string.Format("          \"RelativeToWindow\": {0},", s.RelativeToWindow ? "true" : "false"));
+                        sb.AppendLine(string.Format("          \"WindowIndex\": {0},", s.WindowIndex));
                         sb.AppendLine(string.Format("          \"ImageBase64\": \"{0}\",", Escape(s.ImageBase64)));
                         sb.AppendLine(string.Format("          \"Similarity\": {0},", s.Similarity > 0 ? s.Similarity : 90));
                         sb.AppendLine(string.Format("          \"TimeoutSec\": {0},", s.TimeoutSec > 0 ? s.TimeoutSec : 10));
@@ -181,6 +193,10 @@ namespace ModernAutoClicker.Advanced
             int randJitter;
             if (ExtractInt(json, "\"RandomJitterPx\"", out randJitter)) profile.RandomJitterPx = randJitter;
 
+            int speedPercent;
+            if (ExtractInt(json, "\"SpeedPercent\"", out speedPercent)) profile.SpeedPercent = speedPercent > 0 ? speedPercent : 100;
+            else profile.SpeedPercent = 100;
+
             string defWinTitle = ExtractString(json, "\"DefaultWindowTitle\"");
             if (!string.IsNullOrEmpty(defWinTitle)) profile.DefaultWindowTitle = defWinTitle;
 
@@ -189,6 +205,9 @@ namespace ModernAutoClicker.Advanced
 
             bool defRel;
             if (ExtractBool(json, "\"DefaultRelativeToWindow\"", out defRel)) profile.DefaultRelativeToWindow = defRel;
+
+            int defWinIdx;
+            if (ExtractInt(json, "\"DefaultWindowIndex\"", out defWinIdx)) profile.DefaultWindowIndex = defWinIdx;
 
             // Extract Steps
             int stepsIdx = json.IndexOf("\"Steps\"");
@@ -229,11 +248,23 @@ namespace ModernAutoClicker.Advanced
                         int delay;
                         if (ExtractInt(block, "\"DelayMs\"", out delay)) s.DelayMs = delay;
 
+                        int baseHold;
+                        if (ExtractInt(block, "\"BaseHoldMs\"", out baseHold)) s.BaseHoldMs = baseHold;
+                        else s.BaseHoldMs = s.HoldMs;
+
+                        int baseDelay;
+                        if (ExtractInt(block, "\"BaseDelayMs\"", out baseDelay)) s.BaseDelayMs = baseDelay;
+                        else s.BaseDelayMs = s.DelayMs;
+
                         int repeat;
                         if (ExtractInt(block, "\"RepeatCount\"", out repeat)) s.RepeatCount = Math.Max(1, repeat);
 
                         int scrollStep;
                         if (ExtractInt(block, "\"ScrollStep\"", out scrollStep)) s.ScrollStep = scrollStep;
+
+                        int dragButton;
+                        if (ExtractInt(block, "\"DragButton\"", out dragButton)) s.DragButton = dragButton;
+                        else s.DragButton = 0;
 
                         s.KeyData = ExtractString(block, "\"KeyData\"") ?? "Space";
                         string colorHex = ExtractString(block, "\"ColorHex\"");
@@ -263,6 +294,9 @@ namespace ModernAutoClicker.Advanced
 
                         bool relToWin;
                         if (ExtractBool(block, "\"RelativeToWindow\"", out relToWin)) s.RelativeToWindow = relToWin;
+
+                        int winIdx;
+                        if (ExtractInt(block, "\"WindowIndex\"", out winIdx)) s.WindowIndex = winIdx;
 
                         string imgB64 = ExtractString(block, "\"ImageBase64\"");
                         if (!string.IsNullOrEmpty(imgB64)) s.ImageBase64 = imgB64;

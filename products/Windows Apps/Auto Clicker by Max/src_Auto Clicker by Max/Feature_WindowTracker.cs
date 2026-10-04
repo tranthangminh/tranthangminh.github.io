@@ -26,6 +26,7 @@ namespace ModernAutoClicker
         public Func<IntPtr> SimpleTargetHwnd { get; set; }
         public Func<string> SimpleTargetProcessName { get; set; }
         public Func<string> SimpleTargetWindowTitle { get; set; }
+        public Func<int> SimpleTargetWindowIndex { get; set; }
 
         // Advanced tab context
         public Func<List<Advanced.MacroStep>> GetAdvancedSteps { get; set; }
@@ -101,7 +102,7 @@ namespace ModernAutoClicker
                 IntPtr hWnd = targetHwnd;
                 if (!NativeMethods.IsValidWindowHandle(hWnd, procName))
                 {
-                    hWnd = NativeMethods.FindWindowByTarget(procName, winTitle);
+                    hWnd = NativeMethods.FindWindowByTarget(procName, winTitle, SimpleTargetWindowIndex != null ? SimpleTargetWindowIndex() : 0);
                 }
                 if (hWnd == IntPtr.Zero) return "NotFound";
                 NativeMethods.POINT origin = new NativeMethods.POINT { X = 0, Y = 0 };
@@ -122,13 +123,13 @@ namespace ModernAutoClicker
                 {
                     if (st.RelativeToWindow && (st.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(st.ProcessName)))
                     {
-                        string targetKey = (st.WindowHwnd != IntPtr.Zero) ? st.WindowHwnd.ToString() : string.Format("{0}|{1}", st.ProcessName, st.WindowTitle ?? "");
+                        string targetKey = (st.WindowHwnd != IntPtr.Zero) ? st.WindowHwnd.ToString() : string.Format("{0}|{1}|{2}", st.ProcessName, st.WindowTitle ?? "", st.WindowIndex);
                         if (checkedTargets.Add(targetKey))
                         {
                             IntPtr hWnd = st.WindowHwnd;
                             if (!NativeMethods.IsValidWindowHandle(hWnd, st.ProcessName))
                             {
-                                hWnd = NativeMethods.FindWindowByTarget(st.ProcessName, st.WindowTitle);
+                                hWnd = NativeMethods.FindWindowByTarget(st.ProcessName, st.WindowTitle, st.WindowIndex);
                                 if (hWnd != IntPtr.Zero) st.WindowHwnd = hWnd;
                             }
                             NativeMethods.POINT origin = new NativeMethods.POINT { X = 0, Y = 0 };

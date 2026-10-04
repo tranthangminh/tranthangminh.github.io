@@ -354,7 +354,7 @@ namespace ModernAutoClicker.Advanced
             IntPtr hWnd = step.WindowHwnd;
             if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
             {
-                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
                 if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
             }
 
@@ -418,7 +418,7 @@ namespace ModernAutoClicker.Advanced
                 directHwnd = step.WindowHwnd;
                 if (!NativeMethods.IsValidWindowHandle(directHwnd, step.ProcessName))
                 {
-                    directHwnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                    directHwnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
                     if (directHwnd != IntPtr.Zero) step.WindowHwnd = directHwnd;
                 }
             }
@@ -427,7 +427,7 @@ namespace ModernAutoClicker.Advanced
                 IntPtr targetWin = step.WindowHwnd;
                 if (!NativeMethods.IsValidWindowHandle(targetWin, step.ProcessName))
                 {
-                    targetWin = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle);
+                    targetWin = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
                     if (targetWin != IntPtr.Zero) step.WindowHwnd = targetWin;
                 }
 
@@ -488,7 +488,7 @@ namespace ModernAutoClicker.Advanced
                     break;
 
                 case MacroActionType.DragDrop:
-                    PerformDrag(startPt, endPt, hold);
+                    PerformDrag(startPt, endPt, hold, step.DragButton);
                     break;
 
                 case MacroActionType.KeyPress:
@@ -606,7 +606,7 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
-        private static void PerformDrag(Point start, Point end, int durationMs)
+        private static void PerformDrag(Point start, Point end, int durationMs, int dragButton = 0)
         {
             if (start == Point.Empty && end == Point.Empty) return;
 
@@ -616,10 +616,24 @@ namespace ModernAutoClicker.Advanced
             NativeMethods.SetCursorPos(start.X, start.Y);
             Thread.Sleep(10);
 
-            // Left Down
+            uint downFlag = NativeMethods.MOUSEEVENTF_LEFTDOWN;
+            uint upFlag = NativeMethods.MOUSEEVENTF_LEFTUP;
+
+            if (dragButton == 1) // Right Mouse
+            {
+                downFlag = NativeMethods.MOUSEEVENTF_RIGHTDOWN;
+                upFlag = NativeMethods.MOUSEEVENTF_RIGHTUP;
+            }
+            else if (dragButton == 2) // Middle Mouse
+            {
+                downFlag = NativeMethods.MOUSEEVENTF_MIDDLEDOWN;
+                upFlag = NativeMethods.MOUSEEVENTF_MIDDLEUP;
+            }
+
+            // Button Down
             NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[1];
             inputs[0].type = NativeMethods.INPUT_MOUSE;
-            inputs[0].u.mi.dwFlags = NativeMethods.MOUSEEVENTF_LEFTDOWN;
+            inputs[0].u.mi.dwFlags = downFlag;
             NativeMethods.SendInput(1, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
             Thread.Sleep(10);
 
@@ -627,8 +641,8 @@ namespace ModernAutoClicker.Advanced
             MouseMovementSimulator.MoveSmoothly(start, end, durationMs);
             Thread.Sleep(10);
 
-            // Left Up
-            inputs[0].u.mi.dwFlags = NativeMethods.MOUSEEVENTF_LEFTUP;
+            // Button Up
+            inputs[0].u.mi.dwFlags = upFlag;
             NativeMethods.SendInput(1, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
         }
     }

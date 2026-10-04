@@ -17,6 +17,7 @@ namespace ModernAutoClicker
         public int SimpleClickMode { get; set; } // 0: PointList, 1: CurrentCursor
         public string SimpleTargetProcessName { get; set; }
         public string SimpleTargetWindowTitle { get; set; }
+        public int SimpleTargetWindowIndex { get; set; }
         public bool SimpleRelativeToWindow { get; set; }
         public List<Point> Points { get; set; }
 
@@ -30,6 +31,7 @@ namespace ModernAutoClicker
             SimpleClickMode = 0;
             SimpleTargetProcessName = "";
             SimpleTargetWindowTitle = "";
+            SimpleTargetWindowIndex = 0;
             SimpleRelativeToWindow = false;
             Points = new List<Point>();
         }
@@ -45,6 +47,7 @@ namespace ModernAutoClicker
                 SimpleClickMode = this.SimpleClickMode,
                 SimpleTargetProcessName = this.SimpleTargetProcessName,
                 SimpleTargetWindowTitle = this.SimpleTargetWindowTitle,
+                SimpleTargetWindowIndex = this.SimpleTargetWindowIndex,
                 SimpleRelativeToWindow = this.SimpleRelativeToWindow,
                 Points = new List<Point>()
             };
@@ -110,6 +113,11 @@ namespace ModernAutoClicker
         {
             get { return GetProfile(0).SimpleTargetWindowTitle; }
             set { GetProfile(0).SimpleTargetWindowTitle = value; }
+        }
+        public int SimpleTargetWindowIndex
+        {
+            get { return GetProfile(0).SimpleTargetWindowIndex; }
+            set { GetProfile(0).SimpleTargetWindowIndex = value; }
         }
         public bool SimpleRelativeToWindow
         {
@@ -259,6 +267,7 @@ namespace ModernAutoClicker
                                     prof.SimpleClickMode = GetInt(pJson, "SimpleClickMode", 0);
                                     prof.SimpleTargetProcessName = GetString(pJson, "SimpleTargetProcessName", "");
                                     prof.SimpleTargetWindowTitle = GetString(pJson, "SimpleTargetWindowTitle", "");
+                                    prof.SimpleTargetWindowIndex = GetInt(pJson, "SimpleTargetWindowIndex", 0);
                                     prof.SimpleRelativeToWindow = GetBool(pJson, "SimpleRelativeToWindow", false);
 
                                     Match ptsMatch = Regex.Match(pJson, @"""Points""\s*:\s*\[([^\]]*)\]");
@@ -296,6 +305,7 @@ namespace ModernAutoClicker
                     settings.SimpleProfiles[0].SimpleClickMode = GetInt(json, "SimpleClickMode", 0);
                     settings.SimpleProfiles[0].SimpleTargetProcessName = GetString(json, "SimpleTargetProcessName", "");
                     settings.SimpleProfiles[0].SimpleTargetWindowTitle = GetString(json, "SimpleTargetWindowTitle", "");
+                    settings.SimpleProfiles[0].SimpleTargetWindowIndex = GetInt(json, "SimpleTargetWindowIndex", 0);
                     settings.SimpleRelativeToWindow = GetBool(json, "SimpleRelativeToWindow", false);
 
                     Match pointsMatch = Regex.Match(json, @"""Points""\s*:\s*\[([^\]]*)\]");
@@ -382,6 +392,7 @@ namespace ModernAutoClicker
                     sb.AppendLine(string.Format("      \"SimpleClickMode\": {0},", p.SimpleClickMode));
                     sb.AppendLine(string.Format("      \"SimpleTargetProcessName\": \"{0}\",", EscapeJson(p.SimpleTargetProcessName ?? "")));
                     sb.AppendLine(string.Format("      \"SimpleTargetWindowTitle\": \"{0}\",", EscapeJson(p.SimpleTargetWindowTitle ?? "")));
+                    sb.AppendLine(string.Format("      \"SimpleTargetWindowIndex\": {0},", p.SimpleTargetWindowIndex));
                     sb.AppendLine(string.Format("      \"SimpleRelativeToWindow\": {0},", p.SimpleRelativeToWindow.ToString().ToLower()));
                     sb.Append("      \"Points\": [");
                     if (p.Points != null && p.Points.Count > 0)
@@ -415,6 +426,7 @@ namespace ModernAutoClicker
                 sb.AppendLine(string.Format("  \"SimpleClickMode\": {0},", p0.SimpleClickMode));
                 sb.AppendLine(string.Format("  \"SimpleTargetProcessName\": \"{0}\",", EscapeJson(p0.SimpleTargetProcessName ?? "")));
                 sb.AppendLine(string.Format("  \"SimpleTargetWindowTitle\": \"{0}\",", EscapeJson(p0.SimpleTargetWindowTitle ?? "")));
+                sb.AppendLine(string.Format("  \"SimpleTargetWindowIndex\": {0},", p0.SimpleTargetWindowIndex));
                 sb.AppendLine(string.Format("  \"SimpleRelativeToWindow\": {0},", p0.SimpleRelativeToWindow.ToString().ToLower()));
                 sb.Append("  \"Points\": [");
                 if (p0.Points != null && p0.Points.Count > 0)

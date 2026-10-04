@@ -49,7 +49,7 @@ namespace ModernAutoClicker.Advanced
 
         public event Action OnTableDataChanged;
         public event Action<int> OnSelectionChanged;
-        public event Action<bool, string, string> OnDefaultWindowBatchChanged;
+        public event Action<bool, string, string, int> OnDefaultWindowBatchChanged;
 
         protected override CreateParams CreateParams
         {
@@ -372,9 +372,9 @@ namespace ModernAutoClicker.Advanced
             {
                 foreach (MacroRowControl r in targets)
                 {
-                    r.SetTargetWindowDirect(false, "", "", IntPtr.Zero);
+                    r.SetTargetWindowDirect(false, "", "", IntPtr.Zero, 0);
                 }
-                if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(false, "", "");
+                if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(false, "", "", 0);
                 if (OnTableDataChanged != null) OnTableDataChanged();
             };
             menu.Items.Add(itemDesktop);
@@ -402,9 +402,9 @@ namespace ModernAutoClicker.Advanced
                         }
                         foreach (MacroRowControl r in targets)
                         {
-                            r.SetTargetWindowDirect(true, targetWin.ProcessName, targetWin.Title, targetWin.Hwnd);
+                            r.SetTargetWindowDirect(true, targetWin.ProcessName, targetWin.Title, targetWin.Hwnd, targetWin.WindowIndex);
                         }
-                        if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(true, targetWin.ProcessName, targetWin.Title);
+                        if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(true, targetWin.ProcessName, targetWin.Title, targetWin.WindowIndex);
                         if (OnTableDataChanged != null) OnTableDataChanged();
                     };
                     menu.Items.Add(itemWin);
@@ -545,6 +545,8 @@ namespace ModernAutoClicker.Advanced
             List<MacroRowControl> targets = GetTargetRowsForBatch();
             if (targets == null || targets.Count == 0) return;
 
+            List<MacroStep> oldOrder = GetCurrentStepsSnapshot();
+
             List<MacroStep> stepsToClone = new List<MacroStep>();
             int maxIdx = -1;
             foreach (var r in targets)
@@ -594,6 +596,7 @@ namespace ModernAutoClicker.Advanced
                 }
 
                 ReorderRows();
+                RelinkStepReferences(oldOrder);
 
                 // Select and highlight all newly cloned rows
                 _selectedIndices.Clear();
@@ -720,6 +723,8 @@ namespace ModernAutoClicker.Advanced
                 }
             }
 
+            List<MacroStep> oldOrder = GetCurrentStepsSnapshot();
+
             List<MacroRowControl> selectedControls = new List<MacroRowControl>();
             List<MacroRowControl> unselectedControls = new List<MacroRowControl>();
 
@@ -772,6 +777,7 @@ namespace ModernAutoClicker.Advanced
             _rows = unselectedControls;
 
             ReorderRows();
+            RelinkStepReferences(oldOrder);
 
             _selectedIndices.Clear();
             for (int i = 0; i < selectedControls.Count; i++)
@@ -1079,12 +1085,14 @@ namespace ModernAutoClicker.Advanced
             if (_isEditingLocked) return;
             if (_rows.Contains(row))
             {
+                List<MacroStep> oldOrder = GetCurrentStepsSnapshot();
                 int removedIdx = _rows.IndexOf(row);
                 _rows.Remove(row);
                 row.Visible = false;
                 row.Location = new Point(-2000, -2000);
                 _rowPool.Add(row);
                 ReorderRows();
+                RelinkStepReferences(oldOrder);
 
                 _selectedIndices.Remove(removedIdx);
                 HashSet<int> updated = new HashSet<int>();
@@ -1120,6 +1128,7 @@ namespace ModernAutoClicker.Advanced
         {
             if (_isEditingLocked || targets == null || targets.Count == 0) return;
 
+            List<MacroStep> oldOrder = GetCurrentStepsSnapshot();
             pnlContent.SuspendLayout();
             try
             {
@@ -1133,6 +1142,7 @@ namespace ModernAutoClicker.Advanced
                     }
                 }
                 ReorderRows();
+                RelinkStepReferences(oldOrder);
                 ClearSelection();
             }
             finally
@@ -1191,7 +1201,121 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
-        public void SetDefaultWindowForAllSteps(string procName, string winTitle, IntPtr hwnd = default(IntPtr))
+        public void RefreshAllTimingDisplays(int speedPercent)
+        {
+            foreach (var row in _rows)
+            {
+                if (row != null)
+                {
+                    row.UpdateTimingDisplay(speedPercent);
+                }
+            }
+        }
+
+        private List<MacroStep> GetCurrentStepsSnapshot()
+        {
+            List<MacroStep> list = new List<MacroStep>(_rows.Count);
+            for (int i = 0; i < _rows.Count; i++)
+            {
+                if (_rows[i] != null && _rows[i].Step != null)
+                {
+                    list.Add(_rows[i].Step);
+                }
+            }
+            return list;
+        }
+
+        private void RelinkStepReferences(List<MacroStep> oldOrder)
+        {
+            if (oldOrder == null || oldOrder.Count == 0 || _rows == null || _rows.Count == 0) return;
+
+            List<MacroStep> newOrder = GetCurrentStepsSnapshot();
+
+            foreach (var step in newOrder)
+            {
+                if (step == null) continue;
+
+                // 1. IfTrueStep
+                if (step.IfTrueStep > 0)
+                {
+                    int oldTargetIdx = step.IfTrueStep - 1;
+                    if (oldTargetIdx >= 0 && oldTargetIdx < oldOrder.Count)
+                    {
+                        MacroStep targetStep = oldOrder[oldTargetIdx];
+                        int newIdx = newOrder.IndexOf(targetStep);
+                        if (newIdx >= 0)
+                        {
+                            step.IfTrueStep = newIdx + 1;
+                        }
+                        else
+                        {
+                            step.IfTrueStep = 0; // Target step was deleted -> Next Step
+                        }
+                    }
+                    else if (step.IfTrueStep > newOrder.Count)
+                    {
+                        step.IfTrueStep = 0;
+                    }
+                }
+
+                // 2. IfFalseStep
+                if (step.IfFalseStep > 0)
+                {
+                    int oldTargetIdx = step.IfFalseStep - 1;
+                    if (oldTargetIdx >= 0 && oldTargetIdx < oldOrder.Count)
+                    {
+                        MacroStep targetStep = oldOrder[oldTargetIdx];
+                        int newIdx = newOrder.IndexOf(targetStep);
+                        if (newIdx >= 0)
+                        {
+                            step.IfFalseStep = newIdx + 1;
+                        }
+                        else
+                        {
+                            step.IfFalseStep = 0; // Target step was deleted -> Next Step
+                        }
+                    }
+                    else if (step.IfFalseStep > newOrder.Count)
+                    {
+                        step.IfFalseStep = 0;
+                    }
+                }
+
+                // 3. RepeatTimerTargetStep
+                if (step.RepeatTimerTargetStep > 0)
+                {
+                    int oldTargetIdx = step.RepeatTimerTargetStep - 1;
+                    if (oldTargetIdx >= 0 && oldTargetIdx < oldOrder.Count)
+                    {
+                        MacroStep targetStep = oldOrder[oldTargetIdx];
+                        int newIdx = newOrder.IndexOf(targetStep);
+                        if (newIdx >= 0)
+                        {
+                            step.RepeatTimerTargetStep = newIdx + 1;
+                        }
+                        else
+                        {
+                            step.RepeatTimerTargetStep = Math.Min(1, newOrder.Count);
+                        }
+                    }
+                    else if (step.RepeatTimerTargetStep > newOrder.Count)
+                    {
+                        step.RepeatTimerTargetStep = Math.Min(1, newOrder.Count);
+                    }
+                }
+            }
+
+            // Refresh UI dropdowns for all rows
+            foreach (var r in _rows)
+            {
+                if (r != null)
+                {
+                    r.RefreshJumpDropdowns();
+                }
+            }
+        }
+
+        public void SetDefaultWindowForAllSteps(string procName, string winTitle, IntPtr hwnd = default(IntPtr), int windowIndex = 0)
         {
             if (_rows == null || _rows.Count == 0) return;
             bool isRel = (hwnd != IntPtr.Zero) || !string.IsNullOrEmpty(procName);
@@ -1200,7 +1324,7 @@ namespace ModernAutoClicker.Advanced
             {
                 foreach (var row in _rows)
                 {
-                    row.SetTargetWindowDirect(isRel, procName, winTitle, hwnd);
+                    row.SetTargetWindowDirect(isRel, procName, winTitle, hwnd, windowIndex);
                 }
             }
             finally
@@ -1285,6 +1409,7 @@ namespace ModernAutoClicker.Advanced
 
                 ReorderRows();
                 ClearSelection();
+                RefreshAllTimingDisplays(profile != null ? profile.SpeedPercent : 100);
             }
             finally
             {

@@ -24,7 +24,7 @@ namespace ModernAutoClicker.Advanced
         private ModernDropdown cboTargetScript;
         private List<string> _availableScripts = new List<string>();
         private Label lblCoord;
-        private RoundedButton btnPickCoord;
+        private SvgIconButton btnPickCoord;
         private NumberInput numScroll;
         private ModernTextBox txtKeyData;
         private Panel pnlColorSwatch;
@@ -41,6 +41,9 @@ namespace ModernAutoClicker.Advanced
         private ModernDropdown cboIfFalse;
         private int _totalStepCount = 0;
         private ModernDropdown cboRepeatMode;
+        private ModernDropdown cboDragButton;
+        private int _profileSpeed = 100;
+        private bool _isUpdatingTiming = false;
         private ModernDropdown cboLoopFinished;
         private NumberInput numRepeatTimes;
         private ModernTextBox txtRepeatTime;
@@ -49,6 +52,7 @@ namespace ModernAutoClicker.Advanced
         private Label lblLoopFinished;
         private Label btnDelete;
         private ModernTextBox txtNote;
+        private bool _isTargetHovered = false;
 
         public event Action<MacroRowControl> OnDeleteRequested;
         public event Action<MacroRowControl, bool, bool> OnRowClicked;
@@ -440,11 +444,13 @@ namespace ModernAutoClicker.Advanced
             lblCoord = new Label
             {
                 Location = new Point(x, 8),
-                Size = new Size(90, 18),
+                Size = new Size(96, 18),
                 Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro),
                 TextAlign = ContentAlignment.MiddleRight,
                 Cursor = Cursors.Hand
             };
+            lblCoord.MouseEnter += (s, e) => SetTargetHovered(true);
+            lblCoord.MouseLeave += (s, e) => CheckTargetMouseLeave();
             lblCoord.MouseDown += (s, e) =>
             {
                 if (e.Button == MouseButtons.Right && (_step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage))
@@ -472,14 +478,42 @@ namespace ModernAutoClicker.Advanced
                 }
             };
 
-            btnPickCoord = new RoundedButton
+            btnPickCoord = new SvgIconButton
             {
-                Text = "🎯",
-                Location = new Point(x + 94, 6),
-                Size = new Size(22, 22),
-                Font = ThemeTokens.FontSegoeSymbol(ThemeTokens.FontSizeBase)
+                SvgName = "coordinate.svg",
+                IconWidth = 14,
+                IconHeight = 16,
+                Location = new Point(x + 96, 6),
+                Size = new Size(16, 22)
             };
-            btnPickCoord.Click += (s, e) => PickCoordinate();
+            btnPickCoord.MouseEnter += (s, e) => SetTargetHovered(true);
+            btnPickCoord.MouseLeave += (s, e) => CheckTargetMouseLeave();
+            btnPickCoord.MouseDown += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Right && (_step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage))
+                {
+                    _step.StartPoint = Point.Empty;
+                    _step.EndPoint = Point.Empty;
+                    RefreshDisplay();
+                    if (OnStepChanged != null) OnStepChanged();
+                    return;
+                }
+                bool isShift = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
+                bool isCtrl = (Control.ModifierKeys & Keys.Control) == Keys.Control;
+                if (isShift || isCtrl)
+                {
+                    Row_MouseDown(this, e);
+                }
+            };
+            btnPickCoord.Click += (s, e) =>
+            {
+                bool isShift = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
+                bool isCtrl = (Control.ModifierKeys & Keys.Control) == Keys.Control;
+                if (!isShift && !isCtrl)
+                {
+                    PickCoordinate();
+                }
+            };
 
             numScroll = new NumberInput
             {
@@ -496,6 +530,31 @@ namespace ModernAutoClicker.Advanced
             {
                 if (_isBinding) return;
                 _step.ScrollStep = numScroll.Value;
+                if (OnStepChanged != null) OnStepChanged();
+            };
+
+            cboDragButton = new ModernDropdown
+            {
+                Location = new Point(x, 6),
+                Size = new Size(34, 22),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                Visible = false,
+                ShowCollapsedImageOnly = true
+            };
+            cboDragButton.Items.Add("Left Mouse");
+            cboDragButton.Items.Add("Right Mouse");
+            cboDragButton.Items.Add("Middle Mouse");
+            cboDragButton.ItemImageProvider = (idx) =>
+            {
+                string svg = idx == 1 ? "right-click.svg" : (idx == 2 ? "middle-click.svg" : "left-click.svg");
+                Color col = (_theme != null) ? _theme.TextPrimary : Color.White;
+                return ModernAutoClicker.Info.SvgFileRenderer.GetCachedTintedIcon(svg, 16, 16, col);
+            };
+            cboDragButton.SelectedIndex = Math.Max(0, Math.Min(2, _step.DragButton));
+            cboDragButton.SelectedIndexChanged += (s, e) =>
+            {
+                if (_isBinding) return;
+                _step.DragButton = cboDragButton.SelectedIndex;
                 if (OnStepChanged != null) OnStepChanged();
             };
 
@@ -694,8 +753,17 @@ namespace ModernAutoClicker.Advanced
             };
             numHold.TextChanged += (s, e) =>
             {
-                if (_isBinding) return;
+                if (_isBinding || _isUpdatingTiming) return;
                 _step.HoldMs = Math.Max(1, numHold.Value);
+                int curSpeed = _profileSpeed > 0 ? _profileSpeed : 100;
+                if (curSpeed == 100)
+                {
+                    _step.BaseHoldMs = _step.HoldMs;
+                }
+                else
+                {
+                    _step.BaseHoldMs = Math.Max(1, (int)Math.Round(_step.HoldMs * (curSpeed / 100.0)));
+                }
                 if (OnStepChanged != null) OnStepChanged();
             };
 
@@ -732,8 +800,17 @@ namespace ModernAutoClicker.Advanced
             };
             numDelay.TextChanged += (s, e) =>
             {
-                if (_isBinding) return;
+                if (_isBinding || _isUpdatingTiming) return;
                 _step.DelayMs = Math.Max(0, numDelay.Value);
+                int curSpeed = _profileSpeed > 0 ? _profileSpeed : 100;
+                if (curSpeed == 100)
+                {
+                    _step.BaseDelayMs = _step.DelayMs;
+                }
+                else
+                {
+                    _step.BaseDelayMs = Math.Max(0, (int)Math.Round(_step.DelayMs * (curSpeed / 100.0)));
+                }
                 if (OnStepChanged != null) OnStepChanged();
             };
             x += 46 + colGap;
@@ -1079,7 +1156,7 @@ namespace ModernAutoClicker.Advanced
 
             this.Controls.AddRange(new Control[] {
                 lblIndex, chkSelect, lblWindowIcon, cboActionType,
-                cboTargetScript, pnlColorSwatch, pnlImageThumb, lblCoord, btnPickCoord, numScroll, txtKeyData,
+                cboTargetScript, pnlColorSwatch, pnlImageThumb, lblCoord, btnPickCoord, numScroll, cboDragButton, txtKeyData,
                 numHold, numSimilarity, lblSimilarity, numDelay, numRepeat, numTimeout, lblIfMatch, cboIfTrue, lblIfUnmatch, cboIfFalse, btnDelete, txtNote,
                 cboRepeatMode, numRepeatTimes, txtRepeatTime, lblLoopTo, cboLoopTarget, lblLoopFinished, cboLoopFinished
             });
@@ -1112,9 +1189,10 @@ namespace ModernAutoClicker.Advanced
             if (_step.RelativeToWindow && !string.IsNullOrEmpty(_step.ProcessName))
             {
                 lblWindowIcon.Image = IconCache.GetProcessIcon(_step.ProcessName, _step.WindowTitle) ?? IconCache.GenericAppIcon;
+                string winSuffix = _step.WindowIndex > 0 ? string.Format(" ({0})", _step.WindowIndex) : "";
                 string tip = Loc.IsVietnamese
-                    ? string.Format("Cửa sổ Mục tiêu: [{0}] {1}\n(Bấm để đổi mục tiêu)", _step.ProcessName, _step.WindowTitle)
-                    : string.Format("Target Window: [{0}] {1}\n(Click to change target)", _step.ProcessName, _step.WindowTitle);
+                    ? string.Format("Cửa sổ Mục tiêu: [{0}] {1}{2}\n(Bấm để đổi mục tiêu)", _step.ProcessName, _step.WindowTitle, winSuffix)
+                    : string.Format("Target Window: [{0}] {1}{2}\n(Click to change target)", _step.ProcessName, _step.WindowTitle, winSuffix);
                 RowToolTipManager.SetToolTip(lblWindowIcon, tip);
             }
             else
@@ -1328,6 +1406,7 @@ namespace ModernAutoClicker.Advanced
                 _step.WindowHwnd = IntPtr.Zero;
                 _step.ProcessName = "";
                 _step.WindowTitle = "";
+                _step.WindowIndex = 0;
                 UpdateWindowIconDisplay();
                 if (OnStepChanged != null) OnStepChanged();
             };
@@ -1355,6 +1434,7 @@ namespace ModernAutoClicker.Advanced
                         _step.WindowHwnd = targetWin.Hwnd;
                         _step.ProcessName = targetWin.ProcessName;
                         _step.WindowTitle = targetWin.Title;
+                        _step.WindowIndex = targetWin.WindowIndex;
                         if (targetWin.AppIcon != null)
                         {
                             IconCache.CacheProcessIcon(targetWin.ProcessName, targetWin.AppIcon);
@@ -1407,6 +1487,7 @@ namespace ModernAutoClicker.Advanced
                     PopulateRepeatThenList();
                 }
                 
+                if (cboDragButton != null) cboDragButton.SelectedIndex = Math.Max(0, Math.Min(2, _step.DragButton));
                 UpdateWindowIconDisplay();
                 UpdateDynamicFields();
                 UpdateRowTooltips();
@@ -1426,12 +1507,14 @@ namespace ModernAutoClicker.Advanced
             if (numRepeat != null && numRepeat.Value != _step.RepeatCount) numRepeat.Value = _step.RepeatCount;
             if (numTimeout != null && numTimeout.Value != _step.TimeoutSec) numTimeout.Value = _step.TimeoutSec > 0 ? _step.TimeoutSec : 10;
             if (numScroll != null && numScroll.Value != _step.ScrollStep) numScroll.Value = _step.ScrollStep;
+            if (cboDragButton != null && cboDragButton.SelectedIndex != _step.DragButton) cboDragButton.SelectedIndex = Math.Max(0, Math.Min(2, _step.DragButton));
             if (txtKeyData != null && txtKeyData.Text != _step.KeyData) txtKeyData.Text = _step.KeyData ?? "";
             if (txtNote != null && txtNote.Text != _step.Note) txtNote.Text = _step.Note ?? "";
             if (pnlImageThumb != null) pnlImageThumb.Invalidate();
             if (numRepeatTimes != null && numRepeatTimes.Value != _step.RepeatCount) numRepeatTimes.Value = Math.Max(1, _step.RepeatCount);
             if (txtRepeatTime != null) txtRepeatTime.Text = FormatSecondsToTime(_step.RepeatTimerSeconds > 0 ? _step.RepeatTimerSeconds : 300);
             if (cboLoopFinished != null) PopulateRepeatThenList();
+            RefreshJumpDropdowns();
             UpdateWindowIconDisplay();
             UpdateDynamicFields();
             UpdateRowTooltips();
@@ -1505,6 +1588,7 @@ namespace ModernAutoClicker.Advanced
             if (lblIfMatch != null) lblIfMatch.Visible = false;
             if (lblIfUnmatch != null) lblIfUnmatch.Visible = false;
             if (pnlImageThumb != null) pnlImageThumb.Visible = false;
+            if (cboDragButton != null) cboDragButton.Visible = false;
             if (numSimilarity != null) numSimilarity.Visible = false;
             if (lblSimilarity != null) lblSimilarity.Visible = false;
             if (numTimeout != null) numTimeout.Visible = false;
@@ -1655,16 +1739,24 @@ namespace ModernAutoClicker.Advanced
             {
                 pnlColorSwatch.Visible = false;
 
+                if (cboDragButton != null)
+                {
+                    cboDragButton.Location = new Point(colX, 6);
+                    cboDragButton.Size = new Size(34, 22);
+                    cboDragButton.SelectedIndex = Math.Max(0, Math.Min(2, _step.DragButton));
+                    cboDragButton.Visible = true;
+                }
+
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
-                lblCoord.Location = new Point(colX, 2);
-                lblCoord.Size = new Size(90, 30);
+                lblCoord.Location = new Point(colX + 36, 2);
+                lblCoord.Size = new Size(60, 30);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText();
 
-                btnPickCoord.Location = new Point(colX + 94, 6);
-                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Location = new Point(colX + 96, 6);
+                btnPickCoord.Size = new Size(16, 22);
                 btnPickCoord.Visible = true;
 
                 numScroll.Visible = false;
@@ -1686,13 +1778,13 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 36, 8);
-                lblCoord.Size = new Size(56, 18);
+                lblCoord.Size = new Size(60, 18);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
-                btnPickCoord.Location = new Point(colX + 94, 6);
-                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Location = new Point(colX + 96, 6);
+                btnPickCoord.Size = new Size(16, 22);
                 btnPickCoord.Visible = true;
 
                 txtKeyData.Visible = false;
@@ -1714,13 +1806,13 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 20, 8);
-                lblCoord.Size = new Size(72, 18);
+                lblCoord.Size = new Size(76, 18);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
-                btnPickCoord.Location = new Point(colX + 94, 6);
-                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Location = new Point(colX + 96, 6);
+                btnPickCoord.Size = new Size(16, 22);
                 btnPickCoord.Visible = true;
 
                 numScroll.Visible = false;
@@ -1777,13 +1869,13 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 20, 8);
-                lblCoord.Size = new Size(72, 18);
+                lblCoord.Size = new Size(76, 18);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
-                btnPickCoord.Location = new Point(colX + 94, 6);
-                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Location = new Point(colX + 96, 6);
+                btnPickCoord.Size = new Size(16, 22);
                 btnPickCoord.Visible = true;
 
                 numScroll.Visible = false;
@@ -1810,13 +1902,13 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 34, 2);
-                lblCoord.Size = new Size(58, 30);
+                lblCoord.Size = new Size(62, 30);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
-                btnPickCoord.Location = new Point(colX + 94, 6);
-                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Location = new Point(colX + 96, 6);
+                btnPickCoord.Size = new Size(16, 22);
                 btnPickCoord.Visible = true;
 
                 numScroll.Visible = false;
@@ -1854,13 +1946,13 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX + 34, 2);
-                lblCoord.Size = new Size(58, 30);
+                lblCoord.Size = new Size(62, 30);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(true);
 
-                btnPickCoord.Location = new Point(colX + 94, 6);
-                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Location = new Point(colX + 96, 6);
+                btnPickCoord.Size = new Size(16, 22);
                 btnPickCoord.Visible = true;
 
                 numScroll.Visible = false;
@@ -1928,13 +2020,13 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX, 8);
-                lblCoord.Size = new Size(90, 18);
+                lblCoord.Size = new Size(96, 18);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(false);
 
-                btnPickCoord.Location = new Point(colX + 94, 6);
-                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Location = new Point(colX + 96, 6);
+                btnPickCoord.Size = new Size(16, 22);
                 btnPickCoord.Visible = true;
 
                 numScroll.Visible = false;
@@ -1957,13 +2049,13 @@ namespace ModernAutoClicker.Advanced
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
                 lblCoord.Location = new Point(colX, 8);
-                lblCoord.Size = new Size(90, 18);
+                lblCoord.Size = new Size(96, 18);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText(false);
 
-                btnPickCoord.Location = new Point(colX + 94, 6);
-                btnPickCoord.Size = new Size(22, 22);
+                btnPickCoord.Location = new Point(colX + 96, 6);
+                btnPickCoord.Size = new Size(16, 22);
                 btnPickCoord.Visible = true;
 
                 numScroll.Visible = false;
@@ -1993,6 +2085,35 @@ namespace ModernAutoClicker.Advanced
             {
                 PopulateRepeatTargetList();
                 PopulateRepeatThenList();
+            }
+        }
+
+        public void RefreshJumpDropdowns()
+        {
+            if (_step == null) return;
+            if (_step.ActionType == MacroActionType.IfColor || _step.ActionType == MacroActionType.IfColorArea || _step.ActionType == MacroActionType.IfImage)
+            {
+                PopulateIfJumpLists();
+            }
+            else if (_step.ActionType == MacroActionType.RepeatTimer)
+            {
+                PopulateRepeatTargetList();
+                PopulateRepeatThenList();
+            }
+        }
+
+        public void UpdateTimingDisplay(int profileSpeed = 100)
+        {
+            _profileSpeed = profileSpeed > 0 ? profileSpeed : 100;
+            _isUpdatingTiming = true;
+            try
+            {
+                if (numHold != null && numHold.Value != _step.HoldMs) numHold.Value = Math.Max(1, _step.HoldMs);
+                if (numDelay != null && numDelay.Value != _step.DelayMs) numDelay.Value = Math.Max(0, _step.DelayMs);
+            }
+            finally
+            {
+                _isUpdatingTiming = false;
             }
         }
 
@@ -2379,10 +2500,11 @@ namespace ModernAutoClicker.Advanced
                         _step.WindowHwnd = hWnd;
                         _step.ProcessName = winInfo.ProcessName;
                         _step.WindowTitle = winInfo.Title;
+                        _step.WindowIndex = winInfo.WindowIndex;
                     }
                     else
                     {
-                        hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle);
+                        hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle, _step.WindowIndex);
                         if (hWnd != IntPtr.Zero) _step.WindowHwnd = hWnd;
                     }
                 }
@@ -2413,6 +2535,7 @@ namespace ModernAutoClicker.Advanced
                     _step.WindowHwnd = winInfo.Hwnd;
                     _step.ProcessName = winInfo.ProcessName;
                     _step.WindowTitle = winInfo.Title;
+                    _step.WindowIndex = winInfo.WindowIndex;
                 }
                 else
                 {
@@ -2426,12 +2549,14 @@ namespace ModernAutoClicker.Advanced
                 _step.WindowHwnd = winInfo.Hwnd;
                 _step.ProcessName = winInfo.ProcessName;
                 _step.WindowTitle = winInfo.Title;
+                _step.WindowIndex = winInfo.WindowIndex;
                 finalA = clientPtA;
                 finalB = clientPtB;
             }
             else
             {
                 _step.WindowHwnd = IntPtr.Zero;
+                _step.WindowIndex = 0;
                 finalA = screenA;
                 finalB = screenB;
             }
@@ -2454,6 +2579,26 @@ namespace ModernAutoClicker.Advanced
 
             RefreshDisplay();
             if (OnStepChanged != null) OnStepChanged();
+        }
+
+        private void SetTargetHovered(bool hovered)
+        {
+            if (_isTargetHovered == hovered) return;
+            _isTargetHovered = hovered;
+            Color c = _isTargetHovered ? _theme.AccentPrimary : _theme.TextPrimary;
+            if (lblCoord != null) lblCoord.ForeColor = c;
+            if (btnPickCoord != null) btnPickCoord.IsExternalHovered = _isTargetHovered;
+        }
+
+        private void CheckTargetMouseLeave()
+        {
+            Point mousePos = this.PointToClient(Cursor.Position);
+            bool inLbl = (lblCoord != null && lblCoord.Visible && lblCoord.Bounds.Contains(mousePos));
+            bool inBtn = (btnPickCoord != null && btnPickCoord.Visible && btnPickCoord.Bounds.Contains(mousePos));
+            if (!inLbl && !inBtn)
+            {
+                SetTargetHovered(false);
+            }
         }
 
         private void PickCoordinate()
@@ -2572,12 +2717,13 @@ namespace ModernAutoClicker.Advanced
             UpdateDynamicFields();
         }
 
-        public void SetTargetWindowDirect(bool rel, string proc, string title, IntPtr hwnd = default(IntPtr))
+        public void SetTargetWindowDirect(bool rel, string proc, string title, IntPtr hwnd = default(IntPtr), int windowIndex = 0)
         {
             _step.RelativeToWindow = rel;
             _step.WindowHwnd = hwnd;
             _step.ProcessName = proc ?? "";
             _step.WindowTitle = title ?? "";
+            _step.WindowIndex = windowIndex;
             UpdateWindowIconDisplay();
         }
 
@@ -2665,14 +2811,13 @@ namespace ModernAutoClicker.Advanced
             {
                 cboTargetScript.ApplyTheme(_theme);
             }
-            if (lblCoord != null) lblCoord.ForeColor = _theme.TextPrimary;
+            if (lblCoord != null) lblCoord.ForeColor = _isTargetHovered ? _theme.AccentPrimary : _theme.TextPrimary;
             if (btnPickCoord != null)
             {
-                btnPickCoord.NormalColor = _theme.BgTertiary;
-                btnPickCoord.HoverColor = _theme.AccentPrimary;
-                btnPickCoord.ForeColor = _theme.TextPrimary;
+                btnPickCoord.ApplyTheme(_theme);
             }
             if (numScroll != null) numScroll.ApplyTheme(_theme);
+            if (cboDragButton != null) cboDragButton.ApplyTheme(_theme);
             if (txtKeyData != null) txtKeyData.ApplyTheme(_theme);
             if (numHold != null) numHold.ApplyTheme(_theme);
             if (numDelay != null) numDelay.ApplyTheme(_theme);

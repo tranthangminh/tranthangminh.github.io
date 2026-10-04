@@ -694,6 +694,10 @@ namespace ModernAutoClicker
 
         public event EventHandler SelectedIndexChanged;
         public Func<int, Color> ItemColorProvider { get; set; }
+        public Func<int, string> CollapsedTextProvider { get; set; }
+        public Func<int, Image> ItemImageProvider { get; set; }
+        public bool ShowCollapsedImageOnly { get; set; }
+        public ThemeTokens Theme { get { return _theme; } }
         public string PrefixText { get; set; }
         public Color PrefixColor { get; set; }
         public Color CustomBackColor { get; set; }
@@ -786,9 +790,14 @@ namespace ModernAutoClicker
             _isOpen = true;
             this.Invalidate();
 
+            bool hasImages = (ItemImageProvider != null);
             _popupMenu = new ContextMenuStrip();
             _popupMenu.Renderer = new ModernMenuRenderer(_theme);
-            _popupMenu.ShowImageMargin = false;
+            _popupMenu.ShowImageMargin = hasImages;
+            if (hasImages)
+            {
+                _popupMenu.ImageScalingSize = new Size(16, 16);
+            }
             _popupMenu.Font = ThemeTokens.FontBase(FontStyle.Regular);
             _popupMenu.AutoSize = true;
 
@@ -798,6 +807,11 @@ namespace ModernAutoClicker
                 string itemText = _items[i];
                 string displayLabel = !string.IsNullOrEmpty(PrefixText) ? (PrefixText + " " + itemText) : itemText;
                 ToolStripMenuItem menuItem = new ToolStripMenuItem(displayLabel);
+
+                if (hasImages)
+                {
+                    menuItem.Image = ItemImageProvider(itemIdx);
+                }
 
                 if (ItemColorProvider != null)
                 {
@@ -849,8 +863,11 @@ namespace ModernAutoClicker
                 g.DrawPath(pen, path);
             }
 
-            // 1. Text with optional Prefix
-            string text = (_selectedIndex >= 0 && _selectedIndex < _items.Count) ? _items[_selectedIndex] : "";
+            // 1. Text or Image with optional Prefix
+            Image itemImg = (ItemImageProvider != null && _selectedIndex >= 0) ? ItemImageProvider(_selectedIndex) : null;
+            string text = (_selectedIndex >= 0 && _selectedIndex < _items.Count)
+                ? (CollapsedTextProvider != null ? CollapsedTextProvider(_selectedIndex) : _items[_selectedIndex])
+                : "";
             Color textColor = (!this.Enabled) ? t.TextTertiary : t.TextPrimary;
             if (this.Enabled && _selectedIndex >= 0 && ItemColorProvider != null)
             {
@@ -858,35 +875,60 @@ namespace ModernAutoClicker
             }
 
             int textLeft = 4;
-            if (!string.IsNullOrEmpty(PrefixText))
+            int arrowX = this.Width - 11;
+
+            if (ShowCollapsedImageOnly || (itemImg != null && string.IsNullOrEmpty(text) && string.IsNullOrEmpty(PrefixText)))
             {
-                Color pColor = PrefixColor != Color.Empty ? PrefixColor : textColor;
-                using (SolidBrush pb = new SolidBrush(pColor))
-                using (StringFormat psf = new StringFormat { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Near })
+                if (itemImg != null)
                 {
-                    SizeF pSize = g.MeasureString(PrefixText, this.Font);
-                    int pW = Math.Max(8, (int)pSize.Width - 2);
-                    RectangleF pRect = new RectangleF(textLeft, 0, pW, this.Height);
-                    g.DrawString(PrefixText, this.Font, pb, pRect, psf);
-                    textLeft += pW;
+                    int imgW = Math.Min(16, itemImg.Width);
+                    int imgH = Math.Min(16, itemImg.Height);
+                    int availW = arrowX;
+                    int imgX = Math.Max(2, (availW - imgW) / 2);
+                    int imgY = Math.Max(0, (this.Height - imgH) / 2);
+                    g.DrawImage(itemImg, new Rectangle(imgX, imgY, imgW, imgH));
+                }
+            }
+            else
+            {
+                if (itemImg != null)
+                {
+                    int imgW = Math.Min(16, itemImg.Width);
+                    int imgH = Math.Min(16, itemImg.Height);
+                    int imgY = Math.Max(0, (this.Height - imgH) / 2);
+                    g.DrawImage(itemImg, new Rectangle(textLeft, imgY, imgW, imgH));
+                    textLeft += imgW + 4;
+                }
+
+                if (!string.IsNullOrEmpty(PrefixText))
+                {
+                    Color pColor = PrefixColor != Color.Empty ? PrefixColor : textColor;
+                    using (SolidBrush pb = new SolidBrush(pColor))
+                    using (StringFormat psf = new StringFormat { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Near })
+                    {
+                        SizeF pSize = g.MeasureString(PrefixText, this.Font);
+                        int pW = Math.Max(8, (int)pSize.Width - 2);
+                        RectangleF pRect = new RectangleF(textLeft, 0, pW, this.Height);
+                        g.DrawString(PrefixText, this.Font, pb, pRect, psf);
+                        textLeft += pW;
+                    }
+                }
+
+                Rectangle textRect = new Rectangle(textLeft, 0, Math.Max(0, arrowX - textLeft), this.Height);
+                using (SolidBrush textBrush = new SolidBrush(textColor))
+                using (StringFormat sf = new StringFormat
+                {
+                    LineAlignment = StringAlignment.Center,
+                    Alignment = StringAlignment.Near,
+                    Trimming = StringTrimming.EllipsisCharacter,
+                    FormatFlags = StringFormatFlags.NoWrap
+                })
+                {
+                    g.DrawString(text, this.Font, textBrush, textRect, sf);
                 }
             }
 
-            Rectangle textRect = new Rectangle(textLeft, 0, Math.Max(0, this.Width - textLeft - 11), this.Height);
-            using (SolidBrush textBrush = new SolidBrush(textColor))
-            using (StringFormat sf = new StringFormat
-            {
-                LineAlignment = StringAlignment.Center,
-                Alignment = StringAlignment.Near,
-                Trimming = StringTrimming.EllipsisCharacter,
-                FormatFlags = StringFormatFlags.NoWrap
-            })
-            {
-                g.DrawString(text, this.Font, textBrush, textRect, sf);
-            }
-
             // 2. Arrow indicator ▾
-            int arrowX = this.Width - 11;
             int arrowY = this.Height / 2 - 2;
             Point[] arrowPts = new Point[]
             {
@@ -1031,6 +1073,168 @@ namespace ModernAutoClicker
             using (SolidBrush arrowBrush = new SolidBrush(_isHovered || _isOpen ? t.TextPrimary : t.TextTertiary))
             {
                 g.FillPolygon(arrowBrush, arrowPts);
+            }
+        }
+    }
+
+    public class SvgIconButton : Control
+    {
+        private string _svgName;
+        private bool _isHovered = false;
+        private bool _isPressed = false;
+        private bool _isExternalHovered = false;
+        private ThemeTokens _theme;
+        private int _iconWidth = 14;
+        private int _iconHeight = 16;
+
+        public string SvgName
+        {
+            get { return _svgName; }
+            set
+            {
+                if (_svgName != value)
+                {
+                    _svgName = value;
+                    Invalidate();
+                }
+            }
+        }
+
+        public int IconWidth
+        {
+            get { return _iconWidth; }
+            set
+            {
+                if (_iconWidth != value)
+                {
+                    _iconWidth = value;
+                    Invalidate();
+                }
+            }
+        }
+
+        public int IconHeight
+        {
+            get { return _iconHeight; }
+            set
+            {
+                if (_iconHeight != value)
+                {
+                    _iconHeight = value;
+                    Invalidate();
+                }
+            }
+        }
+
+        public int IconSize
+        {
+            get { return Math.Max(_iconWidth, _iconHeight); }
+            set
+            {
+                _iconWidth = value;
+                _iconHeight = value;
+                Invalidate();
+            }
+        }
+
+        public bool IsExternalHovered
+        {
+            get { return _isExternalHovered; }
+            set
+            {
+                if (_isExternalHovered != value)
+                {
+                    _isExternalHovered = value;
+                    Invalidate();
+                }
+            }
+        }
+
+        public SvgIconButton()
+        {
+            _theme = ThemeTokens.DarkTheme();
+            this.SetStyle(ControlStyles.UserPaint |
+                          ControlStyles.AllPaintingInWmPaint |
+                          ControlStyles.OptimizedDoubleBuffer |
+                          ControlStyles.ResizeRedraw |
+                          ControlStyles.SupportsTransparentBackColor, true);
+            this.DoubleBuffered = true;
+            this.Cursor = Cursors.Hand;
+            this.Size = new Size(16, 22);
+        }
+
+        public void ApplyTheme(ThemeTokens t)
+        {
+            _theme = t ?? ThemeTokens.DarkTheme();
+            Invalidate();
+        }
+
+        protected override void OnMouseEnter(EventArgs e)
+        {
+            base.OnMouseEnter(e);
+            _isHovered = true;
+            Invalidate();
+        }
+
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            base.OnMouseLeave(e);
+            _isHovered = false;
+            _isPressed = false;
+            Invalidate();
+        }
+
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+            if (e.Button == MouseButtons.Left)
+            {
+                _isPressed = true;
+                Invalidate();
+            }
+        }
+
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            base.OnMouseUp(e);
+            if (_isPressed)
+            {
+                _isPressed = false;
+                Invalidate();
+            }
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            if (string.IsNullOrEmpty(_svgName)) return;
+
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            ThemeTokens t = _theme ?? ThemeTokens.DarkTheme();
+            Color tint;
+            if (!this.Enabled)
+            {
+                tint = t.TextTertiary;
+            }
+            else if (_isPressed || _isHovered || _isExternalHovered)
+            {
+                tint = t.AccentPrimary;
+            }
+            else
+            {
+                tint = t.TextPrimary;
+            }
+
+            Image img = ModernAutoClicker.Info.SvgFileRenderer.GetCachedTintedIcon(_svgName, _iconWidth, _iconHeight, tint);
+            if (img != null)
+            {
+                int x = (this.Width - _iconWidth) / 2;
+                int y = (this.Height - _iconHeight) / 2;
+                g.DrawImage(img, new Rectangle(x, y, _iconWidth, _iconHeight));
             }
         }
     }
