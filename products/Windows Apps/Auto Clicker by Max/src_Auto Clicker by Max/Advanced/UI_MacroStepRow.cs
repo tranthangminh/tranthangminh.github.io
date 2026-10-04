@@ -1189,10 +1189,11 @@ namespace ModernAutoClicker.Advanced
             if (_step.RelativeToWindow && !string.IsNullOrEmpty(_step.ProcessName))
             {
                 lblWindowIcon.Image = IconCache.GetProcessIcon(_step.ProcessName, _step.WindowTitle) ?? IconCache.GenericAppIcon;
-                string winSuffix = _step.WindowIndex > 0 ? string.Format(" ({0})", _step.WindowIndex) : "";
+                string winSuffix = _step.WindowIndex > 0 ? string.Format(" #{0}", _step.WindowIndex) : "";
+                string pidSuffix = _step.TargetPid > 0 ? string.Format(" [PID: {0}]", _step.TargetPid) : "";
                 string tip = Loc.IsVietnamese
-                    ? string.Format("Cửa sổ Mục tiêu: [{0}] {1}{2}\n(Bấm để đổi mục tiêu)", _step.ProcessName, _step.WindowTitle, winSuffix)
-                    : string.Format("Target Window: [{0}] {1}{2}\n(Click to change target)", _step.ProcessName, _step.WindowTitle, winSuffix);
+                    ? string.Format("Cửa sổ Mục tiêu: [{0}] {1}{2}{3}\n(Bấm để đổi mục tiêu)", _step.ProcessName, _step.WindowTitle, pidSuffix, winSuffix)
+                    : string.Format("Target Window: [{0}] {1}{2}{3}\n(Click to change target)", _step.ProcessName, _step.WindowTitle, pidSuffix, winSuffix);
                 RowToolTipManager.SetToolTip(lblWindowIcon, tip);
             }
             else
@@ -1404,6 +1405,7 @@ namespace ModernAutoClicker.Advanced
             {
                 _step.RelativeToWindow = false;
                 _step.WindowHwnd = IntPtr.Zero;
+                _step.TargetPid = 0;
                 _step.ProcessName = "";
                 _step.WindowTitle = "";
                 _step.WindowIndex = 0;
@@ -1432,6 +1434,7 @@ namespace ModernAutoClicker.Advanced
                     {
                         _step.RelativeToWindow = true;
                         _step.WindowHwnd = targetWin.Hwnd;
+                        _step.TargetPid = targetWin.ProcessId;
                         _step.ProcessName = targetWin.ProcessName;
                         _step.WindowTitle = targetWin.Title;
                         _step.WindowIndex = targetWin.WindowIndex;
@@ -2492,20 +2495,27 @@ namespace ModernAutoClicker.Advanced
             if (_step.RelativeToWindow)
             {
                 IntPtr hWnd = _step.WindowHwnd;
-                if (!NativeMethods.IsValidWindowHandle(hWnd, _step.ProcessName))
+                if (!NativeMethods.IsValidWindowHandle(hWnd, _step.TargetPid, _step.ProcessName))
                 {
-                    if (winInfo != null && winInfo.Hwnd != IntPtr.Zero && NativeMethods.IsValidWindowHandle(winInfo.Hwnd, winInfo.ProcessName))
+                    if (winInfo != null && winInfo.Hwnd != IntPtr.Zero && NativeMethods.IsValidWindowHandle(winInfo.Hwnd, winInfo.ProcessId, winInfo.ProcessName))
                     {
                         hWnd = winInfo.Hwnd;
                         _step.WindowHwnd = hWnd;
+                        _step.TargetPid = winInfo.ProcessId;
                         _step.ProcessName = winInfo.ProcessName;
                         _step.WindowTitle = winInfo.Title;
                         _step.WindowIndex = winInfo.WindowIndex;
                     }
                     else
                     {
-                        hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle, _step.WindowIndex);
-                        if (hWnd != IntPtr.Zero) _step.WindowHwnd = hWnd;
+                        hWnd = NativeMethods.FindWindowByTarget(_step.ProcessName, _step.WindowTitle, _step.WindowIndex, _step.TargetPid);
+                        if (hWnd != IntPtr.Zero)
+                        {
+                            _step.WindowHwnd = hWnd;
+                            uint p;
+                            NativeMethods.GetWindowThreadProcessId(hWnd, out p);
+                            if (p > 0) _step.TargetPid = p;
+                        }
                     }
                 }
 
@@ -2533,6 +2543,7 @@ namespace ModernAutoClicker.Advanced
                     finalA = clientPtA;
                     finalB = clientPtB;
                     _step.WindowHwnd = winInfo.Hwnd;
+                    _step.TargetPid = winInfo.ProcessId;
                     _step.ProcessName = winInfo.ProcessName;
                     _step.WindowTitle = winInfo.Title;
                     _step.WindowIndex = winInfo.WindowIndex;
@@ -2547,6 +2558,7 @@ namespace ModernAutoClicker.Advanced
             {
                 _step.RelativeToWindow = true;
                 _step.WindowHwnd = winInfo.Hwnd;
+                _step.TargetPid = winInfo.ProcessId;
                 _step.ProcessName = winInfo.ProcessName;
                 _step.WindowTitle = winInfo.Title;
                 _step.WindowIndex = winInfo.WindowIndex;
@@ -2556,6 +2568,7 @@ namespace ModernAutoClicker.Advanced
             else
             {
                 _step.WindowHwnd = IntPtr.Zero;
+                _step.TargetPid = 0;
                 _step.WindowIndex = 0;
                 finalA = screenA;
                 finalB = screenB;
@@ -2717,10 +2730,11 @@ namespace ModernAutoClicker.Advanced
             UpdateDynamicFields();
         }
 
-        public void SetTargetWindowDirect(bool rel, string proc, string title, IntPtr hwnd = default(IntPtr), int windowIndex = 0)
+        public void SetTargetWindowDirect(bool rel, string proc, string title, IntPtr hwnd = default(IntPtr), int windowIndex = 0, uint targetPid = 0)
         {
             _step.RelativeToWindow = rel;
             _step.WindowHwnd = hwnd;
+            _step.TargetPid = targetPid;
             _step.ProcessName = proc ?? "";
             _step.WindowTitle = title ?? "";
             _step.WindowIndex = windowIndex;

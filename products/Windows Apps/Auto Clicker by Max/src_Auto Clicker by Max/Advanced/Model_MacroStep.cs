@@ -36,6 +36,8 @@ namespace ModernAutoClicker.Advanced
         // Window Target Properties (Relative Coordinates)
         [System.Xml.Serialization.XmlIgnore]
         public IntPtr WindowHwnd { get; set; }
+        [System.Xml.Serialization.XmlIgnore]
+        public uint TargetPid { get; set; }
         public string WindowTitle { get; set; }
         public string ProcessName { get; set; }
         public bool RelativeToWindow { get; set; }
@@ -120,6 +122,7 @@ namespace ModernAutoClicker.Advanced
             IfTrueStep = -2; // Default: Click Target
             IfFalseStep = -3; // Default: Repeat this Step
             WindowHwnd = IntPtr.Zero;
+            TargetPid = 0;
             WindowTitle = "";
             ProcessName = "";
             RelativeToWindow = false;
@@ -157,6 +160,7 @@ namespace ModernAutoClicker.Advanced
                 IfTrueStep = this.IfTrueStep,
                 IfFalseStep = this.IfFalseStep,
                 WindowHwnd = this.WindowHwnd,
+                TargetPid = this.TargetPid,
                 WindowTitle = this.WindowTitle,
                 ProcessName = this.ProcessName,
                 RelativeToWindow = this.RelativeToWindow,

@@ -123,6 +123,56 @@ namespace ModernAutoClicker
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
+        [DllImport("user32.dll")]
+        public static extern bool BringWindowToTop(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+        [DllImport("kernel32.dll")]
+        public static extern uint GetCurrentThreadId();
+
+        public const int SW_RESTORE = 9;
+
+        public static void ForceSetForegroundWindow(IntPtr hWnd)
+        {
+            if (hWnd == IntPtr.Zero || !IsWindow(hWnd)) return;
+
+            IntPtr fgWnd = GetForegroundWindow();
+            if (fgWnd == hWnd) return;
+
+            if (IsIconic(hWnd))
+            {
+                ShowWindow(hWnd, SW_RESTORE);
+            }
+
+            uint fgThread = 0;
+            if (fgWnd != IntPtr.Zero)
+            {
+                GetWindowThreadProcessId(fgWnd, out fgThread);
+            }
+            uint currentThread = GetCurrentThreadId();
+
+            bool attached = false;
+            if (fgThread != 0 && fgThread != currentThread)
+            {
+                attached = AttachThreadInput(currentThread, fgThread, true);
+            }
+
+            try
+            {
+                BringWindowToTop(hWnd);
+                SetForegroundWindow(hWnd);
+            }
+            finally
+            {
+                if (attached)
+                {
+                    AttachThreadInput(currentThread, fgThread, false);
+                }
+            }
+        }
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
@@ -587,6 +637,8 @@ namespace ModernAutoClicker
             public string FriendlyAppName { get; set; }
             public string ClassName { get; set; }
             public Image AppIcon { get; set; }
+            public uint ProcessId { get; set; }
+            public DateTime StartTime { get; set; }
 
             public int WindowIndex { get; set; }
 
@@ -596,10 +648,19 @@ namespace ModernAutoClicker
                 string baseDisplay;
                 if (string.IsNullOrEmpty(Title) || string.Equals(Title, appName, StringComparison.OrdinalIgnoreCase))
                     baseDisplay = string.Format("{0}", appName);
-                else if (Title.Length > 35)
-                    baseDisplay = string.Format("{0} - {1}...", appName, Title.Substring(0, 32));
+                else if (Title.Length > 30)
+                    baseDisplay = string.Format("{0} - {1}...", appName, Title.Substring(0, 27));
                 else
                     baseDisplay = string.Format("{0} - {1}", appName, Title);
+
+                if (ProcessId > 0)
+                {
+                    if (WindowIndex > 0)
+                    {
+                        return string.Format("{0} [PID: {1} #{2}]", baseDisplay, ProcessId, WindowIndex);
+                    }
+                    return string.Format("{0} [PID: {1}]", baseDisplay, ProcessId);
+                }
 
                 if (WindowIndex > 0)
                 {
@@ -718,11 +779,14 @@ namespace ModernAutoClicker
 
                 string procName = "App";
                 string friendlyName = "App";
+                DateTime startTime = DateTime.MinValue;
                 try
                 {
                     var p = System.Diagnostics.Process.GetProcessById((int)pid);
                     procName = p.ProcessName;
                     friendlyName = GetFriendlyAppName(p);
+                    try { startTime = p.StartTime; } catch { }
+                    p.Dispose();
                 }
                 catch { }
 
@@ -747,7 +811,9 @@ namespace ModernAutoClicker
                     ProcessName = procName,
                     FriendlyAppName = friendlyName,
                     ClassName = className,
-                    AppIcon = appIcon
+                    AppIcon = appIcon,
+                    ProcessId = pid,
+                    StartTime = startTime
                 });
 
                 return true;
@@ -772,13 +838,14 @@ namespace ModernAutoClicker
                 var group = kvp.Value;
                 if (group.Count > 1)
                 {
-                    // Deterministic stable sorting by PID ascending, then HWND ascending
+                    // Deterministic sorting: Earliest process StartTime first (Instance 1), then PID ascending, then HWND ascending
                     group.Sort((a, b) =>
                     {
-                        uint pidA, pidB;
-                        GetWindowThreadProcessId(a.Hwnd, out pidA);
-                        GetWindowThreadProcessId(b.Hwnd, out pidB);
-                        int cmp = pidA.CompareTo(pidB);
+                        if (a.StartTime != DateTime.MinValue && b.StartTime != DateTime.MinValue && a.StartTime != b.StartTime)
+                        {
+                            return a.StartTime.CompareTo(b.StartTime);
+                        }
+                        int cmp = a.ProcessId.CompareTo(b.ProcessId);
                         if (cmp != 0) return cmp;
                         return a.Hwnd.ToInt64().CompareTo(b.Hwnd.ToInt64());
                     });
@@ -807,15 +874,20 @@ namespace ModernAutoClicker
             return 0;
         }
 
-        public static bool IsValidWindowHandle(IntPtr hWnd, string procName = null)
+
+        public static bool IsValidWindowHandle(IntPtr hWnd, uint targetPid = 0, string procName = null)
         {
             if (hWnd == IntPtr.Zero) return false;
             if (!IsWindow(hWnd) || !IsWindowVisible(hWnd) || IsIconic(hWnd)) return false;
+
+            uint pid;
+            GetWindowThreadProcessId(hWnd, out pid);
+            if (pid == 0) return false;
+
+            if (targetPid > 0 && pid != targetPid) return false;
+
             if (!string.IsNullOrEmpty(procName))
             {
-                uint pid;
-                GetWindowThreadProcessId(hWnd, out pid);
-                if (pid == 0) return false;
                 try
                 {
                     var p = System.Diagnostics.Process.GetProcessById((int)pid);
@@ -844,7 +916,7 @@ namespace ModernAutoClicker
 
         private static readonly System.Collections.Generic.Dictionary<string, TargetWindowCacheEntry> _targetWindowCache = new System.Collections.Generic.Dictionary<string, TargetWindowCacheEntry>(StringComparer.OrdinalIgnoreCase);
 
-        public static IntPtr FindWindowByTarget(string procName, string windowTitle, int windowIndex = 0)
+        public static IntPtr FindWindowByTarget(string procName, string windowTitle, int windowIndex = 0, uint targetPid = 0)
         {
             string cleanProc = (procName ?? "").Trim();
             if (cleanProc.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -858,7 +930,7 @@ namespace ModernAutoClicker
                 cleanTitle = cleanTitle.Substring(0, cleanTitle.Length - 1).Trim();
             }
 
-            if (string.IsNullOrEmpty(cleanProc) && string.IsNullOrEmpty(cleanTitle))
+            if (string.IsNullOrEmpty(cleanProc) && string.IsNullOrEmpty(cleanTitle) && targetPid == 0)
                 return IntPtr.Zero;
 
             // Fast resolution for Windows Desktop
@@ -869,7 +941,7 @@ namespace ModernAutoClicker
                 if (pDesk != IntPtr.Zero && IsWindow(pDesk)) return pDesk;
             }
 
-            string cacheKey = string.Format("{0}|{1}|{2}", cleanProc, cleanTitle, windowIndex);
+            string cacheKey = string.Format("{0}|{1}|{2}|{3}", cleanProc, cleanTitle, windowIndex, targetPid);
 
             lock (_targetWindowCache)
             {
@@ -890,26 +962,116 @@ namespace ModernAutoClicker
                 }
             }
 
-            // Find matching PIDs for process name
-            System.Collections.Generic.HashSet<uint> targetPids = new System.Collections.Generic.HashSet<uint>();
+            IntPtr resultHwnd = IntPtr.Zero;
+
+            // Tier 1: Exact PID match (Locks target window to session PID so it NEVER drifts to App 2)
+            if (targetPid > 0)
+            {
+                bool isPidAlive = false;
+                try
+                {
+                    var p = System.Diagnostics.Process.GetProcessById((int)targetPid);
+                    isPidAlive = !p.HasExited;
+                    p.Dispose();
+                }
+                catch { isPidAlive = false; }
+
+                if (isPidAlive)
+                {
+                    System.Collections.Generic.List<IntPtr> pidWindows = new System.Collections.Generic.List<IntPtr>();
+                    IntPtr pidFallbackWin = IntPtr.Zero;
+
+                    EnumWindows((hWnd, lParam) =>
+                    {
+                        if (IsWindowVisible(hWnd) && !IsIconic(hWnd))
+                        {
+                            uint pid;
+                            GetWindowThreadProcessId(hWnd, out pid);
+                            if (pid == targetPid)
+                            {
+                                int len = GetWindowTextLength(hWnd);
+                                string title = "";
+                                if (len > 0)
+                                {
+                                    var sb = new System.Text.StringBuilder(len + 1);
+                                    GetWindowText(hWnd, sb, sb.Capacity);
+                                    title = sb.ToString();
+                                }
+
+                                bool titleMatch = !string.IsNullOrEmpty(cleanTitle) && title.IndexOf(cleanTitle, StringComparison.OrdinalIgnoreCase) >= 0;
+                                if (titleMatch)
+                                {
+                                    pidWindows.Add(hWnd);
+                                }
+                                else if (pidFallbackWin == IntPtr.Zero && len > 0)
+                                {
+                                    pidFallbackWin = hWnd;
+                                }
+                            }
+                        }
+                        return true;
+                    }, IntPtr.Zero);
+
+                    if (pidWindows.Count > 0)
+                    {
+                        if (windowIndex > 0 && windowIndex <= pidWindows.Count)
+                            resultHwnd = pidWindows[windowIndex - 1];
+                        else
+                            resultHwnd = pidWindows[0];
+                    }
+                    else if (pidFallbackWin != IntPtr.Zero)
+                    {
+                        resultHwnd = pidFallbackWin;
+                    }
+
+                    if (resultHwnd != IntPtr.Zero)
+                    {
+                        lock (_targetWindowCache)
+                        {
+                            _targetWindowCache[cacheKey] = new TargetWindowCacheEntry { Hwnd = resultHwnd, Timestamp = DateTime.Now };
+                        }
+                        return resultHwnd;
+                    }
+                }
+            }
+
+            // Tier 2: Target PID died or not set (User restarted game/app) -> Smart fallback to Earliest Opened App (Instance 1)
+            System.Collections.Generic.List<System.Diagnostics.Process> runningProcs = new System.Collections.Generic.List<System.Diagnostics.Process>();
             if (!string.IsNullOrEmpty(cleanProc))
             {
                 try
                 {
                     var procs = System.Diagnostics.Process.GetProcessesByName(cleanProc);
-                    foreach (var p in procs)
-                    {
-                        targetPids.Add((uint)p.Id);
-                        p.Dispose();
-                    }
+                    runningProcs.AddRange(procs);
                 }
                 catch { }
 
-                // If a process name was specified but process is not running, do not search further
-                if (targetPids.Count == 0 && string.IsNullOrEmpty(cleanTitle))
+                if (runningProcs.Count == 0 && string.IsNullOrEmpty(cleanTitle))
                 {
                     return IntPtr.Zero;
                 }
+            }
+
+            // Sort candidate processes by StartTime ascending (Earliest opened process = Instance 1)
+            if (runningProcs.Count > 1)
+            {
+                runningProcs.Sort((a, b) =>
+                {
+                    DateTime tA = DateTime.MaxValue, tB = DateTime.MaxValue;
+                    try { tA = a.StartTime; } catch { }
+                    try { tB = b.StartTime; } catch { }
+                    int c = tA.CompareTo(tB);
+                    if (c != 0) return c;
+                    return a.Id.CompareTo(b.Id);
+                });
+            }
+
+            // Collect target PIDs in priority order
+            System.Collections.Generic.List<uint> prioritizedPids = new System.Collections.Generic.List<uint>();
+            foreach (var p in runningProcs)
+            {
+                prioritizedPids.Add((uint)p.Id);
+                p.Dispose();
             }
 
             System.Collections.Generic.List<IntPtr> matchingHwnds = new System.Collections.Generic.List<IntPtr>();
@@ -922,10 +1084,10 @@ namespace ModernAutoClicker
                     uint pid;
                     GetWindowThreadProcessId(hWnd, out pid);
 
-                    bool isPidMatch = targetPids.Count > 0 && targetPids.Contains(pid);
+                    bool isPidMatch = prioritizedPids.Count > 0 && prioritizedPids.Contains(pid);
 
                     // If target process was specified and running, skip non-matching process windows
-                    if (targetPids.Count > 0 && !isPidMatch)
+                    if (prioritizedPids.Count > 0 && !isPidMatch)
                     {
                         return true;
                     }
@@ -941,19 +1103,19 @@ namespace ModernAutoClicker
 
                     bool titleMatch = !string.IsNullOrEmpty(cleanTitle) && title.IndexOf(cleanTitle, StringComparison.OrdinalIgnoreCase) >= 0;
 
-                    if (titleMatch && (targetPids.Count == 0 || isPidMatch))
+                    if (titleMatch && (prioritizedPids.Count == 0 || isPidMatch))
                     {
                         matchingHwnds.Add(hWnd);
                     }
                     else if (isPidMatch && processMatch == IntPtr.Zero && len > 0)
                     {
-                        processMatch = hWnd; // Fallback to process main window
+                        processMatch = hWnd;
                     }
                 }
                 return true;
             }, IntPtr.Zero);
 
-            // Deterministic stable sorting by PID ascending, then HWND ascending
+            // Sort matching windows by process priority (Earliest StartTime first), then HWND
             if (matchingHwnds.Count > 1)
             {
                 matchingHwnds.Sort((a, b) =>
@@ -961,13 +1123,15 @@ namespace ModernAutoClicker
                     uint pidA, pidB;
                     GetWindowThreadProcessId(a, out pidA);
                     GetWindowThreadProcessId(b, out pidB);
+                    int idxA = prioritizedPids.IndexOf(pidA);
+                    int idxB = prioritizedPids.IndexOf(pidB);
+                    if (idxA >= 0 && idxB >= 0 && idxA != idxB) return idxA.CompareTo(idxB);
                     int cmp = pidA.CompareTo(pidB);
                     if (cmp != 0) return cmp;
                     return a.ToInt64().CompareTo(b.ToInt64());
                 });
             }
 
-            IntPtr resultHwnd = IntPtr.Zero;
             if (matchingHwnds.Count > 0)
             {
                 if (windowIndex > 0 && windowIndex <= matchingHwnds.Count)
@@ -976,7 +1140,7 @@ namespace ModernAutoClicker
                 }
                 else
                 {
-                    resultHwnd = matchingHwnds[0];
+                    resultHwnd = matchingHwnds[0]; // Earliest opened app!
                 }
             }
             else

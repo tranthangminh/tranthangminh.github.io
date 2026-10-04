@@ -49,7 +49,7 @@ namespace ModernAutoClicker.Advanced
 
         public event Action OnTableDataChanged;
         public event Action<int> OnSelectionChanged;
-        public event Action<bool, string, string, int> OnDefaultWindowBatchChanged;
+        public event Action<bool, string, string, int, uint> OnDefaultWindowBatchChanged;
 
         protected override CreateParams CreateParams
         {
@@ -372,9 +372,9 @@ namespace ModernAutoClicker.Advanced
             {
                 foreach (MacroRowControl r in targets)
                 {
-                    r.SetTargetWindowDirect(false, "", "", IntPtr.Zero, 0);
+                    r.SetTargetWindowDirect(false, "", "", IntPtr.Zero, 0, 0);
                 }
-                if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(false, "", "", 0);
+                if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(false, "", "", 0, 0);
                 if (OnTableDataChanged != null) OnTableDataChanged();
             };
             menu.Items.Add(itemDesktop);
@@ -402,9 +402,9 @@ namespace ModernAutoClicker.Advanced
                         }
                         foreach (MacroRowControl r in targets)
                         {
-                            r.SetTargetWindowDirect(true, targetWin.ProcessName, targetWin.Title, targetWin.Hwnd, targetWin.WindowIndex);
+                            r.SetTargetWindowDirect(true, targetWin.ProcessName, targetWin.Title, targetWin.Hwnd, targetWin.WindowIndex, targetWin.ProcessId);
                         }
-                        if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(true, targetWin.ProcessName, targetWin.Title, targetWin.WindowIndex);
+                        if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(true, targetWin.ProcessName, targetWin.Title, targetWin.WindowIndex, targetWin.ProcessId);
                         if (OnTableDataChanged != null) OnTableDataChanged();
                     };
                     menu.Items.Add(itemWin);
@@ -1315,7 +1315,7 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
-        public void SetDefaultWindowForAllSteps(string procName, string winTitle, IntPtr hwnd = default(IntPtr), int windowIndex = 0)
+        public void SetDefaultWindowForAllSteps(string procName, string winTitle, IntPtr hwnd = default(IntPtr), int windowIndex = 0, uint targetPid = 0)
         {
             if (_rows == null || _rows.Count == 0) return;
             bool isRel = (hwnd != IntPtr.Zero) || !string.IsNullOrEmpty(procName);
@@ -1324,7 +1324,7 @@ namespace ModernAutoClicker.Advanced
             {
                 foreach (var row in _rows)
                 {
-                    row.SetTargetWindowDirect(isRel, procName, winTitle, hwnd, windowIndex);
+                    row.SetTargetWindowDirect(isRel, procName, winTitle, hwnd, windowIndex, targetPid);
                 }
             }
             finally

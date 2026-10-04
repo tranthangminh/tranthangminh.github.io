@@ -85,10 +85,25 @@ namespace ModernAutoClicker.Advanced
                     MacroStep firstStep = stepsToRun.Find(s => s.Enabled && (s.StartPoint != Point.Empty || s.RelativeToWindow));
                     if (firstStep != null)
                     {
-                        if (firstStep.RelativeToWindow && firstStep.WindowHwnd != IntPtr.Zero)
+                        if (firstStep.RelativeToWindow)
                         {
-                            NativeMethods.SetForegroundWindow(firstStep.WindowHwnd);
-                            Thread.Sleep(30);
+                            IntPtr fHwnd = firstStep.WindowHwnd;
+                            if (!NativeMethods.IsValidWindowHandle(fHwnd, firstStep.TargetPid, firstStep.ProcessName))
+                            {
+                                fHwnd = NativeMethods.FindWindowByTarget(firstStep.ProcessName, firstStep.WindowTitle, firstStep.WindowIndex, firstStep.TargetPid);
+                                if (fHwnd != IntPtr.Zero)
+                                {
+                                    firstStep.WindowHwnd = fHwnd;
+                                    uint p;
+                                    NativeMethods.GetWindowThreadProcessId(fHwnd, out p);
+                                    if (p > 0) firstStep.TargetPid = p;
+                                }
+                            }
+                            if (fHwnd != IntPtr.Zero)
+                            {
+                                NativeMethods.ForceSetForegroundWindow(fHwnd);
+                                Thread.Sleep(30);
+                            }
                         }
 
                         if (firstStep.StartPoint != Point.Empty)
@@ -388,10 +403,16 @@ namespace ModernAutoClicker.Advanced
                             if (step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
                             {
                                 IntPtr hWnd = step.WindowHwnd;
-                                if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
+                                if (!NativeMethods.IsValidWindowHandle(hWnd, step.TargetPid, step.ProcessName))
                                 {
-                                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
-                                    if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
+                                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex, step.TargetPid);
+                                    if (hWnd != IntPtr.Zero)
+                                    {
+                                        step.WindowHwnd = hWnd;
+                                        uint p;
+                                        NativeMethods.GetWindowThreadProcessId(hWnd, out p);
+                                        if (p > 0) step.TargetPid = p;
+                                    }
                                 }
                                 if (hWnd != IntPtr.Zero)
                                 {
@@ -546,10 +567,16 @@ namespace ModernAutoClicker.Advanced
                         if (step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
                         {
                             IntPtr hWnd = step.WindowHwnd;
-                            if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
+                            if (!NativeMethods.IsValidWindowHandle(hWnd, step.TargetPid, step.ProcessName))
                             {
-                                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
-                                if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
+                                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex, step.TargetPid);
+                                if (hWnd != IntPtr.Zero)
+                                {
+                                    step.WindowHwnd = hWnd;
+                                    uint p;
+                                    NativeMethods.GetWindowThreadProcessId(hWnd, out p);
+                                    if (p > 0) step.TargetPid = p;
+                                }
                             }
                             if (hWnd != IntPtr.Zero)
                             {

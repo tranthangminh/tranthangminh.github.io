@@ -61,10 +61,71 @@
         set: function (theme) {
             return applyTheme(theme);
         },
-        toggle: function () {
+        toggle: function (event) {
             var current = this.get();
             var next = current === 'dark' ? 'light' : 'dark';
-            return applyTheme(next);
+
+            var isReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!document.startViewTransition || isReducedMotion) {
+                return applyTheme(next);
+            }
+
+            var x, y;
+            if (event && typeof event.clientX === 'number' && event.clientX > 0) {
+                x = event.clientX;
+                y = event.clientY;
+            } else {
+                var btn = document.getElementById('themeToggleBtn');
+                if (btn) {
+                    var rect = btn.getBoundingClientRect();
+                    x = rect.left + rect.width / 2;
+                    y = rect.top + rect.height / 2;
+                } else {
+                    x = window.innerWidth / 2;
+                    y = window.innerHeight / 2;
+                }
+            }
+
+            var maxRadius = Math.ceil(Math.hypot(
+                Math.max(x, window.innerWidth - x),
+                Math.max(y, window.innerHeight - y)
+            )) + 60;
+
+            document.documentElement.style.setProperty('--theme-ripple-x', x + 'px');
+            document.documentElement.style.setProperty('--theme-ripple-y', y + 'px');
+            document.documentElement.style.setProperty('--theme-ripple-max', maxRadius + 'px');
+
+            var transition = document.startViewTransition(function () {
+                applyTheme(next);
+            });
+
+            if (transition && transition.ready) {
+                transition.ready.then(function () {
+                    try {
+                        document.documentElement.animate(
+                            [
+                                { '--theme-ripple-radius': '0px' },
+                                { '--theme-ripple-radius': maxRadius + 'px' }
+                            ],
+                            {
+                                duration: 1000,
+                                easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                            }
+                        );
+                    } catch (err) {}
+                });
+            }
+
+            if (transition && transition.finished) {
+                transition.finished.finally(function () {
+                    document.documentElement.style.removeProperty('--theme-ripple-x');
+                    document.documentElement.style.removeProperty('--theme-ripple-y');
+                    document.documentElement.style.removeProperty('--theme-ripple-max');
+                    document.documentElement.style.removeProperty('--theme-ripple-radius');
+                });
+            }
+
+            return next;
         }
     };
 
@@ -159,10 +220,10 @@
 
         if (themeToggleBtn) {
             updateThemeToggleUI(window.sharedTheme.get());
-            themeToggleBtn.addEventListener('click', function () {
+            themeToggleBtn.addEventListener('click', function (event) {
                 closeMenus();
                 if (window.sharedTheme && typeof window.sharedTheme.toggle === 'function') {
-                    window.sharedTheme.toggle();
+                    window.sharedTheme.toggle(event);
                 }
             });
         }

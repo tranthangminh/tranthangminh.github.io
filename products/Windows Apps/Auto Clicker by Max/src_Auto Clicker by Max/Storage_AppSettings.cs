@@ -19,6 +19,8 @@ namespace ModernAutoClicker
         public string SimpleTargetWindowTitle { get; set; }
         public int SimpleTargetWindowIndex { get; set; }
         public bool SimpleRelativeToWindow { get; set; }
+        [System.Xml.Serialization.XmlIgnore]
+        public uint SimpleTargetPid { get; set; }
         public List<Point> Points { get; set; }
 
         public SimpleProfileConfig(int tabIndex = 0)
@@ -33,6 +35,7 @@ namespace ModernAutoClicker
             SimpleTargetWindowTitle = "";
             SimpleTargetWindowIndex = 0;
             SimpleRelativeToWindow = false;
+            SimpleTargetPid = 0;
             Points = new List<Point>();
         }
 
@@ -49,6 +52,7 @@ namespace ModernAutoClicker
                 SimpleTargetWindowTitle = this.SimpleTargetWindowTitle,
                 SimpleTargetWindowIndex = this.SimpleTargetWindowIndex,
                 SimpleRelativeToWindow = this.SimpleRelativeToWindow,
+                SimpleTargetPid = this.SimpleTargetPid,
                 Points = new List<Point>()
             };
             if (this.Points != null)
@@ -123,6 +127,12 @@ namespace ModernAutoClicker
         {
             get { return GetProfile(0).SimpleRelativeToWindow; }
             set { GetProfile(0).SimpleRelativeToWindow = value; }
+        }
+        [System.Xml.Serialization.XmlIgnore]
+        public uint SimpleTargetPid
+        {
+            get { return GetProfile(0).SimpleTargetPid; }
+            set { GetProfile(0).SimpleTargetPid = value; }
         }
         public List<Point> Points
         {

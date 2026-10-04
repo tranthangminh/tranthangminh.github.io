@@ -349,13 +349,19 @@ namespace ModernAutoClicker.Advanced
         public static Point ResolveActualScreenPoint(MacroStep step, Point localPt)
         {
             if (localPt == Point.Empty) return Point.Empty;
-            if (step == null || !step.RelativeToWindow || (step.WindowHwnd == IntPtr.Zero && string.IsNullOrEmpty(step.ProcessName))) return localPt;
+            if (step == null || !step.RelativeToWindow || (step.WindowHwnd == IntPtr.Zero && string.IsNullOrEmpty(step.ProcessName) && step.TargetPid == 0)) return localPt;
 
             IntPtr hWnd = step.WindowHwnd;
-            if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
+            if (!NativeMethods.IsValidWindowHandle(hWnd, step.TargetPid, step.ProcessName))
             {
-                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
-                if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
+                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex, step.TargetPid);
+                if (hWnd != IntPtr.Zero)
+                {
+                    step.WindowHwnd = hWnd;
+                    uint p;
+                    NativeMethods.GetWindowThreadProcessId(hWnd, out p);
+                    if (p > 0) step.TargetPid = p;
+                }
             }
 
             if (hWnd != IntPtr.Zero)
@@ -413,32 +419,40 @@ namespace ModernAutoClicker.Advanced
             Point clickPt = GetTargetClickPoint(step, randJitterPx, out rawClickPt);
 
             IntPtr directHwnd = IntPtr.Zero;
-            if (freeMouseMode && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
+            if (freeMouseMode && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName) || step.TargetPid > 0))
             {
                 directHwnd = step.WindowHwnd;
-                if (!NativeMethods.IsValidWindowHandle(directHwnd, step.ProcessName))
+                if (!NativeMethods.IsValidWindowHandle(directHwnd, step.TargetPid, step.ProcessName))
                 {
-                    directHwnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
-                    if (directHwnd != IntPtr.Zero) step.WindowHwnd = directHwnd;
+                    directHwnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex, step.TargetPid);
+                    if (directHwnd != IntPtr.Zero)
+                    {
+                        step.WindowHwnd = directHwnd;
+                        uint p;
+                        NativeMethods.GetWindowThreadProcessId(directHwnd, out p);
+                        if (p > 0) step.TargetPid = p;
+                    }
                 }
             }
-            else if (!freeMouseMode && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
+            else if (!freeMouseMode && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName) || step.TargetPid > 0))
             {
                 IntPtr targetWin = step.WindowHwnd;
-                if (!NativeMethods.IsValidWindowHandle(targetWin, step.ProcessName))
+                if (!NativeMethods.IsValidWindowHandle(targetWin, step.TargetPid, step.ProcessName))
                 {
-                    targetWin = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
-                    if (targetWin != IntPtr.Zero) step.WindowHwnd = targetWin;
+                    targetWin = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex, step.TargetPid);
+                    if (targetWin != IntPtr.Zero)
+                    {
+                        step.WindowHwnd = targetWin;
+                        uint p;
+                        NativeMethods.GetWindowThreadProcessId(targetWin, out p);
+                        if (p > 0) step.TargetPid = p;
+                    }
                 }
 
                 if (targetWin != IntPtr.Zero)
                 {
-                    IntPtr currFg = NativeMethods.GetForegroundWindow();
-                    if (currFg != targetWin)
-                    {
-                        NativeMethods.SetForegroundWindow(targetWin);
-                        Thread.Sleep(25); // Settle delay to let OS transition focus and avoid missed click
-                    }
+                    NativeMethods.ForceSetForegroundWindow(targetWin);
+                    Thread.Sleep(25); // Settle delay to let OS transition focus and avoid missed click
                 }
             }
 

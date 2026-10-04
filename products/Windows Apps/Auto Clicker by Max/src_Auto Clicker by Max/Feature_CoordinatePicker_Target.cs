@@ -220,6 +220,7 @@ namespace ModernAutoClicker
                     winInfo = new NativeMethods.WindowTargetInfo
                     {
                         Hwnd = hWnd,
+                        ProcessId = pid,
                         ProcessName = pName,
                         Title = title,
                         ClassName = cls,
@@ -354,6 +355,7 @@ namespace ModernAutoClicker
                     winInfo = new NativeMethods.WindowTargetInfo
                     {
                         Hwnd = hWnd,
+                        ProcessId = pid,
                         ProcessName = pName,
                         Title = title,
                         ClassName = cls,

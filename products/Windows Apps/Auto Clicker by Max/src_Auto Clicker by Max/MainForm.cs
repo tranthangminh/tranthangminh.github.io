@@ -119,6 +119,12 @@ namespace ModernAutoClicker
             get { return (_simpleTabIndex >= 0 && _simpleTabIndex < 5) ? _simpleTargetHwnds[_simpleTabIndex] : IntPtr.Zero; }
             set { if (_simpleTabIndex >= 0 && _simpleTabIndex < 5) _simpleTargetHwnds[_simpleTabIndex] = value; }
         }
+        private uint[] _simpleTargetPids = new uint[5];
+        private uint _simpleTargetPid
+        {
+            get { return (_simpleTabIndex >= 0 && _simpleTabIndex < 5) ? _simpleTargetPids[_simpleTabIndex] : 0; }
+            set { if (_simpleTabIndex >= 0 && _simpleTabIndex < 5) _simpleTargetPids[_simpleTabIndex] = value; }
+        }
         private WindowTracker _windowTracker;
         private UnfocusClickFilter _unfocusFilter;
         private ToolTip _startToolTip;
@@ -290,6 +296,7 @@ namespace ModernAutoClicker
             _windowTracker.SimpleTargetProcessName = () => _simpleTargetProcessName;
             _windowTracker.SimpleTargetWindowTitle = () => _simpleTargetWindowTitle;
             _windowTracker.SimpleTargetWindowIndex = () => _simpleTargetWindowIndex;
+            _windowTracker.SimpleTargetPid = () => _simpleTargetPid;
             _windowTracker.GetAdvancedSteps = () => (pnlTabAdvanced != null && pnlTabAdvanced.Table != null) ? pnlTabAdvanced.Table.GetSteps() : null;
             _windowTracker.OnPositionsChanged += () => SyncOverlay();
             _windowTracker.Start();
@@ -601,10 +608,16 @@ namespace ModernAutoClicker
                     if (_simpleRelativeToWindow && (_simpleTargetHwnd != IntPtr.Zero || !string.IsNullOrEmpty(_simpleTargetProcessName) || !string.IsNullOrEmpty(_simpleTargetWindowTitle)))
                     {
                         IntPtr hWnd = _simpleTargetHwnd;
-                        if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
+                        if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetPid, _simpleTargetProcessName))
                         {
-                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
-                            if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
+                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex, _simpleTargetPid);
+                            if (hWnd != IntPtr.Zero)
+                            {
+                                _simpleTargetHwnd = hWnd;
+                                uint pr;
+                                NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
+                                if (pr > 0) _simpleTargetPid = pr;
+                            }
                         }
                         if (hWnd != IntPtr.Zero)
                         {
@@ -639,10 +652,10 @@ namespace ModernAutoClicker
                             hWnd = NativeMethods.GetTopLevelWindow(hWnd);
                         }
 
+                        uint pid = 0;
                         if (hWnd != IntPtr.Zero && NativeMethods.IsWindow(hWnd) && NativeMethods.IsWindowVisible(hWnd) && !NativeMethods.IsIconic(hWnd))
                         {
                             uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
-                            uint pid;
                             NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
 
                             if (pid != myPid && pid != 0)
@@ -700,8 +713,11 @@ namespace ModernAutoClicker
                             Name = string.Format("Step {0}", pnlTabAdvanced.Table.GetSteps().Count + 1),
                             ActionType = ModernAutoClicker.Advanced.MacroActionType.LeftClick,
                             RelativeToWindow = isInsideTarget,
+                            WindowHwnd = isInsideTarget ? hWnd : IntPtr.Zero,
+                            TargetPid = isInsideTarget ? pid : 0,
                             ProcessName = isInsideTarget ? targetProc : "",
                             WindowTitle = isInsideTarget ? targetTitle : "",
+                            WindowIndex = isInsideTarget ? NativeMethods.ResolveWindowIndex(hWnd) : 0,
                             StartPoint = finalStartPt,
                             DelayMs = 240,
                             HoldMs = 10,
@@ -733,6 +749,7 @@ namespace ModernAutoClicker
             {
                 _simpleRelativeToWindow = false;
                 _simpleTargetHwnd = IntPtr.Zero;
+                _simpleTargetPid = 0;
                 _simpleTargetProcessName = "";
                 _simpleTargetWindowTitle = "";
                 _simpleTargetWindowIndex = 0;
@@ -762,6 +779,7 @@ namespace ModernAutoClicker
                     {
                         _simpleRelativeToWindow = true;
                         _simpleTargetHwnd = targetWin.Hwnd;
+                        _simpleTargetPid = targetWin.ProcessId;
                         _simpleTargetProcessName = targetWin.ProcessName;
                         _simpleTargetWindowTitle = targetWin.Title;
                         _simpleTargetWindowIndex = targetWin.WindowIndex;
@@ -803,7 +821,12 @@ namespace ModernAutoClicker
                     display = appName;
                 }
 
-                if (_simpleTargetWindowIndex > 0)
+                if (_simpleTargetPid > 0)
+                {
+                    string winSuffix = _simpleTargetWindowIndex > 0 ? string.Format(" #{0}", _simpleTargetWindowIndex) : "";
+                    display = string.Format("{0} [{1}{2}]", display, _simpleTargetPid, winSuffix);
+                }
+                else if (_simpleTargetWindowIndex > 0)
                 {
                     display = string.Format("{0} ({1})", display, _simpleTargetWindowIndex);
                 }
@@ -873,12 +896,13 @@ namespace ModernAutoClicker
                 if (_simpleRelativeToWindow)
                 {
                     IntPtr hWnd = _simpleTargetHwnd;
-                    if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
+                    if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetPid, _simpleTargetProcessName))
                     {
-                        if (winInfo != null && winInfo.Hwnd != IntPtr.Zero && NativeMethods.IsValidWindowHandle(winInfo.Hwnd, winInfo.ProcessName))
+                        if (winInfo != null && winInfo.Hwnd != IntPtr.Zero && NativeMethods.IsValidWindowHandle(winInfo.Hwnd, winInfo.ProcessId, winInfo.ProcessName))
                         {
                             hWnd = winInfo.Hwnd;
                             _simpleTargetHwnd = hWnd;
+                            _simpleTargetPid = winInfo.ProcessId;
                             _simpleTargetProcessName = winInfo.ProcessName;
                             _simpleTargetWindowTitle = winInfo.Title;
                             _simpleTargetWindowIndex = winInfo.WindowIndex;
@@ -886,8 +910,14 @@ namespace ModernAutoClicker
                         }
                         else
                         {
-                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
-                            if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
+                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex, _simpleTargetPid);
+                            if (hWnd != IntPtr.Zero)
+                            {
+                                _simpleTargetHwnd = hWnd;
+                                uint pr;
+                                NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
+                                if (pr > 0) _simpleTargetPid = pr;
+                            }
                         }
                     }
 
@@ -1006,10 +1036,16 @@ namespace ModernAutoClicker
                             if (_isBasicTab && _simpleRelativeToWindow)
                             {
                                 IntPtr hWnd = _simpleTargetHwnd;
-                                if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
+                                if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetPid, _simpleTargetProcessName))
                                 {
-                                    hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
-                                    if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
+                                    hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex, _simpleTargetPid);
+                                    if (hWnd != IntPtr.Zero)
+                                    {
+                                        _simpleTargetHwnd = hWnd;
+                                        uint pr;
+                                        NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
+                                        if (pr > 0) _simpleTargetPid = pr;
+                                    }
                                 }
                                 if (hWnd != IntPtr.Zero)
                                 {
@@ -1046,10 +1082,16 @@ namespace ModernAutoClicker
                                     if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
                                     {
                                         IntPtr hWnd = s.WindowHwnd;
-                                        if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
+                                        if (!NativeMethods.IsValidWindowHandle(hWnd, s.TargetPid, s.ProcessName))
                                         {
-                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex);
-                                            if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
+                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex, s.TargetPid);
+                                            if (hWnd != IntPtr.Zero)
+                                            {
+                                                s.WindowHwnd = hWnd;
+                                                uint pr;
+                                                NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
+                                                if (pr > 0) s.TargetPid = pr;
+                                            }
                                         }
                                         if (hWnd != IntPtr.Zero)
                                         {
@@ -1093,10 +1135,16 @@ namespace ModernAutoClicker
                                     if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
                                     {
                                         IntPtr hWnd = s.WindowHwnd;
-                                        if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
+                                        if (!NativeMethods.IsValidWindowHandle(hWnd, s.TargetPid, s.ProcessName))
                                         {
-                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex);
-                                            if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
+                                            hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex, s.TargetPid);
+                                            if (hWnd != IntPtr.Zero)
+                                            {
+                                                s.WindowHwnd = hWnd;
+                                                uint pr;
+                                                NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
+                                                if (pr > 0) s.TargetPid = pr;
+                                            }
                                         }
                                         if (hWnd != IntPtr.Zero)
                                         {
@@ -1227,10 +1275,16 @@ namespace ModernAutoClicker
                     {
                         List<Point> screenPts = new List<Point>();
                         IntPtr hWnd = _simpleTargetHwnd;
-                        if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetProcessName))
+                        if (!NativeMethods.IsValidWindowHandle(hWnd, _simpleTargetPid, _simpleTargetProcessName))
                         {
-                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
-                            if (hWnd != IntPtr.Zero) _simpleTargetHwnd = hWnd;
+                            hWnd = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex, _simpleTargetPid);
+                            if (hWnd != IntPtr.Zero)
+                            {
+                                _simpleTargetHwnd = hWnd;
+                                uint pr;
+                                NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
+                                if (pr > 0) _simpleTargetPid = pr;
+                            }
                         }
                         foreach (var p in pts)
                         {
@@ -1268,10 +1322,16 @@ namespace ModernAutoClicker
                                 if (s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
                                 {
                                     IntPtr hWnd = s.WindowHwnd;
-                                    if (!NativeMethods.IsValidWindowHandle(hWnd, s.ProcessName))
+                                    if (!NativeMethods.IsValidWindowHandle(hWnd, s.TargetPid, s.ProcessName))
                                     {
-                                        hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex);
-                                        if (hWnd != IntPtr.Zero) s.WindowHwnd = hWnd;
+                                        hWnd = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex, s.TargetPid);
+                                        if (hWnd != IntPtr.Zero)
+                                        {
+                                            s.WindowHwnd = hWnd;
+                                            uint pr;
+                                            NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
+                                            if (pr > 0) s.TargetPid = pr;
+                                        }
                                     }
                                     if (hWnd != IntPtr.Zero)
                                     {
@@ -1583,13 +1643,21 @@ namespace ModernAutoClicker
             SimpleProfileConfig prof = config.GetProfile(tabIndex);
 
             int clickMode = prof.SimpleClickMode;
+            uint tabPid = (tabIndex >= 0 && tabIndex < 5) ? _simpleTargetPids[tabIndex] : 0;
             IntPtr tabHwnd = (tabIndex >= 0 && tabIndex < 5) ? _simpleTargetHwnds[tabIndex] : IntPtr.Zero;
-            if (prof.SimpleRelativeToWindow && !NativeMethods.IsValidWindowHandle(tabHwnd, prof.SimpleTargetProcessName))
+            if (prof.SimpleRelativeToWindow && !NativeMethods.IsValidWindowHandle(tabHwnd, tabPid, prof.SimpleTargetProcessName))
             {
-                tabHwnd = NativeMethods.FindWindowByTarget(prof.SimpleTargetProcessName, prof.SimpleTargetWindowTitle, prof.SimpleTargetWindowIndex);
+                tabHwnd = NativeMethods.FindWindowByTarget(prof.SimpleTargetProcessName, prof.SimpleTargetWindowTitle, prof.SimpleTargetWindowIndex, tabPid);
                 if (tabHwnd != IntPtr.Zero && tabIndex >= 0 && tabIndex < 5)
                 {
                     _simpleTargetHwnds[tabIndex] = tabHwnd;
+                    uint p;
+                    NativeMethods.GetWindowThreadProcessId(tabHwnd, out p);
+                    if (p > 0)
+                    {
+                        tabPid = p;
+                        _simpleTargetPids[tabIndex] = p;
+                    }
                 }
             }
 
@@ -1621,6 +1689,7 @@ namespace ModernAutoClicker
                 FreeMouseMode = forceFreeMouse,
                 SmoothMouseMove = (chkSmoothMove != null && chkSmoothMove.Checked),
                 TargetHwnd = tabHwnd,
+                TargetPid = tabPid,
                 TargetProcessName = prof.SimpleTargetProcessName,
                 TargetWindowTitle = prof.SimpleTargetWindowTitle,
                 TargetWindowIndex = prof.SimpleTargetWindowIndex,
@@ -1680,9 +1749,16 @@ namespace ModernAutoClicker
                     if (s.Enabled && s.RelativeToWindow && (s.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(s.ProcessName)))
                     {
                         IntPtr win = s.WindowHwnd;
-                        if (!NativeMethods.IsValidWindowHandle(win, s.ProcessName))
+                        if (!NativeMethods.IsValidWindowHandle(win, s.TargetPid, s.ProcessName))
                         {
-                            win = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex);
+                            win = NativeMethods.FindWindowByTarget(s.ProcessName, s.WindowTitle, s.WindowIndex, s.TargetPid);
+                            if (win != IntPtr.Zero)
+                            {
+                                s.WindowHwnd = win;
+                                uint p;
+                                NativeMethods.GetWindowThreadProcessId(win, out p);
+                                if (p > 0) s.TargetPid = p;
+                            }
                         }
                         if (win != IntPtr.Zero && UacHelper.IsProcessElevated(win))
                         {
@@ -2016,6 +2092,7 @@ namespace ModernAutoClicker
             prof.SimpleTargetProcessName = _simpleTargetProcessName ?? "";
             prof.SimpleTargetWindowTitle = _simpleTargetWindowTitle ?? "";
             prof.SimpleTargetWindowIndex = _simpleTargetWindowIndex;
+            prof.SimpleTargetPid = _simpleTargetPid;
             prof.SimpleRelativeToWindow = _simpleRelativeToWindow;
             prof.Points = (lstPoints != null) ? lstPoints.GetPoints() : new List<Point>();
 
@@ -2048,12 +2125,22 @@ namespace ModernAutoClicker
                 _simpleTargetProcessName = prof.SimpleTargetProcessName ?? "";
                 _simpleTargetWindowTitle = prof.SimpleTargetWindowTitle ?? "";
                 _simpleTargetWindowIndex = prof.SimpleTargetWindowIndex;
+                if (_simpleTargetPid == 0 && prof.SimpleTargetPid > 0)
+                {
+                    _simpleTargetPid = prof.SimpleTargetPid;
+                }
                 _simpleRelativeToWindow = prof.SimpleRelativeToWindow;
                 if (_simpleRelativeToWindow && index >= 0 && index < 5)
                 {
-                    if (!NativeMethods.IsValidWindowHandle(_simpleTargetHwnds[index], _simpleTargetProcessName))
+                    if (!NativeMethods.IsValidWindowHandle(_simpleTargetHwnds[index], _simpleTargetPids[index], _simpleTargetProcessName))
                     {
-                        _simpleTargetHwnds[index] = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex);
+                        _simpleTargetHwnds[index] = NativeMethods.FindWindowByTarget(_simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex, _simpleTargetPids[index]);
+                        if (_simpleTargetHwnds[index] != IntPtr.Zero)
+                        {
+                            uint pr;
+                            NativeMethods.GetWindowThreadProcessId(_simpleTargetHwnds[index], out pr);
+                            if (pr > 0) _simpleTargetPids[index] = pr;
+                        }
                     }
                 }
                 UpdateSimpleTargetWindowButtonDisplay();

@@ -315,7 +315,7 @@ namespace ModernAutoClicker.Advanced
                     if (OnActiveScriptChanged != null) OnActiveScriptChanged();
                 }
             };
-            tableControl.OnDefaultWindowBatchChanged += (rel, proc, title, winIdx) =>
+            tableControl.OnDefaultWindowBatchChanged += (rel, proc, title, winIdx, pid) =>
             {
                 if (_activeProfileIndex >= 0 && _activeProfileIndex < _profiles.Count)
                 {
@@ -323,6 +323,7 @@ namespace ModernAutoClicker.Advanced
                     _profiles[_activeProfileIndex].DefaultProcessName = proc ?? "";
                     _profiles[_activeProfileIndex].DefaultWindowTitle = title ?? "";
                     _profiles[_activeProfileIndex].DefaultWindowIndex = winIdx;
+                    _profiles[_activeProfileIndex].DefaultTargetPid = pid;
                 }
             };
 

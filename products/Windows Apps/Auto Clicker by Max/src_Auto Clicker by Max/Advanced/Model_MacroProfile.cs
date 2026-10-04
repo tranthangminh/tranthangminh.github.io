@@ -15,6 +15,8 @@ namespace ModernAutoClicker.Advanced
         public string DefaultProcessName { get; set; }
         public bool DefaultRelativeToWindow { get; set; }
         public int DefaultWindowIndex { get; set; }
+        [System.Xml.Serialization.XmlIgnore]
+        public uint DefaultTargetPid { get; set; }
         public List<MacroStep> Steps { get; set; }
 
         public MacroProfile()
@@ -29,6 +31,7 @@ namespace ModernAutoClicker.Advanced
             DefaultProcessName = "";
             DefaultRelativeToWindow = false;
             DefaultWindowIndex = 0;
+            DefaultTargetPid = 0;
             Steps = new List<MacroStep>();
         }
 

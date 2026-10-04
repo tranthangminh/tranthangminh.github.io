@@ -259,11 +259,11 @@
 .app-action-card--yellow:hover { border-color: var(--c-yellow); }
 
 /* ==========================================================================
-   Core Parameters & Utilities Unified Grid Card (2 rows x 3 columns)
+   Core Parameters & Utilities Unified Grid Card (2 rows x 4 columns)
    ========================================================================== */
 .app-params-grid-card {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     background: var(--border-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-md);
@@ -272,7 +272,13 @@
     margin-top: 18px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 992px) {
+    .app-params-grid-card {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
     .app-params-grid-card {
         grid-template-columns: 1fr;
     }

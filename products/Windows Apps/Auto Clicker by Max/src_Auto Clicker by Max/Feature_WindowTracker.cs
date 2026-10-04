@@ -27,6 +27,7 @@ namespace ModernAutoClicker
         public Func<string> SimpleTargetProcessName { get; set; }
         public Func<string> SimpleTargetWindowTitle { get; set; }
         public Func<int> SimpleTargetWindowIndex { get; set; }
+        public Func<uint> SimpleTargetPid { get; set; }
 
         // Advanced tab context
         public Func<List<Advanced.MacroStep>> GetAdvancedSteps { get; set; }
@@ -99,10 +100,11 @@ namespace ModernAutoClicker
                 if (!relToWin || (targetHwnd == IntPtr.Zero && string.IsNullOrEmpty(procName)))
                     return "Desktop";
 
+                uint targetPid = SimpleTargetPid != null ? SimpleTargetPid() : 0;
                 IntPtr hWnd = targetHwnd;
-                if (!NativeMethods.IsValidWindowHandle(hWnd, procName))
+                if (!NativeMethods.IsValidWindowHandle(hWnd, targetPid, procName))
                 {
-                    hWnd = NativeMethods.FindWindowByTarget(procName, winTitle, SimpleTargetWindowIndex != null ? SimpleTargetWindowIndex() : 0);
+                    hWnd = NativeMethods.FindWindowByTarget(procName, winTitle, SimpleTargetWindowIndex != null ? SimpleTargetWindowIndex() : 0, targetPid);
                 }
                 if (hWnd == IntPtr.Zero) return "NotFound";
                 NativeMethods.POINT origin = new NativeMethods.POINT { X = 0, Y = 0 };
@@ -123,14 +125,20 @@ namespace ModernAutoClicker
                 {
                     if (st.RelativeToWindow && (st.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(st.ProcessName)))
                     {
-                        string targetKey = (st.WindowHwnd != IntPtr.Zero) ? st.WindowHwnd.ToString() : string.Format("{0}|{1}|{2}", st.ProcessName, st.WindowTitle ?? "", st.WindowIndex);
+                        string targetKey = (st.WindowHwnd != IntPtr.Zero) ? st.WindowHwnd.ToString() : string.Format("{0}|{1}|{2}|{3}", st.ProcessName, st.WindowTitle ?? "", st.WindowIndex, st.TargetPid);
                         if (checkedTargets.Add(targetKey))
                         {
                             IntPtr hWnd = st.WindowHwnd;
-                            if (!NativeMethods.IsValidWindowHandle(hWnd, st.ProcessName))
+                            if (!NativeMethods.IsValidWindowHandle(hWnd, st.TargetPid, st.ProcessName))
                             {
-                                hWnd = NativeMethods.FindWindowByTarget(st.ProcessName, st.WindowTitle, st.WindowIndex);
-                                if (hWnd != IntPtr.Zero) st.WindowHwnd = hWnd;
+                                hWnd = NativeMethods.FindWindowByTarget(st.ProcessName, st.WindowTitle, st.WindowIndex, st.TargetPid);
+                                if (hWnd != IntPtr.Zero)
+                                {
+                                    st.WindowHwnd = hWnd;
+                                    uint p;
+                                    NativeMethods.GetWindowThreadProcessId(hWnd, out p);
+                                    if (p > 0) st.TargetPid = p;
+                                }
                             }
                             NativeMethods.POINT origin = new NativeMethods.POINT { X = 0, Y = 0 };
                             if (hWnd != IntPtr.Zero)

@@ -44,10 +44,16 @@ namespace ModernAutoClicker
             if (step != null && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
             {
                 hWnd = step.WindowHwnd;
-                if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
+                if (!NativeMethods.IsValidWindowHandle(hWnd, step.TargetPid, step.ProcessName))
                 {
-                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
-                    if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
+                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex, step.TargetPid);
+                    if (hWnd != IntPtr.Zero)
+                    {
+                        step.WindowHwnd = hWnd;
+                        uint p;
+                        NativeMethods.GetWindowThreadProcessId(hWnd, out p);
+                        if (p > 0) step.TargetPid = p;
+                    }
                 }
             }
 
@@ -237,10 +243,16 @@ namespace ModernAutoClicker
             if (step != null && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
             {
                 IntPtr hWnd = step.WindowHwnd;
-                if (!NativeMethods.IsValidWindowHandle(hWnd, step.ProcessName))
+                if (!NativeMethods.IsValidWindowHandle(hWnd, step.TargetPid, step.ProcessName))
                 {
-                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex);
-                    if (hWnd != IntPtr.Zero) step.WindowHwnd = hWnd;
+                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex, step.TargetPid);
+                    if (hWnd != IntPtr.Zero)
+                    {
+                        step.WindowHwnd = hWnd;
+                        uint p;
+                        NativeMethods.GetWindowThreadProcessId(hWnd, out p);
+                        if (p > 0) step.TargetPid = p;
+                    }
                 }
 
                 if (hWnd != IntPtr.Zero)

@@ -175,3 +175,63 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
   --shadow-accent: 0 0 14px rgba(220, 38, 38, 0.35);
 }
+
+/* ==========================================================================
+   Circular Ripple Theme Transition (Soft Feathered Edge)
+   Hiệu ứng chuyển đổi giao diện Dark/Light dạng quầng sáng lan tỏa mờ viền
+   ========================================================================== */
+@property --theme-ripple-radius {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@keyframes theme-ripple-expand {
+  0% {
+    --theme-ripple-radius: 0px;
+  }
+  100% {
+    --theme-ripple-radius: var(--theme-ripple-max, 150vmax);
+  }
+}
+
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  display: block;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+  animation: theme-ripple-expand 1000ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  mask-image: radial-gradient(
+    circle at var(--theme-ripple-x, 50%) var(--theme-ripple-y, 50%),
+    #000 0px,
+    #000 var(--theme-ripple-radius, 0px),
+    transparent calc(var(--theme-ripple-radius, 0px) + 50px)
+  );
+  -webkit-mask-image: radial-gradient(
+    circle at var(--theme-ripple-x, 50%) var(--theme-ripple-y, 50%),
+    #000 0px,
+    #000 var(--theme-ripple-radius, 0px),
+    transparent calc(var(--theme-ripple-radius, 0px) + 50px)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+  }
+}

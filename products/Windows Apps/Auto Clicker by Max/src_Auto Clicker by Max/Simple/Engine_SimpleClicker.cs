@@ -19,6 +19,7 @@ namespace ModernAutoClicker
         public string TargetWindowTitle { get; set; }
         public int TargetWindowIndex { get; set; }
         public bool RelativeToWindow { get; set; }
+        public uint TargetPid { get; set; }
         public List<Point> PointsList { get; set; }
     }
 
@@ -45,15 +46,15 @@ namespace ModernAutoClicker
             return new Point(pt.X + dx, pt.Y + dy);
         }
 
-        private Point ResolveActualPoint(Point localPt, IntPtr targetHwnd, string procName, string winTitle, int windowIndex, bool relativeToWin)
+        private Point ResolveActualPoint(Point localPt, IntPtr targetHwnd, string procName, string winTitle, int windowIndex, bool relativeToWin, uint targetPid = 0)
         {
-            if (!relativeToWin || (targetHwnd == IntPtr.Zero && string.IsNullOrEmpty(procName) && string.IsNullOrEmpty(winTitle)))
+            if (!relativeToWin || (targetHwnd == IntPtr.Zero && string.IsNullOrEmpty(procName) && string.IsNullOrEmpty(winTitle) && targetPid == 0))
                 return localPt;
 
             IntPtr hWnd = targetHwnd;
-            if (!NativeMethods.IsValidWindowHandle(hWnd, procName))
+            if (!NativeMethods.IsValidWindowHandle(hWnd, targetPid, procName))
             {
-                hWnd = NativeMethods.FindWindowByTarget(procName, winTitle, windowIndex);
+                hWnd = NativeMethods.FindWindowByTarget(procName, winTitle, windowIndex, targetPid);
             }
 
             if (hWnd != IntPtr.Zero)
@@ -90,13 +91,13 @@ namespace ModernAutoClicker
                 {
                     if (config.RelativeToWindow && config.TargetHwnd != IntPtr.Zero)
                     {
-                        NativeMethods.SetForegroundWindow(config.TargetHwnd);
+                        NativeMethods.ForceSetForegroundWindow(config.TargetHwnd);
                         Thread.Sleep(30);
                     }
 
                     Point firstRaw = config.PointsList[0];
                     Point firstPt = ApplyJitter(firstRaw, config.JitterPx);
-                    Point firstAct = ResolveActualPoint(firstPt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow);
+                    Point firstAct = ResolveActualPoint(firstPt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow, config.TargetPid);
 
                     if (config.SmoothMouseMove)
                     {
@@ -122,12 +123,15 @@ namespace ModernAutoClicker
                             Point rawPt = config.PointsList[currIdx];
                             Point pt = ApplyJitter(rawPt, config.JitterPx);
                             IntPtr targetHwnd = config.RelativeToWindow ? config.TargetHwnd : IntPtr.Zero;
-                            if (config.RelativeToWindow && !NativeMethods.IsValidWindowHandle(targetHwnd, config.TargetProcessName))
+                            if (config.RelativeToWindow && !NativeMethods.IsValidWindowHandle(targetHwnd, config.TargetPid, config.TargetProcessName))
                             {
-                                targetHwnd = NativeMethods.FindWindowByTarget(config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex);
+                                targetHwnd = NativeMethods.FindWindowByTarget(config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.TargetPid);
                                 if (targetHwnd != IntPtr.Zero)
                                 {
                                     config.TargetHwnd = targetHwnd;
+                                    uint pId;
+                                    NativeMethods.GetWindowThreadProcessId(targetHwnd, out pId);
+                                    if (pId > 0) config.TargetPid = pId;
                                 }
                             }
 
@@ -137,7 +141,7 @@ namespace ModernAutoClicker
                             }
                             else
                             {
-                                Point actPt = ResolveActualPoint(pt, targetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow);
+                                Point actPt = ResolveActualPoint(pt, targetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow, config.TargetPid);
                                 NativeMethods.SendBackgroundClick(actPt.X, actPt.Y, config.MouseButton, holdMs);
                             }
                             pointIndex++;
@@ -160,13 +164,27 @@ namespace ModernAutoClicker
                     else
                     {
                         // Physical Hardware Cursor Click
-                        if (config.RelativeToWindow && config.TargetHwnd != IntPtr.Zero)
+                        if (config.RelativeToWindow && (config.TargetHwnd != IntPtr.Zero || !string.IsNullOrEmpty(config.TargetProcessName)))
                         {
-                            IntPtr currFg = NativeMethods.GetForegroundWindow();
-                            if (currFg != config.TargetHwnd)
+                            if (!NativeMethods.IsValidWindowHandle(config.TargetHwnd, config.TargetPid, config.TargetProcessName))
                             {
-                                NativeMethods.SetForegroundWindow(config.TargetHwnd);
-                                Thread.Sleep(25);
+                                IntPtr newWnd = NativeMethods.FindWindowByTarget(config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.TargetPid);
+                                if (newWnd != IntPtr.Zero)
+                                {
+                                    config.TargetHwnd = newWnd;
+                                    uint pId;
+                                    NativeMethods.GetWindowThreadProcessId(newWnd, out pId);
+                                    if (pId > 0) config.TargetPid = pId;
+                                }
+                            }
+                            if (config.TargetHwnd != IntPtr.Zero)
+                            {
+                                IntPtr currFg = NativeMethods.GetForegroundWindow();
+                                if (currFg != config.TargetHwnd)
+                                {
+                                    NativeMethods.ForceSetForegroundWindow(config.TargetHwnd);
+                                    Thread.Sleep(25);
+                                }
                             }
                         }
 
@@ -177,7 +195,7 @@ namespace ModernAutoClicker
 
                             Point rawPt = config.PointsList[currIdx];
                             Point pt = ApplyJitter(rawPt, config.JitterPx);
-                            Point actPt = ResolveActualPoint(pt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow);
+                            Point actPt = ResolveActualPoint(pt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow, config.TargetPid);
                             NativeMethods.SetCursorPos(actPt.X, actPt.Y);
                             pointIndex++;
                             if (pointIndex % config.PointsList.Count == 0)

@@ -43,6 +43,26 @@ document.addEventListener('DOMContentLoaded', () => {
             slices = PRESETS['prizes'].slices.map((s, idx) => ({ ...s, id: 's_' + Date.now() + '_' + idx, enabled: true }));
         }
 
+        // Auto-synchronize default preset slices to match current boot language
+        const bootLang = (window.LuckyWheelI18n && window.LuckyWheelI18n.lang) || localStorage.getItem('portfolio-lang') || 'vi';
+        if (currentPresetId && !currentPresetId.startsWith('cp_') && window.LuckyWheelPresets) {
+            const map = bootLang === 'vi' 
+                ? window.LuckyWheelPresets.TRANSLATION_MAP_EN_TO_VI 
+                : window.LuckyWheelPresets.TRANSLATION_MAP_VI_TO_EN;
+            let bootChanged = false;
+            slices.forEach(s => {
+                if (map && map[s.text]) {
+                    s.text = map[s.text];
+                    bootChanged = true;
+                }
+            });
+            if (bootChanged) {
+                try {
+                    localStorage.setItem('lucky_wheel_slices', JSON.stringify(slices));
+                } catch (e) {}
+            }
+        }
+
         const savedSettings = localStorage.getItem('lucky_wheel_settings');
         if (savedSettings) {
             settings = { ...settings, ...JSON.parse(savedSettings) };
@@ -571,6 +591,26 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLangBtnUI();
         updatePresetOptions();
         updateSoundUI();
+
+        // Translate active default preset slices when language changes
+        const currentLang = (window.LuckyWheelI18n && window.LuckyWheelI18n.lang) || 'vi';
+        if (currentPresetId && !currentPresetId.startsWith('cp_') && window.LuckyWheelPresets) {
+            const map = currentLang === 'vi' 
+                ? window.LuckyWheelPresets.TRANSLATION_MAP_EN_TO_VI 
+                : window.LuckyWheelPresets.TRANSLATION_MAP_VI_TO_EN;
+            let changed = false;
+            slices.forEach(s => {
+                if (map && map[s.text]) {
+                    s.text = map[s.text];
+                    changed = true;
+                }
+            });
+            if (changed) {
+                saveState();
+                if (wheelEngine) wheelEngine.setSlices(slices);
+            }
+        }
+
         if (window.LuckyWheelSlices) {
             window.LuckyWheelSlices.updateToggleAllBtnUI();
             window.LuckyWheelSlices.renderSlices();
