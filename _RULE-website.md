@@ -693,6 +693,41 @@ Nhằm tạo nên diện mạo trực quan, chuyên nghiệp, cân đối và nh
   - **Mobile (≤ 768px):** **2 Cột** (`repeat(2, minmax(0, 1fr))`, `gap: 10px`), tương tự danh mục Sách nhưng **vẫn giữ nguyên tỷ lệ vuông 1:1**.
 - **Micro-typography trên Mobile:** Giảm padding thân thẻ (`8px 10px`), badge số `20px`, tiêu đề `12px`, ẩn chữ đơn vị dài `.product-download-unit` ("lượt truy cập") để chống tràn viền tuyệt đối.
 
+---
 
+## 14. QUY CHUẨN TỐI ƯU HÓA CÔNG CỤ TÌM KIẾM (ON-PAGE & TECHNICAL SEO STANDARD)
+> **Mục đích:** Quy chuẩn toàn diện về SEO On-page, cấu trúc thẻ Meta, phân cấp tiêu đề, dữ liệu có cấu trúc Schema.org và tối ưu Core Web Vitals cho toàn bộ các trang web trong hệ sinh thái `tranthangminh.github.io`. Mọi AI Agent bắt buộc phải tuân thủ nghiêm ngặt theo hiến pháp SEO chi tiết tại `D:\Installer\_Rules for AI\_RULE-seo.md`.
 
+### 1. Khung Thẻ `<head>` Bắt Buộc (The Sacred Meta Head Rule)
+- Toàn bộ các file HTML (không có bất kỳ ngoại lệ nào, bao gồm trang chủ, 4 trang nghề nghiệp `jobs/*.html`, 5 trang chi tiết sản phẩm `products/*.html`) **BẮT BUỘC PHẢI CÓ ĐẦY ĐỦ**:
+  1. `<title>`: 45 – 60 ký tự, cấu trúc `[Tên Nội Dung Chính] - [Thương Hiệu] | Trần Thắng Minh`.
+  2. `<meta name="description">`: 135 – 155 ký tự, tóm tắt hấp dẫn kèm động từ kêu gọi hành động, chứa từ khóa tự nhiên.
+  3. `<link rel="canonical" href="https://tranthangminh.github.io/[path]">`: URL tuyệt đối tự trỏ về chính nó.
+  4. `<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">`.
+  5. Đầy đủ bộ thẻ **Open Graph** (`og:type`, `og:url`, `og:title`, `og:description`, `og:image`, `og:image:alt`, `og:locale`, `og:site_name`).
+  6. Đầy đủ bộ thẻ **Twitter Card** (`twitter:card="summary_large_image"`, `twitter:url`, `twitter:title`, `twitter:description`, `twitter:image`).
+
+### 2. Quy Chuẩn Phân Cấp Heading (`H1` $\rightarrow$ `H6`)
+- **Duy nhất 1 thẻ `<h1>` trên mỗi trang:** Chứa từ khóa thực thể cốt lõi (`Trần Thắng Minh` trên trang chủ, `Diễn Viên Trần Thắng Minh` trên trang nghề nghiệp, `Auto Clicker by Max` trên trang sản phẩm). Nếu tiêu đề ẩn theo thiết kế, bắt buộc dùng `.sr-only` bọc ngoài.
+- **Thứ tự không nhảy cóc:** `h1` $\rightarrow$ `h2` (phân vùng lớn) $\rightarrow$ `h3` (thẻ card, mục con). Cấm dùng thẻ heading chỉ để chỉnh cỡ chữ to/đậm.
+
+### 3. Tối Ưu Hình Ảnh & Chống Nhảy Khung Hình (Zero CLS)
+- **100% thẻ `<img>` phải có `alt` giàu ngữ nghĩa:** Cấm alt chung chung như `alt="ảnh"`, `alt="Ảnh mở đầu"`, `alt="icon"`.
+- **Khóa cứng kích thước chống CLS:** Bắt buộc khai báo `width` và `height` (hoặc CSS `aspect-ratio`).
+- **Tải lười thông minh:** Ảnh dưới màn hình đầu tiên (Below the fold) bắt buộc có `loading="lazy"`; ảnh Hero chính đầu trang (Above the fold) không dùng `loading="lazy"`.
+
+### 4. Dữ Liệu Có Cấu Trúc (Schema.org JSON-LD)
+- Trang chủ: Nhúng Schema `@type: "Person"` và `@type: "WebSite"`.
+- Trang nghề nghiệp: Nhúng Schema `@type: "ProfilePage"` và `@type: "BreadcrumbList"`.
+- Trang phần mềm / plugin: Nhúng Schema `@type: "SoftwareApplication"` (phiên bản, OS, giá 0 VNĐ, downloadUrl) và `@type: "BreadcrumbList"`.
+
+### 5. Đồng Bộ Chỉ Mục Sitemap & Robots.txt
+- Khi tạo mới hoặc cập nhật nội dung lớn của trang, bắt buộc cập nhật trường `<lastmod>` trong `sitemap.xml` theo chuẩn `YYYY-MM-DD`.
+- `robots.txt` luôn duy trì quyền crawl `Allow: /` và trỏ link sitemap chính thức.
+
+### 6. Tối Ưu Tài Nguyên, Favicon & Trang Báo Lỗi 404
+- **Favicon đa nền tảng:** `<link rel="icon" type="image/svg+xml">` kết hợp fallback `<link rel="alternate icon" href="favicon.ico">`.
+- **Custom 404:** Bắt buộc có `404.html` ở root repository chứa header, theme toggle, link điều hướng về trang chủ và `<meta name="robots" content="noindex, follow">`.
+- **Tối ưu ảnh (Next-Gen & Strip EXIF):** Ưu tiên WebP, loại bỏ siêu dữ liệu EXIF thừa, tuyệt đối không dùng ảnh gốc 2000px làm icon 40px, luôn đảm bảo `displayed_aspect_ratio` khớp với `natural_aspect_ratio` (dùng `object-fit: cover`).
+- **Phân biệt cảnh báo ảo trên GitHub Pages:** Bỏ qua các cảnh báo do đặc thù hosting miễn phí (`www.`, SPF record, Ads.txt, chu kỳ 90 ngày của Let's Encrypt SSL) theo quy định tại `_RULE-seo.md`.
 

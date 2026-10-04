@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - Không Tìm Thấy Trang | Trần Thắng Minh</title>
+<meta name="description" content="Trang bạn đang tìm kiếm không tồn tại hoặc đã được di dời. Quay về trang chủ Trần Thắng Minh để khám phá hồ sơ năng lực và các sản phẩm sáng tạo.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://tranthangminh.github.io/404.html">
+
+<!-- Favicon & App Icons -->
+<link rel="icon" type="image/svg+xml" href="svg/logo-MAX-favicon.svg">
+<link rel="alternate icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="svg/logo-MAX-favicon.svg">
+
+<!-- Google Fonts Preconnect -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;600;700;800;900&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<!-- Shared Core CSS -->
+<link rel="stylesheet" href="common/theme.css?v=20261004-2">
+<link rel="stylesheet" href="common/shared-layout.css?v=20260930-1">
+<link rel="stylesheet" href="common/shared-header.css?v=20260930-1">
+<link rel="stylesheet" href="common/shared-footer.css?v=20260930-1">
+<link rel="stylesheet" href="common/shared-surfaces.css?v=20260930-1">
+<link rel="stylesheet" href="common/shared-mobile-type-scale.css?v=20260930-1">
+
+<style>
+.error-page-main {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px 80px;
+    box-sizing: border-box;
+}
+
+.error-card {
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    padding: 48px 32px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.error-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent-gradient);
+}
+
+.error-code {
+    font-family: var(--font-secondary);
+    font-size: clamp(72px, 14vw, 130px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+    user-select: none;
+}
+
+.error-title {
+    font-family: var(--font-primary);
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 14px;
+    line-height: 1.3;
+}
+
+.error-desc {
+    font-family: var(--font-primary);
+    font-size: var(--font-md);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 520px;
+    margin: 0 auto 32px;
+}
+
+.error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.error-btn-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: var(--accent-primary);
+    color: #ffffff;
+    font-family: var(--font-primary);
+    font-size: var(--font-md);
+    font-weight: 700;
+    border-radius: var(--border-radius-md);
+    text-decoration: none;
+    transition: var(--transition-fast);
+    box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.error-btn-home:hover {
+    background: var(--accent-primary-hover);
+    transform: translateY(-2px);
+    color: #ffffff;
+}
+
+.error-quick-links-title {
+    font-family: var(--font-primary);
+    font-size: var(--font-xs);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-tertiary);
+    margin: 0 0 12px;
+    font-weight: 600;
+}
+
+.error-quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.error-quick-link {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    font-size: var(--font-sm);
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+.error-quick-link:hover {
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+    background: var(--bg-tertiary);
+}
+
+@media (max-width: 600px) {
+    .error-card {
+        padding: 36px 20px;
+    }
+    .error-btn-home {
+        width: 100%;
+    }
+}
+</style>
+
+<!-- Shared Core Scripts (với defer) -->
+<script src="common/shared-utils.js?v=20260929-1" defer></script>
+<script src="common/shared-i18n.js?v=20260929-1" defer></script>
+<script src="common/i18n-vi.js?v=20260929-1" defer></script>
+<script src="common/i18n-en.js?v=20260929-1" defer></script>
+<script src="common/shared-header.js?v=20261004-2" defer></script>
+<script src="common/shared-contact.js?v=20260929-1" defer></script>
+<script src="common/shared-page.js?v=20260929-1" defer></script>
+</head>
+<body>
+<div id="sharedHeaderRoot"></div>
+
+<main class="error-page-main">
+    <div class="error-card">
+        <div class="error-code">404</div>
+        <h1 class="error-title">Không Tìm Thấy Trang</h1>
+        <p class="error-desc">Liên kết bạn vừa truy cập không tồn tại hoặc đã được thay đổi địa chỉ. Hãy quay về trang chủ hoặc khám phá các chuyên mục bên dưới.</p>
+        
+        <div class="error-actions">
+            <a href="/" class="error-btn-home">&#8592; Quay Về Trang Chủ</a>
+        </div>
+
+        <div class="error-quick-links-title">Lối tắt nhanh</div>
+        <div class="error-quick-links">
+            <a href="jobs/actor.html" class="error-quick-link">Diễn Viên</a>
+            <a href="jobs/artist.html" class="error-quick-link">Họa Sĩ 2D/3D</a>
+            <a href="jobs/photographer.html" class="error-quick-link">Nhiếp Ảnh Gia</a>
+            <a href="products.html" class="error-quick-link">Sản Phẩm &amp; Tiện Ích</a>
+        </div>
+    </div>
+</main>
+
+<div id="sharedContactRoot"></div>
+</body>
+</html>

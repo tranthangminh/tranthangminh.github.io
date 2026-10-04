@@ -213,9 +213,11 @@ body {
 .hero-portrait-img {
     position: relative;
     z-index: 1;
-    width: 100%;
+    width: auto;
+    max-width: 100%;
     height: 100%;
     max-height: 800px;
+    aspect-ratio: 1110 / 1140;
     display: block;
     object-fit: contain;
     object-position: center;
@@ -1145,6 +1147,7 @@ a.skill-capsule-card:hover {
         max-width: 100%;
         height: 400px;
         max-height: 400px;
+        aspect-ratio: 1110 / 1140;
         object-fit: contain;
         object-position: bottom center;
         display: block;
