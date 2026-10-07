@@ -1,3 +1,6 @@
+using Loc = ModernAutoClicker.Localization.Loc;
+using AppLanguage = ModernAutoClicker.Localization.AppLanguage;
+using MaxApp.Common;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -327,7 +330,7 @@ namespace ModernAutoClicker
                 {
                     if (langDlg.ShowDialog(this) == DialogResult.OK)
                     {
-                        Loc.CurrentLanguage = langDlg.SelectedLanguage;
+                        Loc.CurrentLanguage = (AppLanguage)langDlg.SelectedLanguage;
                     }
                     else
                     {
@@ -350,23 +353,7 @@ namespace ModernAutoClicker
 
         public void UpdateFormRegion()
         {
-            if (this.FormBorderStyle == FormBorderStyle.None && this.Width > 10 && this.Height > 10)
-            {
-                ThemeTokens t = currentTheme ?? ThemeTokens.DarkTheme();
-                int radius = t.RadiusSm; // 4px border-radius-sm
-                using (GraphicsPath path = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(new Rectangle(0, 0, this.Width, this.Height), radius))
-                {
-                    Region oldRegion = this.Region;
-                    this.Region = new Region(path);
-                    if (oldRegion != null) oldRegion.Dispose();
-                }
-            }
-            else
-            {
-                Region oldRegion = this.Region;
-                this.Region = null;
-                if (oldRegion != null) oldRegion.Dispose();
-            }
+            WindowHelper.ApplyRoundedCorners(this, smallCorners: true);
         }
 
         protected override void OnResize(EventArgs e)
@@ -388,13 +375,7 @@ namespace ModernAutoClicker
             if (this.FormBorderStyle == FormBorderStyle.None && _currentTabIndex != 2)
             {
                 ThemeTokens t = currentTheme ?? ThemeTokens.DarkTheme();
-                int radius = t.RadiusSm;
-                using (GraphicsPath path = ModernAutoClicker.Advanced.VFX_AsianDragonOverdrive.GetRoundedRectangle(new Rectangle(0, 0, this.Width - 1, this.Height - 1), radius))
-                using (Pen borderPen = new Pen(t.BorderColor, 1))
-                {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    e.Graphics.DrawPath(borderPen, path);
-                }
+                WindowHelper.DrawWindowBorder(e.Graphics, this, t.BorderColor, t.FormRadius);
             }
         }
 

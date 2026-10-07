@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Icons" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 24">
+  <!-- Generator: Adobe Illustrator 30.8.2, SVG Export Plug-In . SVG Version: 2.1.4 Build 7)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 4px;
+      }
+    </style>
+  </defs>
+  <path class="st0" d="M12.36,10.54L3.11,19.78l2.22,2.22M7.35,15.54l2.22,2.22M20.89,7c0,2.76-2.24,5-5,5s-5-2.24-5-5,2.24-5,5-5,5,2.24,5,5Z"/>
+</svg>

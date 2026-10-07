@@ -295,8 +295,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6. SPIN ACTION & WINNER HANDLING
     // --------------------------------------------------------------------------
     let winnerMarqueeTimer = null;
+    let winLightsTimer = null;
+    let pendingLangSync = false;
     const winnerMarqueeBoard = document.getElementById('winnerMarqueeBoard');
     const winnerMarqueeName = document.getElementById('winnerMarqueeName');
+
+    function syncPresetSlicesLanguage() {
+        const currentLang = (window.LuckyWheelI18n && window.LuckyWheelI18n.lang) || 'vi';
+        if (currentPresetId && !currentPresetId.startsWith('cp_') && window.LuckyWheelPresets) {
+            const map = currentLang === 'vi' 
+                ? window.LuckyWheelPresets.TRANSLATION_MAP_EN_TO_VI 
+                : window.LuckyWheelPresets.TRANSLATION_MAP_VI_TO_EN;
+            let changed = false;
+            slices.forEach(s => {
+                if (map && map[s.text]) {
+                    s.text = map[s.text];
+                    changed = true;
+                }
+            });
+            if (changed) {
+                saveState();
+                if (window.LuckyWheelSlices) window.LuckyWheelSlices.renderSlices();
+                if (wheelEngine) {
+                    wheelEngine.setSlices(slices);
+                    wheelEngine.draw();
+                }
+            }
+        }
+    }
 
     function showWinnerMarquee(winner) {
         if (!winnerMarqueeBoard || !winnerMarqueeName) return;
@@ -356,6 +382,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Close any open modals, winner marquee, and stop previous confetti
         hideWinnerMarquee();
+        if (winLightsTimer) {
+            clearTimeout(winLightsTimer);
+            winLightsTimer = null;
+        }
         if (confettiInstance) confettiInstance.stop();
         const bulkEditModal = document.getElementById('bulkEditModal');
         if (bulkEditModal) bulkEditModal.classList.remove('is-open');
@@ -374,6 +404,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         document.body.classList.add('wheel-is-spinning');
         wheelEngine.spin();
+
+        // Trigger realtime global spin increment (+1)
+        if (typeof window.incrementGlobalSpins === 'function') {
+            window.incrementGlobalSpins();
+        }
     }
 
     function handleSpinWinner(winner, winnerIdx) {
@@ -387,39 +422,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const casinoRing = document.getElementById('casinoLightsRing');
         const casinoCenter = document.getElementById('casinoCenterLights');
+        // Clear any pending timer from a previous win so it can't cut this celebration short
+        if (winLightsTimer) clearTimeout(winLightsTimer);
         if (casinoRing) {
             casinoRing.classList.remove('is-spinning');
             casinoRing.classList.add('is-winning');
-            setTimeout(() => {
-                casinoRing.classList.remove('is-winning');
-            }, 5000);
         }
         if (casinoCenter) {
             casinoCenter.classList.remove('is-spinning');
             casinoCenter.classList.add('is-winning');
-            setTimeout(() => {
-                casinoCenter.classList.remove('is-winning');
-            }, 5000);
         }
+        winLightsTimer = setTimeout(() => {
+            if (casinoRing) casinoRing.classList.remove('is-winning');
+            if (casinoCenter) casinoCenter.classList.remove('is-winning');
+            winLightsTimer = null;
+        }, 5000);
 
         // Play celebrations & fireworks
         window.soundEngine.playWin();
 
-        // Calculate marquee board position for confetti explosion right as it drops down
+        // Confetti origin = board's FINAL resting position.
+        // offsetTop/offsetHeight ignore CSS transforms, so this is correct even while the board is still sliding down.
         let originX = window.innerWidth / 2;
-        let originY = 120;
-        if (winnerMarqueeBoard) {
-            const rect = winnerMarqueeBoard.getBoundingClientRect();
-            if (rect.width > 0) {
-                originX = rect.left + rect.width / 2;
-                originY = Math.max(90, rect.top + rect.height / 2);
-            }
+        let originY = 160;
+        if (winnerMarqueeBoard && winnerMarqueeBoard.offsetParent) {
+            const parentRect = winnerMarqueeBoard.offsetParent.getBoundingClientRect();
+            originX = parentRect.left + winnerMarqueeBoard.offsetLeft;
+            originY = parentRect.top + winnerMarqueeBoard.offsetTop + winnerMarqueeBoard.offsetHeight / 2;
         }
 
         // Delay ~220ms so fireworks burst right when the marquee drops into place
         setTimeout(() => {
             if (confettiInstance) confettiInstance.fire(32, originX, originY);
         }, 220);
+
+        // Apply any language switch that happened mid-spin
+        if (pendingLangSync) {
+            pendingLangSync = false;
+            syncPresetSlicesLanguage();
+        }
 
         // Record history
         if (window.LuckyWheelHistory) {
@@ -593,22 +634,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSoundUI();
 
         // Translate active default preset slices when language changes
-        const currentLang = (window.LuckyWheelI18n && window.LuckyWheelI18n.lang) || 'vi';
-        if (currentPresetId && !currentPresetId.startsWith('cp_') && window.LuckyWheelPresets) {
-            const map = currentLang === 'vi' 
-                ? window.LuckyWheelPresets.TRANSLATION_MAP_EN_TO_VI 
-                : window.LuckyWheelPresets.TRANSLATION_MAP_VI_TO_EN;
-            let changed = false;
-            slices.forEach(s => {
-                if (map && map[s.text]) {
-                    s.text = map[s.text];
-                    changed = true;
-                }
-            });
-            if (changed) {
-                saveState();
-                if (wheelEngine) wheelEngine.setSlices(slices);
-            }
+        if (wheelEngine && wheelEngine.isSpinning) {
+            pendingLangSync = true;
+        } else {
+            syncPresetSlicesLanguage();
         }
 
         if (window.LuckyWheelSlices) {
@@ -619,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.LuckyWheelHistory.updatePresetName(getPresetDisplayName(currentPresetId));
             window.LuckyWheelHistory.renderHistory();
         }
-        if (wheelEngine) wheelEngine.draw();
+        if (wheelEngine && !wheelEngine.isSpinning) wheelEngine.draw();
         updatePanelButtonsUI();
     });
 
@@ -1037,4 +1066,151 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --------------------------------------------------------------------------
+    // 9. REALTIME 7-SEGMENT GLOBAL SPIN COUNTER
+    // Synchronized across all users worldwide via Firebase Realtime Database
+    // Baseline starting count: 1003
+    // --------------------------------------------------------------------------
+    function initRealtimeSpinCounter() {
+        const BASELINE_SPINS = 1003;
+        const RTDB_ENDPOINT = 'https://max-webapps-default-rtdb.firebaseio.com/public_stats/lucky_wheel_spins.json';
+        const counterDigitsEl = document.getElementById('spinCounterDigits');
+        const counterGhostEl = document.getElementById('spinCounterGhost');
+        const spinCounterContainer = document.getElementById('wheelSpinCounter');
+
+        let currentCount = BASELINE_SPINS;
+        try {
+            const cached = localStorage.getItem('lucky_wheel_global_spins');
+            if (cached) currentCount = Math.max(BASELINE_SPINS, parseInt(cached, 10));
+        } catch (e) {}
+
+        function renderCount(val, animate = false) {
+            const count = Math.max(BASELINE_SPINS, Number(val) || BASELINE_SPINS);
+            currentCount = count;
+            try {
+                localStorage.setItem('lucky_wheel_global_spins', String(count));
+            } catch (e) {}
+
+            if (counterDigitsEl) {
+                const str = String(count);
+                counterDigitsEl.textContent = str;
+
+                // 8-digit physical display slot (up to tens of millions)
+                if (counterGhostEl) {
+                    const ghostSlots = Math.max(8, str.length);
+                    counterGhostEl.textContent = '8'.repeat(ghostSlots);
+                }
+
+                if (animate && spinCounterContainer) {
+                    spinCounterContainer.classList.remove('is-bumped');
+                    void spinCounterContainer.offsetWidth;
+                    spinCounterContainer.classList.add('is-bumped');
+                }
+            }
+        }
+
+        // Render cached baseline immediately with 0ms delay
+        renderCount(currentCount, false);
+
+        // Resolve Firebase RTDB reference
+        function getDatabaseInstance() {
+            if (window.SharedAuth && window.SharedAuth.database) {
+                return window.SharedAuth.database;
+            }
+            if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+                try {
+                    return firebase.database();
+                } catch (e) {}
+            }
+            return null;
+        }
+
+        const rtdb = getDatabaseInstance();
+
+        if (rtdb) {
+            try {
+                const spinsRef = rtdb.ref('public_stats/lucky_wheel_spins');
+                spinsRef.on('value', (snapshot) => {
+                    const serverVal = snapshot.val();
+                    if (serverVal !== null && serverVal !== undefined) {
+                        const num = Number(serverVal);
+                        if (num > currentCount) {
+                            renderCount(num, true);
+                        } else if (num >= BASELINE_SPINS) {
+                            renderCount(num, false);
+                        }
+                    } else {
+                        spinsRef.set(BASELINE_SPINS);
+                    }
+                }, (err) => {
+                    console.warn('[SpinCounter] RTDB listener error, fallback to REST:', err);
+                    fetchRestFallback();
+                });
+            } catch (e) {
+                fetchRestFallback();
+            }
+        } else {
+            fetchRestFallback();
+        }
+
+        function fetchRestFallback() {
+            if (typeof fetch !== 'function') return;
+            fetch(RTDB_ENDPOINT)
+                .then(res => res.ok ? res.json() : null)
+                .then(val => {
+                    if (typeof val === 'number') {
+                        const num = Math.max(BASELINE_SPINS, val);
+                        if (num > currentCount) {
+                            renderCount(num, true);
+                        } else {
+                            renderCount(num, false);
+                        }
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // Global increment handler called during triggerSpin()
+        window.incrementGlobalSpins = function() {
+            // 1. Optimistic instant +1 on local screen
+            const nextCount = currentCount + 1;
+            renderCount(nextCount, true);
+
+            // 2. Atomic increment on Firebase RTDB
+            const activeDb = getDatabaseInstance();
+            if (activeDb) {
+                try {
+                    const spinsRef = activeDb.ref('public_stats/lucky_wheel_spins');
+                    spinsRef.transaction((current) => {
+                        return Math.max(BASELINE_SPINS, (current || BASELINE_SPINS) + 1);
+                    }).catch((err) => {
+                        console.warn('[SpinCounter] Transaction error, using REST fallback:', err);
+                        incrementRestFallback();
+                    });
+                    return;
+                } catch (e) {}
+            }
+
+            incrementRestFallback();
+        };
+
+        function incrementRestFallback() {
+            if (typeof fetch !== 'function') return;
+            fetch(RTDB_ENDPOINT)
+                .then(res => res.ok ? res.json() : null)
+                .then(val => {
+                    const updated = Math.max(BASELINE_SPINS + 1, (Number(val) || BASELINE_SPINS) + 1);
+                    return fetch(RTDB_ENDPOINT, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updated)
+                    });
+                })
+                .catch(() => {});
+        }
+    }
+
+    // Initialize the realtime counter
+    initRealtimeSpinCounter();
 });

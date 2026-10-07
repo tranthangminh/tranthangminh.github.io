@@ -31,6 +31,9 @@
                 shuffle: 'Shuffle',
                 togglePanel: 'Control Panel'
             },
+            counter: {
+                rolls: 'SPINS'
+            },
             slices: {
                 quickPreset: 'Preset Template...',
                 sortPlaceholder: 'Sort...',
@@ -149,6 +152,9 @@
                 spin: 'QUAY',
                 shuffle: 'Xáo Trộn',
                 togglePanel: 'Bảng Điều Khiển'
+            },
+            counter: {
+                rolls: 'LƯỢT QUAY'
             },
             slices: {
                 quickPreset: 'Mẫu có sẵn...',

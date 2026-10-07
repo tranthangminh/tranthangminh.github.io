@@ -1,3 +1,4 @@
+﻿using MaxApp.Common;
 using System;
 
 namespace BookForge

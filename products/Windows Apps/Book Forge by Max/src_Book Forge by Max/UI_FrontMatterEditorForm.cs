@@ -1,3 +1,4 @@
+using MaxApp.Common;
 using System;
 using System.Drawing;
 using System.IO;
@@ -373,7 +374,7 @@ namespace BookForge
 
             lblH_L1_Title = new Label();
             lblH_L1_Title.Text = "Line 1:";
-            lblH_L1_Title.Font = ThemeTokens.FontSmall;
+            lblH_L1_Title.Font = ThemeTokens.FontSmall();
             lblH_L1_Title.Location = new Point(2, 22);
             lblH_L1_Title.AutoSize = true;
 
@@ -385,7 +386,7 @@ namespace BookForge
 
             lblH_L2_Title = new Label();
             lblH_L2_Title.Text = "Line 2:";
-            lblH_L2_Title.Font = ThemeTokens.FontSmall;
+            lblH_L2_Title.Font = ThemeTokens.FontSmall();
             lblH_L2_Title.Location = new Point(2, 48);
             lblH_L2_Title.AutoSize = true;
 
@@ -414,7 +415,7 @@ namespace BookForge
 
             lblH_R1_Title = new Label();
             lblH_R1_Title.Text = "Line 3:";
-            lblH_R1_Title.Font = ThemeTokens.FontSmall;
+            lblH_R1_Title.Font = ThemeTokens.FontSmall();
             lblH_R1_Title.Location = new Point(2, 22);
             lblH_R1_Title.AutoSize = true;
 
@@ -426,7 +427,7 @@ namespace BookForge
 
             lblH_R2_Title = new Label();
             lblH_R2_Title.Text = "Line 4:";
-            lblH_R2_Title.Font = ThemeTokens.FontSmall;
+            lblH_R2_Title.Font = ThemeTokens.FontSmall();
             lblH_R2_Title.Location = new Point(2, 48);
             lblH_R2_Title.AutoSize = true;
 

@@ -1,3 +1,4 @@
+using MaxApp.Common;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -43,7 +44,6 @@ namespace BookForge
         private CheckBox chkScaffoldBible;
         private ModernButton btnStartExtract;
         private ModernButton btnOpenOutputFolder;
-        private ModernButton btnThemeToggle;
         private ModernButton btnToggleExtractSettings;
 
         // Tab 2: Markdown to PDF
@@ -125,7 +125,6 @@ namespace BookForge
             this.chkScaffoldBible = new CheckBox();
             this.btnStartExtract = new ModernButton();
             this.btnOpenOutputFolder = new ModernButton();
-            this.btnThemeToggle = new ModernButton();
             this.btnToggleExtractSettings = new ModernButton();
 
             // Tab 2 Controls
@@ -167,25 +166,29 @@ namespace BookForge
             this.BackColor = t.BgPrimary;
 
             // 0. Custom Title Bar (Auto Clicker by Max style)
-            this.titleBarCustom.Dock = DockStyle.Top;
-            this.titleBarCustom.Height = 32;
+            this.titleBarCustom.AttachToForm(this, padX: 16, padTop: 8);
             this.titleBarCustom.TitleText = "Book Forge by Max v1.0 (Beta)";
+            this.titleBarCustom.ShowMaximizeButton = true;
+            this.titleBarCustom.ShowAdminButton = false;
+            this.titleBarCustom.ShowLanguageButton = false;
+            this.titleBarCustom.ShowThemeButton = true;
             this.titleBarCustom.OnCloseRequested += () => this.Close();
             this.titleBarCustom.OnMinimizeRequested += () => this.WindowState = FormWindowState.Minimized;
             this.titleBarCustom.OnMaximizeRestoreRequested += () =>
             {
                 this.WindowState = (this.WindowState == FormWindowState.Maximized) ? FormWindowState.Normal : FormWindowState.Maximized;
             };
+            this.titleBarCustom.OnThemeToggleRequested += () => this.btnThemeToggle_Click(null, null);
 
             // 1. Top Tab Bar (Sentence Case, No Icons)
             this.tabBar.Dock = DockStyle.None;
-            this.tabBar.Location = new Point(0, 32);
-            this.tabBar.Size = new Size(660, 44);
+            this.tabBar.Location = new Point(16, 46);
+            this.tabBar.Size = new Size(628, 36);
             this.tabBar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
             // 2. Tab 1 Panel (Convert to Markdown)
-            this.pnlTabExtract.Location = new Point(0, 78);
-            this.pnlTabExtract.Size = new Size(660, 504);
+            this.pnlTabExtract.Location = new Point(0, 86);
+            this.pnlTabExtract.Size = new Size(660, 496);
             this.pnlTabExtract.BackColor = t.BgPrimary;
             this.pnlTabExtract.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
@@ -256,7 +259,7 @@ namespace BookForge
             this.lblTargetPreview.Size = new Size(592, 20);
             this.lblTargetPreview.AutoEllipsis = true;
             this.lblTargetPreview.ForeColor = t.TextSecondary;
-            this.lblTargetPreview.Font = new Font(ThemeTokens.FontSmall.FontFamily, ThemeTokens.FontSmall.Size, FontStyle.Italic);
+            this.lblTargetPreview.Font = ThemeTokens.FontSmall(FontStyle.Italic);
             this.lblTargetPreview.Text = "Output directory: (Will appear when file is selected)";
 
             this.cardOutputLocation.Controls.Add(this.lblOutTitle);
@@ -337,16 +340,10 @@ namespace BookForge
             this.fastTip.SetToolTip(this.btnStartExtract, "Extract Content:\nStart content extraction and smart chapter decomposition pipeline.");
 
             this.btnOpenOutputFolder.Location = new Point(206, 458);
-            this.btnOpenOutputFolder.Size = new Size(160, 36);
+            this.btnOpenOutputFolder.Size = new Size(180, 36);
             this.btnOpenOutputFolder.Text = "Open Output Folder";
             this.btnOpenOutputFolder.Click += new EventHandler(this.btnOpenOutput_Click);
             this.fastTip.SetToolTip(this.btnOpenOutputFolder, "Open Output Folder:\nOpen the generated book directory in Windows Explorer.");
-
-            this.btnThemeToggle.Location = new Point(376, 458);
-            this.btnThemeToggle.Size = new Size(98, 36);
-            this.btnThemeToggle.Text = "Theme";
-            this.btnThemeToggle.Click += new EventHandler(this.btnThemeToggle_Click);
-            this.fastTip.SetToolTip(this.btnThemeToggle, "Toggle Theme:\nSwitch between Dark Mode and Light Mode.");
 
             this.pnlTabExtract.Controls.Add(this.dropExtract);
             this.pnlTabExtract.Controls.Add(this.txtExtractSource);
@@ -356,11 +353,10 @@ namespace BookForge
             this.pnlTabExtract.Controls.Add(this.cardExtractOptions);
             this.pnlTabExtract.Controls.Add(this.btnStartExtract);
             this.pnlTabExtract.Controls.Add(this.btnOpenOutputFolder);
-            this.pnlTabExtract.Controls.Add(this.btnThemeToggle);
 
             // 3. Tab 2 Panel (Markdown to PDF)
-            this.pnlTabPublish.Location = new Point(0, 78);
-            this.pnlTabPublish.Size = new Size(660, 460);
+            this.pnlTabPublish.Location = new Point(0, 86);
+            this.pnlTabPublish.Size = new Size(660, 452);
             this.pnlTabPublish.BackColor = t.BgPrimary;
             this.pnlTabPublish.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             this.pnlTabPublish.Visible = false;
@@ -396,7 +392,7 @@ namespace BookForge
             // Project Inspector Live Status
             this.lblPublishInspector.Location = new Point(18, 132);
             this.lblPublishInspector.Size = new Size(624, 20);
-            this.lblPublishInspector.Font = ThemeTokens.FontSmall;
+            this.lblPublishInspector.Font = ThemeTokens.FontSmall();
             this.lblPublishInspector.ForeColor = t.TextTertiary;
             this.lblPublishInspector.AutoEllipsis = true;
             this.lblPublishInspector.Text = "● Ready: Select or drop a book project folder or a single .md file above.";
@@ -598,8 +594,8 @@ namespace BookForge
             this.scrollBarLog.Anchor = AnchorStyles.Right;
 
             // 5. Tab Info Panel
-            this.pnlTabInfo.Location = new Point(0, 78);
-            this.pnlTabInfo.Size = new Size(660, 700);
+            this.pnlTabInfo.Location = new Point(0, 86);
+            this.pnlTabInfo.Size = new Size(660, 726);
             this.pnlTabInfo.Visible = false;
             this.pnlTabInfo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 

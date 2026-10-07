@@ -11,46 +11,31 @@ namespace ModernAutoClicker.Localization
 
     public static class Loc
     {
-        private static AppLanguage _currentLanguage = AppLanguage.English;
-
-        public static event Action OnLanguageChanged;
+        public static event Action OnLanguageChanged
+        {
+            add { MaxApp.Common.Loc.OnLanguageChanged += value; }
+            remove { MaxApp.Common.Loc.OnLanguageChanged -= value; }
+        }
 
         public static AppLanguage CurrentLanguage
         {
-            get { return _currentLanguage; }
-            set
-            {
-                if (_currentLanguage != value)
-                {
-                    _currentLanguage = value;
-                    if (OnLanguageChanged != null)
-                    {
-                        OnLanguageChanged();
-                    }
-                }
-            }
+            get { return (AppLanguage)MaxApp.Common.Loc.CurrentLanguage; }
+            set { MaxApp.Common.Loc.CurrentLanguage = (MaxApp.Common.AppLanguage)value; }
         }
 
         public static bool IsVietnamese
         {
-            get { return _currentLanguage == AppLanguage.Vietnamese; }
+            get { return MaxApp.Common.Loc.IsVietnamese; }
         }
 
         public static void SetLanguage(string langCode)
         {
-            if (string.Equals(langCode, "vi", StringComparison.OrdinalIgnoreCase))
-            {
-                CurrentLanguage = AppLanguage.Vietnamese;
-            }
-            else
-            {
-                CurrentLanguage = AppLanguage.English;
-            }
+            MaxApp.Common.Loc.SetLanguage(langCode);
         }
 
         public static string CurrentLanguageCode
         {
-            get { return _currentLanguage == AppLanguage.Vietnamese ? "vi" : "en"; }
+            get { return MaxApp.Common.Loc.CurrentLanguageCode; }
         }
 
         // ========================================================

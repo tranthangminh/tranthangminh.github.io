@@ -1,3 +1,4 @@
+﻿using Loc = ModernAutoClicker.Localization.Loc;
 using System;
 using System.Drawing;
 using System.Windows.Forms;

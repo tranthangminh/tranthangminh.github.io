@@ -1,3 +1,4 @@
+﻿using MaxApp.Common;
 using System;
 using System.IO;
 using Microsoft.Win32;

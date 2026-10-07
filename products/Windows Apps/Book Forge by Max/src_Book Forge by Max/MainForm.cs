@@ -1,3 +1,4 @@
+using MaxApp.Common;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -41,6 +42,7 @@ namespace BookForge
             UpdatePublishProjectInspector(txtPublishFolder.Text);
             UpdateDynamicLayout();
             UpdateActionButtonsValidation();
+            WindowHelper.ApplyRoundedCorners(this);
         }
 
         private void SetupEvents()
@@ -50,7 +52,11 @@ namespace BookForge
             {
                 pnlTabExtract.Visible = (index == 0);
                 pnlTabPublish.Visible = (index == 1);
-                if (pnlTabInfo != null) pnlTabInfo.Visible = (index == 2);
+                if (pnlTabInfo != null)
+                {
+                    pnlTabInfo.Visible = (index == 2);
+                    if (index == 2) pnlTabInfo.UpdateLayout();
+                }
 
                 bool isInfo = (index == 2);
                 if (rtbLogExtract != null) rtbLogExtract.Visible = (!isInfo && index == 0);
@@ -214,12 +220,10 @@ namespace BookForge
             if (t.IsDark)
             {
                 CopyThemeValues(ThemeTokens.LightTheme(), t);
-                btnThemeToggle.Text = "Theme: Light";
             }
             else
             {
                 CopyThemeValues(ThemeTokens.DarkTheme(), t);
-                btnThemeToggle.Text = "Theme: Dark";
             }
             ApplyThemeToAllControls();
         }
@@ -317,7 +321,6 @@ namespace BookForge
             btnTogglePublishSettings.Invalidate();
             btnStartExtract.Invalidate();
             btnOpenOutputFolder.Invalidate();
-            btnThemeToggle.Invalidate();
             btnEditNote.Invalidate();
             btnRunAudit.Invalidate();
             btnStartPublish.Invalidate();
@@ -494,7 +497,6 @@ namespace BookForge
             cardOutputLocation.Enabled = !isRunning;
             cardExtractOptions.Enabled = !isRunning;
             btnOpenOutputFolder.Enabled = !isRunning && !string.IsNullOrEmpty(activeBookDir) && Directory.Exists(activeBookDir);
-            btnThemeToggle.Enabled = !isRunning;
 
             // Lock Tab 2 inputs and cards
             dropPublish.Enabled = !isRunning;
@@ -1647,7 +1649,6 @@ namespace BookForge
                 cardExtractOptions.Visible = false;
                 btnStartExtract.Top = 140;
                 btnOpenOutputFolder.Top = 140;
-                btnThemeToggle.Top = 140;
                 pnlTabExtract.Height = 188;
             }
             else
@@ -1658,7 +1659,6 @@ namespace BookForge
                 cardExtractOptions.Top = 288;
                 btnStartExtract.Top = 458;
                 btnOpenOutputFolder.Top = 458;
-                btnThemeToggle.Top = 458;
                 pnlTabExtract.Height = 504;
             }
 
@@ -1698,7 +1698,7 @@ namespace BookForge
             {
                 if (pnlTabInfo != null)
                 {
-                    pnlTabInfo.SetBounds(0, 78, this.ClientSize.Width, Math.Max(100, this.ClientSize.Height - 78));
+                    pnlTabInfo.SetBounds(0, 86, this.ClientSize.Width, Math.Max(100, this.ClientSize.Height - 86));
                     pnlTabInfo.UpdateLayout();
                 }
                 this.ResumeLayout(true);
@@ -1752,10 +1752,7 @@ namespace BookForge
             if (this.FormBorderStyle == FormBorderStyle.None)
             {
                 ThemeTokens t = ThemeTokens.Current ?? ThemeTokens.DarkTheme();
-                using (Pen borderPen = new Pen(t.BorderColor, 1))
-                {
-                    e.Graphics.DrawRectangle(borderPen, 0, 0, this.ClientSize.Width - 1, this.ClientSize.Height - 1);
-                }
+                WindowHelper.DrawWindowBorder(e.Graphics, this, t.BorderColor, t.FormRadius);
             }
         }
 
@@ -1769,6 +1766,10 @@ namespace BookForge
             catch { }
             if (titleBarCustom != null) titleBarCustom.Invalidate();
             UpdateDynamicLayout();
+            if (this.WindowState != FormWindowState.Minimized)
+            {
+                WindowHelper.ApplyRoundedCorners(this);
+            }
             this.Invalidate(true);
         }
 
@@ -1977,12 +1978,10 @@ namespace BookForge
                     if (c.IsDarkTheme)
                     {
                         CopyThemeValues(ThemeTokens.DarkTheme(), t);
-                        btnThemeToggle.Text = "Theme: Dark";
                     }
                     else
                     {
                         CopyThemeValues(ThemeTokens.LightTheme(), t);
-                        btnThemeToggle.Text = "Theme: Light";
                     }
                     ApplyThemeToAllControls();
                 }

@@ -502,11 +502,6 @@ class LuckyWheelEngine {
         this.winningIndex = winnerIdx;
         this.lastPegPassed = -1;
 
-        // Build disc cache just before spinning (only for 2D/3D-tilt flat mode)
-        if (this.displayMode === '2d' || this.displayMode === '3d_tilt') {
-            this._rebuildDiscCache();
-        }
-
         // Run animation frame loop
         this.animate(this.spinStartTime);
         return true;

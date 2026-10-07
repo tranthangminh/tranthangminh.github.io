@@ -1,3 +1,4 @@
+using MaxApp.Common;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -82,6 +83,8 @@ namespace BookForge
                 }
             }
             catch { }
+
+            AppInfo.Init("Book Forge by Max", "v1.0 (Beta)", "book-forge");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
