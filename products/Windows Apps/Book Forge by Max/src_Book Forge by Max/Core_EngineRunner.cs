@@ -1,4 +1,4 @@
-﻿using MaxApp.Common;
+using MaxApp.Common;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -91,6 +91,10 @@ namespace BookForge
             string scriptPath = Path.Combine(appDir, "script", scriptRelativePath);
             if (!File.Exists(scriptPath))
             {
+                scriptPath = Path.Combine(appDir, "for_zip", "script", scriptRelativePath);
+            }
+            if (!File.Exists(scriptPath))
+            {
                 scriptPath = Path.Combine(appDir, "src_Book Forge by Max", "script", scriptRelativePath);
             }
             if (!File.Exists(scriptPath))
@@ -150,6 +154,22 @@ namespace BookForge
                 psi.EnvironmentVariables["PUPPETEER_EXECUTABLE_PATH"] = edgePath;
                 psi.EnvironmentVariables["CHROME_PATH"] = edgePath;
             }
+
+            // Inject NODE_PATH pointing to script/node_modules for local bundled modules
+            try
+            {
+                string scriptDir = Path.GetDirectoryName(scriptPath);
+                if (!string.IsNullOrEmpty(scriptDir))
+                {
+                    string localModules = Path.Combine(scriptDir, "node_modules");
+                    if (Directory.Exists(localModules))
+                    {
+                        string existingNodePath = psi.EnvironmentVariables.ContainsKey("NODE_PATH") ? psi.EnvironmentVariables["NODE_PATH"] : "";
+                        psi.EnvironmentVariables["NODE_PATH"] = string.IsNullOrEmpty(existingNodePath) ? localModules : localModules + ";" + existingNodePath;
+                    }
+                }
+            }
+            catch { }
 
             EmitLog(string.Format("[*] Launching: node {0} {1}", Path.GetFileName(scriptPath), arguments));
             if (!string.IsNullOrEmpty(edgePath))
@@ -257,7 +277,22 @@ namespace BookForge
 
         public static string FindNodeExecutable()
         {
-            // Check current PATH
+            // 1. Check local app directory or subfolders for portable node.exe
+            try
+            {
+                string appDir = AppDomain.CurrentDomain.BaseDirectory;
+                string localNode = Path.Combine(appDir, "node.exe");
+                if (File.Exists(localNode)) return localNode;
+
+                string localNodeSub = Path.Combine(appDir, "nodejs", "node.exe");
+                if (File.Exists(localNodeSub)) return localNodeSub;
+
+                string scriptNodeSub = Path.Combine(appDir, "script", "node.exe");
+                if (File.Exists(scriptNodeSub)) return scriptNodeSub;
+            }
+            catch { }
+
+            // 2. Check current PATH
             string pathEnv = Environment.GetEnvironmentVariable("PATH");
             if (!string.IsNullOrEmpty(pathEnv))
             {
@@ -273,7 +308,7 @@ namespace BookForge
                 }
             }
 
-            // Check standard program files
+            // 3. Check standard program files
             string pfNode = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "nodejs", "node.exe");
             if (File.Exists(pfNode)) return pfNode;
 

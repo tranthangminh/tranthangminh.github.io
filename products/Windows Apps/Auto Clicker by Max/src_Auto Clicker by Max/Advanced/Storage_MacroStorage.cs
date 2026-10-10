@@ -72,6 +72,11 @@ namespace ModernAutoClicker.Advanced
                     sb.AppendLine(string.Format("      \"ImageBase64\": \"{0}\",", Escape(s.ImageBase64)));
                     sb.AppendLine(string.Format("      \"Similarity\": {0},", s.Similarity > 0 ? s.Similarity : 90));
                     sb.AppendLine(string.Format("      \"TimeoutSec\": {0},", s.TimeoutSec > 0 ? s.TimeoutSec : 10));
+                    sb.AppendLine(string.Format("      \"RepeatTimerMode\": {0},", s.RepeatTimerMode));
+                    sb.AppendLine(string.Format("      \"RepeatTimerSeconds\": {0},", s.RepeatTimerSeconds > 0 ? s.RepeatTimerSeconds : 300));
+                    sb.AppendLine(string.Format("      \"RepeatTimerTargetStep\": {0},", s.RepeatTimerTargetStep > 0 ? s.RepeatTimerTargetStep : 1));
+                    sb.AppendLine(string.Format("      \"PressClickMode\": {0},", s.PressClickMode));
+                    sb.AppendLine(string.Format("      \"PressClickOrder\": {0},", s.PressClickOrder));
                     sb.AppendLine(string.Format("      \"Note\": \"{0}\"", Escape(s.Note)));
                     sb.AppendLine(i < profile.Steps.Count - 1 ? "    }," : "    }");
                 }
@@ -141,6 +146,11 @@ namespace ModernAutoClicker.Advanced
                         sb.AppendLine(string.Format("          \"ImageBase64\": \"{0}\",", Escape(s.ImageBase64)));
                         sb.AppendLine(string.Format("          \"Similarity\": {0},", s.Similarity > 0 ? s.Similarity : 90));
                         sb.AppendLine(string.Format("          \"TimeoutSec\": {0},", s.TimeoutSec > 0 ? s.TimeoutSec : 10));
+                        sb.AppendLine(string.Format("          \"RepeatTimerMode\": {0},", s.RepeatTimerMode));
+                        sb.AppendLine(string.Format("          \"RepeatTimerSeconds\": {0},", s.RepeatTimerSeconds > 0 ? s.RepeatTimerSeconds : 300));
+                        sb.AppendLine(string.Format("          \"RepeatTimerTargetStep\": {0},", s.RepeatTimerTargetStep > 0 ? s.RepeatTimerTargetStep : 1));
+                        sb.AppendLine(string.Format("          \"PressClickMode\": {0},", s.PressClickMode));
+                        sb.AppendLine(string.Format("          \"PressClickOrder\": {0},", s.PressClickOrder));
                         sb.AppendLine(string.Format("          \"Note\": \"{0}\"", Escape(s.Note)));
                         sb.AppendLine(i < profile.Steps.Count - 1 ? "        }," : "        }");
                     }
@@ -308,6 +318,21 @@ namespace ModernAutoClicker.Advanced
                         int timeoutSec;
                         if (ExtractInt(block, "\"TimeoutSec\"", out timeoutSec)) s.TimeoutSec = timeoutSec;
                         else s.TimeoutSec = 10;
+
+                        int repeatTimerMode;
+                        if (ExtractInt(block, "\"RepeatTimerMode\"", out repeatTimerMode)) s.RepeatTimerMode = repeatTimerMode;
+
+                        int repeatTimerSec;
+                        if (ExtractInt(block, "\"RepeatTimerSeconds\"", out repeatTimerSec)) s.RepeatTimerSeconds = repeatTimerSec;
+
+                        int repeatTimerTarget;
+                        if (ExtractInt(block, "\"RepeatTimerTargetStep\"", out repeatTimerTarget)) s.RepeatTimerTargetStep = repeatTimerTarget;
+
+                        int pressClickMode;
+                        if (ExtractInt(block, "\"PressClickMode\"", out pressClickMode)) s.PressClickMode = pressClickMode;
+
+                        int pressClickOrder;
+                        if (ExtractInt(block, "\"PressClickOrder\"", out pressClickOrder)) s.PressClickOrder = pressClickOrder;
 
                         s.Note = ExtractString(block, "\"Note\"") ?? "";
 

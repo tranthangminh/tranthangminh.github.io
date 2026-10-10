@@ -1,4 +1,4 @@
-﻿using Loc = ModernAutoClicker.Localization.Loc;
+using Loc = ModernAutoClicker.Localization.Loc;
 using MaxApp.Common;
 using System;
 using System.Collections.Generic;
@@ -110,12 +110,120 @@ namespace ModernAutoClicker.Advanced
             if (btnLoadProfile != null) btnLoadProfile.Text = Loc.AdvBtnLoad;
             if (btnClearAll != null) btnClearAll.Text = Loc.AdvBtnClear;
             if (btnTemplate != null) btnTemplate.Text = Loc.AdvBtnTemplate;
-            if (lblLoop != null) lblLoop.Text = Loc.AdvLblLoop;
-            if (lblRandJitter != null) lblRandJitter.Text = Loc.AdvLblJitter;
-            if (lblRandInterval != null) lblRandInterval.Text = Loc.AdvLblInterval;
-            if (lblSpeed != null) lblSpeed.Text = Loc.AdvLblSpeed;
+
+            LayoutBottomOptions();
 
             if (tableControl != null) tableControl.ApplyLanguage();
+        }
+
+        private void LayoutBottomOptions()
+        {
+            if (pnlBodyCard == null || lblLoop == null) return;
+
+            int bh = pnlBodyCard.Height;
+            int optY = Math.Max(10, bh - 38);
+            int rowH = 30;
+            int inputH = 22;
+            int inputTop = optY + ((rowH - inputH) / 2); // Perfectly centered vertically
+            int curX = 10;
+            const int gapInput = 5;
+            const int gapUnit = 5;
+            const int groupGap = 20;
+
+            // Group 1: Loop
+            if (lblLoop != null)
+            {
+                lblLoop.Text = Loc.AdvLblLoop;
+                Size sz = TextRenderer.MeasureText(lblLoop.Text, lblLoop.Font);
+                lblLoop.Location = new Point(curX, optY);
+                lblLoop.Size = new Size(sz.Width + 2, rowH);
+                curX += lblLoop.Width + gapInput;
+            }
+            if (numLoop != null)
+            {
+                numLoop.Location = new Point(curX, inputTop);
+                numLoop.Size = new Size(40, inputH);
+                curX += 40 + gapUnit;
+            }
+            if (lblLoopHint != null)
+            {
+                lblLoopHint.Text = "(0 = ∞)";
+                Size sz = TextRenderer.MeasureText(lblLoopHint.Text, lblLoopHint.Font);
+                lblLoopHint.Location = new Point(curX, inputTop);
+                lblLoopHint.Size = new Size(sz.Width + 2, inputH);
+                curX += lblLoopHint.Width + groupGap;
+            }
+
+            // Group 2: Jitter
+            if (lblRandJitter != null)
+            {
+                lblRandJitter.Text = Loc.AdvLblJitter;
+                Size sz = TextRenderer.MeasureText(lblRandJitter.Text, lblRandJitter.Font);
+                lblRandJitter.Location = new Point(curX, optY);
+                lblRandJitter.Size = new Size(sz.Width + 2, rowH);
+                curX += lblRandJitter.Width + gapInput;
+            }
+            if (numRandJitter != null)
+            {
+                numRandJitter.Location = new Point(curX, inputTop);
+                numRandJitter.Size = new Size(40, inputH);
+                curX += 40 + gapUnit;
+            }
+            if (lblRandJitterUnit != null)
+            {
+                lblRandJitterUnit.Text = "± px";
+                Size sz = TextRenderer.MeasureText(lblRandJitterUnit.Text, lblRandJitterUnit.Font);
+                lblRandJitterUnit.Location = new Point(curX, inputTop);
+                lblRandJitterUnit.Size = new Size(sz.Width + 2, inputH);
+                curX += lblRandJitterUnit.Width + groupGap;
+            }
+
+            // Group 3: Interval
+            if (lblRandInterval != null)
+            {
+                lblRandInterval.Text = Loc.AdvLblInterval;
+                Size sz = TextRenderer.MeasureText(lblRandInterval.Text, lblRandInterval.Font);
+                lblRandInterval.Location = new Point(curX, optY);
+                lblRandInterval.Size = new Size(sz.Width + 2, rowH);
+                curX += lblRandInterval.Width + gapInput;
+            }
+            if (numRandInterval != null)
+            {
+                numRandInterval.Location = new Point(curX, inputTop);
+                numRandInterval.Size = new Size(40, inputH);
+                curX += 40 + gapUnit;
+            }
+            if (lblRandIntervalUnit != null)
+            {
+                lblRandIntervalUnit.Text = "± ms";
+                Size sz = TextRenderer.MeasureText(lblRandIntervalUnit.Text, lblRandIntervalUnit.Font);
+                lblRandIntervalUnit.Location = new Point(curX, inputTop);
+                lblRandIntervalUnit.Size = new Size(sz.Width + 2, inputH);
+                curX += lblRandIntervalUnit.Width + groupGap;
+            }
+
+            // Group 4: Speed
+            if (lblSpeed != null)
+            {
+                lblSpeed.Text = Loc.AdvLblSpeed;
+                Size sz = TextRenderer.MeasureText(lblSpeed.Text, lblSpeed.Font);
+                lblSpeed.Location = new Point(curX, optY);
+                lblSpeed.Size = new Size(sz.Width + 2, rowH);
+                curX += lblSpeed.Width + gapInput;
+            }
+            if (numSpeed != null)
+            {
+                numSpeed.Location = new Point(curX, inputTop);
+                numSpeed.Size = new Size(40, inputH);
+                curX += 40 + gapUnit;
+            }
+            if (lblSpeedUnit != null)
+            {
+                lblSpeedUnit.Text = "%";
+                Size sz = TextRenderer.MeasureText(lblSpeedUnit.Text, lblSpeedUnit.Font);
+                lblSpeedUnit.Location = new Point(curX, inputTop);
+                lblSpeedUnit.Size = new Size(sz.Width + 2, inputH);
+            }
         }
 
         protected override void OnResize(EventArgs e)
@@ -148,27 +256,15 @@ namespace ModernAutoClicker.Advanced
                 if (btnSaveProfile != null) btnSaveProfile.Location = new Point(bw - 8 - 88 - 6 - 88, 8);
 
                 // Macro table (Y = 38)
-                int tableH = Math.Max(100, bh - 38 - 34);
+                int tableH = Math.Max(100, bh - 38 - 46);
                 if (tableControl != null)
                 {
                     tableControl.Location = new Point(8, 38);
                     tableControl.Size = new Size(Math.Max(200, bw - 16), tableH);
                 }
 
-                // Bottom options (Y = bh - 26)
-                int optY = bh - 26;
-                if (lblLoop != null && lblLoop.Top != optY) lblLoop.Top = optY;
-                if (numLoop != null && numLoop.Top != optY - 1) numLoop.Top = optY - 1;
-                if (lblLoopHint != null && lblLoopHint.Top != optY) lblLoopHint.Top = optY;
-                if (lblRandJitter != null && lblRandJitter.Top != optY) lblRandJitter.Top = optY;
-                if (numRandJitter != null && numRandJitter.Top != optY - 1) numRandJitter.Top = optY - 1;
-                if (lblRandJitterUnit != null && lblRandJitterUnit.Top != optY) lblRandJitterUnit.Top = optY;
-                if (lblRandInterval != null && lblRandInterval.Top != optY) lblRandInterval.Top = optY;
-                if (numRandInterval != null && numRandInterval.Top != optY - 1) numRandInterval.Top = optY - 1;
-                if (lblRandIntervalUnit != null && lblRandIntervalUnit.Top != optY) lblRandIntervalUnit.Top = optY;
-                if (lblSpeed != null && lblSpeed.Top != optY) lblSpeed.Top = optY;
-                if (numSpeed != null && numSpeed.Top != optY - 1) numSpeed.Top = optY - 1;
-                if (lblSpeedUnit != null && lblSpeedUnit.Top != optY) lblSpeedUnit.Top = optY;
+                // Bottom options layout (Dynamic measured 2-line labels & 40px inputs)
+                LayoutBottomOptions();
 
                 pnlBodyCard.ResumeLayout(true);
             }
@@ -329,20 +425,17 @@ namespace ModernAutoClicker.Advanced
                 }
             };
 
-            // 4. Bottom Options Row (Y = 452, Height = 24)
+            // 4. Bottom Options Row (2-line labels & unified 40px NumberInputs)
             lblLoop = new Label
             {
-                Text = "Loop:",
-                Location = new Point(8, 454),
-                Size = new Size(36, 20),
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                Text = Loc.AdvLblLoop,
+                Font = ThemeTokens.FontSmall(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
             numLoop = new NumberInput
             {
-                Location = new Point(46, 453),
-                Size = new Size(44, 22),
+                Size = new Size(40, 22),
                 Minimum = 0,
                 Maximum = 999999,
                 Step = 1,
@@ -356,26 +449,21 @@ namespace ModernAutoClicker.Advanced
 
             lblLoopHint = new Label
             {
-                Text = "(0=∞)",
-                Location = new Point(92, 454),
-                Size = new Size(42, 20),
+                Text = "(0 = ∞)",
                 Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
             lblRandJitter = new Label
             {
-                Text = "Jitter: ±",
-                Location = new Point(148, 454),
-                Size = new Size(52, 20),
-                Font = ThemeTokens.FontBase(FontStyle.Regular),
+                Text = Loc.AdvLblJitter,
+                Font = ThemeTokens.FontSmall(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
             numRandJitter = new NumberInput
             {
-                Location = new Point(202, 453),
-                Size = new Size(36, 22),
+                Size = new Size(40, 22),
                 Minimum = 0,
                 Maximum = 100,
                 Step = 1,
@@ -393,26 +481,21 @@ namespace ModernAutoClicker.Advanced
 
             lblRandJitterUnit = new Label
             {
-                Text = "px",
-                Location = new Point(240, 454),
-                Size = new Size(20, 20),
-                Font = ThemeTokens.FontBase(FontStyle.Regular),
+                Text = "± px",
+                Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
             lblRandInterval = new Label
             {
-                Text = "Interval: ±",
-                Location = new Point(272, 454),
-                Size = new Size(62, 20),
-                Font = ThemeTokens.FontBase(FontStyle.Regular),
+                Text = Loc.AdvLblInterval,
+                Font = ThemeTokens.FontSmall(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
             numRandInterval = new NumberInput
             {
-                Location = new Point(336, 453),
-                Size = new Size(38, 22),
+                Size = new Size(40, 22),
                 Minimum = 0,
                 Maximum = 10000,
                 Step = 5,
@@ -426,26 +509,21 @@ namespace ModernAutoClicker.Advanced
 
             lblRandIntervalUnit = new Label
             {
-                Text = "ms",
-                Location = new Point(376, 454),
-                Size = new Size(22, 20),
-                Font = ThemeTokens.FontBase(FontStyle.Regular),
+                Text = "± ms",
+                Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
             lblSpeed = new Label
             {
                 Text = Loc.AdvLblSpeed,
-                Location = new Point(410, 454),
-                Size = new Size(50, 20),
-                Font = ThemeTokens.FontBase(FontStyle.Regular),
+                Font = ThemeTokens.FontSmall(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight
             };
 
             numSpeed = new NumberInput
             {
-                Location = new Point(464, 453),
-                Size = new Size(42, 22),
+                Size = new Size(40, 22),
                 Minimum = 10,
                 Maximum = 2000,
                 Step = 10,
@@ -467,9 +545,7 @@ namespace ModernAutoClicker.Advanced
             lblSpeedUnit = new Label
             {
                 Text = "%",
-                Location = new Point(508, 454),
-                Size = new Size(18, 20),
-                Font = ThemeTokens.FontBase(FontStyle.Regular),
+                Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
@@ -481,6 +557,8 @@ namespace ModernAutoClicker.Advanced
                 lblRandInterval, numRandInterval, lblRandIntervalUnit,
                 lblSpeed, numSpeed, lblSpeedUnit
             });
+
+            LayoutBottomOptions();
 
             this.Controls.AddRange(new Control[] {
                 profileTabBar, btnTemplate, pnlBodyCard
@@ -967,13 +1045,13 @@ namespace ModernAutoClicker.Advanced
             Label[] labels = new Label[] { lblLoop, lblRandJitter, lblRandInterval, lblSpeed };
             foreach (Label lbl in labels)
             {
-                if (lbl != null) lbl.ForeColor = t.TextSecondary;
+                if (lbl != null) lbl.ForeColor = t.TextPrimary;
             }
 
             Label[] hintLabels = new Label[] { lblLoopHint, lblRandJitterUnit, lblRandIntervalUnit, lblSpeedUnit };
             foreach (Label lbl in hintLabels)
             {
-                if (lbl != null) lbl.ForeColor = t.TextTertiary;
+                if (lbl != null) lbl.ForeColor = t.TextSecondary;
             }
 
             NumberInput[] numInputs = new NumberInput[] { numLoop, numRandJitter, numRandInterval, numSpeed };

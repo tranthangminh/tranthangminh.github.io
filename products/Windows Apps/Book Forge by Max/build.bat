@@ -87,54 +87,59 @@ echo.
 set "DIST_TEMP=%~dp0_dist_temp"
 set "PACKAGE_NAME=Book Forge by Max"
 set "ZIP_NAME=Book Forge by Max v1.0 (Beta).zip"
-set "DIST_FOLDER=%~dp0_dist_temp\Book Forge by Max"
+set "FOR_ZIP_DIR=%~dp0for_zip"
 for %%I in ("%~dp0..") do set "PARENT_DIR=%%~fI"
 set "ZIP_OUT=!PARENT_DIR!\!ZIP_NAME!"
 
-echo [*] Staging files for release package...
-if exist "!DIST_TEMP!" rd /s /q "!DIST_TEMP!" >nul 2>&1
-mkdir "!DIST_FOLDER!" >nul 2>&1
+:: Detect 7-Zip (Multi-threaded fast compressor)
+set "SEVENZIP="
+if exist "%ProgramFiles%\7-Zip\7z.exe" (
+    set "SEVENZIP=%ProgramFiles%\7-Zip\7z.exe"
+) else if exist "%ProgramFiles(x86)%\7-Zip\7z.exe" (
+    set "SEVENZIP=%ProgramFiles(x86)%\7-Zip\7z.exe"
+) else (
+    where 7z.exe >nul 2>&1
+    if !ERRORLEVEL! equ 0 set "SEVENZIP=7z.exe"
+)
 
-:: Copy Exe
+echo [*] Synchronizing latest executable into for_zip...
 if exist "%~dp0Book Forge by Max.exe" (
-    copy /y "%~dp0Book Forge by Max.exe" "!DIST_FOLDER!\" >nul
+    copy /y "%~dp0Book Forge by Max.exe" "!FOR_ZIP_DIR!\" >nul
 )
 
-:: Copy setup.bat and README.txt
-if exist "%~dp0setup.bat" (
-    copy /y "%~dp0setup.bat" "!DIST_FOLDER!\" >nul
-)
-if exist "%~dp0README.txt" (
-    copy /y "%~dp0README.txt" "!DIST_FOLDER!\" >nul
-)
-if exist "%~dp0README.md" (
-    copy /y "%~dp0README.md" "!DIST_FOLDER!\" >nul
-)
-if exist "%~dp0Book Forge by Max.md" (
-    copy /y "%~dp0Book Forge by Max.md" "!DIST_FOLDER!\" >nul
+if not exist "!FOR_ZIP_DIR!" (
+    echo !RED![ERROR] Directory for_zip not found!RESET!
+    goto :BUILD_SUMMARY
 )
 
-:: Copy script folder recursively
-if exist "%~dp0src_Book Forge by Max\script" (
-    echo [*] Copying script engine...
-    xcopy /e /i /y "%~dp0src_Book Forge by Max\script" "!DIST_FOLDER!\script" >nul
-)
+echo [*] Staging package for release...
+if exist "!DIST_TEMP!\!PACKAGE_NAME!" rmdir "!DIST_TEMP!\!PACKAGE_NAME!" >nul 2>&1
+if exist "!DIST_TEMP!" rd /s /q "!DIST_TEMP!" >nul 2>&1
+mkdir "!DIST_TEMP!" >nul 2>&1
 
-:: Copy Templates folder recursively
-if exist "%~dp0src_Book Forge by Max\Templates" (
-    echo [*] Copying document templates...
-    xcopy /e /i /y "%~dp0src_Book Forge by Max\Templates" "!DIST_FOLDER!\Templates" >nul
+:: Create instant zero-copy directory junction
+mklink /j "!DIST_TEMP!\!PACKAGE_NAME!" "!FOR_ZIP_DIR!" >nul 2>&1
+if !ERRORLEVEL! neq 0 (
+    echo [*] Copying package files...
+    robocopy "!FOR_ZIP_DIR!" "!DIST_TEMP!\!PACKAGE_NAME!" /E /MT:16 /NFL /NDL /NJH /NJS /nc /ns /np >nul 2>&1
 )
 
 echo [*] Compressing into release ZIP: !ZIP_NAME!...
 if exist "!ZIP_OUT!" del /f /q "!ZIP_OUT!" >nul 2>&1
 if exist "%~dp0!ZIP_NAME!" del /f /q "%~dp0!ZIP_NAME!" >nul 2>&1
 
-where tar >nul 2>&1
-if !ERRORLEVEL! equ 0 (
-    tar.exe -a -c -f "!ZIP_OUT!" -C "!DIST_TEMP!" "!PACKAGE_NAME!"
+if defined SEVENZIP (
+    echo [*] Engine     : !GREEN!7-Zip Multi-threaded!RESET!
+    "!SEVENZIP!" a -tzip -mx=5 -mmt=on "!ZIP_OUT!" "!DIST_TEMP!\!PACKAGE_NAME!" >nul
 ) else (
-    powershell -NoProfile -Command "Compress-Archive -Path '!DIST_FOLDER!' -DestinationPath '!ZIP_OUT!' -CompressionLevel Optimal -Force"
+    where tar >nul 2>&1
+    if !ERRORLEVEL! equ 0 (
+        echo [*] Engine     : tar.exe
+        tar.exe -a -c -f "!ZIP_OUT!" -C "!DIST_TEMP!" "!PACKAGE_NAME!"
+    ) else (
+        echo [*] Engine     : PowerShell Compress-Archive
+        powershell -NoProfile -Command "Compress-Archive -Path '!DIST_TEMP!\!PACKAGE_NAME!' -DestinationPath '!ZIP_OUT!' -CompressionLevel Optimal -Force"
+    )
 )
 
 if exist "!ZIP_OUT!" (
@@ -144,7 +149,8 @@ if exist "!ZIP_OUT!" (
     echo !RED!!BOLD![ERROR] Failed to create release ZIP.!RESET!
 )
 
-:: Clean up staging directory
+:: Clean up staging directory and junction safely
+if exist "!DIST_TEMP!\!PACKAGE_NAME!" rmdir "!DIST_TEMP!\!PACKAGE_NAME!" >nul 2>&1
 if exist "!DIST_TEMP!" rd /s /q "!DIST_TEMP!" >nul 2>&1
 
 :BUILD_SUMMARY

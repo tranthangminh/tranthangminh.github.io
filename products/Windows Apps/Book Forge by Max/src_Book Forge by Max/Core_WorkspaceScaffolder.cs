@@ -1,4 +1,4 @@
-﻿using MaxApp.Common;
+using MaxApp.Common;
 using System;
 using System.IO;
 
@@ -80,6 +80,10 @@ namespace BookForge
             // 2. Copy templates if present in app directory
             string appDir = AppDomain.CurrentDomain.BaseDirectory;
             string templatesDir = Path.Combine(appDir, "Templates");
+            if (!Directory.Exists(templatesDir))
+            {
+                templatesDir = Path.Combine(appDir, "for_zip", "Templates");
+            }
             if (!Directory.Exists(templatesDir))
             {
                 templatesDir = Path.Combine(appDir, "src_Book Forge by Max", "Templates");

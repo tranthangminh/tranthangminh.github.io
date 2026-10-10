@@ -872,14 +872,17 @@ namespace BookForge
 
             if (!string.IsNullOrEmpty(asmDir))
             {
+                probePaths.Add(Path.Combine(asmDir, "for_zip", "Templates", fileName));
                 probePaths.Add(Path.Combine(asmDir, "src_Book Forge by Max", "Templates", fileName));
                 probePaths.Add(Path.Combine(asmDir, "src_BookForge", "Templates", fileName));
                 probePaths.Add(Path.Combine(asmDir, "Templates", fileName));
             }
 
+            probePaths.Add(Path.Combine(baseDir, "for_zip", "Templates", fileName));
             probePaths.Add(Path.Combine(baseDir, "src_Book Forge by Max", "Templates", fileName));
             probePaths.Add(Path.Combine(baseDir, "src_BookForge", "Templates", fileName));
             probePaths.Add(Path.Combine(baseDir, "Templates", fileName));
+            probePaths.Add(Path.Combine("for_zip", "Templates", fileName));
             probePaths.Add(Path.Combine("src_Book Forge by Max", "Templates", fileName));
             probePaths.Add(Path.Combine("src_BookForge", "Templates", fileName));
             probePaths.Add(Path.Combine("Templates", fileName));
@@ -1568,6 +1571,7 @@ namespace BookForge
 
             if (!string.IsNullOrEmpty(asmDir))
             {
+                probeList.Add(Path.Combine(asmDir, "for_zip", "Templates", fileName));
                 probeList.Add(Path.Combine(asmDir, "src_Book Forge by Max", "Templates", fileName));
                 probeList.Add(Path.Combine(asmDir, "src_BookForge", "Templates", fileName));
                 probeList.Add(Path.Combine(asmDir, "Templates", fileName));
@@ -1576,6 +1580,7 @@ namespace BookForge
                 probeList.Add(Path.Combine(asmDir, fileName));
             }
 
+            probeList.Add(Path.Combine(appBaseDir, "for_zip", "Templates", fileName));
             probeList.Add(Path.Combine(appBaseDir, "src_Book Forge by Max", "Templates", fileName));
             probeList.Add(Path.Combine(appBaseDir, "src_BookForge", "Templates", fileName));
             probeList.Add(Path.Combine(appBaseDir, "Templates", fileName));

@@ -241,10 +241,10 @@ namespace ModernAutoClicker.Localization
         public static string AdvBtnLoad { get { return IsVietnamese ? "Tải Script" : "Load Script"; } }
         public static string AdvBtnTemplate { get { return IsVietnamese ? "Mẫu" : "Template"; } }
 
-        public static string AdvLblLoop { get { return IsVietnamese ? "Lặp:" : "Loop:"; } }
-        public static string AdvLblJitter { get { return IsVietnamese ? "Độ lệch: ±" : "Jitter: ±"; } }
-        public static string AdvLblInterval { get { return IsVietnamese ? "Khoảng cách: ±" : "Interval: ±"; } }
-        public static string AdvLblSpeed { get { return IsVietnamese ? "Tốc độ:" : "Speed:"; } }
+        public static string AdvLblLoop { get { return IsVietnamese ? "Số lần\nlặp:" : "Loop\nCount:"; } }
+        public static string AdvLblJitter { get { return IsVietnamese ? "Độ lệch\nchuột:" : "Random\nJitter:"; } }
+        public static string AdvLblInterval { get { return IsVietnamese ? "Khoảng\ncách:" : "Interval\nTime:"; } }
+        public static string AdvLblSpeed { get { return IsVietnamese ? "Tốc độ\nchạy:" : "Execution\nSpeed:"; } }
 
         // ========================================================
         // 12. MACRO STEP ACTION TYPE NAMES
@@ -261,6 +261,7 @@ namespace ModernAutoClicker.Localization
                     case Advanced.MacroActionType.DoubleClick: return "Double Click";
                     case Advanced.MacroActionType.DragDrop: return "Drag n Drop";
                     case Advanced.MacroActionType.KeyPress: return "Key Press";
+                    case Advanced.MacroActionType.PressAndClick: return "Press n Click";
                     case Advanced.MacroActionType.TypeText: return "Type Text";
                     case Advanced.MacroActionType.Delay: return "Delay";
                     case Advanced.MacroActionType.RepeatTimer: return "Repeat / Timer";
@@ -283,6 +284,7 @@ namespace ModernAutoClicker.Localization
                     case Advanced.MacroActionType.DoubleClick: return "Click Đúp";
                     case Advanced.MacroActionType.DragDrop: return "Kéo và Thả";
                     case Advanced.MacroActionType.KeyPress: return "Nhấn Phím";
+                    case Advanced.MacroActionType.PressAndClick: return "Nhấn & Click";
                     case Advanced.MacroActionType.TypeText: return "Gõ Văn Bản";
                     case Advanced.MacroActionType.Delay: return "Chờ Đợi";
                     case Advanced.MacroActionType.RepeatTimer: return "Lặp / Bấm giờ";
@@ -322,7 +324,19 @@ namespace ModernAutoClicker.Localization
         public static string LblIfUnmatch { get { return IsVietnamese ? "Không khớp:" : "Unmatch:"; } }
 
         // ========================================================
-        // 14. TABLE HEADER COLUMNS
+        // 14. PRESS N CLICK STRINGS
+        // ========================================================
+        public static string OrderPressClick { get { return IsVietnamese ? "Phím ➔ Click" : "Key ➔ Click"; } }
+        public static string OrderClickPress { get { return IsVietnamese ? "Click ➔ Phím" : "Click ➔ Key"; } }
+        public static string LabelPressKey { get { return IsVietnamese ? "Phím:" : "Key:"; } }
+        public static string LabelPressMode { get { return IsVietnamese ? "Chuột:" : "Mouse:"; } }
+        public static string ModePressLeft { get { return IsVietnamese ? "Click Trái" : "Left Click"; } }
+        public static string ModePressRight { get { return IsVietnamese ? "Click Phải" : "Right Click"; } }
+        public static string ModePressMiddle { get { return IsVietnamese ? "Click Giữa" : "Middle Click"; } }
+        public static string ModePressDrag { get { return IsVietnamese ? "Kéo & Thả" : "Drag n Drop"; } }
+
+        // ========================================================
+        // 15. TABLE HEADER COLUMNS
         // ========================================================
         public static string ColNo { get { return "No."; } }
         public static string ColCheck { get { return "✔"; } }

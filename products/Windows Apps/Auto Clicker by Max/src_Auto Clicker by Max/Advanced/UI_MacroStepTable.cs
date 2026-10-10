@@ -1,4 +1,4 @@
-﻿using Loc = ModernAutoClicker.Localization.Loc;
+using Loc = ModernAutoClicker.Localization.Loc;
 using MaxApp.Common;
 using System;
 using System.Collections.Generic;
@@ -432,6 +432,7 @@ namespace ModernAutoClicker.Advanced
                 MacroActionType.MiddleClick,
                 MacroActionType.DoubleClick,
                 MacroActionType.DragDrop,
+                MacroActionType.PressAndClick,
                 MacroActionType.KeyPress,
                 MacroActionType.TypeText,
                 MacroActionType.Delay,

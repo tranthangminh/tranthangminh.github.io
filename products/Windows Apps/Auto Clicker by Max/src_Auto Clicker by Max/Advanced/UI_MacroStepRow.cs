@@ -1,4 +1,4 @@
-﻿using Loc = ModernAutoClicker.Localization.Loc;
+using Loc = ModernAutoClicker.Localization.Loc;
 using MaxApp.Common;
 using System;
 using System.Collections.Generic;
@@ -55,6 +55,13 @@ namespace ModernAutoClicker.Advanced
         private Label btnDelete;
         private ModernTextBox txtNote;
         private bool _isTargetHovered = false;
+
+        // Press n Click Line 2 Controls
+        private Label lblPressKeyTitle;
+        private ModernTextBox txtPressKey;
+        private SvgIconButton btnPressClickOrder;
+        private Label lblPressModeTitle;
+        private ModernDropdown cboPressClickMode;
 
         public event Action<MacroRowControl> OnDeleteRequested;
         public event Action<MacroRowControl, bool, bool> OnRowClicked;
@@ -227,6 +234,7 @@ namespace ModernAutoClicker.Advanced
             MacroActionType.MiddleClick,
             MacroActionType.DoubleClick,
             MacroActionType.DragDrop,
+            MacroActionType.PressAndClick,
             MacroActionType.KeyPress,
             MacroActionType.TypeText,
             MacroActionType.Delay,
@@ -239,8 +247,8 @@ namespace ModernAutoClicker.Advanced
 
         private static int GetActionTypeIndex(MacroActionType actionType)
         {
-            if (actionType == MacroActionType.IfColorArea || actionType == MacroActionType.WaitColor) return 9; // Map to IfColor
-            if (actionType == MacroActionType.WaitImage) return 11; // Map to IfImage
+            if (actionType == MacroActionType.IfColorArea || actionType == MacroActionType.WaitColor) return Array.IndexOf(ActionTypeDisplayList, MacroActionType.IfColor);
+            if (actionType == MacroActionType.WaitImage) return Array.IndexOf(ActionTypeDisplayList, MacroActionType.IfImage);
             for (int i = 0; i < ActionTypeDisplayList.Length; i++)
             {
                 if (ActionTypeDisplayList[i] == actionType) return i;
@@ -356,6 +364,16 @@ namespace ModernAutoClicker.Advanced
                         _step.HoldMs = 10;
                         if (numHold != null) numHold.Value = 10;
                     }
+                }
+                else if (newType == MacroActionType.PressAndClick)
+                {
+                    if (string.IsNullOrEmpty(_step.KeyData) || _step.KeyData == "Space")
+                    {
+                        _step.KeyData = "Ctrl";
+                        if (txtPressKey != null) txtPressKey.Text = "Ctrl";
+                    }
+                    if (_step.HoldMs <= 0) _step.HoldMs = 10;
+                    if (numHold != null) numHold.Value = _step.HoldMs;
                 }
                 else if (newType == MacroActionType.TypeText)
                 {
@@ -835,19 +853,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(124, 31),
                 Size = new Size(116, 22),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                CustomBackColor = Color.FromArgb(35, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B),
-                CustomBorderColor = Color.FromArgb(140, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B),
                 Visible = false
-            };
-            cboIfTrue.ItemColorProvider = (idx) =>
-            {
-                if (idx >= 0 && idx < cboIfTrue.Items.Count)
-                {
-                    if (idx == 0 || idx == 1) return _theme.CGreen;
-                    if (idx == 2) return _theme.COrange;
-                    if (idx == cboIfTrue.Items.Count - 1) return _theme.Danger;
-                }
-                return _theme.TextPrimary;
             };
             cboIfTrue.SelectedIndexChanged += (s, e) =>
             {
@@ -893,19 +899,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(330, 31),
                 Size = new Size(128, 22),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                CustomBackColor = Color.FromArgb(35, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B),
-                CustomBorderColor = Color.FromArgb(140, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B),
                 Visible = false
-            };
-            cboIfFalse.ItemColorProvider = (idx) =>
-            {
-                if (idx >= 0 && idx < cboIfFalse.Items.Count)
-                {
-                    if (idx == 0 || idx == 1) return _theme.CGreen;
-                    if (idx == 2) return _theme.COrange;
-                    if (idx == cboIfFalse.Items.Count - 1) return _theme.Danger;
-                }
-                return _theme.TextPrimary;
             };
             cboIfFalse.SelectedIndexChanged += (s, e) =>
             {
@@ -1100,11 +1094,8 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(124, 31),
                 Size = new Size(116, 22),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                CustomBackColor = Color.FromArgb(35, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B),
-                CustomBorderColor = Color.FromArgb(140, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B),
                 Visible = false
             };
-            cboLoopTarget.ItemColorProvider = (idx) => _theme.CGreen;
             cboLoopTarget.SelectedIndexChanged += (s, e) =>
             {
                 if (_isBinding || _isPopulatingRepeatTargets) return;
@@ -1132,15 +1123,7 @@ namespace ModernAutoClicker.Advanced
                 Location = new Point(330, 31),
                 Size = new Size(128, 22),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                CustomBackColor = Color.FromArgb(35, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B),
-                CustomBorderColor = Color.FromArgb(140, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B),
                 Visible = false
-            };
-            cboLoopFinished.ItemColorProvider = (idx) =>
-            {
-                if (idx == 0) return _theme.CGreen;
-                if (idx == cboLoopFinished.Items.Count - 1) return _theme.Danger;
-                return _theme.COrange;
             };
             cboLoopFinished.SelectedIndexChanged += (s, e) =>
             {
@@ -1156,11 +1139,163 @@ namespace ModernAutoClicker.Advanced
                 }
             };
 
+            // Press n Click: Line 2 Controls
+            lblPressKeyTitle = new Label
+            {
+                Text = Loc.LabelPressKey,
+                Location = new Point(38, 32),
+                Size = new Size(84, 20),
+                AutoSize = false,
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleRight,
+                ForeColor = _theme.CCyan,
+                Visible = false
+            };
+
+            txtPressKey = new ModernTextBox
+            {
+                Text = !string.IsNullOrEmpty(_step.KeyData) ? _step.KeyData : "Ctrl",
+                Location = new Point(124, 31),
+                Size = new Size(86, 22),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
+                PlaceholderText = "Ctrl / Shift...",
+                Visible = false
+            };
+            txtPressKey.KeyDown += (s, e) =>
+            {
+                if (_step.ActionType == MacroActionType.PressAndClick)
+                {
+                    Keys key = e.KeyCode;
+                    System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string>();
+
+                    if (key == Keys.ControlKey || key == Keys.LControlKey || key == Keys.RControlKey)
+                    {
+                        if (e.Shift) parts.Add("Shift");
+                        if (e.Alt) parts.Add("Alt");
+                        parts.Add("Ctrl");
+                    }
+                    else if (key == Keys.ShiftKey || key == Keys.LShiftKey || key == Keys.RShiftKey)
+                    {
+                        if (e.Control) parts.Add("Ctrl");
+                        if (e.Alt) parts.Add("Alt");
+                        parts.Add("Shift");
+                    }
+                    else if (key == Keys.Menu || key == Keys.LMenu || key == Keys.RMenu)
+                    {
+                        if (e.Control) parts.Add("Ctrl");
+                        if (e.Shift) parts.Add("Shift");
+                        parts.Add("Alt");
+                    }
+                    else
+                    {
+                        if (e.Control) parts.Add("Ctrl");
+                        if (e.Shift) parts.Add("Shift");
+                        if (e.Alt) parts.Add("Alt");
+
+                        string keyName;
+                        if (key >= Keys.A && key <= Keys.Z) keyName = key.ToString().ToUpper();
+                        else if (key >= Keys.D0 && key <= Keys.D9) keyName = ((int)key - (int)Keys.D0).ToString();
+                        else if (key >= Keys.NumPad0 && key <= Keys.NumPad9) keyName = "Num" + ((int)key - (int)Keys.NumPad0).ToString();
+                        else if (key == Keys.Space) keyName = "Space";
+                        else if (key == Keys.Return) keyName = "Enter";
+                        else if (key == Keys.Escape) keyName = "Esc";
+                        else if (key == Keys.Back) keyName = "Backspace";
+                        else if (key == Keys.Delete) keyName = "Delete";
+                        else if (key == Keys.Insert) keyName = "Insert";
+                        else if (key == Keys.Home) keyName = "Home";
+                        else if (key == Keys.End) keyName = "End";
+                        else if (key == Keys.PageUp) keyName = "PageUp";
+                        else if (key == Keys.PageDown) keyName = "PageDown";
+                        else if (key == Keys.Up) keyName = "Up";
+                        else if (key == Keys.Down) keyName = "Down";
+                        else if (key == Keys.Left) keyName = "Left";
+                        else if (key == Keys.Right) keyName = "Right";
+                        else if (key == Keys.Tab) keyName = "Tab";
+                        else if (key >= Keys.F1 && key <= Keys.F24) keyName = key.ToString();
+                        else keyName = key.ToString();
+
+                        parts.Add(keyName);
+                    }
+
+                    string finalKey = string.Join("+", parts.ToArray());
+                    if (!string.IsNullOrEmpty(finalKey))
+                    {
+                        _step.KeyData = finalKey;
+                        txtPressKey.Text = finalKey;
+                        if (OnStepChanged != null) OnStepChanged();
+                    }
+                    e.SuppressKeyPress = true;
+                    e.Handled = true;
+                }
+            };
+            txtPressKey.TextChanged += (s, e) =>
+            {
+                if (_isBinding) return;
+                if (_step.ActionType == MacroActionType.PressAndClick)
+                {
+                    _step.KeyData = txtPressKey.Text ?? "";
+                    if (OnStepChanged != null) OnStepChanged();
+                }
+            };
+
+            btnPressClickOrder = new SvgIconButton
+            {
+                SvgName = "swap.svg",
+                IconWidth = 14,
+                IconHeight = 14,
+                Location = new Point(214, 31),
+                Size = new Size(22, 22),
+                Visible = false
+            };
+            btnPressClickOrder.Click += (s, e) =>
+            {
+                if (_step.ActionType == MacroActionType.PressAndClick)
+                {
+                    _step.PressClickOrder = (_step.PressClickOrder == 0 ? 1 : 0);
+                    UpdateDynamicFields();
+                    UpdateRowTooltips();
+                    if (OnStepChanged != null) OnStepChanged();
+                }
+            };
+
+            lblPressModeTitle = new Label
+            {
+                Text = Loc.LabelPressMode,
+                Location = new Point(242, 32),
+                Size = new Size(84, 20),
+                AutoSize = false,
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleRight,
+                ForeColor = _theme.CCyan,
+                Visible = false
+            };
+
+            cboPressClickMode = new ModernDropdown
+            {
+                Location = new Point(330, 31),
+                Size = new Size(128, 22),
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                Visible = false
+            };
+            PopulatePressClickModes();
+            cboPressClickMode.SelectedIndex = Math.Max(0, Math.Min(3, _step.PressClickMode));
+            cboPressClickMode.SelectedIndexChanged += (s, e) =>
+            {
+                if (_isBinding) return;
+                if (_step.ActionType == MacroActionType.PressAndClick)
+                {
+                    _step.PressClickMode = cboPressClickMode.SelectedIndex;
+                    UpdateDynamicFields();
+                    if (OnStepChanged != null) OnStepChanged();
+                }
+            };
+
             this.Controls.AddRange(new Control[] {
                 lblIndex, chkSelect, lblWindowIcon, cboActionType,
                 cboTargetScript, pnlColorSwatch, pnlImageThumb, lblCoord, btnPickCoord, numScroll, cboDragButton, txtKeyData,
                 numHold, numSimilarity, lblSimilarity, numDelay, numRepeat, numTimeout, lblIfMatch, cboIfTrue, lblIfUnmatch, cboIfFalse, btnDelete, txtNote,
-                cboRepeatMode, numRepeatTimes, txtRepeatTime, lblLoopTo, cboLoopTarget, lblLoopFinished, cboLoopFinished
+                cboRepeatMode, numRepeatTimes, txtRepeatTime, lblLoopTo, cboLoopTarget, lblLoopFinished, cboLoopFinished,
+                lblPressKeyTitle, txtPressKey, btnPressClickOrder, lblPressModeTitle, cboPressClickMode
             });
 
             HookRowSelectionRecursively(this);
@@ -1229,6 +1364,12 @@ namespace ModernAutoClicker.Advanced
                     PopulateRepeatModes();
                     PopulateRepeatTargetList();
                     PopulateRepeatThenList();
+                }
+                else if (_step.ActionType == MacroActionType.PressAndClick)
+                {
+                    if (lblPressKeyTitle != null) lblPressKeyTitle.Text = Loc.LabelPressKey;
+                    if (lblPressModeTitle != null) lblPressModeTitle.Text = Loc.LabelPressMode;
+                    PopulatePressClickModes();
                 }
                 UpdateDynamicFields();
                 UpdateWindowIconDisplay();
@@ -1393,6 +1534,38 @@ namespace ModernAutoClicker.Advanced
                 RowToolTipManager.SetToolTip(cboLoopFinished, Loc.IsVietnamese
                     ? "Hành Động Khi Hoàn Tất Vòng Lặp:\n• [Bước kế tiếp]: Tiếp tục thực hiện bước kế tiếp.\n• Nhảy đến số bước đã chọn để thực hiện tiếp.\n• [Dừng lại]: Dừng chạy script ngay lập tức."
                     : "Action When Loop Finished:\n• [Next Step]: Continue to the next step.\n• Jump to your selected step # to execute next.\n• [Stop]: Immediately stop script execution.");
+
+            if (btnPressClickOrder != null)
+            {
+                string orderDesc;
+                if (Loc.IsVietnamese)
+                {
+                    orderDesc = (_step != null && _step.PressClickOrder == 0)
+                        ? "Thứ tự: Nhấn Phím ➔ Click Chuột (Click để đổi sang Click ➔ Phím)"
+                        : "Thứ tự: Click Chuột ➔ Nhấn Phím (Click để đổi sang Phím ➔ Click)";
+                }
+                else
+                {
+                    orderDesc = (_step != null && _step.PressClickOrder == 0)
+                        ? "Order: Key Press ➔ Mouse Click (Click to swap to Mouse ➔ Key)"
+                        : "Order: Mouse Click ➔ Key Press (Click to swap to Key ➔ Mouse)";
+                }
+                RowToolTipManager.SetToolTip(btnPressClickOrder, orderDesc);
+            }
+
+            if (txtPressKey != null)
+            {
+                RowToolTipManager.SetToolTip(txtPressKey, Loc.IsVietnamese
+                    ? "Phím Bổ Trợ / Tổ Hợp Phím:\nNhấn phím cần giữ (ví dụ: Ctrl, Shift, Alt, Ctrl+Shift, hoặc phím ký tự)."
+                    : "Modifier Key / Key Combo:\nKey to hold (e.g., Ctrl, Shift, Alt, Ctrl+Shift, or any key).");
+            }
+
+            if (cboPressClickMode != null)
+            {
+                RowToolTipManager.SetToolTip(cboPressClickMode, Loc.IsVietnamese
+                    ? "Kiểu Thao Tác Chuột:\nChọn Click Trái, Click Phải, Click Giữa hoặc Kéo & Thả (Drag & Drop)."
+                    : "Mouse Action Type:\nChoose Left Click, Right Click, Middle Click, or Drag & Drop.");
+            }
         }
 
         private void ShowWindowSelectMenu(Control anchor)
@@ -1493,6 +1666,15 @@ namespace ModernAutoClicker.Advanced
                 }
                 
                 if (cboDragButton != null) cboDragButton.SelectedIndex = Math.Max(0, Math.Min(2, _step.DragButton));
+                if (cboPressClickMode != null)
+                {
+                    PopulatePressClickModes();
+                    cboPressClickMode.SelectedIndex = Math.Max(0, Math.Min(3, _step.PressClickMode));
+                }
+                if (txtPressKey != null)
+                {
+                    txtPressKey.Text = !string.IsNullOrEmpty(_step.KeyData) ? _step.KeyData : "Ctrl";
+                }
                 UpdateWindowIconDisplay();
                 UpdateDynamicFields();
                 UpdateRowTooltips();
@@ -1513,6 +1695,8 @@ namespace ModernAutoClicker.Advanced
             if (numTimeout != null && numTimeout.Value != _step.TimeoutSec) numTimeout.Value = _step.TimeoutSec > 0 ? _step.TimeoutSec : 10;
             if (numScroll != null && numScroll.Value != _step.ScrollStep) numScroll.Value = _step.ScrollStep;
             if (cboDragButton != null && cboDragButton.SelectedIndex != _step.DragButton) cboDragButton.SelectedIndex = Math.Max(0, Math.Min(2, _step.DragButton));
+            if (cboPressClickMode != null && cboPressClickMode.SelectedIndex != _step.PressClickMode) cboPressClickMode.SelectedIndex = Math.Max(0, Math.Min(3, _step.PressClickMode));
+            if (txtPressKey != null && txtPressKey.Text != _step.KeyData) txtPressKey.Text = !string.IsNullOrEmpty(_step.KeyData) ? _step.KeyData : "Ctrl";
             if (txtKeyData != null && txtKeyData.Text != _step.KeyData) txtKeyData.Text = _step.KeyData ?? "";
             if (txtNote != null && txtNote.Text != _step.Note) txtNote.Text = _step.Note ?? "";
             if (pnlImageThumb != null) pnlImageThumb.Invalidate();
@@ -1534,7 +1718,8 @@ namespace ModernAutoClicker.Advanced
                                 _step.ActionType == MacroActionType.IfColorArea ||
                                 _step.ActionType == MacroActionType.WaitColor ||
                                 _step.ActionType == MacroActionType.WaitImage ||
-                                _step.ActionType == MacroActionType.IfImage);
+                                _step.ActionType == MacroActionType.IfImage ||
+                                (_step.ActionType == MacroActionType.PressAndClick && _step.PressClickMode != 3));
                 string text = GetCoordDisplayText(compact);
                 if (lblCoord.Text != text)
                 {
@@ -1562,7 +1747,7 @@ namespace ModernAutoClicker.Advanced
                 return "Full\nScreen";
             }
 
-            if (_step.ActionType == MacroActionType.DragDrop)
+            if (IsDragAction())
             {
                 return string.Format("A: {0}, {1}\nB: {2}, {3}", _step.StartPoint.X, _step.StartPoint.Y, _step.EndPoint.X, _step.EndPoint.Y);
             }
@@ -1604,6 +1789,11 @@ namespace ModernAutoClicker.Advanced
             if (cboLoopTarget != null) cboLoopTarget.Visible = false;
             if (lblLoopFinished != null) lblLoopFinished.Visible = false;
             if (cboLoopFinished != null) cboLoopFinished.Visible = false;
+            if (lblPressKeyTitle != null) lblPressKeyTitle.Visible = false;
+            if (txtPressKey != null) txtPressKey.Visible = false;
+            if (btnPressClickOrder != null) btnPressClickOrder.Visible = false;
+            if (lblPressModeTitle != null) lblPressModeTitle.Visible = false;
+            if (cboPressClickMode != null) cboPressClickMode.Visible = false;
 
             if (_step.ActionType == MacroActionType.RunScript)
             {
@@ -1653,6 +1843,90 @@ namespace ModernAutoClicker.Advanced
                     numHold.Visible = true;
                     numDelay.Visible = true;
                     numRepeat.Visible = true;
+                }
+                else if (_step.ActionType == MacroActionType.PressAndClick)
+                {
+                    this.Height = 58;
+
+                    pnlColorSwatch.Visible = false;
+                    numScroll.Visible = false;
+                    txtKeyData.Visible = false;
+                    if (cboDragButton != null) cboDragButton.Visible = false;
+
+                    // Hàng 1 (Target): Tùy thuộc vào PressClickMode (3: DragDrop, 0,1,2: Click)
+                    bool isDrag = (_step.PressClickMode == 3);
+                    lblCoord.Visible = true;
+                    if (isDrag)
+                    {
+                        lblCoord.Location = new Point(colX, 2);
+                        lblCoord.Size = new Size(colW - 20, 30);
+                    }
+                    else
+                    {
+                        lblCoord.Location = new Point(colX, 6);
+                        lblCoord.Size = new Size(colW - 20, 22);
+                    }
+                    lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
+                    lblCoord.TextAlign = ContentAlignment.MiddleRight;
+                    lblCoord.Text = GetCoordDisplayText(!isDrag);
+
+                    btnPickCoord.Location = new Point(colX + colW - 16, 6);
+                    btnPickCoord.Size = new Size(16, 22);
+                    btnPickCoord.Visible = true;
+
+                    numHold.Visible = true;
+                    numDelay.Visible = true;
+                    numRepeat.Visible = true;
+
+                    // Hàng 2: Line 2 Controls (gióng hàng khớp 100% với Repeat/Timer và hỗ trợ swap đảo vị trí)
+                    bool isKeyFirst = (_step.PressClickOrder == 0);
+
+                    if (btnPressClickOrder != null)
+                    {
+                        btnPressClickOrder.Location = new Point(244, 31);
+                        btnPressClickOrder.Size = new Size(22, 22);
+                        btnPressClickOrder.SvgName = "swap.svg";
+                        btnPressClickOrder.Visible = true;
+                        btnPressClickOrder.ApplyTheme(_theme);
+                    }
+
+                    if (lblPressKeyTitle != null)
+                    {
+                        lblPressKeyTitle.Text = Loc.LabelPressKey;
+                        lblPressKeyTitle.Location = isKeyFirst ? new Point(38, 32) : new Point(268, 32);
+                        lblPressKeyTitle.Size = isKeyFirst ? new Size(84, 20) : new Size(58, 20);
+                        lblPressKeyTitle.TextAlign = ContentAlignment.MiddleRight;
+                        lblPressKeyTitle.Font = ThemeTokens.FontBase(FontStyle.Bold);
+                        lblPressKeyTitle.ForeColor = _theme.CCyan;
+                        lblPressKeyTitle.Visible = true;
+                    }
+
+                    if (txtPressKey != null)
+                    {
+                        txtPressKey.Location = isKeyFirst ? new Point(124, 31) : new Point(330, 31);
+                        txtPressKey.Size = isKeyFirst ? new Size(116, 22) : new Size(128, 22);
+                        txtPressKey.Text = !string.IsNullOrEmpty(_step.KeyData) ? _step.KeyData : "Ctrl";
+                        txtPressKey.Visible = true;
+                    }
+
+                    if (lblPressModeTitle != null)
+                    {
+                        lblPressModeTitle.Text = Loc.LabelPressMode;
+                        lblPressModeTitle.Location = isKeyFirst ? new Point(268, 32) : new Point(38, 32);
+                        lblPressModeTitle.Size = isKeyFirst ? new Size(58, 20) : new Size(84, 20);
+                        lblPressModeTitle.TextAlign = ContentAlignment.MiddleRight;
+                        lblPressModeTitle.Font = ThemeTokens.FontBase(FontStyle.Bold);
+                        lblPressModeTitle.ForeColor = _theme.CCyan;
+                        lblPressModeTitle.Visible = true;
+                    }
+
+                    if (cboPressClickMode != null)
+                    {
+                        cboPressClickMode.Location = isKeyFirst ? new Point(330, 31) : new Point(124, 31);
+                        cboPressClickMode.Size = isKeyFirst ? new Size(128, 22) : new Size(116, 22);
+                        cboPressClickMode.Visible = true;
+                        PopulatePressClickModes();
+                    }
                 }
                 else if (_step.ActionType == MacroActionType.RepeatTimer)
                 {
@@ -1747,20 +2021,20 @@ namespace ModernAutoClicker.Advanced
                 if (cboDragButton != null)
                 {
                     cboDragButton.Location = new Point(colX, 6);
-                    cboDragButton.Size = new Size(34, 22);
+                    cboDragButton.Size = new Size(28, 22);
                     cboDragButton.SelectedIndex = Math.Max(0, Math.Min(2, _step.DragButton));
                     cboDragButton.Visible = true;
                 }
 
                 lblCoord.Visible = true;
                 lblCoord.Cursor = Cursors.Hand;
-                lblCoord.Location = new Point(colX + 36, 2);
-                lblCoord.Size = new Size(60, 30);
+                lblCoord.Location = new Point(colX + 29, 2);
+                lblCoord.Size = new Size(colW - 29 - 17, 30);
                 lblCoord.Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeMicro);
                 lblCoord.TextAlign = ContentAlignment.MiddleRight;
                 lblCoord.Text = GetCoordDisplayText();
 
-                btnPickCoord.Location = new Point(colX + 96, 6);
+                btnPickCoord.Location = new Point(colX + colW - 16, 6);
                 btnPickCoord.Size = new Size(16, 22);
                 btnPickCoord.Visible = true;
 
@@ -2269,6 +2543,27 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
+        private void PopulatePressClickModes()
+        {
+            if (cboPressClickMode == null) return;
+            bool prev = _isBinding;
+            _isBinding = true;
+            try
+            {
+                int prevSel = (_step != null) ? _step.PressClickMode : 0;
+                cboPressClickMode.Items.Clear();
+                cboPressClickMode.Items.Add(Loc.ModePressLeft);
+                cboPressClickMode.Items.Add(Loc.ModePressRight);
+                cboPressClickMode.Items.Add(Loc.ModePressMiddle);
+                cboPressClickMode.Items.Add(Loc.ModePressDrag);
+                cboPressClickMode.SelectedIndex = Math.Max(0, Math.Min(3, prevSel));
+            }
+            finally
+            {
+                _isBinding = prev;
+            }
+        }
+
         private bool _isPopulatingRepeatThen = false;
 
         private void PopulateRepeatThenList()
@@ -2417,6 +2712,8 @@ namespace ModernAutoClicker.Advanced
                 case MacroActionType.KeyPress:
                 case MacroActionType.TypeText:
                     return theme.COrange;
+                case MacroActionType.PressAndClick:
+                    return theme.CCyan;
                 case MacroActionType.Delay:
                 case MacroActionType.RepeatTimer:
                     return theme.CGreen;
@@ -2487,6 +2784,15 @@ namespace ModernAutoClicker.Advanced
             if (btnDelete != null) btnDelete.Enabled = enableInputs;
             if (txtNote != null) txtNote.Enabled = enableInputs;
             if (lblWindowIcon != null) lblWindowIcon.Enabled = enableInputs;
+            if (txtPressKey != null) txtPressKey.Enabled = enableInputs;
+            if (btnPressClickOrder != null) btnPressClickOrder.Enabled = enableInputs;
+            if (cboPressClickMode != null) cboPressClickMode.Enabled = enableInputs;
+        }
+
+        private bool IsDragAction()
+        {
+            return _step != null && (_step.ActionType == MacroActionType.DragDrop ||
+                   (_step.ActionType == MacroActionType.PressAndClick && _step.PressClickMode == 3));
         }
 
         public void ApplyPickedCoordinates(Point screenA, Point screenB, Color color, NativeMethods.WindowTargetInfo winInfo, Point clientPtA, Point clientPtB, bool isArea)
@@ -2530,7 +2836,7 @@ namespace ModernAutoClicker.Advanced
                     }
                     else finalA = screenA;
 
-                    if (isArea || _step.ActionType == MacroActionType.DragDrop)
+                    if (isArea || IsDragAction())
                     {
                         NativeMethods.POINT npB = new NativeMethods.POINT { X = screenB.X, Y = screenB.Y };
                         if (NativeMethods.ScreenToClient(hWnd, ref npB))
@@ -2577,7 +2883,7 @@ namespace ModernAutoClicker.Advanced
             }
 
             _step.StartPoint = finalA;
-            if (_step.ActionType == MacroActionType.DragDrop || isArea)
+            if (IsDragAction() || isArea)
             {
                 _step.EndPoint = finalB;
             }
@@ -2628,17 +2934,26 @@ namespace ModernAutoClicker.Advanced
             CoordinatePicker picker = new CoordinatePicker();
             picker.OnTargetSelectedWithWindow += (screenA, screenB, color, winInfo, clientPtA, clientPtB, isArea) =>
             {
-                if (_step.ActionType == MacroActionType.DragDrop && !isArea)
+                if (IsDragAction() && !isArea)
                 {
-                    // User clicked once for DragDrop: record Point A and open picker for Point B
-                    ApplyPickedCoordinates(screenA, Point.Empty, color, winInfo, clientPtA, Point.Empty, false);
+                    // User clicked once for DragDrop/PressAndClick Drag: record Point A and open picker for Point B
+                    Point savedScreenA = screenA;
+                    Point savedClientA = clientPtA;
+                    NativeMethods.WindowTargetInfo savedWinInfo = winInfo;
+                    Color savedColor = color;
+
+                    // Apply Point A temporarily so UI updates immediately
+                    ApplyPickedCoordinates(savedScreenA, Point.Empty, savedColor, savedWinInfo, savedClientA, Point.Empty, false);
 
                     CoordinatePicker pickerB = new CoordinatePicker();
                     pickerB.OnTargetSelectedWithWindow += (sA2, sB2, color2, winInfo2, cPtA2, cPtB2, isArea2) =>
                     {
                         Point endScreen = isArea2 ? sB2 : sA2;
                         Point endClient = isArea2 ? cPtB2 : cPtA2;
-                        ApplyPickedCoordinates(_step.StartPoint, endScreen, color2, winInfo2, _step.StartPoint, endClient, true);
+                        NativeMethods.WindowTargetInfo finalWinInfo = savedWinInfo ?? winInfo2;
+
+                        // Must use saved original screenA and clientPtA to prevent double-conversion bug
+                        ApplyPickedCoordinates(savedScreenA, endScreen, savedColor, finalWinInfo, savedClientA, endClient, true);
                     };
                     pickerB.Show();
                     return;
@@ -2842,18 +3157,14 @@ namespace ModernAutoClicker.Advanced
             if (lblIfUnmatch != null) lblIfUnmatch.ForeColor = _theme.Danger;
             if (cboIfTrue != null)
             {
-                int alpha = (_theme != null && _theme.IsDark) ? 35 : 28;
-                int borderAlpha = (_theme != null && _theme.IsDark) ? 140 : 160;
-                cboIfTrue.CustomBackColor = Color.FromArgb(alpha, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B);
-                cboIfTrue.CustomBorderColor = Color.FromArgb(borderAlpha, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B);
+                cboIfTrue.CustomBackColor = Color.Empty;
+                cboIfTrue.CustomBorderColor = Color.Empty;
                 cboIfTrue.ApplyTheme(_theme);
             }
             if (cboIfFalse != null)
             {
-                int alpha = (_theme != null && _theme.IsDark) ? 35 : 28;
-                int borderAlpha = (_theme != null && _theme.IsDark) ? 140 : 160;
-                cboIfFalse.CustomBackColor = Color.FromArgb(alpha, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B);
-                cboIfFalse.CustomBorderColor = Color.FromArgb(borderAlpha, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B);
+                cboIfFalse.CustomBackColor = Color.Empty;
+                cboIfFalse.CustomBorderColor = Color.Empty;
                 cboIfFalse.ApplyTheme(_theme);
             }
             if (lblSimilarity != null) lblSimilarity.ForeColor = _theme.TextSecondary;
@@ -2866,19 +3177,25 @@ namespace ModernAutoClicker.Advanced
             if (lblLoopFinished != null) lblLoopFinished.ForeColor = _theme.Danger;
             if (cboLoopTarget != null)
             {
-                int alpha = (_theme != null && _theme.IsDark) ? 35 : 28;
-                int borderAlpha = (_theme != null && _theme.IsDark) ? 140 : 160;
-                cboLoopTarget.CustomBackColor = Color.FromArgb(alpha, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B);
-                cboLoopTarget.CustomBorderColor = Color.FromArgb(borderAlpha, _theme.CGreen.R, _theme.CGreen.G, _theme.CGreen.B);
+                cboLoopTarget.CustomBackColor = Color.Empty;
+                cboLoopTarget.CustomBorderColor = Color.Empty;
                 cboLoopTarget.ApplyTheme(_theme);
             }
             if (cboLoopFinished != null)
             {
-                int alpha = (_theme != null && _theme.IsDark) ? 35 : 28;
-                int borderAlpha = (_theme != null && _theme.IsDark) ? 140 : 160;
-                cboLoopFinished.CustomBackColor = Color.FromArgb(alpha, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B);
-                cboLoopFinished.CustomBorderColor = Color.FromArgb(borderAlpha, _theme.Danger.R, _theme.Danger.G, _theme.Danger.B);
+                cboLoopFinished.CustomBackColor = Color.Empty;
+                cboLoopFinished.CustomBorderColor = Color.Empty;
                 cboLoopFinished.ApplyTheme(_theme);
+            }
+            if (lblPressKeyTitle != null) lblPressKeyTitle.ForeColor = _theme.CCyan;
+            if (txtPressKey != null) txtPressKey.ApplyTheme(_theme);
+            if (btnPressClickOrder != null) btnPressClickOrder.ApplyTheme(_theme);
+            if (lblPressModeTitle != null) lblPressModeTitle.ForeColor = _theme.CCyan;
+            if (cboPressClickMode != null)
+            {
+                cboPressClickMode.CustomBackColor = Color.Empty;
+                cboPressClickMode.CustomBorderColor = Color.Empty;
+                cboPressClickMode.ApplyTheme(_theme);
             }
             if (txtNote != null) txtNote.ApplyTheme(_theme);
             if (btnDelete != null) btnDelete.ForeColor = _theme.Danger;

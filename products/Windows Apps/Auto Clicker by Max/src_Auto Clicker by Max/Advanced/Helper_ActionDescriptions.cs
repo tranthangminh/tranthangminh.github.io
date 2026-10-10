@@ -1,4 +1,4 @@
-﻿using Loc = ModernAutoClicker.Localization.Loc;
+using Loc = ModernAutoClicker.Localization.Loc;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -58,6 +58,11 @@ namespace ModernAutoClicker.Advanced
                                "Tìm kiếm hình ảnh mẫu trên màn hình hoặc vùng chỉ định:\n" +
                                "• Thấy: Hành động khi tìm thấy ảnh (Click Tâm ảnh, Nhảy đến bước X, Bước kế tiếp, hoặc Dừng).\n" +
                                "• Không thấy: Hành động khi không tìm thấy (Bước kế tiếp, Nhảy đến bước X, hoặc Dừng).";
+                    case MacroActionType.PressAndClick:
+                        return "Nhấn & Click (Press n Click):\n" +
+                               "Kết hợp giữ phím và thao tác chuột cùng lúc (ví dụ Ctrl+Click, Shift+Click, Alt+Drag):\n" +
+                               "• Tự do đổi thứ tự: Phím ➔ Click (giữ phím rồi click) hoặc Click ➔ Phím (click rồi giữ phím).\n" +
+                               "• 4 chế độ chuột: Click trái, Click phải, Click giữa, hoặc Kéo thả (Drag n Drop).";
                     default:
                         return "Bước Macro: Thực hiện một hành động tự động hóa.";
                 }
@@ -108,6 +113,11 @@ namespace ModernAutoClicker.Advanced
                            "Searches for the template image within the screen or designated area:\n" +
                            "• Found: Action when image is found (Click Center, Jump to Step X, Next Step, or Stop).\n" +
                            "• Not Found: Action when image is missing (Next Step, Jump to Step X, or Stop).";
+                case MacroActionType.PressAndClick:
+                    return "Press n Click:\n" +
+                           "Combines key press and mouse action simultaneously (e.g. Ctrl+Click, Shift+Click, Alt+Drag):\n" +
+                           "• Configurable order: Key ➔ Click (hold key then click) or Click ➔ Key (click then hold key).\n" +
+                           "• 4 mouse modes: Left Click, Right Click, Middle Click, or Drag n Drop.";
                 default:
                     return "Macro Action: Performs an automated input step.";
             }
@@ -127,6 +137,7 @@ namespace ModernAutoClicker.Advanced
                     case MacroActionType.TypeText:
                         return "Giữ (ms) - Thời Gian Hoàn Tất Gõ:\nTổng thời gian để gõ xong toàn bộ chuỗi ký tự.";
                     case MacroActionType.KeyPress:
+                    case MacroActionType.PressAndClick:
                         return "Giữ (ms) - Thời Gian Nhấn Phím:\nThời gian giữ phím hoặc tổ hợp phím trước khi nhả ra.";
                     case MacroActionType.LeftClick:
                     case MacroActionType.RightClick:
@@ -147,6 +158,7 @@ namespace ModernAutoClicker.Advanced
                 case MacroActionType.TypeText:
                     return "Hold (ms) - Step Completion Duration:\nTotal duration to complete typing the entire text string.";
                 case MacroActionType.KeyPress:
+                case MacroActionType.PressAndClick:
                     return "Hold (ms) - Step Completion Duration:\nDuration to keep the key or shortcut pressed down before releasing.";
                 case MacroActionType.LeftClick:
                 case MacroActionType.RightClick:
@@ -251,6 +263,18 @@ namespace ModernAutoClicker.Advanced
                         }
                         return string.Format("Tìm Hình Ảnh (Toàn Màn Hình):\nĐộ khớp: {0}%. Nhấp ảnh thu nhỏ để cắt ảnh hoặc 🎯 để giới hạn vùng tìm.",
                             step.Similarity);
+                    case MacroActionType.PressAndClick:
+                        string orderTextVi = step.PressClickOrder == 0 ? "Phím ➔ Click" : "Click ➔ Phím";
+                        string modeTextVi = step.PressClickMode == 0 ? "Click Trái" : (step.PressClickMode == 1 ? "Click Phải" : (step.PressClickMode == 2 ? "Click Giữa" : "Kéo Thả"));
+                        if (step.PressClickMode == 3)
+                        {
+                            return string.Format("Nhấn & Kéo: [{0}] + {1} ({2})\nĐường kéo ({3}, {4}) ➔ ({5}, {6}). Nhấp 🎯 để chọn 2 điểm.",
+                                !string.IsNullOrEmpty(step.KeyData) ? step.KeyData : "Ctrl", modeTextVi, orderTextVi,
+                                step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y);
+                        }
+                        return string.Format("Nhấn & Click: [{0}] + {1} ({2})\nTọa độ ({3}, {4}). Nhấp 🎯 để chọn tọa độ.",
+                            !string.IsNullOrEmpty(step.KeyData) ? step.KeyData : "Ctrl", modeTextVi, orderTextVi,
+                            step.StartPoint.X, step.StartPoint.Y);
                     default:
                         if (isArea)
                         {
@@ -307,6 +331,18 @@ namespace ModernAutoClicker.Advanced
                     }
                     return string.Format("Template Image Search (Full Screen):\nSim: {0}%. Click thumbnail to crop image or 🎯 to restrict search area.",
                         step.Similarity);
+                case MacroActionType.PressAndClick:
+                    string orderTextEn = step.PressClickOrder == 0 ? "Key ➔ Click" : "Click ➔ Key";
+                    string modeTextEn = step.PressClickMode == 0 ? "Left Click" : (step.PressClickMode == 1 ? "Right Click" : (step.PressClickMode == 2 ? "Middle Click" : "Drag n Drop"));
+                    if (step.PressClickMode == 3)
+                    {
+                        return string.Format("Press n Drag: [{0}] + {1} ({2})\nDrag path ({3}, {4}) ➔ ({5}, {6}). Click 🎯 to pick 2 points.",
+                            !string.IsNullOrEmpty(step.KeyData) ? step.KeyData : "Ctrl", modeTextEn, orderTextEn,
+                            step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y);
+                    }
+                    return string.Format("Press n Click: [{0}] + {1} ({2})\nCoordinates ({3}, {4}). Click 🎯 to pick coordinate.",
+                        !string.IsNullOrEmpty(step.KeyData) ? step.KeyData : "Ctrl", modeTextEn, orderTextEn,
+                        step.StartPoint.X, step.StartPoint.Y);
                 default:
                     if (isArea)
                     {

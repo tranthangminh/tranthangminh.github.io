@@ -1,4 +1,4 @@
-﻿using Loc = ModernAutoClicker.Localization.Loc;
+using Loc = ModernAutoClicker.Localization.Loc;
 using MaxApp.Common;
 using System;
 using System.Drawing;
@@ -884,6 +884,10 @@ namespace ModernAutoClicker
                     }
                 }
                 if (chkSmoothMove != null) chkSmoothMove.Text = Loc.ChkSmoothMove;
+
+                // Advanced Tab & Info Tab
+                if (pnlTabAdvanced != null) pnlTabAdvanced.ApplyLanguage();
+                if (pnlTabInfo != null) pnlTabInfo.ApplyLanguage();
 
                 // Status info
                 UpdateTabStatus(_isBasicTab);

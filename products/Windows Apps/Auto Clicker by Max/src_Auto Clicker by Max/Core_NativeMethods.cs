@@ -358,6 +358,18 @@ namespace ModernAutoClicker
             SendInput(1, inputUp, Marshal.SizeOf(typeof(INPUT)));
         }
 
+        public static void ReleaseAllMouseButtons()
+        {
+            INPUT[] upInputs = new INPUT[3];
+            upInputs[0].type = INPUT_MOUSE;
+            upInputs[0].u.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+            upInputs[1].type = INPUT_MOUSE;
+            upInputs[1].u.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
+            upInputs[2].type = INPUT_MOUSE;
+            upInputs[2].u.mi.dwFlags = MOUSEEVENTF_MIDDLEUP;
+            SendInput(3, upInputs, Marshal.SizeOf(typeof(INPUT)));
+        }
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 

@@ -505,6 +505,10 @@ namespace ModernAutoClicker.Advanced
                     PerformDrag(startPt, endPt, hold, step.DragButton);
                     break;
 
+                case MacroActionType.PressAndClick:
+                    ExecutePressAndClick(step, clickPt, startPt, endPt, rawClickPt, directHwnd, hold, freeMouseMode);
+                    break;
+
                 case MacroActionType.KeyPress:
                     KeyboardSimulator.ExecuteKeyPress(step.KeyData, hold);
                     break;
@@ -531,6 +535,108 @@ namespace ModernAutoClicker.Advanced
                 case MacroActionType.WaitChange:
                     // Handled in MacroRunner
                     break;
+            }
+        }
+
+        private static void ExecutePressAndClick(MacroStep step, Point clickPt, Point startPt, Point endPt, Point rawClickPt, IntPtr directHwnd, int hold, bool freeMouseMode)
+        {
+            if (step == null) return;
+            string keyCombo = !string.IsNullOrEmpty(step.KeyData) ? step.KeyData : "Ctrl";
+            int mode = step.PressClickMode; // 0: Left, 1: Right, 2: Middle, 3: DragDrop
+            int order = step.PressClickOrder; // 0: PressFirst (Phím ➔ Click), 1: ClickFirst (Click ➔ Phím)
+
+            if (order == 0) // Key First: Press Key -> Click/Drag -> Release Key
+            {
+                try
+                {
+                    KeyboardSimulator.KeyDown(keyCombo);
+                    Thread.Sleep(10);
+
+                    if (mode == 3) // DragDrop
+                    {
+                        PerformDrag(startPt, endPt, hold, step.DragButton);
+                    }
+                    else // Click
+                    {
+                        int mouseBtn = (mode == 1) ? 1 : (mode == 2 ? 2 : 0);
+                        if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
+                            PerformClickDirectToWindow(directHwnd, rawClickPt, mouseBtn, hold);
+                        else
+                            PerformClick(clickPt, mouseBtn, hold, freeMouseMode);
+                    }
+                }
+                finally
+                {
+                    Thread.Sleep(10);
+                    KeyboardSimulator.KeyUp(keyCombo);
+                }
+            }
+            else // Click First: Mouse Down -> Press Key -> Mouse Up
+            {
+                if (mode == 3) // DragDrop: Mouse Down -> Key Down -> Drag -> Key Up -> Mouse Up
+                {
+                    if (startPt == Point.Empty && endPt == Point.Empty) return;
+                    NativeMethods.SetCursorPos(startPt.X, startPt.Y);
+                    Thread.Sleep(10);
+
+                    uint downFlag = NativeMethods.MOUSEEVENTF_LEFTDOWN;
+                    uint upFlag = NativeMethods.MOUSEEVENTF_LEFTUP;
+                    if (step.DragButton == 1) { downFlag = NativeMethods.MOUSEEVENTF_RIGHTDOWN; upFlag = NativeMethods.MOUSEEVENTF_RIGHTUP; }
+                    else if (step.DragButton == 2) { downFlag = NativeMethods.MOUSEEVENTF_MIDDLEDOWN; upFlag = NativeMethods.MOUSEEVENTF_MIDDLEUP; }
+
+                    NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[1];
+                    inputs[0].type = NativeMethods.INPUT_MOUSE;
+                    inputs[0].u.mi.dwFlags = downFlag;
+                    NativeMethods.SendInput(1, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+                    Thread.Sleep(10);
+
+                    try
+                    {
+                        KeyboardSimulator.KeyDown(keyCombo);
+                        Thread.Sleep(10);
+                        MouseMovementSimulator.MoveSmoothly(startPt, endPt, Math.Max(20, hold));
+                        Thread.Sleep(10);
+                    }
+                    finally
+                    {
+                        KeyboardSimulator.KeyUp(keyCombo);
+                        inputs[0].u.mi.dwFlags = upFlag;
+                        NativeMethods.SendInput(1, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+                    }
+                }
+                else // Click: Move -> Mouse Down -> Key Press -> Mouse Up
+                {
+                    int mouseBtn = (mode == 1) ? 1 : (mode == 2 ? 2 : 0);
+                    if (clickPt != Point.Empty)
+                    {
+                        NativeMethods.SetCursorPos(clickPt.X, clickPt.Y);
+                        Thread.Sleep(15);
+                    }
+
+                    uint downFlag = (mouseBtn == 1) ? NativeMethods.MOUSEEVENTF_RIGHTDOWN :
+                                    (mouseBtn == 2 ? NativeMethods.MOUSEEVENTF_MIDDLEDOWN : NativeMethods.MOUSEEVENTF_LEFTDOWN);
+                    uint upFlag = (mouseBtn == 1) ? NativeMethods.MOUSEEVENTF_RIGHTUP :
+                                  (mouseBtn == 2 ? NativeMethods.MOUSEEVENTF_MIDDLEUP : NativeMethods.MOUSEEVENTF_LEFTUP);
+
+                    NativeMethods.INPUT[] downInp = new NativeMethods.INPUT[1];
+                    downInp[0].type = NativeMethods.INPUT_MOUSE;
+                    downInp[0].u.mi.dwFlags = downFlag;
+                    NativeMethods.SendInput(1, downInp, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+                    Thread.Sleep(10);
+
+                    try
+                    {
+                        KeyboardSimulator.ExecuteKeyPress(keyCombo, hold);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(10);
+                        NativeMethods.INPUT[] upInp = new NativeMethods.INPUT[1];
+                        upInp[0].type = NativeMethods.INPUT_MOUSE;
+                        upInp[0].u.mi.dwFlags = upFlag;
+                        NativeMethods.SendInput(1, upInp, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+                    }
+                }
             }
         }
 

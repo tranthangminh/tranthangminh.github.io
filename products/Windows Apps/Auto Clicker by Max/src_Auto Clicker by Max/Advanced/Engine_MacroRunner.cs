@@ -195,6 +195,8 @@ namespace ModernAutoClicker.Advanced
                 }
 
                 _isRunning = false;
+                KeyboardSimulator.ReleaseAllKeys();
+                NativeMethods.ReleaseAllMouseButtons();
                 if (OnStopped != null) OnStopped();
             })
             {
@@ -822,6 +824,8 @@ namespace ModernAutoClicker.Advanced
                 }
                 catch { }
             }
+            KeyboardSimulator.ReleaseAllKeys();
+            NativeMethods.ReleaseAllMouseButtons();
             lock (_repeatTimerStates)
             {
                 _repeatTimerStates.Clear();

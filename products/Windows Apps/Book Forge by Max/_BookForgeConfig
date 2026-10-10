@@ -1,6 +1,6 @@
 ﻿{
   "_comment": "BookForge Studio Persistent Configuration",
-  "ExtractSourcePath": "D:\\Mine\\Acting\\Test\\Respect For Acting Expanded Edition.pdf",
+  "ExtractSourcePath": "D:\\Mine\\Books\\Chien Thang Tro Choi Cuoc Song - Adam Khoo.pdf",
   "OutputLocationMode": "SameAsSource",
   "OutputCustomFolder": "",
   "SmartChunking": "H1, H2 & H3",
@@ -8,8 +8,8 @@
   "ExtractImages": true,
   "ScaffoldBible": true,
   "ExtractSettingsCollapsed": false,
-  "PublishFolderPath": "",
-  "SourceTranslated": true,
+  "PublishFolderPath": "D:\\Mine\\Books\\Chien Thang Tro Choi Cuoc Song - Adam Khoo",
+  "SourceTranslated": false,
   "SourceOriginal": true,
   "PaperSize": "A5",
   "FontFamily": "Lora (Recommended)",

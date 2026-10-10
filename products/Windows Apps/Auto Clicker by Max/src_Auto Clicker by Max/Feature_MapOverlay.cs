@@ -1,4 +1,4 @@
-﻿using MaxApp.Common;
+using MaxApp.Common;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -194,7 +194,8 @@ namespace ModernAutoClicker
                     var s = _advancedSteps[i];
                     if (!s.Enabled) continue;
 
-                    if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.DragDrop)
+                    if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.DragDrop ||
+                        (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.PressAndClick && s.PressClickMode == 3))
                     {
                         // Check EndPoint first
                         if (s.EndPoint != Point.Empty)
@@ -299,7 +300,9 @@ namespace ModernAutoClicker
                     {
                         var hitStep = _advancedSteps[hitIdx];
                         bool isArea = (hitStep.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea) ||
-                                      (hitStep.ActionType != ModernAutoClicker.Advanced.MacroActionType.DragDrop && hitStep.EndPoint != Point.Empty && hitStep.EndPoint != hitStep.StartPoint);
+                                      (hitStep.ActionType != ModernAutoClicker.Advanced.MacroActionType.DragDrop &&
+                                       (hitStep.ActionType != ModernAutoClicker.Advanced.MacroActionType.PressAndClick || hitStep.PressClickMode != 3) &&
+                                       hitStep.EndPoint != Point.Empty && hitStep.EndPoint != hitStep.StartPoint);
                         if (isArea)
                         {
                             targetPt = hitStep.StartPoint;
@@ -339,7 +342,9 @@ namespace ModernAutoClicker
                 {
                     var s = _advancedSteps[_draggedPointIndex];
                     bool isArea = (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.IfColorArea) ||
-                                  (s.ActionType != ModernAutoClicker.Advanced.MacroActionType.DragDrop && s.EndPoint != Point.Empty && s.EndPoint != s.StartPoint);
+                                  (s.ActionType != ModernAutoClicker.Advanced.MacroActionType.DragDrop &&
+                                   (s.ActionType != ModernAutoClicker.Advanced.MacroActionType.PressAndClick || s.PressClickMode != 3) &&
+                                   s.EndPoint != Point.Empty && s.EndPoint != s.StartPoint);
                     if (isArea)
                     {
                         s.StartPoint = newPt;
@@ -533,7 +538,8 @@ namespace ModernAutoClicker
                     var s = _advancedSteps[i];
                     if (!s.Enabled) continue;
 
-                    if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.DragDrop)
+                    if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.DragDrop ||
+                        (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.PressAndClick && s.PressClickMode == 3))
                     {
                         if (s.StartPoint != Point.Empty && s.EndPoint != Point.Empty && s.StartPoint != s.EndPoint)
                         {
@@ -644,7 +650,8 @@ namespace ModernAutoClicker
                     bool isSelected = (i == _selectedIndex);
                     bool isExecuting = (i == _executingIndex);
 
-                    if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.DragDrop)
+                    if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.DragDrop ||
+                        (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.PressAndClick && s.PressClickMode == 3))
                     {
                         if (s.StartPoint != Point.Empty)
                         {
@@ -769,7 +776,8 @@ namespace ModernAutoClicker
         public static string GetAdvancedStepLabel(ModernAutoClicker.Advanced.MacroStep s, int index, bool isStart)
         {
             int num = index + 1;
-            if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.DragDrop)
+            if (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.DragDrop ||
+                (s.ActionType == ModernAutoClicker.Advanced.MacroActionType.PressAndClick && s.PressClickMode == 3))
             {
                 return isStart ? string.Format("{0}A (Start)", num) : string.Format("{0}B (End)", num);
             }
@@ -788,6 +796,9 @@ namespace ModernAutoClicker
                     break;
                 case ModernAutoClicker.Advanced.MacroActionType.DoubleClick:
                     typeName = "Double";
+                    break;
+                case ModernAutoClicker.Advanced.MacroActionType.PressAndClick:
+                    typeName = (s.PressClickMode == 3) ? "Press Drag" : "Press Click";
                     break;
                 case ModernAutoClicker.Advanced.MacroActionType.WaitColor:
                     typeName = "Wait Color";
@@ -813,6 +824,7 @@ namespace ModernAutoClicker
             }
 
             if (s.ActionType != ModernAutoClicker.Advanced.MacroActionType.DragDrop &&
+                (s.ActionType != ModernAutoClicker.Advanced.MacroActionType.PressAndClick || s.PressClickMode != 3) &&
                 s.EndPoint != Point.Empty && s.EndPoint != s.StartPoint)
             {
                 typeName += " (Area)";
@@ -826,7 +838,8 @@ namespace ModernAutoClicker
             return actionType != ModernAutoClicker.Advanced.MacroActionType.KeyPress &&
                    actionType != ModernAutoClicker.Advanced.MacroActionType.TypeText &&
                    actionType != ModernAutoClicker.Advanced.MacroActionType.Delay &&
-                   actionType != ModernAutoClicker.Advanced.MacroActionType.RunScript;
+                   actionType != ModernAutoClicker.Advanced.MacroActionType.RunScript &&
+                   actionType != ModernAutoClicker.Advanced.MacroActionType.RepeatTimer;
         }
     }
 }

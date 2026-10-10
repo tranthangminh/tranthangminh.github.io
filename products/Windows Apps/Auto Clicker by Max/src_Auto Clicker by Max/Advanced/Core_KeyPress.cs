@@ -8,15 +8,14 @@ namespace ModernAutoClicker
 {
     public static class KeyboardSimulator
     {
-        public static void ExecuteKeyPress(string combo, int holdMs)
+        public static void ParseKeyCombo(string combo, out List<byte> modifiersDown, out byte mainVk)
         {
+            modifiersDown = new List<byte>();
+            mainVk = 0;
             if (string.IsNullOrWhiteSpace(combo)) return;
 
             string[] parts = combo.Split(new char[] { '+', '-', ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 0) return;
-
-            List<byte> modifiersDown = new List<byte>();
-            byte mainVk = 0;
 
             for (int i = 0; i < parts.Length; i++)
             {
@@ -55,17 +54,20 @@ namespace ModernAutoClicker
                     if (vk != 0) mainVk = vk;
                 }
             }
+        }
 
-            // Build SendInput list
+        public static void KeyDown(string combo)
+        {
+            if (string.IsNullOrWhiteSpace(combo)) return;
+            List<byte> modifiersDown;
+            byte mainVk;
+            ParseKeyCombo(combo, out modifiersDown, out mainVk);
+
             List<NativeMethods.INPUT> inputs = new List<NativeMethods.INPUT>();
-
-            // 1. Modifiers Down
             foreach (byte mod in modifiersDown)
             {
                 inputs.Add(CreateKeyInput(mod, false));
             }
-
-            // 2. Main Key Down
             if (mainVk != 0)
             {
                 inputs.Add(CreateKeyInput(mainVk, false));
@@ -75,17 +77,20 @@ namespace ModernAutoClicker
             {
                 NativeMethods.SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf(typeof(NativeMethods.INPUT)));
             }
+        }
 
-            // 3. Hold duration
-            Thread.Sleep(Math.Max(5, holdMs));
+        public static void KeyUp(string combo)
+        {
+            if (string.IsNullOrWhiteSpace(combo)) return;
+            List<byte> modifiersDown;
+            byte mainVk;
+            ParseKeyCombo(combo, out modifiersDown, out mainVk);
 
-            // 4. Main Key Up and Modifiers Up in Reverse Order
-            inputs.Clear();
+            List<NativeMethods.INPUT> inputs = new List<NativeMethods.INPUT>();
             if (mainVk != 0)
             {
                 inputs.Add(CreateKeyInput(mainVk, true));
             }
-
             for (int i = modifiersDown.Count - 1; i >= 0; i--)
             {
                 inputs.Add(CreateKeyInput(modifiersDown[i], true));
@@ -95,6 +100,25 @@ namespace ModernAutoClicker
             {
                 NativeMethods.SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf(typeof(NativeMethods.INPUT)));
             }
+        }
+
+        public static void ReleaseAllKeys()
+        {
+            byte[] allMods = new byte[] { 0x11, 0x10, 0x12, 0x5B, 0x5C };
+            List<NativeMethods.INPUT> inputs = new List<NativeMethods.INPUT>();
+            for (int i = 0; i < allMods.Length; i++)
+            {
+                inputs.Add(CreateKeyInput(allMods[i], true));
+            }
+            NativeMethods.SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+        }
+
+        public static void ExecuteKeyPress(string combo, int holdMs)
+        {
+            if (string.IsNullOrWhiteSpace(combo)) return;
+            KeyDown(combo);
+            Thread.Sleep(Math.Max(5, holdMs));
+            KeyUp(combo);
         }
 
         public static void ExecuteTypeText(string text, int totalDurationMs)

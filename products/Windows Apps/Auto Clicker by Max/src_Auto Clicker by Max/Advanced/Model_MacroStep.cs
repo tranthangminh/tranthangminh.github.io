@@ -53,6 +53,10 @@ namespace ModernAutoClicker.Advanced
         public int RepeatTimerSeconds { get; set; } // Total seconds, default 300 (00:05:00)
         public int RepeatTimerTargetStep { get; set; } // 1-based target step number to loop back to, default 1
 
+        // Press n Click Properties
+        public int PressClickMode { get; set; } // 0: Left, 1: Right, 2: Middle, 3: DragDrop
+        public int PressClickOrder { get; set; } // 0: PressFirst (Phím ➔ Click), 1: ClickFirst (Click ➔ Phím)
+
         // Runtime Cached Bitmap (Not serialized, freed when changed/disposed)
         private Bitmap _cachedBitmap;
         public Bitmap GetTemplateBitmap()
@@ -133,6 +137,8 @@ namespace ModernAutoClicker.Advanced
             RepeatTimerMode = 0;
             RepeatTimerSeconds = 300;
             RepeatTimerTargetStep = 1;
+            PressClickMode = 0;
+            PressClickOrder = 0;
         }
 
         public MacroStep Clone()
@@ -170,7 +176,9 @@ namespace ModernAutoClicker.Advanced
                 TimeoutSec = this.TimeoutSec,
                 RepeatTimerMode = this.RepeatTimerMode,
                 RepeatTimerSeconds = this.RepeatTimerSeconds,
-                RepeatTimerTargetStep = this.RepeatTimerTargetStep
+                RepeatTimerTargetStep = this.RepeatTimerTargetStep,
+                PressClickMode = this.PressClickMode,
+                PressClickOrder = this.PressClickOrder
             };
         }
     }

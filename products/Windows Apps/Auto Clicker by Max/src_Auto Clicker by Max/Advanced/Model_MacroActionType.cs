@@ -19,6 +19,7 @@ namespace ModernAutoClicker.Advanced
         RunScript = 12,
         IfImage = 13,
         WaitImage = 14,
-        RepeatTimer = 15
+        RepeatTimer = 15,
+        PressAndClick = 16
     }
 }
