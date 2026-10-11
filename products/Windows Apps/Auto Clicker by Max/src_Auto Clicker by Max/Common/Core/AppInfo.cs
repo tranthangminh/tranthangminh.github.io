@@ -12,6 +12,7 @@ namespace MaxApp.Common
     {
         private static string _appName = null;
         private static string _version = null;
+        private static string _appId = null;
         private static string _websiteSlug = null;
         private static string _latestVersionMetaTag = "app-latest-version";
 
@@ -19,11 +20,15 @@ namespace MaxApp.Common
         /// Explicitly initializes or overrides application metadata.
         /// Optional: call once at application startup in Program.cs.
         /// </summary>
-        public static void Init(string appName, string version = null, string websiteSlug = null, string latestVersionMetaTag = null)
+        public static void Init(string appName, string version = null, string appIdOrSlug = null, string latestVersionMetaTag = null)
         {
             if (!string.IsNullOrEmpty(appName)) _appName = appName;
             if (!string.IsNullOrEmpty(version)) _version = version;
-            if (!string.IsNullOrEmpty(websiteSlug)) _websiteSlug = websiteSlug;
+            if (!string.IsNullOrEmpty(appIdOrSlug))
+            {
+                _appId = appIdOrSlug.Replace(".html", "").Trim();
+                _websiteSlug = appIdOrSlug;
+            }
             if (!string.IsNullOrEmpty(latestVersionMetaTag)) _latestVersionMetaTag = latestVersionMetaTag;
         }
 
@@ -123,6 +128,34 @@ namespace MaxApp.Common
                 }
                 return string.Format("{0} v{1}", AppName, ver);
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the application identifier used in products-version.json (e.g. "auto-clicker" or "book-forge").
+        /// </summary>
+        public static string AppId
+        {
+            get
+            {
+                if (_appId == null)
+                {
+                    if (!string.IsNullOrEmpty(_websiteSlug))
+                    {
+                        return _websiteSlug.Replace(".html", "").Trim();
+                    }
+                    return "auto-clicker";
+                }
+                return _appId;
+            }
+            set { _appId = value; }
+        }
+
+        /// <summary>
+        /// Centralized JSON endpoint on GitHub Pages for checking versions of all apps.
+        /// </summary>
+        public static string VersionCheckUrl
+        {
+            get { return "https://tranthangminh.github.io/products/products-version.json"; }
         }
 
         /// <summary>

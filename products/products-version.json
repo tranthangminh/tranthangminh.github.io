@@ -1,0 +1,18 @@
+{
+  "_NOTE": [
+    "LƯU Ý KHI UPDATE VERSION MỚI (TƯƠNG THÍCH NGƯỢC BẢN CŨ):",
+    "1. Sửa thẻ meta trong 'products/products.html' -> cho người dùng bản v1.0 & v1.1 cũ check update",
+    "2. Sửa thẻ meta trong 'products/auto-clicker.html' -> cho người dùng bản v1.1.1 cũ check update",
+    "3. Sửa thẻ meta trong 'products/book-forge.html' -> cho người dùng Book Forge bản cũ check update"
+  ],
+  "auto-clicker": {
+    "name": "Auto Clicker by Max",
+    "version": "1.1.2",
+    "page_url": "https://tranthangminh.github.io/products/auto-clicker"
+  },
+  "book-forge": {
+    "name": "Book Forge by Max",
+    "version": "1.0.0",
+    "page_url": "https://tranthangminh.github.io/products/book-forge"
+  }
+}

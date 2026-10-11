@@ -70,11 +70,11 @@ namespace MaxApp.Common
 
             ThreadPool.QueueUserWorkItem((state) =>
             {
-                string targetUrl = string.Format("https://tranthangminh.github.io/products/{0}", AppInfo.WebsiteSlug);
+                string defaultPageUrl = string.Format("https://tranthangminh.github.io/products/{0}", AppInfo.AppId);
                 UpdateCheckResult result = new UpdateCheckResult
                 {
                     LocalVersion = AppInfo.Version,
-                    DownloadUrl = targetUrl
+                    DownloadUrl = defaultPageUrl
                 };
 
                 try
@@ -82,32 +82,75 @@ namespace MaxApp.Common
                     // Force TLS 1.2 for .NET 4.x compatibility with GitHub Pages
                     ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072;
 
-                    string html;
-                    using (WebClient client = new WebClient())
+                    bool checkedSuccessfully = false;
+
+                    // 1. Primary Check: Centralized JSON endpoint
+                    try
                     {
-                        client.Headers[HttpRequestHeader.UserAgent] = AppInfo.AppName + "/" + AppInfo.Version;
-                        client.Headers[HttpRequestHeader.Accept] = "text/html,application/xhtml+xml";
-                        client.Encoding = System.Text.Encoding.UTF8;
-                        html = client.DownloadString(targetUrl);
+                        string json;
+                        using (WebClient client = new WebClient())
+                        {
+                            client.Headers[HttpRequestHeader.UserAgent] = AppInfo.AppName + "/" + AppInfo.Version;
+                            client.Headers[HttpRequestHeader.Accept] = "application/json, text/plain, */*";
+                            client.Encoding = System.Text.Encoding.UTF8;
+                            json = client.DownloadString(AppInfo.VersionCheckUrl);
+                        }
+
+                        string remoteVer;
+                        string pageUrl;
+                        if (ExtractAppInfoFromJson(json, AppInfo.AppId, out remoteVer, out pageUrl))
+                        {
+                            result.RemoteVersion = remoteVer;
+                            if (!string.IsNullOrEmpty(pageUrl))
+                            {
+                                result.DownloadUrl = pageUrl;
+                            }
+                            result.HasUpdate = IsRemoteNewer(remoteVer, AppInfo.Version);
+                            result.Success = true;
+                            checkedSuccessfully = true;
+                        }
+                    }
+                    catch
+                    {
+                        // JSON endpoint not deployed yet or unreachable; fallback to HTML scraping
                     }
 
-                    string remoteVerStr = ExtractVersionFromHtml(html);
-                    if (!string.IsNullOrEmpty(remoteVerStr))
+                    // 2. Secondary Fallback: Legacy HTML scraping
+                    if (!checkedSuccessfully)
                     {
-                        result.RemoteVersion = remoteVerStr;
-                        result.HasUpdate = IsRemoteNewer(remoteVerStr, AppInfo.Version);
-                        result.Success = true;
+                        string targetUrl = string.Format("https://tranthangminh.github.io/products/{0}", AppInfo.WebsiteSlug);
+                        string html;
+                        using (WebClient client = new WebClient())
+                        {
+                            client.Headers[HttpRequestHeader.UserAgent] = AppInfo.AppName + "/" + AppInfo.Version;
+                            client.Headers[HttpRequestHeader.Accept] = "text/html,application/xhtml+xml";
+                            client.Encoding = System.Text.Encoding.UTF8;
+                            html = client.DownloadString(targetUrl);
+                        }
 
+                        string remoteVerStr = ExtractVersionFromHtml(html);
+                        if (!string.IsNullOrEmpty(remoteVerStr))
+                        {
+                            result.RemoteVersion = remoteVerStr;
+                            result.DownloadUrl = targetUrl;
+                            result.HasUpdate = IsRemoteNewer(remoteVerStr, AppInfo.Version);
+                            result.Success = true;
+                            checkedSuccessfully = true;
+                        }
+                        else
+                        {
+                            result.Success = false;
+                            result.ErrorMessage = "Could not parse version from web page.";
+                        }
+                    }
+
+                    if (checkedSuccessfully)
+                    {
                         _inMemoryLastCheckDate = today;
                         if (SetLastCheckDateHandler != null)
                         {
                             try { SetLastCheckDateHandler(today); } catch { }
                         }
-                    }
-                    else
-                    {
-                        result.Success = false;
-                        result.ErrorMessage = "Could not parse version from web page.";
                     }
                 }
                 catch (Exception ex)
@@ -131,7 +174,7 @@ namespace MaxApp.Common
                                 onCompleted(result);
                             }
 
-                            if (isManual)
+                            if (isManual || (result.Success && result.HasUpdate))
                             {
                                 ShowUpdateDialog(ownerForm, result);
                             }
@@ -149,11 +192,38 @@ namespace MaxApp.Common
             });
         }
 
+        private static bool ExtractAppInfoFromJson(string json, string appId, out string remoteVer, out string pageUrl)
+        {
+            remoteVer = null;
+            pageUrl = null;
+            if (string.IsNullOrEmpty(json) || string.IsNullOrEmpty(appId)) return false;
+
+            // Matches block: "{appId}": { ... }
+            string appPattern = string.Format(@"""{0}""\s*:\s*\{{([^}}]+)\}}", Regex.Escape(appId));
+            Match appMatch = Regex.Match(json, appPattern, RegexOptions.IgnoreCase);
+            if (!appMatch.Success) return false;
+
+            string block = appMatch.Groups[1].Value;
+
+            Match verMatch = Regex.Match(block, @"""version""\s*:\s*""([^""]+)""", RegexOptions.IgnoreCase);
+            if (verMatch.Success)
+            {
+                remoteVer = verMatch.Groups[1].Value.Trim();
+            }
+
+            Match pageMatch = Regex.Match(block, @"""page_url""\s*:\s*""([^""]+)""", RegexOptions.IgnoreCase);
+            if (pageMatch.Success)
+            {
+                pageUrl = pageMatch.Groups[1].Value.Trim();
+            }
+
+            return !string.IsNullOrEmpty(remoteVer);
+        }
+
         private static string ExtractVersionFromHtml(string html)
         {
             if (string.IsNullOrEmpty(html)) return null;
 
-            // Priority 1: Specific meta tag
             string metaName = AppInfo.LatestVersionMetaTag;
             string patternMeta = string.Format(@"<meta\s+name=[""']{0}[""']\s+content=[""'](?<v>[\d\.]+)[""']", Regex.Escape(metaName));
             Match m = Regex.Match(html, patternMeta, RegexOptions.IgnoreCase);
@@ -162,14 +232,12 @@ namespace MaxApp.Common
                 return m.Groups["v"].Value.Trim();
             }
 
-            // Priority 2: Generic app-latest-version meta tag
             Match mGeneric = Regex.Match(html, @"<meta\s+name=[""']app-latest-version[""']\s+content=[""'](?<v>[\d\.]+)[""']", RegexOptions.IgnoreCase);
             if (mGeneric.Success)
             {
                 return mGeneric.Groups["v"].Value.Trim();
             }
 
-            // Priority 3: Title tag with version
             string patternTitle = string.Format(@"{0}\s+v(?<v>[\d\.]+)", Regex.Escape(AppInfo.AppName));
             Match mTitle = Regex.Match(html, patternTitle, RegexOptions.IgnoreCase);
             if (mTitle.Success)

@@ -545,10 +545,10 @@ window.sharedSpotlight.init({
   - Thẻ này là **Single Source of Truth** máy đọc (Machine-readable) phục vụ cơ chế tự động kiểm tra phiên bản mới từ xa (Remote Update Checker) của ứng dụng client.
   - **TUYỆT ĐỐI KHÔNG** phụ thuộc vào việc bóc tách chuỗi ở thẻ `<title>` hay `<h1>`. Tiêu đề sinh ra cho con người và SEO, rất dễ bị thay đổi copywriting, thêm bớt từ khóa marketing hoặc bị gãy regex do script chuyển ngữ đa ngôn ngữ (i18n).
   - Client (.exe) tải trực tiếp mã nguồn HTML thô của trang chi tiết qua giao thức HTTPS (TLS 1.2), dùng regex quét thuộc tính `content` của `<meta name="app-latest-version">` để so sánh với version nội bộ (`NormalizeVersion`).
-- **Quy Trình Chuẩn Khi Phát Hành Phiên Bản Mới:**
+- **Quy Trình Chuẩn Khi Phát Hành Phiên Bản Mới (Hệ Thống Tự Động Đồng Bộ):**
   1. *Phía C# App:* Khai báo version mới trong `Properties/AssemblyInfo.cs` (ví dụ `1.1.1.0`), sau đó chạy `build.bat` để biên dịch binary `.exe` mới.
-  2. *Phía Website:* Cập nhật số phiên bản mới vào thuộc tính `content` của thẻ `<meta name="app-latest-version" content="...">` trong file HTML.
-  3. *Phía Song Ngữ:* Cập nhật tiêu đề hiển thị trong `[name]-i18n.js` (cả khối `vi` và `en`) đồng bộ theo phiên bản mới.
+  2. *Phía Website (Single Source of Truth):* Cập nhật số version mới vào file tập trung `products/products-version.json`.
+  3. *Đồng bộ 1-Click (Tự động 100%):* Chạy `update-product-versions.bat` (hoặc `scripts/update-product-versions.ps1`). Hệ thống tự động đồng bộ chính xác 100% số version và tiêu đề sang thẻ meta HTML, schema JSON-LD, file bridge `products/products.html`, file danh mục `products.html`, và các file từ điển `*-i18n.js` song ngữ trong chưa đầy 1 giây!
 
 ### 4. Vị Trí & Cấu Trúc Nút Kêu Gọi Hành Động (CTA Download Button & Centered Head)
 - **Bố cục Header Card 3 hàng căn giữa (`.tools-panel-head--centered`):**
