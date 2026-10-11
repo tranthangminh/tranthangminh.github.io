@@ -28,6 +28,7 @@ namespace ModernAutoClicker
         [STAThread]
         static void Main(string[] args)
         {
+            AppInfo.WebsiteSlug = "auto-clicker.html";
             int waitForPid = 0;
             if (args != null && args.Length >= 2 && args[0] == "--restart")
             {

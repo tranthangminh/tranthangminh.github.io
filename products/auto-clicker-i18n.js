@@ -9,7 +9,7 @@
         autoClicker: {
             docTitle: 'Auto Clicker by Max - Phần Mềm Tự Động Click Chuột & Macro Windows | Trần Thắng Minh',
             breadcrumb: 'Auto Clicker by Max',
-            title: 'Auto Clicker by Max v1.1',
+            title: 'Auto Clicker by Max v1.1.1',
             meta: {
                 fileSize: '~660 KB',
                 portable: 'Portable',
@@ -139,7 +139,7 @@
         autoClicker: {
             docTitle: 'Auto Clicker by Max - Windows Mouse Auto Clicker & Macro Automation | Trần Thắng Minh',
             breadcrumb: 'Auto Clicker by Max',
-            title: 'Auto Clicker by Max v1.1',
+            title: 'Auto Clicker by Max v1.1.1',
             meta: {
                 fileSize: '~660 KB',
                 portable: 'Portable',

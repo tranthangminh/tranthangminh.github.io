@@ -755,7 +755,7 @@ namespace ModernAutoClicker.Advanced
                 }
                 else if (e.Button == MouseButtons.Left)
                 {
-                    PickImageSnipping();
+                    OpenImageOptionsDialog();
                 }
             };
             x += 116 + colGap;
@@ -844,7 +844,7 @@ namespace ModernAutoClicker.Advanced
                 AutoSize = false,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleRight,
-                ForeColor = _theme.CGreen,
+                ForeColor = (_step != null && _step.ActionType == MacroActionType.IfImage) ? _theme.CPurple : _theme.CBlue,
                 Visible = false
             };
 
@@ -2112,6 +2112,7 @@ namespace ModernAutoClicker.Advanced
                 {
                     lblIfMatch.Location = new Point(38, 32);
                     lblIfMatch.Size = new Size(84, 20);
+                    lblIfMatch.ForeColor = _theme.CBlue;
                     lblIfMatch.Visible = true;
                 }
                 if (cboIfTrue != null)
@@ -2194,10 +2195,8 @@ namespace ModernAutoClicker.Advanced
                 txtKeyData.Visible = false;
 
                 numHold.Visible = false;
-                numSimilarity.Location = new Point(numHold.Location.X, 6);
-                numSimilarity.Width = 44;
-                numSimilarity.Value = _step.Similarity > 0 ? _step.Similarity : 90;
-                numSimilarity.Visible = true;
+                if (lblSimilarity != null) lblSimilarity.Visible = false;
+                if (numSimilarity != null) numSimilarity.Visible = false;
 
                 numDelay.Visible = true;
 
@@ -2254,40 +2253,30 @@ namespace ModernAutoClicker.Advanced
                 if (lblIfMatch != null)
                 {
                     lblIfMatch.Location = new Point(38, 32);
-                    lblIfMatch.Size = new Size(60, 20);
+                    lblIfMatch.Size = new Size(84, 20);
+                    lblIfMatch.ForeColor = _theme.CPurple;
                     lblIfMatch.Visible = true;
                 }
                 if (cboIfTrue != null)
                 {
-                    cboIfTrue.Location = new Point(102, 31);
-                    cboIfTrue.Size = new Size(110, 22);
+                    cboIfTrue.Location = new Point(124, 31);
+                    cboIfTrue.Size = new Size(116, 22);
                     cboIfTrue.Visible = true;
                 }
                 if (lblIfUnmatch != null)
                 {
-                    lblIfUnmatch.Location = new Point(216, 32);
-                    lblIfUnmatch.Size = new Size(70, 20);
+                    lblIfUnmatch.Location = new Point(242, 32);
+                    lblIfUnmatch.Size = new Size(84, 20);
                     lblIfUnmatch.Visible = true;
                 }
                 if (cboIfFalse != null)
                 {
-                    cboIfFalse.Location = new Point(290, 31);
-                    cboIfFalse.Size = new Size(110, 22);
+                    cboIfFalse.Location = new Point(330, 31);
+                    cboIfFalse.Size = new Size(128, 22);
                     cboIfFalse.Visible = true;
                 }
-                if (lblSimilarity != null)
-                {
-                    lblSimilarity.Location = new Point(404, 32);
-                    lblSimilarity.Size = new Size(34, 20);
-                    lblSimilarity.Visible = true;
-                }
-                if (numSimilarity != null)
-                {
-                    numSimilarity.Location = new Point(440, 31);
-                    numSimilarity.Width = 40;
-                    numSimilarity.Value = _step.Similarity > 0 ? _step.Similarity : 90;
-                    numSimilarity.Visible = true;
-                }
+                if (lblSimilarity != null) lblSimilarity.Visible = false;
+                if (numSimilarity != null) numSimilarity.Visible = false;
                 PopulateIfJumpLists();
             }
             else if (_step.ActionType == MacroActionType.WaitChange)
@@ -2408,11 +2397,13 @@ namespace ModernAutoClicker.Advanced
                 {
                     lblIfMatch.Text = Loc.IsVietnamese ? "Nếu Thấy:" : "If Found:";
                     lblIfUnmatch.Text = Loc.IsVietnamese ? "Nếu Thiếu:" : "If Missing:";
+                    if (lblIfMatch != null) lblIfMatch.ForeColor = _theme.CPurple;
                 }
                 else
                 {
                     lblIfMatch.Text = Loc.LblIfMatch;
                     lblIfUnmatch.Text = Loc.LblIfUnmatch;
+                    if (lblIfMatch != null) lblIfMatch.ForeColor = _theme.CBlue;
                 }
 
                 lblIfMatch.AutoSize = false;
@@ -3153,7 +3144,13 @@ namespace ModernAutoClicker.Advanced
             if (numHold != null) numHold.ApplyTheme(_theme);
             if (numDelay != null) numDelay.ApplyTheme(_theme);
             if (numRepeat != null) numRepeat.ApplyTheme(_theme);
-            if (lblIfMatch != null) lblIfMatch.ForeColor = _theme.CGreen;
+            if (lblIfMatch != null)
+            {
+                if (_step != null && _step.ActionType == MacroActionType.IfImage)
+                    lblIfMatch.ForeColor = _theme.CPurple;
+                else
+                    lblIfMatch.ForeColor = _theme.CBlue;
+            }
             if (lblIfUnmatch != null) lblIfUnmatch.ForeColor = _theme.Danger;
             if (cboIfTrue != null)
             {
@@ -3249,6 +3246,36 @@ namespace ModernAutoClicker.Advanced
             menu.Items.Add(itemClear);
 
             menu.Show(parent, pt);
+        }
+
+        private void OpenImageOptionsDialog()
+        {
+            if (_step == null) return;
+            Bitmap currentBmp = _step.GetTemplateBitmap();
+            int curSim = _step.Similarity > 0 ? _step.Similarity : 90;
+            using (ModernImageDialog dlg = new ModernImageDialog(currentBmp, curSim, _theme))
+            {
+                if (dlg.ShowDialog(this.FindForm()) == DialogResult.OK)
+                {
+                    _step.Similarity = dlg.Similarity;
+                    if (dlg.ImageChanged)
+                    {
+                        if (dlg.SelectedBitmap != null)
+                        {
+                            _step.SetTemplateBitmap(dlg.SelectedBitmap);
+                        }
+                        else
+                        {
+                            _step.ImageBase64 = null;
+                            _step.InvalidateImageCache();
+                        }
+                    }
+                    if (numSimilarity != null) numSimilarity.Value = _step.Similarity;
+                    pnlImageThumb.Invalidate();
+                    UpdateRowTooltips();
+                    if (OnStepChanged != null) OnStepChanged();
+                }
+            }
         }
 
         private void PickImageSnipping()

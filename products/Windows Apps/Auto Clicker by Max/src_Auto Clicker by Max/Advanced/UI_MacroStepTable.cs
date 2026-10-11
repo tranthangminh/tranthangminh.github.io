@@ -40,6 +40,9 @@ namespace ModernAutoClicker.Advanced
         private bool _isEditingLocked = false;
         public bool IsEditingLocked { get { return _isEditingLocked; } }
 
+        private MacroRecordBanner bannerRecord;
+        public MacroRecordBanner BannerRecord { get { return bannerRecord; } }
+
         public void SetEditingLocked(bool isLocked)
         {
             _isEditingLocked = isLocked;
@@ -279,6 +282,49 @@ namespace ModernAutoClicker.Advanced
             this.Controls.Add(pnlHeader);
             this.Controls.Add(pnlScrollContainer);
             this.Controls.Add(scrollBar);
+
+            // 4. Record Step Banner for Asian Mode (Acts as a special step at the bottom of the scroll list)
+            bannerRecord = new MacroRecordBanner
+            {
+                Location = new Point(2, 2),
+                Size = new Size(530, 88),
+                Visible = true
+            };
+            bannerRecord.OnRecordToggleRequested += () =>
+            {
+                if (_isEditingLocked) return;
+                ActionRecorder.Instance.ToggleRecording();
+            };
+            bannerRecord.MouseWheel += (s, e) =>
+            {
+                if (scrollBar != null && scrollBar.Visible) scrollBar.DoMouseWheel(e.Delta);
+            };
+            pnlContent.Controls.Add(bannerRecord);
+
+            // Connect ActionRecorder captured steps to automatically add step at bottom
+            ActionRecorder.Instance.OnActionCaptured += (step) =>
+            {
+                if (this.IsDisposed) return;
+                if (this.InvokeRequired)
+                {
+                    try
+                    {
+                        this.BeginInvoke((Action)(() =>
+                        {
+                            this.AddStep(step);
+                            this.ScrollToBottom();
+                        }));
+                    }
+                    catch { }
+                }
+                else
+                {
+                    this.AddStep(step);
+                    this.ScrollToBottom();
+                }
+            };
+
+            ReorderRows();
         }
 
         private Label CreateColLabel(string text, int x, int width, bool interactive, string tooltipText, Action clickAction)
@@ -676,6 +722,10 @@ namespace ModernAutoClicker.Advanced
             {
                 step = new MacroStep { Name = string.Format("Step {0}", _rows.Count + 1) };
             }
+            else if (string.IsNullOrEmpty(step.Name))
+            {
+                step.Name = string.Format("Step {0}", _rows.Count + 1);
+            }
 
             bool isNewlyCreated;
             MacroRowControl row = GetOrCreateRow(step, _rows.Count, out isNewlyCreated);
@@ -1058,6 +1108,14 @@ namespace ModernAutoClicker.Advanced
             else if (rowBottom > visibleBottom)
             {
                 scrollBar.Value = Math.Min(scrollBar.MaxScrollValue, rowBottom - pnlScrollContainer.Height + 4);
+            }
+        }
+
+        public void ScrollToBottom()
+        {
+            if (scrollBar != null && scrollBar.Visible)
+            {
+                scrollBar.Value = scrollBar.MaxScrollValue;
             }
         }
 
@@ -1519,6 +1577,16 @@ namespace ModernAutoClicker.Advanced
                 _rows[i].SetTotalStepCount(_rows.Count);
                 currentY += _rows[i].Height + 4;
             }
+
+            if (bannerRecord != null)
+            {
+                bannerRecord.Location = new Point(2, currentY + 2);
+                bannerRecord.Width = Math.Max(100, pnlContent.Width - 4);
+                bannerRecord.Visible = true;
+                bannerRecord.BringToFront();
+                currentY += bannerRecord.Height + 6;
+            }
+
             int totalH = currentY + 2;
             pnlContent.Height = Math.Max(pnlScrollContainer.Height, totalH);
             pnlContent.ResumeLayout();
@@ -1629,10 +1697,28 @@ namespace ModernAutoClicker.Advanced
                         _rows[i].Width = availW;
                     }
                 }
+                if (bannerRecord != null)
+                {
+                    bannerRecord.Width = Math.Max(100, availW - 4);
+                }
                 pnlContent.ResumeLayout(true);
             }
 
-            int totalH = (_rows.Count > 0) ? (_rows[_rows.Count - 1].Bottom + 2) : 2;
+            int currentY = 2;
+            for (int i = 0; i < _rows.Count; i++)
+            {
+                currentY += _rows[i].Height + 4;
+            }
+            if (bannerRecord != null)
+            {
+                bannerRecord.Location = new Point(2, currentY + 2);
+                bannerRecord.Width = Math.Max(100, availW - 4);
+                bannerRecord.Visible = true;
+                bannerRecord.BringToFront();
+                currentY += bannerRecord.Height + 6;
+            }
+
+            int totalH = currentY + 2;
             pnlContent.Height = Math.Max(availH, totalH);
 
             scrollBar.Maximum = totalH;
@@ -1676,6 +1762,11 @@ namespace ModernAutoClicker.Advanced
             pnlContent.BackColor = t.BgPrimary;
 
             scrollBar.ApplyTheme(t);
+
+            if (bannerRecord != null)
+            {
+                bannerRecord.ApplyTheme(t);
+            }
 
             foreach (MacroRowControl r in _rows)
             {
@@ -1842,52 +1933,108 @@ namespace ModernAutoClicker.Advanced
         private NumberInput numInput;
         private RoundedButton btnApply;
         private RoundedButton btnCancel;
+        private ThemeTokens _theme;
         public int? ResultValue { get; private set; }
 
         public BatchNumberInputDialog(string title, string fieldLabel, int min, int max, int defaultVal, ThemeTokens theme)
         {
-            theme = theme ?? ThemeTokens.DarkTheme();
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            _theme = theme ?? ThemeTokens.DarkTheme();
+            this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterParent;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.ShowInTaskbar = false;
-            this.Size = new Size(280, 160);
+            this.Size = new Size(280, 166);
             this.Text = title;
-            this.BackColor = theme.BgPrimary;
-            this.ForeColor = theme.TextPrimary;
+            this.BackColor = _theme.BgPrimary;
+            this.ForeColor = _theme.TextPrimary;
+            this.DoubleBuffered = true;
+            this.KeyPreview = true;
+
+            // Custom Titlebar
+            Panel pnlHeader = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 32,
+                BackColor = _theme.BgPrimary
+            };
+            pnlHeader.MouseDown += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    CommonNativeMethods.ReleaseCapture();
+                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
+                }
+            };
+
+            Label lblFormTitle = new Label
+            {
+                Text = title,
+                Location = new Point(12, 0),
+                Size = new Size(this.Width - 48, 32),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                ForeColor = _theme.TextPrimary,
+                UseMnemonic = false
+            };
+            lblFormTitle.MouseDown += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    CommonNativeMethods.ReleaseCapture();
+                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
+                }
+            };
+
+            Button btnClose = new Button
+            {
+                Text = "✕",
+                Location = new Point(this.Width - 36, 0),
+                Size = new Size(36, 32),
+                FlatStyle = FlatStyle.Flat,
+                Font = ThemeTokens.FontSegoeSymbol(10),
+                ForeColor = _theme.TextSecondary,
+                BackColor = _theme.BgPrimary,
+                Cursor = Cursors.Hand
+            };
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.MouseEnter += (s, e) => { btnClose.BackColor = _theme.Danger; btnClose.ForeColor = Color.White; };
+            btnClose.MouseLeave += (s, e) => { btnClose.BackColor = _theme.BgPrimary; btnClose.ForeColor = _theme.TextSecondary; };
+            btnClose.Click += (s, e) => { ResultValue = null; this.DialogResult = DialogResult.Cancel; this.Close(); };
+
+            pnlHeader.Controls.AddRange(new Control[] { lblFormTitle, btnClose });
 
             Label lblTitle = new Label
             {
                 Text = fieldLabel,
-                Location = new Point(20, 16),
-                Size = new Size(224, 20),
+                Location = new Point(20, 44),
+                Size = new Size(240, 20),
                 Font = ThemeTokens.FontButton(FontStyle.Bold),
-                ForeColor = theme.AccentPrimary
+                ForeColor = _theme.AccentPrimary
             };
 
             numInput = new NumberInput
             {
-                Location = new Point(20, 42),
-                Size = new Size(224, 26),
+                Location = new Point(20, 68),
+                Size = new Size(240, 26),
                 Minimum = min,
                 Maximum = max,
                 AllowEmpty = true,
                 Value = defaultVal,
-                BackColor = theme.BgTertiary,
-                ForeColor = theme.TextPrimary,
+                BackColor = _theme.BgTertiary,
+                ForeColor = _theme.TextPrimary,
                 Font = ThemeTokens.FontCard(FontStyle.Bold)
             };
 
             btnApply = new RoundedButton
             {
                 Text = Loc.IsVietnamese ? "Áp dụng" : "Apply All",
-                Location = new Point(20, 78),
-                Size = new Size(108, 28),
-                BorderRadius = theme.RadiusMd,
+                Location = new Point(20, 110),
+                Size = new Size(116, 28),
+                BorderRadius = _theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = theme.AccentPrimary,
-                HoverColor = theme.AccentPrimaryHover,
+                NormalColor = _theme.AccentPrimary,
+                HoverColor = _theme.AccentPrimaryHover,
                 ForeColor = Color.White
             };
             btnApply.Click += (s, e) =>
@@ -1907,13 +2054,13 @@ namespace ModernAutoClicker.Advanced
             btnCancel = new RoundedButton
             {
                 Text = Loc.IsVietnamese ? "Hủy" : "Cancel",
-                Location = new Point(136, 78),
-                Size = new Size(108, 28),
-                BorderRadius = theme.RadiusMd,
+                Location = new Point(144, 110),
+                Size = new Size(116, 28),
+                BorderRadius = _theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = theme.BgElevated,
-                HoverColor = theme.BgTertiary,
-                ForeColor = theme.TextSecondary
+                NormalColor = _theme.BgElevated,
+                HoverColor = _theme.BgTertiary,
+                ForeColor = _theme.TextSecondary
             };
             btnCancel.Click += (s, e) =>
             {
@@ -1922,7 +2069,7 @@ namespace ModernAutoClicker.Advanced
                 this.Close();
             };
 
-            this.Controls.AddRange(new Control[] { lblTitle, numInput, btnApply, btnCancel });
+            this.Controls.AddRange(new Control[] { pnlHeader, lblTitle, numInput, btnApply, btnCancel });
             this.AcceptButton = btnApply;
             this.CancelButton = btnCancel;
 
@@ -1932,6 +2079,26 @@ namespace ModernAutoClicker.Advanced
                 numInput.SelectAll();
             };
         }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            using (Pen p = new Pen(_theme.BorderColor, 1))
+            {
+                e.Graphics.DrawRectangle(p, 0, 0, this.Width - 1, this.Height - 1);
+            }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.KeyCode == Keys.Escape)
+            {
+                ResultValue = null;
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+            }
+        }
     }
 
     public class BatchTextInputDialog : Form
@@ -1939,49 +2106,105 @@ namespace ModernAutoClicker.Advanced
         private TextBox txtInput;
         private RoundedButton btnApply;
         private RoundedButton btnCancel;
+        private ThemeTokens _theme;
         public string ResultValue { get; private set; }
 
         public BatchTextInputDialog(string title, string fieldLabel, string defaultVal, ThemeTokens theme)
         {
-            theme = theme ?? ThemeTokens.DarkTheme();
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            _theme = theme ?? ThemeTokens.DarkTheme();
+            this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterParent;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.ShowInTaskbar = false;
-            this.Size = new Size(320, 160);
+            this.Size = new Size(320, 166);
             this.Text = title;
-            this.BackColor = theme.BgPrimary;
-            this.ForeColor = theme.TextPrimary;
+            this.BackColor = _theme.BgPrimary;
+            this.ForeColor = _theme.TextPrimary;
+            this.DoubleBuffered = true;
+            this.KeyPreview = true;
+
+            // Custom Titlebar
+            Panel pnlHeader = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 32,
+                BackColor = _theme.BgPrimary
+            };
+            pnlHeader.MouseDown += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    CommonNativeMethods.ReleaseCapture();
+                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
+                }
+            };
+
+            Label lblFormTitle = new Label
+            {
+                Text = title,
+                Location = new Point(12, 0),
+                Size = new Size(this.Width - 48, 32),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                ForeColor = _theme.TextPrimary,
+                UseMnemonic = false
+            };
+            lblFormTitle.MouseDown += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    CommonNativeMethods.ReleaseCapture();
+                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
+                }
+            };
+
+            Button btnClose = new Button
+            {
+                Text = "✕",
+                Location = new Point(this.Width - 36, 0),
+                Size = new Size(36, 32),
+                FlatStyle = FlatStyle.Flat,
+                Font = ThemeTokens.FontSegoeSymbol(10),
+                ForeColor = _theme.TextSecondary,
+                BackColor = _theme.BgPrimary,
+                Cursor = Cursors.Hand
+            };
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.MouseEnter += (s, e) => { btnClose.BackColor = _theme.Danger; btnClose.ForeColor = Color.White; };
+            btnClose.MouseLeave += (s, e) => { btnClose.BackColor = _theme.BgPrimary; btnClose.ForeColor = _theme.TextSecondary; };
+            btnClose.Click += (s, e) => { ResultValue = null; this.DialogResult = DialogResult.Cancel; this.Close(); };
+
+            pnlHeader.Controls.AddRange(new Control[] { lblFormTitle, btnClose });
 
             Label lblTitle = new Label
             {
                 Text = fieldLabel,
-                Location = new Point(20, 16),
-                Size = new Size(264, 20),
+                Location = new Point(20, 44),
+                Size = new Size(280, 20),
                 Font = ThemeTokens.FontButton(FontStyle.Bold),
-                ForeColor = theme.AccentPrimary
+                ForeColor = _theme.AccentPrimary
             };
 
             txtInput = new TextBox
             {
-                Location = new Point(20, 42),
-                Size = new Size(264, 26),
+                Location = new Point(20, 68),
+                Size = new Size(280, 26),
                 Text = defaultVal ?? "",
-                BackColor = theme.BgTertiary,
-                ForeColor = theme.TextPrimary,
+                BackColor = _theme.BgTertiary,
+                ForeColor = _theme.TextPrimary,
                 Font = ThemeTokens.FontButton(FontStyle.Regular)
             };
 
             btnApply = new RoundedButton
             {
                 Text = Loc.IsVietnamese ? "Áp dụng" : "Apply All",
-                Location = new Point(20, 78),
-                Size = new Size(128, 28),
-                BorderRadius = theme.RadiusMd,
+                Location = new Point(20, 110),
+                Size = new Size(134, 28),
+                BorderRadius = _theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = theme.AccentPrimary,
-                HoverColor = theme.AccentPrimaryHover,
+                NormalColor = _theme.AccentPrimary,
+                HoverColor = _theme.AccentPrimaryHover,
                 ForeColor = Color.White
             };
             btnApply.Click += (s, e) =>
@@ -1994,13 +2217,13 @@ namespace ModernAutoClicker.Advanced
             btnCancel = new RoundedButton
             {
                 Text = Loc.IsVietnamese ? "Hủy" : "Cancel",
-                Location = new Point(156, 78),
-                Size = new Size(128, 28),
-                BorderRadius = theme.RadiusMd,
+                Location = new Point(166, 110),
+                Size = new Size(134, 28),
+                BorderRadius = _theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = theme.BgElevated,
-                HoverColor = theme.BgTertiary,
-                ForeColor = theme.TextSecondary
+                NormalColor = _theme.BgElevated,
+                HoverColor = _theme.BgTertiary,
+                ForeColor = _theme.TextSecondary
             };
             btnCancel.Click += (s, e) =>
             {
@@ -2009,7 +2232,7 @@ namespace ModernAutoClicker.Advanced
                 this.Close();
             };
 
-            this.Controls.AddRange(new Control[] { lblTitle, txtInput, btnApply, btnCancel });
+            this.Controls.AddRange(new Control[] { pnlHeader, lblTitle, txtInput, btnApply, btnCancel });
             this.AcceptButton = btnApply;
             this.CancelButton = btnCancel;
 
@@ -2018,6 +2241,26 @@ namespace ModernAutoClicker.Advanced
                 txtInput.Focus();
                 txtInput.SelectAll();
             };
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            using (Pen p = new Pen(_theme.BorderColor, 1))
+            {
+                e.Graphics.DrawRectangle(p, 0, 0, this.Width - 1, this.Height - 1);
+            }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.KeyCode == Keys.Escape)
+            {
+                ResultValue = null;
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+            }
         }
     }
 }

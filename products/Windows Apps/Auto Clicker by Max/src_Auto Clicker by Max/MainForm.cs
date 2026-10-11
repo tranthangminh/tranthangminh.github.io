@@ -148,6 +148,7 @@ namespace ModernAutoClicker
 
         public MainForm()
         {
+            AppInfo.WebsiteSlug = "auto-clicker.html";
             this.DoubleBuffered = true;
             this.SetStyle(ControlStyles.UserPaint |
                           ControlStyles.AllPaintingInWmPaint |
@@ -303,6 +304,21 @@ namespace ModernAutoClicker
             _windowTracker.GetAdvancedSteps = () => (pnlTabAdvanced != null && pnlTabAdvanced.Table != null) ? pnlTabAdvanced.Table.GetSteps() : null;
             _windowTracker.OnPositionsChanged += () => SyncOverlay();
             _windowTracker.Start();
+
+            ActionRecorder.Instance.IsClickOnAppWindow = (pt) =>
+            {
+                try
+                {
+                    if (this.IsDisposed) return false;
+                    if (this.Bounds.Contains(pt)) return true;
+                    foreach (Form owned in this.OwnedForms)
+                    {
+                        if (owned != null && owned.Visible && owned.Bounds.Contains(pt)) return true;
+                    }
+                }
+                catch { }
+                return false;
+            };
         }
 
         protected override void OnShown(EventArgs e)
@@ -341,6 +357,9 @@ namespace ModernAutoClicker
             }
 
             // Background automatic update check (Runs after 2.5s, checks at most once a day, never blocks UI)
+            MaxApp.Common.UpdateChecker.GetLastCheckDateHandler = () => { try { return AppSettings.Load().LastUpdateCheckDate; } catch { return null; } };
+            MaxApp.Common.UpdateChecker.SetLastCheckDateHandler = (d) => { try { var cfg = AppSettings.Load(); cfg.LastUpdateCheckDate = d; AppSettings.Save(cfg); } catch { } };
+
             System.Windows.Forms.Timer autoUpdateTimer = new System.Windows.Forms.Timer { Interval = 2500 };
             autoUpdateTimer.Tick += (s, args) =>
             {
@@ -417,6 +436,17 @@ namespace ModernAutoClicker
                 return;
             }
             _lastToggleTime = DateTime.Now;
+
+            // If user is currently recording actions, pressing F6 stops the recording
+            if (ActionRecorder.Instance.IsRecording)
+            {
+                ActionRecorder.Instance.StopRecording();
+                if (lblMainStatusInfo != null)
+                {
+                    lblMainStatusInfo.Text = Loc.IsVietnamese ? "Đã dừng ghi bước (F6)" : "Recording stopped (F6)";
+                }
+                return;
+            }
 
             if (IsActiveTabRunning)
             {
@@ -1389,7 +1419,8 @@ namespace ModernAutoClicker
                 else
                 {
                     List<ModernAutoClicker.Advanced.MacroStep> steps = (pnlTabAdvanced != null && pnlTabAdvanced.Table != null) ? pnlTabAdvanced.Table.GetSteps() : new List<ModernAutoClicker.Advanced.MacroStep>();
-                    dlg.LoadAdvancedSteps(steps, maxW, maxH);
+                    HashSet<int> selectedIndices = (pnlTabAdvanced != null && pnlTabAdvanced.Table != null) ? pnlTabAdvanced.Table.SelectedIndices : new HashSet<int>();
+                    dlg.LoadAdvancedSteps(steps, maxW, maxH, selectedIndices);
                 }
 
                 dlg.ShowDialog(this);
@@ -1436,6 +1467,15 @@ namespace ModernAutoClicker
 
             if (keyData == Keys.F6)
             {
+                if (ActionRecorder.Instance.IsRecording)
+                {
+                    ActionRecorder.Instance.StopRecording();
+                    if (lblMainStatusInfo != null)
+                    {
+                        lblMainStatusInfo.Text = Loc.IsVietnamese ? "Đã dừng ghi bước (F6)" : "Recording stopped (F6)";
+                    }
+                    return true;
+                }
                 ToggleStartStop();
                 return true;
             }
@@ -2337,6 +2377,7 @@ namespace ModernAutoClicker
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            ActionRecorder.Instance.StopRecording();
             SaveSettings();
             UnregisterGlobalHotkeys();
             StopAll();

@@ -1,4 +1,4 @@
-﻿using MaxApp.Common;
+using MaxApp.Common;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -11,6 +11,10 @@ namespace ModernAutoClicker.Advanced
         private Color _selectedColor;
         private int _tolerance;
         private ThemeTokens _theme;
+
+        private Panel pnlHeader;
+        private Label lblHeaderTitle;
+        private Button btnHeaderClose;
 
         private Panel pnlPreview;
         private ModernTextBox txtHex;
@@ -35,20 +39,87 @@ namespace ModernAutoClicker.Advanced
 
         private void InitializeComponent()
         {
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterParent;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.ShowInTaskbar = false;
-            this.Size = new Size(330, 310);
+            this.Size = new Size(320, 278);
             this.Text = "Select Target Color";
             this.BackColor = _theme.BgPrimary;
             this.ForeColor = _theme.TextPrimary;
+            this.DoubleBuffered = true;
+            this.KeyPreview = true;
+
+            // 0. Custom Dark Titlebar
+            pnlHeader = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 32,
+                BackColor = _theme.BgPrimary
+            };
+            pnlHeader.MouseDown += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    CommonNativeMethods.ReleaseCapture();
+                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
+                }
+            };
+
+            lblHeaderTitle = new Label
+            {
+                Text = "Select Target Color",
+                Location = new Point(12, 0),
+                Size = new Size(this.Width - 48, 32),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                ForeColor = _theme.TextPrimary,
+                UseMnemonic = false
+            };
+            lblHeaderTitle.MouseDown += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    CommonNativeMethods.ReleaseCapture();
+                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
+                }
+            };
+
+            btnHeaderClose = new Button
+            {
+                Text = "✕",
+                Location = new Point(this.Width - 36, 0),
+                Size = new Size(36, 32),
+                FlatStyle = FlatStyle.Flat,
+                Font = ThemeTokens.FontSegoeSymbol(10),
+                ForeColor = _theme.TextSecondary,
+                BackColor = _theme.BgPrimary,
+                Cursor = Cursors.Hand
+            };
+            btnHeaderClose.FlatAppearance.BorderSize = 0;
+            btnHeaderClose.MouseEnter += (s, e) =>
+            {
+                btnHeaderClose.BackColor = _theme.Danger;
+                btnHeaderClose.ForeColor = Color.White;
+            };
+            btnHeaderClose.MouseLeave += (s, e) =>
+            {
+                btnHeaderClose.BackColor = _theme.BgPrimary;
+                btnHeaderClose.ForeColor = _theme.TextSecondary;
+            };
+            btnHeaderClose.Click += (s, e) =>
+            {
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+            };
+
+            pnlHeader.Controls.AddRange(new Control[] { lblHeaderTitle, btnHeaderClose });
 
             // 1. Color Preview Swatch (Left Top)
             pnlPreview = new Panel
             {
-                Location = new Point(16, 16),
+                Location = new Point(16, 44),
                 Size = new Size(74, 74),
                 BackColor = _selectedColor
             };
@@ -64,7 +135,7 @@ namespace ModernAutoClicker.Advanced
             Label lblHex = new Label
             {
                 Text = "HEX Color Code:",
-                Location = new Point(102, 14),
+                Location = new Point(102, 42),
                 Size = new Size(200, 16),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
                 ForeColor = _theme.TextSecondary
@@ -72,7 +143,7 @@ namespace ModernAutoClicker.Advanced
 
             txtHex = new ModernTextBox
             {
-                Location = new Point(102, 32),
+                Location = new Point(102, 60),
                 Size = new Size(200, 24),
                 Text = this.ColorHex,
                 Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeButton),
@@ -102,7 +173,7 @@ namespace ModernAutoClicker.Advanced
             Label lblTol = new Label
             {
                 Text = "Tolerance (± 0..255):",
-                Location = new Point(102, 60),
+                Location = new Point(102, 88),
                 Size = new Size(200, 16),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
                 ForeColor = _theme.TextSecondary
@@ -110,7 +181,7 @@ namespace ModernAutoClicker.Advanced
 
             numTolerance = new NumberInput
             {
-                Location = new Point(102, 78),
+                Location = new Point(102, 106),
                 Size = new Size(200, 24),
                 Minimum = 0,
                 Maximum = 255,
@@ -127,7 +198,7 @@ namespace ModernAutoClicker.Advanced
             Label lblPalette = new Label
             {
                 Text = "Quick Palette:",
-                Location = new Point(16, 108),
+                Location = new Point(16, 134),
                 Size = new Size(286, 16),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
                 ForeColor = _theme.TextSecondary
@@ -135,7 +206,7 @@ namespace ModernAutoClicker.Advanced
 
             Panel pnlQuick = new Panel
             {
-                Location = new Point(16, 126),
+                Location = new Point(16, 152),
                 Size = new Size(286, 26)
             };
 
@@ -180,11 +251,11 @@ namespace ModernAutoClicker.Advanced
                 qX += 36;
             }
 
-            // 5. Action Buttons (Pick from Screen & System Palette)
+            // 5. Action Buttons (Pick from Screen & System Palette) - Clean text without emoji
             btnPickScreen = new RoundedButton
             {
-                Text = "🎯 Pick from Screen",
-                Location = new Point(16, 164),
+                Text = "Pick from Screen",
+                Location = new Point(16, 188),
                 Size = new Size(138, 30),
                 BorderRadius = _theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
@@ -215,8 +286,8 @@ namespace ModernAutoClicker.Advanced
 
             btnSystemPalette = new RoundedButton
             {
-                Text = "🎨 Color Wheel...",
-                Location = new Point(164, 164),
+                Text = "Color Wheel...",
+                Location = new Point(164, 188),
                 Size = new Size(138, 30),
                 BorderRadius = _theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
@@ -239,16 +310,16 @@ namespace ModernAutoClicker.Advanced
                 }
             };
 
-            // 6. Dialog Result Buttons (Apply & Cancel)
+            // 6. Dialog Result Buttons (Apply & Cancel) - Apply button uses AccentPrimary
             btnApply = new RoundedButton
             {
                 Text = "Apply",
-                Location = new Point(16, 218),
+                Location = new Point(16, 230),
                 Size = new Size(138, 32),
                 BorderRadius = _theme.RadiusMd,
                 Font = ThemeTokens.FontButton(FontStyle.Bold),
-                NormalColor = _theme.CGreen,
-                HoverColor = _theme.Success,
+                NormalColor = _theme.AccentPrimary,
+                HoverColor = _theme.AccentPrimaryHover,
                 ForeColor = Color.White
             };
             btnApply.Click += (s, e) =>
@@ -261,7 +332,7 @@ namespace ModernAutoClicker.Advanced
             btnCancel = new RoundedButton
             {
                 Text = "Cancel",
-                Location = new Point(164, 218),
+                Location = new Point(164, 230),
                 Size = new Size(138, 32),
                 BorderRadius = _theme.RadiusMd,
                 Font = ThemeTokens.FontButton(FontStyle.Bold),
@@ -277,6 +348,7 @@ namespace ModernAutoClicker.Advanced
 
             this.Controls.AddRange(new Control[]
             {
+                pnlHeader,
                 pnlPreview, lblHex, txtHex, lblTol, numTolerance,
                 lblPalette, pnlQuick, btnPickScreen, btnSystemPalette,
                 btnApply, btnCancel
@@ -284,6 +356,25 @@ namespace ModernAutoClicker.Advanced
 
             this.AcceptButton = btnApply;
             this.CancelButton = btnCancel;
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            using (Pen p = new Pen(_theme.BorderColor, 1))
+            {
+                e.Graphics.DrawRectangle(p, 0, 0, this.Width - 1, this.Height - 1);
+            }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.KeyCode == Keys.Escape)
+            {
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+            }
         }
     }
 }
