@@ -264,31 +264,7 @@ namespace ModernAutoClicker.Advanced
 
         private static GraphicsPath GetRoundedRectangle(Rectangle bounds, int radius)
         {
-            int diameter = radius * 2;
-            Size size = new Size(diameter, diameter);
-            Rectangle arc = new Rectangle(bounds.Location, size);
-            GraphicsPath path = new GraphicsPath();
-
-            if (radius == 0)
-            {
-                path.AddRectangle(bounds);
-                return path;
-            }
-
-            // Top-left
-            path.AddArc(arc, 180, 90);
-            // Top-right
-            arc.X = bounds.Right - diameter;
-            path.AddArc(arc, 270, 90);
-            // Bottom-right
-            arc.Y = bounds.Bottom - diameter;
-            path.AddArc(arc, 0, 90);
-            // Bottom-left
-            arc.X = bounds.Left;
-            path.AddArc(arc, 90, 90);
-
-            path.CloseFigure();
-            return path;
+            return GraphicsHelper.GetRoundedRectangle(bounds, radius);
         }
 
         protected override void Dispose(bool disposing)

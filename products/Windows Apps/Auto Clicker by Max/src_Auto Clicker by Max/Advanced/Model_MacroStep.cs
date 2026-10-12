@@ -67,8 +67,9 @@ namespace ModernAutoClicker.Advanced
             {
                 byte[] bytes = Convert.FromBase64String(ImageBase64);
                 using (System.IO.MemoryStream ms = new System.IO.MemoryStream(bytes))
+                using (Image temp = Image.FromStream(ms))
                 {
-                    _cachedBitmap = new Bitmap(Image.FromStream(ms));
+                    _cachedBitmap = new Bitmap(temp);
                 }
                 return _cachedBitmap;
             }

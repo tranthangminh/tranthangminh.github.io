@@ -271,7 +271,7 @@ namespace BookForge
             txtMarkdown = new RichTextBox();
             txtMarkdown.Dock = DockStyle.Fill;
             txtMarkdown.BorderStyle = BorderStyle.None;
-            txtMarkdown.Font = new Font("Consolas", 10.5f, FontStyle.Regular);
+            txtMarkdown.Font = new Font("Consolas", 14f, FontStyle.Regular, GraphicsUnit.Pixel);
             txtMarkdown.AcceptsTab = true;
             txtMarkdown.DetectUrls = false;
             txtMarkdown.ScrollBars = RichTextBoxScrollBars.None;
@@ -1607,6 +1607,16 @@ namespace BookForge
             return "";
         }
 
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Escape)
+            {
+                this.Close();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -1615,6 +1625,12 @@ namespace BookForge
                 {
                     debounceTimer.Stop();
                     debounceTimer.Dispose();
+                    debounceTimer = null;
+                }
+                if (formTip != null)
+                {
+                    formTip.Dispose();
+                    formTip = null;
                 }
             }
             base.Dispose(disposing);

@@ -34,7 +34,7 @@
                 downloadAria: 'Tải về Book Forge by Max v1.0 (Beta)'
             },
             powerpack: {
-                title: 'MAX - Design Power-Pack',
+                title: 'Design-Power Pack by Max',
                 desc: 'Bộ công cụ toàn diện cho Designer: Color Picker & Studio, Screen Grabber & Video Recorder, và Multimedia Asset Downloader.',
                 storeTitle: 'Xem trên Chrome Web Store (46 người dùng)',
                 storeAria: 'Xem trên Chrome Web Store - 46 người dùng'
@@ -132,7 +132,7 @@
                 downloadAria: 'Download Book Forge by Max v1.0 (Beta)'
             },
             powerpack: {
-                title: 'MAX - Design Power-Pack',
+                title: 'Design-Power Pack by Max',
                 desc: 'Comprehensive toolkit for Designers: Color Picker & Studio, Screen Grabber & Video Recorder, and Multimedia Asset Downloader.',
                 storeTitle: 'View on Chrome Web Store (46 users)',
                 storeAria: 'View on Chrome Web Store - 46 users'

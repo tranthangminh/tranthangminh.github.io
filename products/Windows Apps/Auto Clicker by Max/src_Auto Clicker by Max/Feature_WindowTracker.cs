@@ -139,6 +139,10 @@ namespace ModernAutoClicker
                                     NativeMethods.GetWindowThreadProcessId(hWnd, out p);
                                     if (p > 0) st.TargetPid = p;
                                 }
+                                else
+                                {
+                                    st.WindowHwnd = IntPtr.Zero;
+                                }
                             }
                             NativeMethods.POINT origin = new NativeMethods.POINT { X = 0, Y = 0 };
                             if (hWnd != IntPtr.Zero)

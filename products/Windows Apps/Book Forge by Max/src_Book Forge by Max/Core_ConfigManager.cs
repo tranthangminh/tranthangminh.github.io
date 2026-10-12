@@ -1,4 +1,4 @@
-﻿using MaxApp.Common;
+using MaxApp.Common;
 using System;
 using System.IO;
 using System.Text;
@@ -83,6 +83,14 @@ namespace BookForge
             string jsonPath = Path.Combine(baseDir, ConfigFileNameJson);
             if (File.Exists(jsonPath)) return jsonPath;
 
+            try
+            {
+                string appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BookForge");
+                string appDataPath = Path.Combine(appDataDir, ConfigFileName);
+                if (File.Exists(appDataPath)) return appDataPath;
+            }
+            catch { }
+
             return noExtPath;
         }
 
@@ -150,8 +158,33 @@ namespace BookForge
                 }
 
                 string json = SerializeJson(config);
-                File.WriteAllText(targetPath, json, Encoding.UTF8);
+                string tempPath = targetPath + ".tmp";
+                File.WriteAllText(tempPath, json, Encoding.UTF8);
+                if (File.Exists(targetPath))
+                {
+                    File.Delete(targetPath);
+                }
+                File.Move(tempPath, targetPath);
                 return true;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                try
+                {
+                    string appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BookForge");
+                    if (!Directory.Exists(appDataDir)) Directory.CreateDirectory(appDataDir);
+                    string fallbackPath = Path.Combine(appDataDir, ConfigFileName);
+                    string tempFallback = fallbackPath + ".tmp";
+                    string json = SerializeJson(config);
+                    File.WriteAllText(tempFallback, json, Encoding.UTF8);
+                    if (File.Exists(fallbackPath)) File.Delete(fallbackPath);
+                    File.Move(tempFallback, fallbackPath);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
             catch
             {

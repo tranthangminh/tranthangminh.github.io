@@ -41,10 +41,23 @@ async function closeBrowser() {
 }
 
 function getPdfHtmlWrapper() {
-    const appDataNpm = path.join(process.env.APPDATA || '', 'npm', 'node_modules');
-    const pdfUmdPath = path.join(appDataNpm, 'pdf-parse', 'dist', 'pdf-parse', 'web', 'pdf-parse.umd.js');
+    const localWebDir = path.join(__dirname, 'node_modules', 'pdf-parse', 'dist', 'pdf-parse', 'web');
+    const appDataNpmWebDir = path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'pdf-parse', 'dist', 'pdf-parse', 'web');
+
+    let baseWebDir = null;
+    if (fs.existsSync(path.join(localWebDir, 'pdf-parse.umd.js'))) {
+        baseWebDir = localWebDir;
+    } else if (fs.existsSync(path.join(appDataNpmWebDir, 'pdf-parse.umd.js'))) {
+        baseWebDir = appDataNpmWebDir;
+    }
+
+    if (!baseWebDir) {
+        throw new Error('Missing pdf-parse web assets (pdf-parse.umd.js, pdf.worker.mjs). Please ensure node_modules/pdf-parse is present.');
+    }
+
+    const pdfUmdPath = path.join(baseWebDir, 'pdf-parse.umd.js');
     const pdfUmdJs = fs.readFileSync(pdfUmdPath, 'utf8');
-    const workerPath = path.join(appDataNpm, 'pdf-parse', 'dist', 'pdf-parse', 'web', 'pdf.worker.mjs');
+    const workerPath = path.join(baseWebDir, 'pdf.worker.mjs');
     const workerJs = fs.readFileSync(workerPath, 'utf8');
 
     return `<!DOCTYPE html>

@@ -170,6 +170,7 @@ namespace MaxApp.Common
                 if (thumbRect.Contains(e.Location))
                 {
                     _isDragging = true;
+                    this.Capture = true;
                     _dragStartMouseY = e.Y;
                     _dragStartThumbY = thumbRect.Y;
                     Invalidate();
@@ -223,6 +224,17 @@ namespace MaxApp.Common
         {
             base.OnMouseUp(e);
             if (_isDragging)
+            {
+                _isDragging = false;
+                this.Capture = false;
+                Invalidate();
+            }
+        }
+
+        protected override void OnMouseCaptureChanged(EventArgs e)
+        {
+            base.OnMouseCaptureChanged(e);
+            if (!this.Capture && _isDragging)
             {
                 _isDragging = false;
                 Invalidate();

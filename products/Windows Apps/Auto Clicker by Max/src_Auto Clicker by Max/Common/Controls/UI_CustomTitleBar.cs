@@ -520,7 +520,7 @@ namespace MaxApp.Common
                 Image svgIcon = SvgFileRenderer.GetAppIconImage(18);
                 if (svgIcon != null)
                 {
-                    _cachedIcon = svgIcon;
+                    _cachedIcon = new Bitmap(svgIcon);
                     return _cachedIcon;
                 }
 
@@ -769,6 +769,24 @@ namespace MaxApp.Common
                     g.DrawLine(closePen, cx + sz, cy - sz, cx - sz, cy + sz);
                 }
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_toolTip != null)
+                {
+                    try { _toolTip.Dispose(); } catch { }
+                    _toolTip = null;
+                }
+                if (_cachedIcon != null)
+                {
+                    try { _cachedIcon.Dispose(); } catch { }
+                    _cachedIcon = null;
+                }
+            }
+            base.Dispose(disposing);
         }
     }
 }

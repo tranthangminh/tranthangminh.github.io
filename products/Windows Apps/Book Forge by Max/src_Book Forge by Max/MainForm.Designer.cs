@@ -76,9 +76,22 @@ namespace BookForge
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+                if (fastTip != null)
+                {
+                    fastTip.Dispose();
+                    fastTip = null;
+                }
+                if (toolTipValidation != null)
+                {
+                    toolTipValidation.Dispose();
+                    toolTipValidation = null;
+                }
             }
             base.Dispose(disposing);
         }
@@ -506,7 +519,7 @@ namespace BookForge
             this.lblNoteHint.Location = new Point(18, 222);
             this.lblNoteHint.AutoSize = true;
             this.lblNoteHint.ForeColor = t.TextSecondary;
-            this.lblNoteHint.Font = new Font("Segoe UI", 8.25f, FontStyle.Italic);
+            this.lblNoteHint.Font = new Font("Segoe UI", 11f, FontStyle.Italic, GraphicsUnit.Pixel);
             this.fastTip.SetToolTip(this.lblNoteHint, "Metadata fallback:\nFields like Original Title or Reference Source default to project folder name if omitted.");
 
             this.cardPublishOptions.Controls.Add(this.lblPubTitle);
@@ -570,7 +583,7 @@ namespace BookForge
 
             this.rtbLogExtract.Location = new Point(16, 586);
             this.rtbLogExtract.Size = new Size(618, 172);
-            this.rtbLogExtract.BackColor = Color.FromArgb(20, 20, 20);
+            this.rtbLogExtract.BackColor = t.BgPrimary;
             this.rtbLogExtract.ForeColor = t.TextPrimary;
             this.rtbLogExtract.BorderStyle = BorderStyle.None;
             this.rtbLogExtract.Font = ThemeTokens.GetMonospaceFont(9f);
@@ -580,7 +593,7 @@ namespace BookForge
 
             this.rtbLogPublish.Location = new Point(16, 586);
             this.rtbLogPublish.Size = new Size(618, 172);
-            this.rtbLogPublish.BackColor = Color.FromArgb(20, 20, 20);
+            this.rtbLogPublish.BackColor = t.BgPrimary;
             this.rtbLogPublish.ForeColor = t.TextPrimary;
             this.rtbLogPublish.BorderStyle = BorderStyle.None;
             this.rtbLogPublish.Font = ThemeTokens.GetMonospaceFont(9f);

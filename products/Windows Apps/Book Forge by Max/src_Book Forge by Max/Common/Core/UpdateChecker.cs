@@ -49,23 +49,6 @@ namespace MaxApp.Common
 
             string today = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
-            // Daily rate limit for automatic background checks
-            if (!isManual)
-            {
-                try
-                {
-                    string lastDate = GetLastCheckDateHandler != null
-                        ? GetLastCheckDateHandler()
-                        : _inMemoryLastCheckDate;
-
-                    if (string.Equals(lastDate, today, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return;
-                    }
-                }
-                catch { }
-            }
-
             _isChecking = true;
 
             ThreadPool.QueueUserWorkItem((state) =>
@@ -144,14 +127,6 @@ namespace MaxApp.Common
                         }
                     }
 
-                    if (checkedSuccessfully)
-                    {
-                        _inMemoryLastCheckDate = today;
-                        if (SetLastCheckDateHandler != null)
-                        {
-                            try { SetLastCheckDateHandler(today); } catch { }
-                        }
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -174,9 +149,27 @@ namespace MaxApp.Common
                                 onCompleted(result);
                             }
 
-                            if (isManual || (result.Success && result.HasUpdate))
+                            if (isManual)
                             {
                                 ShowUpdateDialog(ownerForm, result);
+                            }
+                            else if (result.Success && result.HasUpdate)
+                            {
+                                string reminderKey = result.RemoteVersion + "@" + today;
+                                string lastReminder = GetLastCheckDateHandler != null
+                                    ? GetLastCheckDateHandler()
+                                    : _inMemoryLastCheckDate;
+
+                                if (!string.Equals(lastReminder, reminderKey, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    _inMemoryLastCheckDate = reminderKey;
+                                    if (SetLastCheckDateHandler != null)
+                                    {
+                                        try { SetLastCheckDateHandler(reminderKey); } catch { }
+                                    }
+
+                                    ShowUpdateDialog(ownerForm, result);
+                                }
                             }
                         }));
                     }

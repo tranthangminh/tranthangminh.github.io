@@ -332,9 +332,18 @@ namespace MaxApp.Common
 
                 if (ico != null)
                 {
-                    _cachedAppIconImage = new Bitmap(ico.ToBitmap(), new Size(size, size));
-                    _cachedAppIconSize = size;
-                    return _cachedAppIconImage;
+                    using (ico)
+                    using (Bitmap raw = ico.ToBitmap())
+                    {
+                        if (_cachedAppIconImage != null)
+                        {
+                            try { _cachedAppIconImage.Dispose(); } catch { }
+                            _cachedAppIconImage = null;
+                        }
+                        _cachedAppIconImage = new Bitmap(raw, new Size(size, size));
+                        _cachedAppIconSize = size;
+                        return _cachedAppIconImage;
+                    }
                 }
             }
             catch { }

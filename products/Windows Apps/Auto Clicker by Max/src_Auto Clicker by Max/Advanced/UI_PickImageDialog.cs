@@ -232,6 +232,7 @@ namespace ModernAutoClicker.Advanced
                                 _currentBitmap = new Bitmap(bmp);
                                 _isChanged = true;
                                 UpdatePreview();
+                                try { bmp.Dispose(); } catch { }
                             }));
                         }
                     };
@@ -473,6 +474,19 @@ namespace ModernAutoClicker.Advanced
                 previewForm.KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) previewForm.Close(); };
                 previewForm.ShowDialog(this);
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_currentBitmap != null)
+                {
+                    try { _currentBitmap.Dispose(); } catch { }
+                    _currentBitmap = null;
+                }
+            }
+            base.Dispose(disposing);
         }
     }
 }

@@ -29,7 +29,17 @@ namespace ModernAutoClicker
         private Thread _workerThread = null;
         private long _totalClicks = 0;
         private DateTime _startTime;
-        private static readonly Random _rng = new Random();
+
+        [ThreadStatic]
+        private static Random _rngInstance;
+        private static Random Rng
+        {
+            get
+            {
+                if (_rngInstance == null) _rngInstance = new Random(Environment.TickCount ^ Thread.CurrentThread.ManagedThreadId);
+                return _rngInstance;
+            }
+        }
 
         public bool IsRunning { get { return _isRunning; } }
         public long TotalClicks { get { return _totalClicks; } }
@@ -41,8 +51,8 @@ namespace ModernAutoClicker
         private Point ApplyJitter(Point pt, int jitterPx)
         {
             if (jitterPx <= 0) return pt;
-            int dx = _rng.Next(-jitterPx, jitterPx + 1);
-            int dy = _rng.Next(-jitterPx, jitterPx + 1);
+            int dx = Rng.Next(-jitterPx, jitterPx + 1);
+            int dy = Rng.Next(-jitterPx, jitterPx + 1);
             return new Point(pt.X + dx, pt.Y + dy);
         }
 
@@ -133,16 +143,25 @@ namespace ModernAutoClicker
                                     NativeMethods.GetWindowThreadProcessId(targetHwnd, out pId);
                                     if (pId > 0) config.TargetPid = pId;
                                 }
+                                else
+                                {
+                                    config.TargetHwnd = IntPtr.Zero;
+                                }
                             }
 
                             if (targetHwnd != IntPtr.Zero)
                             {
                                 NativeMethods.PerformClickDirectToWindow(targetHwnd, pt.X, pt.Y, config.MouseButton, holdMs);
                             }
-                            else
+                            else if (!config.RelativeToWindow)
                             {
                                 Point actPt = ResolveActualPoint(pt, targetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow, config.TargetPid);
                                 NativeMethods.SendBackgroundClick(actPt.X, actPt.Y, config.MouseButton, holdMs);
+                            }
+                            else
+                            {
+                                // Target window is closed/not found: pause briefly to avoid clicking randomly
+                                Thread.Sleep(50);
                             }
                             pointIndex++;
                             if (pointIndex % config.PointsList.Count == 0)
@@ -175,6 +194,10 @@ namespace ModernAutoClicker
                                     uint pId;
                                     NativeMethods.GetWindowThreadProcessId(newWnd, out pId);
                                     if (pId > 0) config.TargetPid = pId;
+                                }
+                                else
+                                {
+                                    config.TargetHwnd = IntPtr.Zero;
                                 }
                             }
                             if (config.TargetHwnd != IntPtr.Zero)

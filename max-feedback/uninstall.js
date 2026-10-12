@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedReasons = Array.from(form.querySelectorAll('input[name="reason"]:checked')).map(cb => cb.value);
     const detailsText = document.getElementById('details').value.trim();
 
-    const subject = encodeURIComponent('MAX - Design Power-Pack Uninstall Feedback');
+    const subject = encodeURIComponent('Design-Power Pack by Max Uninstall Feedback');
     
     let bodyText = 'MAX Feedback Report:\n';
     bodyText += '=================================\n';

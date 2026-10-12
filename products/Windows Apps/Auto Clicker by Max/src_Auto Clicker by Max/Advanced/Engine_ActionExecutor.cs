@@ -362,6 +362,10 @@ namespace ModernAutoClicker.Advanced
                     NativeMethods.GetWindowThreadProcessId(hWnd, out p);
                     if (p > 0) step.TargetPid = p;
                 }
+                else
+                {
+                    step.WindowHwnd = IntPtr.Zero;
+                }
             }
 
             if (hWnd != IntPtr.Zero)
@@ -432,6 +436,10 @@ namespace ModernAutoClicker.Advanced
                         NativeMethods.GetWindowThreadProcessId(directHwnd, out p);
                         if (p > 0) step.TargetPid = p;
                     }
+                    else
+                    {
+                        step.WindowHwnd = IntPtr.Zero;
+                    }
                 }
             }
             else if (!freeMouseMode && step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName) || step.TargetPid > 0))
@@ -446,6 +454,10 @@ namespace ModernAutoClicker.Advanced
                         uint p;
                         NativeMethods.GetWindowThreadProcessId(targetWin, out p);
                         if (p > 0) step.TargetPid = p;
+                    }
+                    else
+                    {
+                        step.WindowHwnd = IntPtr.Zero;
                     }
                 }
 

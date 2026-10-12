@@ -1,4 +1,4 @@
-﻿using Loc = ModernAutoClicker.Localization.Loc;
+using Loc = ModernAutoClicker.Localization.Loc;
 using MaxApp.Common;
 using System;
 using System.Drawing;
@@ -114,6 +114,15 @@ namespace ModernAutoClicker.Advanced
             if (lblTip2 != null) lblTip2.ForeColor = t.TextSecondary;
 
             this.Invalidate();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Loc.OnLanguageChanged -= ApplyLanguage;
+            }
+            base.Dispose(disposing);
         }
     }
 }

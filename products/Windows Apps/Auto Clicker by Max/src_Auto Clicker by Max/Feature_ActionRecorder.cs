@@ -480,7 +480,8 @@ namespace ModernAutoClicker
         {
             if (_clickTimer != null)
             {
-                try { _clickTimer.Change(Timeout.Infinite, Timeout.Infinite); } catch { }
+                try { _clickTimer.Dispose(); } catch { }
+                _clickTimer = null;
             }
         }
 
@@ -749,7 +750,8 @@ namespace ModernAutoClicker
         {
             if (_textTimer != null)
             {
-                try { _textTimer.Change(Timeout.Infinite, Timeout.Infinite); } catch { }
+                try { _textTimer.Dispose(); } catch { }
+                _textTimer = null;
             }
         }
 

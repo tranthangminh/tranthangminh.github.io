@@ -32,18 +32,5 @@ namespace ModernAutoClicker.Advanced
                 Shared.SetToolTip(control, text);
             }
         }
-
-        public static void AttachHoverTooltip(Control control, Func<string> textProvider)
-        {
-            if (control == null || textProvider == null) return;
-            control.MouseEnter += (s, e) =>
-            {
-                string text = textProvider();
-                if (!string.IsNullOrEmpty(text))
-                {
-                    Shared.SetToolTip(control, text);
-                }
-            };
-        }
     }
 }

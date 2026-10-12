@@ -43,8 +43,10 @@ namespace BookForge
                     ProcessStartInfo psi = new ProcessStartInfo("taskkill", string.Format("/F /T /PID {0}", pid));
                     psi.CreateNoWindow = true;
                     psi.UseShellExecute = false;
-                    Process p = Process.Start(psi);
-                    if (p != null) p.WaitForExit(2000);
+                    using (Process p = Process.Start(psi))
+                    {
+                        if (p != null) p.WaitForExit(2000);
+                    }
                 }
                 catch
                 {

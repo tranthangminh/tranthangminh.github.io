@@ -101,8 +101,9 @@ namespace ModernAutoClicker
                 if (hIcon != IntPtr.Zero)
                 {
                     using (Icon ico = Icon.FromHandle(hIcon))
+                    using (Bitmap raw = ico.ToBitmap())
                     {
-                        return new Bitmap(ico.ToBitmap(), new Size(16, 16));
+                        return new Bitmap(raw, new Size(16, 16));
                     }
                 }
 
@@ -111,13 +112,21 @@ namespace ModernAutoClicker
                 NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
                 if (pid != 0)
                 {
-                    var proc = System.Diagnostics.Process.GetProcessById((int)pid);
-                    string exePath = proc.MainModule.FileName;
-                    if (!string.IsNullOrEmpty(exePath) && File.Exists(exePath))
+                    using (var proc = System.Diagnostics.Process.GetProcessById((int)pid))
                     {
-                        using (Icon ico = Icon.ExtractAssociatedIcon(exePath))
+                        string exePath = proc.MainModule.FileName;
+                        if (!string.IsNullOrEmpty(exePath) && File.Exists(exePath))
                         {
-                            if (ico != null) return new Bitmap(ico.ToBitmap(), new Size(16, 16));
+                            using (Icon ico = Icon.ExtractAssociatedIcon(exePath))
+                            {
+                                if (ico != null)
+                                {
+                                    using (Bitmap raw = ico.ToBitmap())
+                                    {
+                                        return new Bitmap(raw, new Size(16, 16));
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -175,7 +184,13 @@ namespace ModernAutoClicker
                         {
                             using (Icon ico = Icon.ExtractAssociatedIcon(exePath))
                             {
-                                if (ico != null) extracted = new Bitmap(ico.ToBitmap(), new Size(16, 16));
+                                if (ico != null)
+                                {
+                                    using (Bitmap raw = ico.ToBitmap())
+                                    {
+                                        extracted = new Bitmap(raw, new Size(16, 16));
+                                    }
+                                }
                             }
                         }
                         foreach (var p in procs) p.Dispose();

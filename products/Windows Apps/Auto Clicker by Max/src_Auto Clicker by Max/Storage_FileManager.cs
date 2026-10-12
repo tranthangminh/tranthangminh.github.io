@@ -98,7 +98,10 @@ namespace ModernAutoClicker
                                     }
                                 }
                             }
-                            catch { }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine(string.Format("Failed to parse script from {0}: {1}", file, ex.Message));
+                            }
                         }
 
                         if (loadedProfiles.Count > 0)
@@ -235,6 +238,54 @@ namespace ModernAutoClicker
                 }
             }
             return false;
+        }
+
+        #endregion
+
+        #region Atomic File I/O Safety
+
+        /// <summary>
+        /// Writes content to a file atomically by saving to a temporary file first,
+        /// then replacing or moving it to ensure zero risk of corrupted or 0-byte files on crash or power loss.
+        /// </summary>
+        public static void AtomicWriteAllText(string filePath, string content, System.Text.Encoding encoding = null)
+        {
+            if (string.IsNullOrEmpty(filePath)) return;
+            if (encoding == null) encoding = System.Text.Encoding.UTF8;
+
+            string dir = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            string tempFile = filePath + ".tmp." + Guid.NewGuid().ToString("N");
+            try
+            {
+                File.WriteAllText(tempFile, content, encoding);
+
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        File.Replace(tempFile, filePath, null);
+                        return;
+                    }
+                    catch
+                    {
+                        // Fallback on filesystems where File.Replace is not supported
+                        File.Delete(filePath);
+                    }
+                }
+                File.Move(tempFile, filePath);
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    try { File.Delete(tempFile); } catch { }
+                }
+            }
         }
 
         #endregion

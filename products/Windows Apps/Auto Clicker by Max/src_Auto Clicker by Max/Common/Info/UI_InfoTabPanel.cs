@@ -163,5 +163,14 @@ namespace MaxApp.Common
                 if (!isVi) _viewEn.UpdateLanguageButtonsStyle();
             }
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Loc.OnLanguageChanged -= ApplyLanguage;
+            }
+            base.Dispose(disposing);
+        }
     }
 }

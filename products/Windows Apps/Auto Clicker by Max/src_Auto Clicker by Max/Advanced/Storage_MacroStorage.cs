@@ -167,12 +167,12 @@ namespace ModernAutoClicker.Advanced
 
         public static void SaveToFile(MacroProfile profile, string filePath)
         {
-            File.WriteAllText(filePath, ToJson(profile), Encoding.UTF8);
+            ModernAutoClicker.FileManager.AtomicWriteAllText(filePath, ToJson(profile), Encoding.UTF8);
         }
 
         public static void SaveProjectToFile(List<MacroProfile> profiles, int activeIndex, string filePath)
         {
-            File.WriteAllText(filePath, ProjectToJson(profiles, activeIndex), Encoding.UTF8);
+            ModernAutoClicker.FileManager.AtomicWriteAllText(filePath, ProjectToJson(profiles, activeIndex), Encoding.UTF8);
         }
 
         public static MacroProfile FromJson(string json)

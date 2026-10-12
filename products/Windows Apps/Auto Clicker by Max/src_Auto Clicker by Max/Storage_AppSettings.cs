@@ -467,11 +467,11 @@ namespace ModernAutoClicker
 
                 sb.AppendLine("}");
 
-                File.WriteAllText(GetSettingsFilePath(), sb.ToString(), Encoding.UTF8);
+                FileManager.AtomicWriteAllText(GetSettingsFilePath(), sb.ToString(), Encoding.UTF8);
             }
-            catch
+            catch (Exception ex)
             {
-                // Fail silently if directory is write-protected
+                System.Diagnostics.Debug.WriteLine("Failed to save settings: " + ex.Message);
             }
         }
 

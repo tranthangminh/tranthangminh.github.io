@@ -54,6 +54,10 @@ namespace ModernAutoClicker
                         NativeMethods.GetWindowThreadProcessId(hWnd, out p);
                         if (p > 0) step.TargetPid = p;
                     }
+                    else
+                    {
+                        step.WindowHwnd = IntPtr.Zero;
+                    }
                 }
             }
 
@@ -252,6 +256,10 @@ namespace ModernAutoClicker
                         uint p;
                         NativeMethods.GetWindowThreadProcessId(hWnd, out p);
                         if (p > 0) step.TargetPid = p;
+                    }
+                    else
+                    {
+                        step.WindowHwnd = IntPtr.Zero;
                     }
                 }
 

@@ -1107,6 +1107,7 @@ namespace ModernAutoClicker.Advanced
         {
             if (disposing)
             {
+                Loc.OnLanguageChanged -= ApplyLanguage;
                 if (_vfxOverdrive != null)
                 {
                     _vfxOverdrive.Dispose();

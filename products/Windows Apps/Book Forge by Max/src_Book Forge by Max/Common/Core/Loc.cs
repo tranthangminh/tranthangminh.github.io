@@ -97,10 +97,10 @@ namespace MaxApp.Common
         public static string Facebook { get { return "Facebook:"; } }
         public static string MoreProducts { get { return IsVietnamese ? "Sản phẩm khác:" : "More Products:"; } }
         public static string SupportMe { get { return IsVietnamese ? "Ủng hộ tui:" : "Support me:"; } }
-        public static string ScanQr { get { return "[Quét mã QR Ngân Hàng ↗]"; } }
-        public static string BunGioHeoPrefix { get { return "• Ủng hộ "; } }
+        public static string ScanQr { get { return IsVietnamese ? "[Quét mã QR Ngân Hàng ↗]" : "[Scan Bank QR Code ↗]"; } }
+        public static string BunGioHeoPrefix { get { return IsVietnamese ? "• Ủng hộ " : "• Support "; } }
         public static string BunGioHeoName { get { return "Bún Giò Heo Minh Nhật"; } }
-        public static string BunGioHeoSuffix { get { return "nhà tui"; } }
+        public static string BunGioHeoSuffix { get { return IsVietnamese ? "nhà tui" : "(Family restaurant)"; } }
         public static string CheckForUpdates { get { return IsVietnamese ? "Kiểm tra Cập nhật" : "Check for Updates"; } }
         public static string CheckingUpdates { get { return IsVietnamese ? "Đang kiểm tra cập nhật..." : "Checking for updates..."; } }
         public static string UpdateAvailable { get { return IsVietnamese ? "Đã có phiên bản mới: v{0}!" : "New version available: v{0}!"; } }

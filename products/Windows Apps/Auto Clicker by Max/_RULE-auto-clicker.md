@@ -134,15 +134,31 @@
 
 ---
 
-# 3. QUẢN LÝ TIẾN TRÌNH & CỬA SỔ MỤC TIÊU (WINDOW TARGETING & CACHING)
+# 3. QUẢN LÝ TIẾN TRÌNH & CỬA SỔ MỤC TIÊU (WINDOW TARGETING, PID LIFECYCLE & CACHING)
 
-## 3.1 Nhận Diện Cửa Sổ Thông Minh & Đa Cửa Sổ (Multi-Window Instance)
-- **Ưu tiên Window Handle (HWND):** Khi người dùng đã chấm chọn một cửa sổ cụ thể (ví dụ 1 trong 2 cửa sổ Chrome), app phải lưu và ưu tiên kiểm tra `WindowHwnd` trước.
-  - Nếu `IsValidWindowHandle(WindowHwnd, ProcessName)` hợp lệ -> Tác vụ click thực thi ngay lập tức (0 ms delay), không cần quét lại toàn bộ màn hình.
-  - Chỉ khi handle bị mất (cửa sổ bị đóng hoặc mở lại) mới kích hoạt cơ chế fallback tìm kiếm theo tên (`ProcessName` / `WindowTitle`).
-- **Cache có thời hạn (TTL Caching):**
-  - Mọi hàm quét cửa sổ như `FindWindowByTarget` và trích xuất icon `GetProcessIcon` phải có bộ nhớ đệm (cache) tối thiểu 1000ms.
-  - Tuyệt đối không gọi `Process.GetProcessesByName()` hoặc `EnumWindows` lặp đi lặp lại trong các vòng lặp UI hay vòng lặp render overlay.
+## 3.1 Tách Biệt Định Danh Bền Vững (Persistent Config) và Khóa Phiên Tạm Thời (Session PID Lock)
+- **Định danh bền vững (Persistent Identity - Lưu vào file JSON):**
+  - Gồm bộ ba: `ProcessName` (tên tiến trình, ví dụ `HD-Player`, `notepad`), `WindowTitle` (tiêu đề cửa sổ), và `WindowIndex` (chỉ số phân biệt instance: 1, 2... nếu có nhiều cửa sổ trùng tên).
+  - Đây là thông tin bất biến qua các lần tắt mở máy hoặc khởi động lại Auto Clicker.
+- **Khóa phiên tạm thời trong RAM (Session-bound Runtime Lock - TUYỆT ĐỐI KHÔNG lưu vào file JSON):**
+  - Gồm `TargetPid` (Process ID của hệ điều hành) và `WindowHwnd` (Win32 Window Handle).
+  - **Vòng đời của PID:** Windows cấp phát ngẫu nhiên PID khi tiến trình chạy và hủy ngay khi tiến trình đóng. Do đó, `TargetPid` chỉ có giá trị hiệu lực duy nhất trong phiên hiện tại trong RAM, khởi tạo bằng `0` khi mở Auto Clicker, và tuyệt đối **không được serialize ra file `_AutoClickerConfig.json` hay `MacroProfile.json`**.
+  - **Lá chắn bảo vệ khi mở thêm ứng dụng (Multi-Instance Shield Protection):**
+    - Khi người dùng đang chạy và target vào **App 1 (PID 100)**: Auto Clicker giữ `TargetPid = 100`.
+    - Sau đó người dùng mở thêm **App 2 (PID 200)** của cùng ứng dụng đó (ví dụ mở thêm nick game 2): Nhờ có `TargetPid = 100` đang khóa trong phiên, Auto Clicker tiếp tục nhắm đúng 100% vào App 1, **tuyệt đối không bị gián đoạn, không xáo trộn và không bao giờ click nhầm sang App 2**.
+  - **Tự động bắt lại siêu mượt cho App đơn lẻ (Frictionless Single-Instance Reconnection & Dynamic Titles):**
+    - Trong 95% trường hợp người dùng chỉ dùng 1 cửa sổ của ứng dụng: Người dùng chọn Target Window 1 lần là dùng vĩnh viễn. Khi app đó tắt đi mở lại (được Windows cấp PID mới), hoặc khi app có tiêu đề động thay đổi liên tục (như Antigravity/VS Code đổi workspace, Chrome đổi tab, Word/Notepad đổi tài liệu), Auto Clicker phát hiện cửa sổ duy nhất đó và **tự động bám lấy ngay trong 0.01 giây mà không cần người dùng chọn lại hay bắt bẻ tiêu đề cũ**.
+  - **Đếm Instance theo Cửa Sổ Hiển Thị Thực Tế (Visible GUI Windows, KHÔNG đếm OS Process):**
+    - Các app Chromium/Electron (Antigravity, Chrome, Edge, VS Code, Discord) luôn sinh ra 6-15 tiến trình con trong Task Manager cho 1 cửa sổ duy nhất. Hệ thống **tuyệt đối không đếm số lượng tiến trình từ OS** để suy đoán số instance, mà phải đếm số lượng **cửa sổ hiển thị thực tế (Visible Windows có title length > 0)** trên màn hình. Chỉ khi có thực sự $\ge 2$ cửa sổ hiển thị thì mới kích hoạt cơ chế phân biệt đa instance.
+  - **Chống cướp quyền điều khiển khi tiến trình bị tắt (Anti-Hijack Guard):**
+    - Nếu người dùng đang nhắm vào một tiến trình cụ thể (`TargetPid > 0`) trong môi trường đa tiến trình (có $\ge 2$ cửa sổ cùng tên đang chạy, ví dụ PID 123 và PID 124): Khi tiến trình đang chọn (124) bị tắt, hệ thống **bắt buộc dừng lại báo mất mục tiêu (Target Lost)**, **TUYỆT ĐỐI CẤM fallback tự ý nhảy sang PID của instance khác (123)**.
+
+## 3.2 Nhận Diện Cửa Sổ Thông Minh & Hiệu Năng Cao (High-Performance Window Resolution)
+- **Đường dẫn nhanh 0ms (Fast Path Validation):**
+  - Trong `IsValidWindowHandle`: Kiểm tra nhanh `IsWindow(hWnd)` và `IsWindowVisible(hWnd)`. Nếu `targetPid > 0`, kiểm tra trực tiếp qua `GetWindowThreadProcessId` khớp PID. Tuyệt đối không gọi lệnh nặng `Process.GetProcessById()` lặp đi lặp lại trên từng cú click hay từng chuyển động chuột.
+- **Kỷ luật bộ nhớ đệm (Cache Discipline):**
+  - Cache cửa sổ hợp lệ để tránh gọi `EnumWindows` liên tục.
+  - **Cấm ngộ độc Cache (No Poisoned Cache on Dead Windows):** Tuyệt đối không cache kết quả `IntPtr.Zero` (cửa sổ không tìm thấy) trong 1000ms, để đảm bảo ngay khi người dùng vừa mở lại ứng dụng, Auto Clicker nhận diện được ngay lập tức mà không bị trễ 1 giây.
 
 ---
 

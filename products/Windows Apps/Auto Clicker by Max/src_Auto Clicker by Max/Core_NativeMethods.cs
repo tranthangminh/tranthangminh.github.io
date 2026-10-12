@@ -896,21 +896,24 @@ namespace ModernAutoClicker
             GetWindowThreadProcessId(hWnd, out pid);
             if (pid == 0) return false;
 
-            if (targetPid > 0 && pid != targetPid) return false;
+            if (targetPid > 0)
+            {
+                return pid == targetPid;
+            }
 
             if (!string.IsNullOrEmpty(procName))
             {
                 try
                 {
-                    var p = System.Diagnostics.Process.GetProcessById((int)pid);
-                    string clean = procName.Trim();
-                    if (clean.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                    using (var p = System.Diagnostics.Process.GetProcessById((int)pid))
                     {
-                        clean = clean.Substring(0, clean.Length - 4);
+                        string clean = procName.Trim();
+                        if (clean.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            clean = clean.Substring(0, clean.Length - 4);
+                        }
+                        return string.Equals(p.ProcessName, clean, StringComparison.OrdinalIgnoreCase);
                     }
-                    bool match = string.Equals(p.ProcessName, clean, StringComparison.OrdinalIgnoreCase);
-                    p.Dispose();
-                    return match;
                 }
                 catch
                 {
@@ -962,13 +965,18 @@ namespace ModernAutoClicker
                 {
                     if ((DateTime.Now - entry.Timestamp).TotalMilliseconds < 1000)
                     {
-                        if (entry.Hwnd == IntPtr.Zero)
+                        if (entry.Hwnd != IntPtr.Zero && IsWindow(entry.Hwnd) && IsWindowVisible(entry.Hwnd) && !IsIconic(entry.Hwnd))
                         {
-                            return IntPtr.Zero;
-                        }
-                        if (IsWindow(entry.Hwnd) && IsWindowVisible(entry.Hwnd) && !IsIconic(entry.Hwnd))
-                        {
-                            return entry.Hwnd;
+                            if (targetPid > 0)
+                            {
+                                uint checkPid;
+                                GetWindowThreadProcessId(entry.Hwnd, out checkPid);
+                                if (checkPid == targetPid) return entry.Hwnd;
+                            }
+                            else
+                            {
+                                return entry.Hwnd;
+                            }
                         }
                     }
                 }
@@ -976,15 +984,16 @@ namespace ModernAutoClicker
 
             IntPtr resultHwnd = IntPtr.Zero;
 
-            // Tier 1: Exact PID match (Locks target window to session PID so it NEVER drifts to App 2)
+            // Tier 1: Exact PID match in current session (Shields against drifting to other instances)
             if (targetPid > 0)
             {
                 bool isPidAlive = false;
                 try
                 {
-                    var p = System.Diagnostics.Process.GetProcessById((int)targetPid);
-                    isPidAlive = !p.HasExited;
-                    p.Dispose();
+                    using (var p = System.Diagnostics.Process.GetProcessById((int)targetPid))
+                    {
+                        isPidAlive = !p.HasExited;
+                    }
                 }
                 catch { isPidAlive = false; }
 
@@ -1010,7 +1019,10 @@ namespace ModernAutoClicker
                                     title = sb.ToString();
                                 }
 
-                                bool titleMatch = !string.IsNullOrEmpty(cleanTitle) && title.IndexOf(cleanTitle, StringComparison.OrdinalIgnoreCase) >= 0;
+                                bool titleMatch = !string.IsNullOrEmpty(cleanTitle) &&
+                                    (title.IndexOf(cleanTitle, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                     cleanTitle.IndexOf(title, StringComparison.OrdinalIgnoreCase) >= 0);
+
                                 if (titleMatch)
                                 {
                                     pidWindows.Add(hWnd);
@@ -1047,7 +1059,7 @@ namespace ModernAutoClicker
                 }
             }
 
-            // Tier 2: Target PID died or not set (User restarted game/app) -> Smart fallback to Earliest Opened App (Instance 1)
+            // Tier 2: Target PID died or not set (Startup, or Single/Multi-instance reconnect)
             System.Collections.Generic.List<System.Diagnostics.Process> runningProcs = new System.Collections.Generic.List<System.Diagnostics.Process>();
             if (!string.IsNullOrEmpty(cleanProc))
             {
@@ -1064,7 +1076,7 @@ namespace ModernAutoClicker
                 }
             }
 
-            // Sort candidate processes by StartTime ascending (Earliest opened process = Instance 1)
+            // Deterministic sorting: Earliest opened process first (Instance 1, 2...)
             if (runningProcs.Count > 1)
             {
                 runningProcs.Sort((a, b) =>
@@ -1078,7 +1090,6 @@ namespace ModernAutoClicker
                 });
             }
 
-            // Collect target PIDs in priority order
             System.Collections.Generic.List<uint> prioritizedPids = new System.Collections.Generic.List<uint>();
             foreach (var p in runningProcs)
             {
@@ -1087,6 +1098,7 @@ namespace ModernAutoClicker
             }
 
             System.Collections.Generic.List<IntPtr> matchingHwnds = new System.Collections.Generic.List<IntPtr>();
+            System.Collections.Generic.List<IntPtr> allAppWindows = new System.Collections.Generic.List<IntPtr>();
             IntPtr processMatch = IntPtr.Zero;
 
             EnumWindows((hWnd, lParam) =>
@@ -1097,8 +1109,6 @@ namespace ModernAutoClicker
                     GetWindowThreadProcessId(hWnd, out pid);
 
                     bool isPidMatch = prioritizedPids.Count > 0 && prioritizedPids.Contains(pid);
-
-                    // If target process was specified and running, skip non-matching process windows
                     if (prioritizedPids.Count > 0 && !isPidMatch)
                     {
                         return true;
@@ -1113,15 +1123,26 @@ namespace ModernAutoClicker
                         title = sb.ToString();
                     }
 
-                    bool titleMatch = !string.IsNullOrEmpty(cleanTitle) && title.IndexOf(cleanTitle, StringComparison.OrdinalIgnoreCase) >= 0;
+                    bool titleMatch = !string.IsNullOrEmpty(cleanTitle) &&
+                        (title.IndexOf(cleanTitle, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                         cleanTitle.IndexOf(title, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                    if (isPidMatch && len > 0)
+                    {
+                        allAppWindows.Add(hWnd);
+                        if (processMatch == IntPtr.Zero)
+                        {
+                            processMatch = hWnd;
+                        }
+                    }
 
                     if (titleMatch && (prioritizedPids.Count == 0 || isPidMatch))
                     {
                         matchingHwnds.Add(hWnd);
                     }
-                    else if (isPidMatch && processMatch == IntPtr.Zero && len > 0)
+                    else if (string.IsNullOrEmpty(cleanTitle) && isPidMatch)
                     {
-                        processMatch = hWnd;
+                        matchingHwnds.Add(hWnd);
                     }
                 }
                 return true;
@@ -1144,29 +1165,91 @@ namespace ModernAutoClicker
                 });
             }
 
+            if (allAppWindows.Count > 1)
+            {
+                allAppWindows.Sort((a, b) =>
+                {
+                    uint pidA, pidB;
+                    GetWindowThreadProcessId(a, out pidA);
+                    GetWindowThreadProcessId(b, out pidB);
+                    int idxA = prioritizedPids.IndexOf(pidA);
+                    int idxB = prioritizedPids.IndexOf(pidB);
+                    if (idxA >= 0 && idxB >= 0 && idxA != idxB) return idxA.CompareTo(idxB);
+                    int cmp = pidA.CompareTo(pidB);
+                    if (cmp != 0) return cmp;
+                    return a.ToInt64().CompareTo(b.ToInt64());
+                });
+            }
+
+            // Window Selection:
             if (matchingHwnds.Count > 0)
             {
-                if (windowIndex > 0 && windowIndex <= matchingHwnds.Count)
+                if (windowIndex > 0)
                 {
-                    resultHwnd = matchingHwnds[windowIndex - 1];
+                    if (windowIndex <= matchingHwnds.Count)
+                    {
+                        resultHwnd = matchingHwnds[windowIndex - 1];
+                    }
+                    else
+                    {
+                        // Explicit instance out of range -> never hijack another instance
+                        resultHwnd = IntPtr.Zero;
+                    }
                 }
                 else
                 {
-                    resultHwnd = matchingHwnds[0]; // Earliest opened app!
+                    // Multi-Instance Shield:
+                    // If targetPid died and multiple windows of the same app are open, do not hijack another instance!
+                    if (targetPid > 0 && allAppWindows.Count > 1)
+                    {
+                        resultHwnd = IntPtr.Zero;
+                    }
+                    else
+                    {
+                        resultHwnd = matchingHwnds[0];
+                    }
                 }
             }
-            else
+            else if (processMatch != IntPtr.Zero)
             {
-                resultHwnd = processMatch;
+                // Dynamic title fallback (Antigravity, Chrome, Word, Notepad changed workspace/tab/file)
+                if (allAppWindows.Count == 1)
+                {
+                    // Single window instance: smoothly bind to the application window!
+                    resultHwnd = processMatch;
+                }
+                else
+                {
+                    // Multiple windows exist:
+                    if (windowIndex > 0)
+                    {
+                        if (windowIndex <= allAppWindows.Count)
+                            resultHwnd = allAppWindows[windowIndex - 1];
+                        else
+                            resultHwnd = IntPtr.Zero;
+                    }
+                    else if (targetPid > 0)
+                    {
+                        // Target PID died in multi-instance environment -> do not hijack!
+                        resultHwnd = IntPtr.Zero;
+                    }
+                    else
+                    {
+                        resultHwnd = allAppWindows[0];
+                    }
+                }
             }
 
-            lock (_targetWindowCache)
+            if (resultHwnd != IntPtr.Zero)
             {
-                _targetWindowCache[cacheKey] = new TargetWindowCacheEntry
+                lock (_targetWindowCache)
                 {
-                    Hwnd = resultHwnd,
-                    Timestamp = DateTime.Now
-                };
+                    _targetWindowCache[cacheKey] = new TargetWindowCacheEntry
+                    {
+                        Hwnd = resultHwnd,
+                        Timestamp = DateTime.Now
+                    };
+                }
             }
 
             return resultHwnd;

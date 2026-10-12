@@ -333,12 +333,12 @@ namespace BookForge
 
             if (rtbLogExtract != null)
             {
-                rtbLogExtract.BackColor = t.IsDark ? Color.FromArgb(20, 20, 20) : Color.FromArgb(245, 245, 245);
+                rtbLogExtract.BackColor = t.BgPrimary;
                 rtbLogExtract.ForeColor = t.TextPrimary;
             }
             if (rtbLogPublish != null)
             {
-                rtbLogPublish.BackColor = t.IsDark ? Color.FromArgb(20, 20, 20) : Color.FromArgb(245, 245, 245);
+                rtbLogPublish.BackColor = t.BgPrimary;
                 rtbLogPublish.ForeColor = t.TextPrimary;
             }
             if (scrollBarLog != null) scrollBarLog.ApplyTheme(t);
@@ -1813,6 +1813,15 @@ namespace BookForge
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            try
+            {
+                if (runner != null && runner.IsRunning)
+                {
+                    runner.Cancel();
+                }
+            }
+            catch { }
+
             SaveConfig();
             base.OnFormClosing(e);
         }

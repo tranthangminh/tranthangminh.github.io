@@ -1,6 +1,6 @@
 ﻿{
   "_comment": "BookForge Studio Persistent Configuration",
-  "ExtractSourcePath": "D:\\Mine\\Books\\Chien Thang Tro Choi Cuoc Song - Adam Khoo.pdf",
+  "ExtractSourcePath": "",
   "OutputLocationMode": "SameAsSource",
   "OutputCustomFolder": "",
   "SmartChunking": "H1, H2 & H3",
@@ -8,8 +8,8 @@
   "ExtractImages": true,
   "ScaffoldBible": true,
   "ExtractSettingsCollapsed": false,
-  "PublishFolderPath": "D:\\Mine\\Books\\Chien Thang Tro Choi Cuoc Song - Adam Khoo",
-  "SourceTranslated": false,
+  "PublishFolderPath": "",
+  "SourceTranslated": true,
   "SourceOriginal": true,
   "PaperSize": "A5",
   "FontFamily": "Lora (Recommended)",
@@ -20,5 +20,5 @@
   "SelectedTab": 0,
   "IsDarkTheme": true,
   "WindowWidth": 660,
-  "WindowHeight": 780
+  "WindowHeight": 812
 }

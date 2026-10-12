@@ -629,6 +629,10 @@ namespace ModernAutoClicker
                                 NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
                                 if (pr > 0) _simpleTargetPid = pr;
                             }
+                            else
+                            {
+                                _simpleTargetHwnd = IntPtr.Zero;
+                            }
                         }
                         if (hWnd != IntPtr.Zero)
                         {
@@ -1296,6 +1300,10 @@ namespace ModernAutoClicker
                                 NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
                                 if (pr > 0) _simpleTargetPid = pr;
                             }
+                            else
+                            {
+                                _simpleTargetHwnd = IntPtr.Zero;
+                            }
                         }
                         foreach (var p in pts)
                         {
@@ -1342,6 +1350,10 @@ namespace ModernAutoClicker
                                             uint pr;
                                             NativeMethods.GetWindowThreadProcessId(hWnd, out pr);
                                             if (pr > 0) s.TargetPid = pr;
+                                        }
+                                        else
+                                        {
+                                            s.WindowHwnd = IntPtr.Zero;
                                         }
                                     }
                                     if (hWnd != IntPtr.Zero)
@@ -1680,6 +1692,10 @@ namespace ModernAutoClicker
                         _simpleTargetPids[tabIndex] = p;
                     }
                 }
+                else if (tabIndex >= 0 && tabIndex < 5)
+                {
+                    _simpleTargetHwnds[tabIndex] = IntPtr.Zero;
+                }
             }
 
             if (!UacHelper.IsRunningAsAdmin() && prof.SimpleRelativeToWindow && tabHwnd != IntPtr.Zero && UacHelper.IsProcessElevated(tabHwnd))
@@ -1779,6 +1795,10 @@ namespace ModernAutoClicker
                                 uint p;
                                 NativeMethods.GetWindowThreadProcessId(win, out p);
                                 if (p > 0) s.TargetPid = p;
+                            }
+                            else
+                            {
+                                s.WindowHwnd = IntPtr.Zero;
                             }
                         }
                         if (win != IntPtr.Zero && UacHelper.IsProcessElevated(win))
@@ -2148,7 +2168,19 @@ namespace ModernAutoClicker
                 _simpleTargetWindowIndex = prof.SimpleTargetWindowIndex;
                 if (_simpleTargetPid == 0 && prof.SimpleTargetPid > 0)
                 {
-                    _simpleTargetPid = prof.SimpleTargetPid;
+                    try
+                    {
+                        using (var p = System.Diagnostics.Process.GetProcessById((int)prof.SimpleTargetPid))
+                        {
+                            if (!p.HasExited) _simpleTargetPid = prof.SimpleTargetPid;
+                            else { _simpleTargetPid = 0; prof.SimpleTargetPid = 0; }
+                        }
+                    }
+                    catch
+                    {
+                        _simpleTargetPid = 0;
+                        prof.SimpleTargetPid = 0;
+                    }
                 }
                 _simpleRelativeToWindow = prof.SimpleRelativeToWindow;
                 if (_simpleRelativeToWindow && index >= 0 && index < 5)
@@ -2160,9 +2192,14 @@ namespace ModernAutoClicker
                         {
                             uint pr;
                             NativeMethods.GetWindowThreadProcessId(_simpleTargetHwnds[index], out pr);
-                            if (pr > 0) _simpleTargetPids[index] = pr;
+                            if (pr > 0)
+                            {
+                                _simpleTargetPids[index] = pr;
+                                _simpleTargetPid = pr;
+                            }
                         }
                     }
+                    _simpleTargetHwnd = _simpleTargetHwnds[index];
                 }
                 UpdateSimpleTargetWindowButtonDisplay();
 

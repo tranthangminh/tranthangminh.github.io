@@ -20,17 +20,19 @@
 const fs = require('fs');
 const path = require('path');
 
-const appDataNpm = path.join(process.env.APPDATA || '', 'npm', 'node_modules');
+const localBundled = path.join(__dirname, 'node_modules', 'pdf-parse');
+const appDataNpm = path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'pdf-parse');
 let pdfParseMod;
-try {
-    pdfParseMod = require(path.join(appDataNpm, 'pdf-parse'));
-} catch (e) {
+const candidatePaths = [localBundled, appDataNpm, 'pdf-parse'];
+for (const p of candidatePaths) {
     try {
-        pdfParseMod = require('pdf-parse');
-    } catch (e2) {
-        console.error('❌ Error: pdf-parse module is required. Please install via: npm install -g pdf-parse');
-        process.exit(1);
-    }
+        pdfParseMod = require(p);
+        if (pdfParseMod) break;
+    } catch (e) {}
+}
+if (!pdfParseMod) {
+    console.error('❌ Error: pdf-parse module is required. Please install via: npm install -g pdf-parse');
+    process.exit(1);
 }
 
 async function auditBook(projectDir) {

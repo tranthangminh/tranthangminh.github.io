@@ -2815,6 +2815,10 @@ namespace ModernAutoClicker.Advanced
                             NativeMethods.GetWindowThreadProcessId(hWnd, out p);
                             if (p > 0) _step.TargetPid = p;
                         }
+                        else
+                        {
+                            _step.WindowHwnd = IntPtr.Zero;
+                        }
                     }
                 }
 
@@ -3287,6 +3291,7 @@ namespace ModernAutoClicker.Advanced
                 if (bmp != null && _step != null)
                 {
                     _step.SetTemplateBitmap(bmp);
+                    try { bmp.Dispose(); } catch { }
                     pnlImageThumb.Invalidate();
                     UpdateRowTooltips();
                     if (OnStepChanged != null) OnStepChanged();
@@ -3306,8 +3311,8 @@ namespace ModernAutoClicker.Advanced
                     try
                     {
                         using (Image loaded = Image.FromFile(ofd.FileName))
+                        using (Bitmap bmp = new Bitmap(loaded))
                         {
-                            Bitmap bmp = new Bitmap(loaded);
                             if (_step != null)
                             {
                                 _step.SetTemplateBitmap(bmp);

@@ -53,12 +53,18 @@ for /d %%D in ("%~dp0src_*") do (
     :: Terminate running instance if any to prevent file lock
     taskkill /F /IM "!APP_NAME!.exe" >nul 2>&1
 
+    :: Check for application manifest
+    set "MANIFEST_ARG="
+    if exist "%~dp0!DIR_NAME!\app.manifest" (
+        set "MANIFEST_ARG=/win32manifest:"%~dp0!DIR_NAME!\app.manifest""
+    )
+
     :: Compile C# source files recursively with embedded icon
     echo [*] Compiling source code...
     if exist "%~dp0!DIR_NAME!\app.ico" (
-        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /win32icon:"%~dp0!DIR_NAME!\app.ico" /out:"%~dp0!APP_NAME!.exe" /recurse:"%~dp0!DIR_NAME!\*.cs"
+        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /win32icon:"%~dp0!DIR_NAME!\app.ico" !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" /recurse:"%~dp0!DIR_NAME!\*.cs"
     ) else (
-        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /out:"%~dp0!APP_NAME!.exe" /recurse:"%~dp0!DIR_NAME!\*.cs"
+        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" /recurse:"%~dp0!DIR_NAME!\*.cs"
     )
 
     if !ERRORLEVEL! equ 0 (
