@@ -23,7 +23,6 @@ async function loadAndRenderIconSelector() {
       names.forEach(n => window.MAIN_ICON_LIST.push(n));
     }
   } catch (e) {
-    console.warn("[main-group] Auto-scan failed, trying index.json fallback.", e);
     try {
       const res = await fetch("svg/main-icons/index.json");
       if (res.ok) {
@@ -35,7 +34,7 @@ async function loadAndRenderIconSelector() {
         }
       }
     } catch (e2) {
-      console.warn("[main-group] index.json also failed, using hardcode list.", e2);
+      // index.json fallback unavailable, continue with default icons
     }
   }
   renderEmojiSelector();
@@ -212,7 +211,7 @@ async function deleteMainGroup() {
 /** Nhân bản Main Group */
 async function cloneMainGroup() {
   if (!appState.activeMainGroupId) return;
-  const aiGroupId = window.SYSTEM_AI_GROUP_ID || "main_ai_multichat";
+  const aiGroupId = window.SYSTEM_AI_GROUP_ID || (typeof SYSTEM_AI_GROUP_ID !== "undefined" ? SYSTEM_AI_GROUP_ID : "system-ai-chat");
   if (appState.activeMainGroupId === aiGroupId) {
     alert("System AI Multi-Chat Group cannot be cloned.");
     return;

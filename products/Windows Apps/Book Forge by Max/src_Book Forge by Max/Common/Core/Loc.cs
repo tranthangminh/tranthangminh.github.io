@@ -58,16 +58,8 @@ namespace MaxApp.Common
         }
 
         // ========================================================
-        // Common TitleBar & Window Controls
+        // Common TitleBar & Admin
         // ========================================================
-        public static string Close { get { return IsVietnamese ? "Đóng" : "Close"; } }
-        public static string Minimize { get { return IsVietnamese ? "Thu nhỏ" : "Minimize"; } }
-        public static string Maximize { get { return IsVietnamese ? "Phóng to" : "Maximize"; } }
-        public static string Restore { get { return IsVietnamese ? "Khôi phục" : "Restore"; } }
-        public static string SwitchToEn { get { return "Đổi sang Tiếng Anh (English)"; } }
-        public static string SwitchToVi { get { return "Chuyển sang Tiếng Việt (Vietnamese)"; } }
-        public static string SwitchToLight { get { return IsVietnamese ? "Chuyển sang Giao diện Sáng" : "Switch to Light Mode"; } }
-        public static string SwitchToDark { get { return IsVietnamese ? "Chuyển sang Giao diện Tối" : "Switch to Dark Mode"; } }
         public static string AdminRunning { get { return IsVietnamese ? "Ứng dụng đang chạy với quyền Quản trị viên (Administrator)" : "Running with Administrator privileges"; } }
         public static string AdminRequest { get { return IsVietnamese ? "Chạy quyền Administrator (Bấm để khởi động lại)" : "Run as Administrator (Click to restart)"; } }
         public static string AdminRestartPrompt
@@ -79,7 +71,7 @@ namespace MaxApp.Common
                     : string.Format("Do you want to restart {0} with Administrator privileges?", AppInfo.AppName);
             }
         }
-        public static string AdminPromptTitle { get { return "Administrator Rights"; } }
+        public static string AdminPromptTitle { get { return IsVietnamese ? "Quyền Quản trị viên" : "Administrator Rights"; } }
 
         // ========================================================
         // Common Buttons & Messages
@@ -88,25 +80,5 @@ namespace MaxApp.Common
         public static string Common_Cancel { get { return IsVietnamese ? "Hủy" : "Cancel"; } }
         public static string Common_Yes { get { return IsVietnamese ? "Có" : "Yes"; } }
         public static string Common_No { get { return IsVietnamese ? "Không" : "No"; } }
-
-        // ========================================================
-        // Common Info Tab Strings
-        // ========================================================
-        public static string DevelopedBy { get { return IsVietnamese ? "Sản phẩm này được phát triển bởi Trần Thắng Minh (Max)." : "This product is developed by Trần Thắng Minh (Max)."; } }
-        public static string FeedbackAndSupport { get { return IsVietnamese ? "Góp ý, yêu cầu tính năng hoặc hỗ trợ:" : "For feedback, feature requests, or support:"; } }
-        public static string Facebook { get { return "Facebook:"; } }
-        public static string MoreProducts { get { return IsVietnamese ? "Sản phẩm khác:" : "More Products:"; } }
-        public static string SupportMe { get { return IsVietnamese ? "Ủng hộ tui:" : "Support me:"; } }
-        public static string ScanQr { get { return IsVietnamese ? "[Quét mã QR Ngân Hàng ↗]" : "[Scan Bank QR Code ↗]"; } }
-        public static string BunGioHeoPrefix { get { return IsVietnamese ? "• Ủng hộ " : "• Support "; } }
-        public static string BunGioHeoName { get { return "Bún Giò Heo Minh Nhật"; } }
-        public static string BunGioHeoSuffix { get { return IsVietnamese ? "nhà tui" : "(Family restaurant)"; } }
-        public static string CheckForUpdates { get { return IsVietnamese ? "Kiểm tra Cập nhật" : "Check for Updates"; } }
-        public static string CheckingUpdates { get { return IsVietnamese ? "Đang kiểm tra cập nhật..." : "Checking for updates..."; } }
-        public static string UpdateAvailable { get { return IsVietnamese ? "Đã có phiên bản mới: v{0}!" : "New version available: v{0}!"; } }
-        public static string LatestVersion { get { return IsVietnamese ? "Bạn đang dùng phiên bản mới nhất (v{0})." : "You have the latest version (v{0})."; } }
-        public static string CheckFailed { get { return IsVietnamese ? "Kiểm tra thất bại. Vui lòng thử lại sau." : "Check failed. No internet connection."; } }
-        public static string LanguageLabel { get { return IsVietnamese ? "Ngôn ngữ / Language:" : "Language / Ngôn ngữ:"; } }
-        public static string QrThankYou { get { return IsVietnamese ? "Cám ơn bạn đã ủng hộ tác giả!" : "Thank you for supporting the author!"; } }
     }
 }

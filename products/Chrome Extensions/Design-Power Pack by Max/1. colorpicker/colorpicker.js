@@ -30,7 +30,8 @@ function initColorPicker() {
   clearHistoryBtn.addEventListener('click', () => {
     chrome.storage.local.set({ colorHistory: [] }, () => {
       renderHistory([]);
-      window.showToast('History cleared!');
+      const msg = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('colorpicker.historyCleared') : 'History cleared!';
+      window.showToast(msg);
     });
   });
 
@@ -89,34 +90,42 @@ function renderHistory(history) {
   const countBadge = document.getElementById('color-history-count');
 
   if (countBadge) {
-    countBadge.textContent = `${history.length} ${history.length === 1 ? 'item' : 'items'}`;
+    const itemLabel = (window.i18n && typeof window.i18n.t === 'function')
+      ? (history.length === 1 ? window.i18n.t('common.item') : window.i18n.t('common.items'))
+      : (history.length === 1 ? 'item' : 'items');
+    countBadge.textContent = `${history.length} ${itemLabel}`;
   }
 
   if (!historyList) return;
 
   if (history.length === 0) {
+    const emptyMsg = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('colorpicker.emptyHistory')
+      : 'No colors picked yet. Click "Pick Color" to start.';
     historyList.innerHTML = `
       <div class="history-empty-state">
-        <p>No colors picked yet. Click "Pick Color" to start.</p>
+        <p>${emptyMsg}</p>
       </div>
     `;
     return;
   }
 
+  const t = (k, def) => ((window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t(k, def) : def);
+
   historyList.innerHTML = history.map(hex => {
     const textColor = window.getContrastColor(hex);
     return `
       <div class="color-card" data-hex="${hex}">
-        <div class="color-swatch-square" style="background-color: ${hex};" title="Click to copy HEX">
-          <button class="delete-color-btn" title="Delete color">✕</button>
-          <span class="color-hex" style="color: ${textColor};" title="Click to copy HEX">${hex.toUpperCase()}</span>
+        <div class="color-swatch-square" style="background-color: ${hex};" title="${t('colorpicker.clickCopyHex', 'Click to copy HEX')}">
+          <button class="delete-color-btn" title="${t('colorpicker.deleteColor', 'Delete color')}">✕</button>
+          <span class="color-hex" style="color: ${textColor};" title="${t('colorpicker.clickCopyHex', 'Click to copy HEX')}">${hex.toUpperCase()}</span>
         </div>
         <div class="color-info">
           <div class="copy-buttons-grid">
-            <button class="badge copy-badge" data-format="hex" title="Copy HEX">HEX</button>
-            <button class="badge copy-badge" data-format="hsl" title="Copy HSL">HSL</button>
-            <button class="badge copy-badge" data-format="rgb" title="Copy RGB">RGB</button>
-            <button class="badge copy-badge" data-format="cmyk" title="Copy CMYK">CMYK</button>
+            <button class="badge copy-badge" data-format="hex" title="${t('colorpicker.copyHex', 'Copy HEX')}">HEX</button>
+            <button class="badge copy-badge" data-format="hsl" title="${t('colorpicker.copyHsl', 'Copy HSL')}">HSL</button>
+            <button class="badge copy-badge" data-format="rgb" title="${t('colorpicker.copyRgb', 'Copy RGB')}">RGB</button>
+            <button class="badge copy-badge" data-format="cmyk" title="${t('colorpicker.copyCmyk', 'Copy CMYK')}">CMYK</button>
           </div>
         </div>
       </div>
@@ -128,7 +137,10 @@ function renderHistory(history) {
 // This preserves the user gesture and works 100% of the time.
 function triggerColorPicker() {
   if (!window.EyeDropper) {
-    window.showToast('EyeDropper is not supported in this browser.');
+    const notSupported = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('colorpicker.eyeDropperNotSupported')
+      : 'EyeDropper is not supported in this browser.';
+    window.showToast(notSupported);
     return;
   }
 
@@ -150,12 +162,18 @@ function triggerColorPicker() {
           // Copy to clipboard
           navigator.clipboard.writeText(hex)
             .then(() => {
-              window.showToast(`Picked & Copied: ${hex.toUpperCase()}`);
+              const msg = (window.i18n && typeof window.i18n.t === 'function')
+                ? window.i18n.t('colorpicker.pickedCopied', `Picked & Copied: ${hex.toUpperCase()}`, [hex.toUpperCase()])
+                : `Picked & Copied: ${hex.toUpperCase()}`;
+              window.showToast(msg);
               if (window.showDonateNudge) window.showDonateNudge();
             })
             .catch((err) => {
               console.error('Clipboard copy failed:', err);
-              window.showToast(`Picked color: ${hex.toUpperCase()}`);
+              const msg = (window.i18n && typeof window.i18n.t === 'function')
+                ? window.i18n.t('colorpicker.pickedColor', `Picked color: ${hex.toUpperCase()}`, [hex.toUpperCase()])
+                : `Picked color: ${hex.toUpperCase()}`;
+              window.showToast(msg);
               if (window.showDonateNudge) window.showDonateNudge();
             });
         });
@@ -172,7 +190,10 @@ function deleteColor(hexToDelete) {
     const history = data.colorHistory.filter(hex => hex !== hexToDelete);
     chrome.storage.local.set({ colorHistory: history }, () => {
       renderHistory(history);
-      window.showToast('Color removed');
+      const msg = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('colorpicker.colorRemoved')
+        : 'Color removed';
+      window.showToast(msg);
     });
   });
 }
@@ -180,7 +201,10 @@ function deleteColor(hexToDelete) {
 // Copy to Clipboard Helper
 function copyToClipboard(text, element) {
   navigator.clipboard.writeText(text).then(() => {
-    window.showToast(`Copied: ${text}`);
+    const msg = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('colorpicker.copied', `Copied: ${text}`, [text])
+      : `Copied: ${text}`;
+    window.showToast(msg);
     
     if (element) {
       element.classList.add('copied');

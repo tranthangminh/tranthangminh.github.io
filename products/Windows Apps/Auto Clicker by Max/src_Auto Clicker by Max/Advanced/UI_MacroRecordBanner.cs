@@ -116,10 +116,10 @@ namespace ModernAutoClicker.Advanced
 
             int radius = 8;
 
-            // 1. Fill Background
+            // 1. Fill Background (Keep dark BgSecondary, no gray background on hover to preserve text readability)
             Color bgColor = isRec
                 ? (_isPulsing ? Color.FromArgb(45, 20, 20) : Color.FromArgb(35, 16, 16))
-                : (_isHovered ? t.BgElevated : t.BgSecondary);
+                : t.BgSecondary;
 
             using (GraphicsPath path = GetRoundedRectangle(rect, radius))
             using (SolidBrush bgBrush = new SolidBrush(bgColor))
@@ -210,13 +210,15 @@ namespace ModernAutoClicker.Advanced
                     subColor = t.TextTertiary;
                 }
 
+                using (StringFormat sf = new StringFormat { Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap })
                 using (SolidBrush tb = new SolidBrush(titleColor))
                 {
-                    g.DrawString(titleText, titleFont, tb, new PointF(textX, rect.Top + 20));
+                    g.DrawString(titleText, titleFont, tb, new RectangleF(textX, rect.Top + 20, Math.Max(50, maxTextW), 24), sf);
                 }
+                using (StringFormat sf = new StringFormat { Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap })
                 using (SolidBrush sb = new SolidBrush(subColor))
                 {
-                    g.DrawString(subText, subFont, sb, new PointF(textX, rect.Top + 46));
+                    g.DrawString(subText, subFont, sb, new RectangleF(textX, rect.Top + 46, Math.Max(50, maxTextW), 22), sf);
                 }
             }
 

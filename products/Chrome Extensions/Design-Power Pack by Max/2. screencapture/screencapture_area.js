@@ -3,12 +3,18 @@
 async function startCustomAreaCapture() {
   const tab = await getActiveTab();
   if (!tab || !tab.id) {
-    window.showToast('Active tab not found.');
+    const notFound = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('screencapture.activeTabNotFound')
+      : 'Active tab not found.';
+    window.showToast(notFound);
     return;
   }
 
   if (isProtectedUrl(tab.url)) {
-    window.showToast('Cannot capture Chrome system pages or Chrome Web Store due to browser security restrictions. Please try on a normal webpage!');
+    const restricted = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('screencapture.systemPageRestricted')
+      : 'Cannot capture Chrome system pages or Chrome Web Store due to browser security restrictions. Please try on a normal webpage!';
+    window.showToast(restricted);
     return;
   }
 

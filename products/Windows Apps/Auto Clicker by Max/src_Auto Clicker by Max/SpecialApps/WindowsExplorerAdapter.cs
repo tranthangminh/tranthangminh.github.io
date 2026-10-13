@@ -235,33 +235,25 @@ namespace ModernAutoClicker.SpecialApps
                                 try { ((SelectionItemPattern)selObj).Select(); } catch { }
                             }
 
-                            // 1. Primary: Open / Navigate via Windows Shell COM
-                            string itemName = "";
-                            try { itemName = hitElement.Current.Name ?? ""; } catch { }
-                            bool opened = TryOpenViaShell(topHwnd, itemName);
+                            // Win32 background DBLCLK and VK_RETURN to leaf DirectUIHWND
+                            IntPtr leafHwnd = DrillDownToLeaf(targetHwnd, screenPt);
+                            NativeMethods.POINT leafClientPt = screenPt;
+                            NativeMethods.ScreenToClient(leafHwnd, ref leafClientPt);
+                            IntPtr lParam = (IntPtr)(((leafClientPt.Y & 0xFFFF) << 16) | (leafClientPt.X & 0xFFFF));
 
-                            // 2. Fallback: Win32 background DBLCLK and VK_RETURN to leaf DirectUIHWND
-                            if (!opened)
-                            {
-                                IntPtr leafHwnd = DrillDownToLeaf(targetHwnd, screenPt);
-                                NativeMethods.POINT leafClientPt = screenPt;
-                                NativeMethods.ScreenToClient(leafHwnd, ref leafClientPt);
-                                IntPtr lParam = (IntPtr)(((leafClientPt.Y & 0xFFFF) << 16) | (leafClientPt.X & 0xFFFF));
+                            NativeMethods.PostMessage(leafHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
+                            NativeMethods.PostMessage(leafHwnd, 0x0201 /* WM_LBUTTONDOWN */, (IntPtr)0x0001, lParam);
+                            if (holdMs > 0) Thread.Sleep(holdMs);
+                            NativeMethods.PostMessage(leafHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
+                            Thread.Sleep(20);
+                            NativeMethods.PostMessage(leafHwnd, 0x0203 /* WM_LBUTTONDBLCLK */, (IntPtr)0x0001, lParam);
+                            if (holdMs > 0) Thread.Sleep(holdMs);
+                            NativeMethods.PostMessage(leafHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
 
-                                NativeMethods.PostMessage(leafHwnd, 0x0200 /* WM_MOUSEMOVE */, IntPtr.Zero, lParam);
-                                NativeMethods.PostMessage(leafHwnd, 0x0201 /* WM_LBUTTONDOWN */, (IntPtr)0x0001, lParam);
-                                if (holdMs > 0) Thread.Sleep(holdMs);
-                                NativeMethods.PostMessage(leafHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
-                                Thread.Sleep(20);
-                                NativeMethods.PostMessage(leafHwnd, 0x0203 /* WM_LBUTTONDBLCLK */, (IntPtr)0x0001, lParam);
-                                if (holdMs > 0) Thread.Sleep(holdMs);
-                                NativeMethods.PostMessage(leafHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
-
-                                // Send VK_RETURN (Enter key) to activate selected item in Explorer
-                                NativeMethods.PostMessage(leafHwnd, 0x0100 /* WM_KEYDOWN */, (IntPtr)0x0D /* VK_RETURN */, (IntPtr)0x001C0001);
-                                Thread.Sleep(15);
-                                NativeMethods.PostMessage(leafHwnd, 0x0101 /* WM_KEYUP */, (IntPtr)0x0D /* VK_RETURN */, (IntPtr)0xC01C0001);
-                            }
+                            // Send VK_RETURN (Enter key) to activate selected item in Explorer
+                            NativeMethods.PostMessage(leafHwnd, 0x0100 /* WM_KEYDOWN */, (IntPtr)0x0D /* VK_RETURN */, (IntPtr)0x001C0001);
+                            Thread.Sleep(15);
+                            NativeMethods.PostMessage(leafHwnd, 0x0101 /* WM_KEYUP */, (IntPtr)0x0D /* VK_RETURN */, (IntPtr)0xC01C0001);
                             return true;
                         }
                         else // Single Left Click
@@ -351,78 +343,6 @@ namespace ModernAutoClicker.SpecialApps
                 current = next;
             }
             return current;
-        }
-
-        private static bool TryOpenViaShell(IntPtr topHwnd, string itemName)
-        {
-            if (topHwnd == IntPtr.Zero) return false;
-            try
-            {
-                Type shellType = Type.GetTypeFromProgID("Shell.Application");
-                if (shellType == null) return false;
-                dynamic shell = Activator.CreateInstance(shellType);
-                if (shell == null) return false;
-                dynamic windows = shell.Windows();
-                if (windows == null) return false;
-
-                foreach (dynamic w in windows)
-                {
-                    try
-                    {
-                        if ((long)w.HWND == topHwnd.ToInt64())
-                        {
-                            // 1. Check selected items first
-                            dynamic sel = w.Document != null ? w.Document.SelectedItems() : null;
-                            if (sel != null && sel.Count > 0)
-                            {
-                                dynamic firstItem = sel.Item(0);
-                                if (firstItem != null)
-                                {
-                                    if (firstItem.IsFolder)
-                                    {
-                                        w.Navigate2(firstItem.Path);
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        try { firstItem.InvokeVerb("open"); return true; } catch { }
-                                        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(firstItem.Path) { UseShellExecute = true }); return true; } catch { }
-                                    }
-                                }
-                            }
-
-                            // 2. If no selected item or mismatch, look by name in current folder items
-                            if (!string.IsNullOrEmpty(itemName) && w.Document != null && w.Document.Folder != null)
-                            {
-                                dynamic items = w.Document.Folder.Items();
-                                if (items != null)
-                                {
-                                    for (int i = 0; i < items.Count; i++)
-                                    {
-                                        dynamic it = items.Item(i);
-                                        if (it != null && string.Equals(it.Name, itemName, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            if (it.IsFolder)
-                                            {
-                                                w.Navigate2(it.Path);
-                                                return true;
-                                            }
-                                            else
-                                            {
-                                                try { it.InvokeVerb("open"); return true; } catch { }
-                                                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(it.Path) { UseShellExecute = true }); return true; } catch { }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch { }
-                }
-            }
-            catch { }
-            return false;
         }
     }
 }

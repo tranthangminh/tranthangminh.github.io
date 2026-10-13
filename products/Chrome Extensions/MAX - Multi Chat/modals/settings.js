@@ -1,11 +1,11 @@
 // App Settings Modal Handler (modals/settings.js)
 
-const DEFAULT_FEATURE_VISIBILITY = {
+const DEFAULT_FEATURE_VISIBILITY = Object.freeze({
   aiMultiChat: true,
   splitView: true,
   windowMode: true,
   autohide: true
-};
+});
 
 let currentFeatureVisibility = { ...DEFAULT_FEATURE_VISIBILITY };
 
@@ -76,7 +76,7 @@ function openSettingsModal() {
           versionEl.textContent = `v${manifest.version}`;
         }
       } catch (e) {
-        console.warn("Could not read manifest version", e);
+        // Manifest version unavailable
       }
     }
   }

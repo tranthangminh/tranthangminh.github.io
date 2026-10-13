@@ -157,8 +157,8 @@ body {
 }
 
 .icon-mask-download {
-  mask-image: url('svg/export.svg');
-  -webkit-mask-image: url('svg/export.svg');
+  mask-image: url('svg/download.svg');
+  -webkit-mask-image: url('svg/download.svg');
 }
 
 .icon-mask-side {

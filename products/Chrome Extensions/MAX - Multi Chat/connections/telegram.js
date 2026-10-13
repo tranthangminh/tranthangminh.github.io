@@ -28,6 +28,4 @@
   if (!bypassProperty(window, 'frameElement', null)) {
     bypassProperty(Window.prototype, 'frameElement', null);
   }
-
-  console.log("MAX Multi Chat: Telegram iframe bypass activated (top/parent/self/frameElement overridden).");
 })();

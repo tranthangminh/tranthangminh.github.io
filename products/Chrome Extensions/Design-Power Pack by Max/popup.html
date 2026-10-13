@@ -189,7 +189,7 @@
               </div>
             </div>
             
-            <div id="image-count-summary" class="count-summary" style="display: none;">0 images found</div>
+            <div id="image-count-summary" class="count-summary" style="display: none;" data-i18n="downloader.countImagesZero">0 images found</div>
           </div>
 
           <!-- Vectors Controls Group -->
@@ -236,7 +236,7 @@
               </div>
             </div>
             
-            <div id="vector-count-summary" class="count-summary" style="display: none;">0 vectors found</div>
+            <div id="vector-count-summary" class="count-summary" style="display: none;" data-i18n="downloader.countVectorsZero">0 vectors found</div>
           </div>
 
           <!-- Videos Controls Group -->
@@ -291,7 +291,7 @@
               </div>
             </div>
             
-            <div id="video-count-summary" class="count-summary" style="display: none;">0 videos found</div>
+            <div id="video-count-summary" class="count-summary" style="display: none;" data-i18n="downloader.countVideosZero">0 videos found</div>
           </div>
 
           <!-- Sounds Controls Group -->
@@ -340,7 +340,7 @@
               </div>
             </div>
             
-            <div id="sound-count-summary" class="count-summary" style="display: none;">0 sounds found</div>
+            <div id="sound-count-summary" class="count-summary" style="display: none;" data-i18n="downloader.countSoundsZero">0 sounds found</div>
           </div>
         </div>
 
@@ -476,11 +476,11 @@
             <div class="capture-limits-inputs-row">
               <div class="capture-limit-input-group">
                 <span class="limit-input-label">W</span>
-                <input type="number" id="max-capture-width-input" class="capture-limit-input" placeholder="Auto" min="0" step="100" title="Output image dimensions will be restricted by Max Limit. Set 0 to disable." data-i18n-title="screencapture.maxLimitTooltip">
+                <input type="number" id="max-capture-width-input" class="capture-limit-input" placeholder="Auto" data-i18n-placeholder="common.auto" min="0" step="100" title="Output image dimensions will be restricted by Max Limit. Set 0 to disable." data-i18n-title="screencapture.maxLimitTooltip">
               </div>
               <div class="capture-limit-input-group">
                 <span class="limit-input-label">H</span>
-                <input type="number" id="max-capture-height-input" class="capture-limit-input" placeholder="Auto" min="0" step="500" title="Output image dimensions will be restricted by Max Limit. Set 0 to disable." data-i18n-title="screencapture.maxLimitTooltip">
+                <input type="number" id="max-capture-height-input" class="capture-limit-input" placeholder="Auto" data-i18n-placeholder="common.auto" min="0" step="500" title="Output image dimensions will be restricted by Max Limit. Set 0 to disable." data-i18n-title="screencapture.maxLimitTooltip">
               </div>
             </div>
           </div>
@@ -521,7 +521,7 @@
               <button id="clear-capture-history-btn" class="clear-history-btn" data-i18n="common.clearAll">Clear All</button>
             </div>
             <div id="file-access-warning" class="file-access-warning hidden">
-              <p data-i18n-html="screencapture.fileAccessWarning">⚠️ To preview local files directly in original quality, please enable <strong>"Allow access to file URLs"</strong> in <a href="#" id="open-extensions-link">extension settings</a>.</p>
+              <p data-i18n="screencapture.fileAccessWarning" data-i18n-html="screencapture.fileAccessWarning">⚠️ To preview local files directly in original quality, please enable <strong>"Allow access to file URLs"</strong> in <a href="#" id="open-extensions-link">extension settings</a>.</p>
             </div>
 
             <div id="capture-history-grid" class="capture-history-grid cols-2">
@@ -765,10 +765,10 @@
         </button>
         <div class="edit-save-group">
           <button id="edit-copy-btn" class="edit-btn copy-btn">
-            <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span> <span data-i18n-html="editor.copyEdited">Copy<br>Edited</span>
+            <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span> <span data-i18n="editor.copyEdited" data-i18n-html="editor.copyEdited">Copy<br>Edited</span>
           </button>
           <button id="edit-save-btn" class="edit-btn save-btn">
-            <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span> <span data-i18n-html="editor.downloadEdited">Download<br>Edited</span>
+            <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span> <span data-i18n="editor.downloadEdited" data-i18n-html="editor.downloadEdited">Download<br>Edited</span>
           </button>
           <button id="edit-close-modal-btn" class="btn btn-icon edit-close-btn modal-close-btn" title="Close (Esc)" data-i18n-title="editor.close">
             <span class="icon-mask" style="mask-image: url('svg/close.svg'); -webkit-mask-image: url('svg/close.svg');"></span>
@@ -796,62 +796,62 @@
       <div class="modal-info-row modal-info-row-hints modal-info-row-expandable">
         <span class="modal-hint-chip">
           <img src="svg/cursor.svg" alt="Select" class="hint-icon-svg" />
-          A: Select
+          <span data-i18n="editor.chipSelect">A: Select</span>
         </span>
         <span class="modal-hint-chip">
           <img src="svg/brush.svg" alt="Brush" class="hint-icon-svg" />
-          B: Brush
+          <span data-i18n="editor.chipBrush">B: Brush</span>
         </span>
         <span class="modal-hint-chip">
           <img src="svg/text-tool.svg" alt="Text" class="hint-icon-svg" />
-          T: Text
+          <span data-i18n="editor.chipText">T: Text</span>
         </span>
         <span class="modal-hint-chip">
           <img src="svg/square.svg" alt="Polygon" class="hint-icon-svg" />
-          M: Polygon
+          <span data-i18n="editor.chipPolygon">M: Polygon</span>
         </span>
         <span class="modal-hint-chip">
           <img src="svg/circle.svg" alt="Ellipse" class="hint-icon-svg" />
-          O: Ellipse
+          <span data-i18n="editor.chipEllipse">O: Ellipse</span>
         </span>
         <span class="modal-hint-chip">
           <img src="svg/polygonal.svg" alt="Line Path" class="hint-icon-svg" />
-          P: Line Path
+          <span data-i18n="editor.chipLinePath">P: Line Path</span>
         </span>
 
         <span class="modal-hint-chip chip-purple">
           <img src="svg/hide.svg" alt="Hide HUD" class="hint-icon-svg" />
-          H: Hide HUD
+          <span data-i18n="editor.chipHideHud">H: Hide HUD</span>
         </span>
         <span class="modal-hint-chip chip-purple">
           <img src="svg/copy.svg" alt="Copy" class="hint-icon-svg" />
-          Ctrl C: Copy Edited
+          <span data-i18n="editor.chipCopyEdited">Ctrl C: Copy Edited</span>
         </span>
 
         <span class="modal-hint-chip chip-cyan">
           <img src="svg/mouse.svg" alt="Pan" class="hint-icon-svg" />
-          Middle: Pan
+          <span data-i18n="editor.chipPan">Middle: Pan</span>
         </span>
         <span class="modal-hint-chip chip-cyan">
           <img src="svg/zoom.svg" alt="Zoom" class="hint-icon-svg" />
-          Scroll: Zoom
+          <span data-i18n="editor.chipZoom">Scroll: Zoom</span>
         </span>
         <span class="modal-hint-chip chip-cyan">
           <img src="svg/double-click.svg" alt="Fast Zoom" class="hint-icon-svg" />
-          DblClick: Fast Zoom
+          <span data-i18n="editor.chipFastZoom">DblClick: Fast Zoom</span>
         </span>
         <span class="modal-hint-chip chip-cyan">
           <img src="svg/zoom.svg" alt="100%" class="hint-icon-svg" />
-          1: 100%
+          <span data-i18n="editor.chipZoom100">1: 100%</span>
         </span>
         <span class="modal-hint-chip chip-cyan">
           <img src="svg/fullscreen.svg" alt="Fit" class="hint-icon-svg" />
-          2: Fit Screen
+          <span data-i18n="editor.chipFitScreen">2: Fit Screen</span>
         </span>
 
         <span class="modal-hint-chip chip-red">
           <img src="svg/close.svg" alt="Close" class="hint-icon-svg" />
-          ESC: Close
+          <span data-i18n="editor.chipClose">ESC: Close</span>
         </span>
       </div>
 

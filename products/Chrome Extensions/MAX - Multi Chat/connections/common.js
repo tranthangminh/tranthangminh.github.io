@@ -142,10 +142,8 @@ async function ensureGlobalAntiFrameDNRRule() {
       removeRuleIds: removeRuleIds,
       addRules: rules
     });
-
-    console.log("Global Anti-Frame DNR Rules successfully active for ALL sub_frames.");
   } catch (error) {
-    console.error("Error setting global DNR anti-frame rule:", error);
+    // Suppress dynamic rule update failure
   }
 }
 
@@ -185,12 +183,12 @@ async function forceSameSiteNoneForDomain(domain) {
         try {
           await chrome.cookies.set(newCookie);
         } catch (setErr) {
-          console.warn(`Failed to set cookie ${cookie.name} for domain ${domain}:`, setErr);
+          // Ignore individual cookie set failures
         }
       }
     }
   } catch (err) {
-    console.error(`Error forcing SameSite=None for domain ${domain}:`, err);
+    // Ignore domain cookie sync errors
   }
 }
 

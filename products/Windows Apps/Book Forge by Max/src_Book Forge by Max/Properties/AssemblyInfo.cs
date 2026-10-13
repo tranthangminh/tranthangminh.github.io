@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Book Forge by Max")]
 [assembly: AssemblyDescription("Professional Markdown Book Publisher & Chapter Extractor Studio")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Tr\u1EA7n Th\u1EAFng Minh (Max)")]
+[assembly: AssemblyCompany("Tr\u1EA7n Th\u1EAFng Minh")]
 [assembly: AssemblyProduct("Book Forge by Max")]
 [assembly: AssemblyCopyright("Copyright \u00A9 2026 Tr\u1EA7n Th\u1EAFng Minh. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
@@ -31,3 +31,4 @@ using System.Runtime.InteropServices;
 //
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyInformationalVersion("1.0.0")]

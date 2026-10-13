@@ -5,8 +5,6 @@
 chrome.storage.onChanged.addListener((changes, namespace) => {
   if (namespace !== "local") return;
 
-  console.log("Received storage change sync from Cloud / other device context", changes);
-
   // 1. Sync Hierarchy (Groups, Sub-groups, and Channels)
   if (changes.app_hierarchy) {
     const newValue = changes.app_hierarchy.newValue || [];

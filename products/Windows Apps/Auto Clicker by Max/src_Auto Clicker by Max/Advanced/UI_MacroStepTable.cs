@@ -286,8 +286,8 @@ namespace ModernAutoClicker.Advanced
             // 4. Record Step Banner for Asian Mode (Acts as a special step at the bottom of the scroll list)
             bannerRecord = new MacroRecordBanner
             {
-                Location = new Point(2, 2),
-                Size = new Size(530, 88),
+                Location = new Point(40, 2),
+                Size = new Size(Math.Max(100, 530 - 80), 88),
                 Visible = true
             };
             bannerRecord.OnRecordToggleRequested += () =>
@@ -1580,8 +1580,9 @@ namespace ModernAutoClicker.Advanced
 
             if (bannerRecord != null)
             {
-                bannerRecord.Location = new Point(2, currentY + 2);
-                bannerRecord.Width = Math.Max(100, pnlContent.Width - 4);
+                int padSide = 40;
+                bannerRecord.Location = new Point(padSide, currentY + 2);
+                bannerRecord.Width = Math.Max(100, pnlContent.Width - (padSide * 2));
                 bannerRecord.Visible = true;
                 bannerRecord.BringToFront();
                 currentY += bannerRecord.Height + 6;
@@ -1699,7 +1700,8 @@ namespace ModernAutoClicker.Advanced
                 }
                 if (bannerRecord != null)
                 {
-                    bannerRecord.Width = Math.Max(100, availW - 4);
+                    int padSide = 40;
+                    bannerRecord.Width = Math.Max(100, availW - (padSide * 2));
                 }
                 pnlContent.ResumeLayout(true);
             }
@@ -1711,8 +1713,9 @@ namespace ModernAutoClicker.Advanced
             }
             if (bannerRecord != null)
             {
-                bannerRecord.Location = new Point(2, currentY + 2);
-                bannerRecord.Width = Math.Max(100, availW - 4);
+                int padSide = 40;
+                bannerRecord.Location = new Point(padSide, currentY + 2);
+                bannerRecord.Width = Math.Max(100, availW - (padSide * 2));
                 bannerRecord.Visible = true;
                 bannerRecord.BringToFront();
                 currentY += bannerRecord.Height + 6;

@@ -25,6 +25,7 @@ namespace BookForge
         private string activeBookDir = "";
         private string generatedPdfPath = "";
         private Action<string> currentRunLogger = null;
+        private bool _isFirstRun = false;
 
         public MainForm()
         {
@@ -1811,6 +1812,29 @@ namespace BookForge
             this.Update();
         }
 
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+
+            // First-launch language prompt
+            if (_isFirstRun)
+            {
+                _isFirstRun = false;
+                using (FirstRunLanguageDialog langDlg = new FirstRunLanguageDialog())
+                {
+                    if (langDlg.ShowDialog(this) == DialogResult.OK)
+                    {
+                        Loc.CurrentLanguage = langDlg.SelectedLanguage;
+                    }
+                    else
+                    {
+                        Loc.CurrentLanguage = AppLanguage.English;
+                    }
+                    SaveConfig();
+                }
+            }
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             try
@@ -1828,12 +1852,26 @@ namespace BookForge
 
         private void LoadConfig()
         {
-            if (!ConfigManager.HasConfig()) return;
+            if (!ConfigManager.HasConfig())
+            {
+                _isFirstRun = true;
+                return;
+            }
 
             try
             {
                 BookForgeConfig c = ConfigManager.Load();
-                if (c == null) return;
+                if (c == null)
+                {
+                    _isFirstRun = true;
+                    return;
+                }
+
+                _isFirstRun = c.IsFirstRun;
+                if (!string.IsNullOrEmpty(c.Language))
+                {
+                    Loc.SetLanguage(c.Language);
+                }
 
                 // 1. Tab 1: Extraction settings
                 if (!string.IsNullOrEmpty(c.ExtractSourcePath))
@@ -2051,6 +2089,8 @@ namespace BookForge
                 // General
                 c.SelectedTab = tabBar.SelectedIndex;
                 c.IsDarkTheme = ThemeTokens.Current.IsDark;
+                c.Language = Loc.CurrentLanguageCode;
+                c.IsFirstRun = false;
 
                 if (this.WindowState == FormWindowState.Normal)
                 {

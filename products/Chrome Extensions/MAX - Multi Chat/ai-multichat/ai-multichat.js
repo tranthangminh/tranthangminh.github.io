@@ -3,15 +3,16 @@
 // Centralizes multi-AI grid rendering, prompt broadcasting & state saving.
 // ==========================================================================
 
-const SYSTEM_AI_GROUP_ID = "system-ai-chat";
+window.SYSTEM_AI_GROUP_ID = "system-ai-chat";
 
-const DEFAULT_AI_MODELS = [
-  { id: "gemini", name: "Google Gemini", url: "https://gemini.google.com/app", icon: "svg/channels/gemini.svg", active: true },
-  { id: "chatgpt", name: "ChatGPT", url: "https://chatgpt.com/", icon: "svg/channels/chatgpt.svg", active: true },
-  { id: "claude", name: "Claude AI", url: "https://claude.ai/chats", icon: "svg/channels/claude.svg", active: true },
-  { id: "deepseek", name: "DeepSeek", url: "https://chat.deepseek.com/", icon: "svg/channels/deepseek.svg", active: false },
-  { id: "perplexity", name: "Perplexity", url: "https://www.perplexity.ai/", icon: "svg/channels/perplexity.svg", active: false }
-];
+const DEFAULT_AI_MODELS = Object.freeze([
+  Object.freeze({ id: "gemini", name: "Google Gemini", url: "https://gemini.google.com/app", icon: "svg/channels/gemini.svg", active: true }),
+  Object.freeze({ id: "chatgpt", name: "ChatGPT", url: "https://chatgpt.com/", icon: "svg/channels/chatgpt.svg", active: true }),
+  Object.freeze({ id: "claude", name: "Claude AI", url: "https://claude.ai/chats", icon: "svg/channels/claude.svg", active: true }),
+  Object.freeze({ id: "deepseek", name: "DeepSeek", url: "https://chat.deepseek.com/", icon: "svg/channels/deepseek.svg", active: false }),
+  Object.freeze({ id: "perplexity", name: "Perplexity", url: "https://www.perplexity.ai/", icon: "svg/channels/perplexity.svg", active: false })
+]);
+window.DEFAULT_AI_MODELS = DEFAULT_AI_MODELS;
 
 // Ensure System AI Group exists in hierarchy
 function ensureSystemAIGroup() {
@@ -50,7 +51,8 @@ async function loadAIModelsFromCSV() {
     const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
     if (lines.length <= 1) return;
 
-    const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+    const parseRow = typeof window.parseCSVRow === "function" ? window.parseCSVRow : (str => str.split(","));
+    const headers = parseRow(lines[0]).map(h => h.trim().toLowerCase());
     const idIdx = headers.indexOf("id");
     const nameIdx = headers.indexOf("name");
     const urlIdx = headers.indexOf("url");
@@ -60,7 +62,7 @@ async function loadAIModelsFromCSV() {
 
     const csvModels = [];
     for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split(",");
+      const parts = parseRow(lines[i]);
       if (parts.length >= 3) {
         const id = parts[idIdx]?.trim();
         const name = parts[nameIdx]?.trim();
@@ -102,7 +104,7 @@ async function loadAIModelsFromCSV() {
       await saveAIModelsToStorage();
     }
   } catch (err) {
-    console.warn("Failed to load ai-models.csv:", err);
+    // Suppress CSV model loading failure
   }
 }
 
@@ -372,7 +374,7 @@ function initAISyncInputBar() {
           }, "*");
         }
       } catch (e) {
-        console.warn("postMessage to iframe failed:", e);
+        // Suppress postMessage failure on restricted frames
       }
     });
 

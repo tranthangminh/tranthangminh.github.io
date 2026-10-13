@@ -59,12 +59,21 @@ for /d %%D in ("%~dp0src_*") do (
         set "MANIFEST_ARG=/win32manifest:"%~dp0!DIR_NAME!\app.manifest""
     )
 
+    :: Bundle SVG icon files as embedded resources if present
+    set "RES_ARGS="
+    pushd "%~dp0!DIR_NAME!"
+    for /r %%F in (*.svg) do (
+        echo [*] Bundling SVG: %%~nxF
+        set "RES_ARGS=!RES_ARGS! /resource:"%%~fF","%%~nxF""
+    )
+    popd
+
     :: Compile C# source files recursively with embedded icon
     echo [*] Compiling source code...
     if exist "%~dp0!DIR_NAME!\app.ico" (
-        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 /win32icon:"%~dp0!DIR_NAME!\app.ico" !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" /recurse:"%~dp0!DIR_NAME!\*.cs"
+        "%CSC%" /nologo /target:winexe /optimize+ /debug- /filealign:512 /platform:anycpu /codepage:65001 /utf8output /win32icon:"%~dp0!DIR_NAME!\app.ico" !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! /recurse:"%~dp0!DIR_NAME!\*.cs"
     ) else (
-        "%CSC%" /nologo /target:winexe /optimize+ /codepage:65001 !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" /recurse:"%~dp0!DIR_NAME!\*.cs"
+        "%CSC%" /nologo /target:winexe /optimize+ /debug- /filealign:512 /platform:anycpu /codepage:65001 /utf8output !MANIFEST_ARG! /out:"%~dp0!APP_NAME!.exe" !RES_ARGS! /recurse:"%~dp0!DIR_NAME!\*.cs"
     )
 
     if !ERRORLEVEL! equ 0 (

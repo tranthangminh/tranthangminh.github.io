@@ -110,7 +110,7 @@ function importHierarchyFromCSV(csvText) {
 
   const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
   if (lines.length <= 1) {
-    alert("File CSV không có dữ liệu!");
+    alert("The CSV file contains no data.");
     return;
   }
 
@@ -131,7 +131,7 @@ function importHierarchyFromCSV(csvText) {
   const isDualAcc2Idx = headers.indexOf("is_dual_acc_2");
 
   if (tabNameIdx === -1 || tabUrl1Idx === -1) {
-    alert("Cấu trúc file CSV không hợp lệ (thiếu cột tab_name hoặc tab_url_1)!");
+    alert("Invalid CSV format: missing required columns (tab_name or tab_url_1).");
     return;
   }
 
@@ -226,11 +226,11 @@ function importHierarchyFromCSV(csvText) {
   }
 
   if (importedHierarchy.length === 0) {
-    alert("Không tìm thấy kênh hợp lệ nào trong file CSV!");
+    alert("No valid channels found in the CSV backup file.");
     return;
   }
 
-  const SYSTEM_AI_ID = typeof SYSTEM_AI_GROUP_ID !== "undefined" ? SYSTEM_AI_GROUP_ID : "main_ai_multichat";
+  const SYSTEM_AI_ID = window.SYSTEM_AI_GROUP_ID || (typeof SYSTEM_AI_GROUP_ID !== "undefined" ? SYSTEM_AI_GROUP_ID : "system-ai-chat");
   const existingAIGroup = typeof appState !== "undefined" && appState.hierarchy ? appState.hierarchy.find(g => g.id === SYSTEM_AI_ID) : null;
 
   appState.hierarchy = importedHierarchy;
@@ -249,7 +249,7 @@ function importHierarchyFromCSV(csvText) {
   if (typeof renderMainSidebar === "function") renderMainSidebar();
   if (typeof renderSubSidebar === "function") renderSubSidebar();
 
-  alert(`Đã khôi phục thành công danh sách kênh từ file sao lưu! 🚀`);
+  alert("Channel list successfully restored from backup file! 🚀");
 }
 
 function triggerCSVImport() {
@@ -270,6 +270,7 @@ function triggerCSVImport() {
   input.click();
 }
 
+window.parseCSVRow = parseCSVRow;
 window.exportHierarchyToCSV = exportHierarchyToCSV;
 window.importHierarchyFromCSV = importHierarchyFromCSV;
 window.triggerCSVImport = triggerCSVImport;

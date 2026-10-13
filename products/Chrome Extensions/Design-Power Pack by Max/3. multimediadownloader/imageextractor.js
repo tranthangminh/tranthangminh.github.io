@@ -316,16 +316,16 @@ async function scanPageResources() {
       if (typeof window.updateSoundsData === 'function') {
         window.updateSoundsData(data.sounds || []);
       }
-    } else {
-      showErrorState('No images found on this page.');
+      const getEmpty = (key, fallback) => (window.i18n ? window.i18n.t(key, fallback) : fallback);
+      showErrorState(getEmpty('downloader.emptyImages', 'No images found on this page.'));
       if (typeof window.showVectorErrorState === 'function') {
-        window.showVectorErrorState('No vectors found on this page.');
+        window.showVectorErrorState(getEmpty('downloader.emptyVectors', 'No vector SVG elements found on this page.'));
       }
       if (typeof window.showVideoErrorState === 'function') {
-        window.showVideoErrorState('No videos found on this page.');
+        window.showVideoErrorState(getEmpty('downloader.emptyVideos', 'No HTML5 videos found on this page.'));
       }
       if (typeof window.showSoundErrorState === 'function') {
-        window.showSoundErrorState('No sounds found on this page.');
+        window.showSoundErrorState(getEmpty('downloader.emptySounds', 'No audio tracks found on this page.'));
       }
     }
   } catch (err) {
@@ -413,7 +413,9 @@ function filterAndRenderImages() {
   }
 
   if (filtered.length === 0) {
-    const text = searchQuery ? 'No images found matching your search.' : 'No images found on this page.';
+    const text = searchQuery
+      ? (window.i18n ? window.i18n.t('downloader.noImagesSearch') : 'No images found matching your search.')
+      : (window.i18n ? window.i18n.t('downloader.emptyImages') : 'No images found on this page.');
     gridContainer.innerHTML = `
       <div class="loading-state" style="animation: none;">
         <p>${text}</p>
@@ -422,6 +424,8 @@ function filterAndRenderImages() {
     updateImageFilterCounts();
     return;
   }
+
+  const t = (k, def) => (window.i18n ? window.i18n.t(k, def) : def);
 
   gridContainer.innerHTML = filtered.map(img => {
     const isSelected = selectedImages.has(img.url);
@@ -459,16 +463,16 @@ function filterAndRenderImages() {
       badgeLeft: typeLabel,
       badgeRight: sizeLabel,
       actionsHtml: `
-        <button class="btn btn-ghost btn-icon preview-btn" title="Preview image">
+        <button class="btn btn-ghost btn-icon preview-btn" title="${t('downloader.previewImage', 'Preview image')}" data-i18n-title="downloader.previewImage">
           <span class="icon-mask" style="mask-image: url('svg/eye.svg'); -webkit-mask-image: url('svg/eye.svg');"></span>
         </button>
-        <button class="btn btn-ghost btn-icon copy-btn" title="Copy image to clipboard">
+        <button class="btn btn-ghost btn-icon copy-btn" title="${t('downloader.copyImageClipboard', 'Copy image to clipboard')}" data-i18n-title="downloader.copyImageClipboard">
           <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span>
         </button>
-        <button class="btn btn-ghost btn-icon open-tab-btn" title="Open in new tab">
+        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}" data-i18n-title="downloader.openNewTab">
           <span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span>
         </button>
-        <button class="btn btn-ghost btn-icon download-btn" title="Download immediately">
+        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadImmediate', 'Download immediately')}" data-i18n-title="downloader.downloadImmediate">
           <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span>
         </button>
       `
@@ -482,9 +486,13 @@ function filterAndRenderImages() {
   const countEl = document.getElementById('image-count-summary');
   if (countEl) {
     if (searchQuery) {
-      countEl.textContent = `${filtered.length} of ${allImages.length} images found`;
+      countEl.textContent = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('downloader.foundImagesOf', '{0} of {1} images found', [filtered.length, allImages.length])
+        : `${filtered.length} of ${allImages.length} images found`;
     } else {
-      countEl.textContent = `${allImages.length} images found`;
+      countEl.textContent = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('downloader.foundImages', '{0} images found', [allImages.length])
+        : `${allImages.length} images found`;
     }
   }
 
@@ -495,7 +503,9 @@ function filterAndRenderImages() {
 function updateImageCountLabel() {
   const countEl = document.getElementById('image-count-summary');
   if (countEl) {
-    countEl.textContent = `${allImages.length} images found`;
+    countEl.textContent = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('downloader.foundImages', '{0} images found', [allImages.length])
+      : `${allImages.length} images found`;
   }
 }
 
@@ -529,18 +539,24 @@ function updateImageFilterCounts() {
   });
 
   const total = allImages.length;
+  const allLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.all') : 'All';
+  const allLayoutsLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.allLayouts') : 'All Layouts';
+  const squareLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.square') : 'Square';
+  const wideLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.wide') : 'Wide';
+  const tallLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.tall') : 'Tall';
+
   if (typeSelect) {
-    typeSelect.options[0].text = `All (${total})`;
+    typeSelect.options[0].text = `${allLabel} (${total})`;
     setOpt(typeSelect.options[1], png, 'PNG');
     setOpt(typeSelect.options[2], jpg, 'JPG');
     setOpt(typeSelect.options[3], webp, 'WEBP');
     setOpt(typeSelect.options[4], gif, 'GIF');
   }
   if (layoutSelect) {
-    layoutSelect.options[0].text = `All Layouts (${layoutAll})`;
-    setOpt(layoutSelect.options[1], square, 'Square');
-    setOpt(layoutSelect.options[2], wide, 'Wide');
-    setOpt(layoutSelect.options[3], tall, 'Tall');
+    layoutSelect.options[0].text = `${allLayoutsLabel} (${layoutAll})`;
+    setOpt(layoutSelect.options[1], square, squareLabel);
+    setOpt(layoutSelect.options[2], wide, wideLabel);
+    setOpt(layoutSelect.options[3], tall, tallLabel);
   }
 }
 

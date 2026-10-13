@@ -83,7 +83,7 @@ namespace MaxApp.Common
         /// Universal SVG renderer: renders directly from embedded resource inside exe, or from file on disk.
         /// Supports both single-tint monochrome icons (stroke + fill) and multi-color high-fidelity illustrations (e.g. QR_Vietcombank.svg).
         /// </summary>
-        public static Bitmap RenderSvg(string nameOrPath, int targetWidth, int targetHeight, Color? tintColor = null)
+        public static Bitmap RenderSvg(string nameOrPath, int targetWidth, int targetHeight, Color? tintColor = null, bool fullBleed = false)
         {
             try
             {
@@ -116,13 +116,15 @@ namespace MaxApp.Common
 
                     float scaleX = targetWidth / data.ViewBox.Width;
                     float scaleY = targetHeight / data.ViewBox.Height;
-                    float scaleFactor = (tintColor != null || targetWidth <= 64) ? 0.90f : 1.0f;
+                    float scaleFactor = fullBleed ? 1.0f : ((tintColor != null || targetWidth <= 64) ? 0.90f : 1.0f);
                     float scale = Math.Min(scaleX, scaleY) * scaleFactor;
 
                     float drawW = data.ViewBox.Width * scale;
                     float drawH = data.ViewBox.Height * scale;
                     float offX = (targetWidth - drawW) / 2.0f - (data.ViewBox.X * scale);
                     float offY = (targetHeight - drawH) / 2.0f - (data.ViewBox.Y * scale);
+
+                    g.SetClip(new RectangleF((targetWidth - drawW) / 2.0f, (targetHeight - drawH) / 2.0f, drawW, drawH));
 
                     using (Matrix mat = new Matrix())
                     {
@@ -311,7 +313,26 @@ namespace MaxApp.Common
             }
         }
 
-        public static Image GetAppIconImage(int size = 26)
+        private static readonly Dictionary<string, Image> _langIconCache =
+            new Dictionary<string, Image>(StringComparer.OrdinalIgnoreCase);
+
+        public static Image GetLanguageIconImage(bool isVietnamese, int size = 24)
+        {
+            string key = string.Format("{0}_{1}", isVietnamese ? "VN" : "EN", size);
+            Image img;
+            if (!_langIconCache.TryGetValue(key, out img) || img == null)
+            {
+                string svgFile = isVietnamese ? "lang-VN.svg" : "lang-EN.svg";
+                img = RenderSvg(svgFile, size, size, null, true);
+                if (img != null)
+                {
+                    _langIconCache[key] = img;
+                }
+            }
+            return img;
+        }
+
+        public static Image GetAppIconImage(int size = 24)
         {
             if (_cachedAppIconImage != null && _cachedAppIconSize == size)
                 return _cachedAppIconImage;

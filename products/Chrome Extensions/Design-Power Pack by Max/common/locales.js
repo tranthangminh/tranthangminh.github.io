@@ -15,6 +15,8 @@
         switchPopup: 'Switch to Popup',
         openSidepanel: 'Open in Side Panel',
         toggleTheme: 'Toggle Theme',
+        switchToDark: 'Switch to Dark Theme',
+        switchToLight: 'Switch to Light Theme',
         changelog: 'Changelog',
         langToggle: 'Switch Language (Tiếng Việt)',
         langBadge: 'EN'
@@ -51,7 +53,8 @@
         col1: '1 Column',
         col2: '2 Columns',
         col3: '3 Columns',
-        copiedClipboard: 'Copied to clipboard!'
+        copiedClipboard: 'Copied to clipboard!',
+        auto: 'Auto'
       },
       colorpicker: {
         pickColor: 'Pick Color',
@@ -62,7 +65,19 @@
         copiedHex: 'HEX Copied!',
         copiedRgb: 'RGB Copied!',
         copiedHsl: 'HSL Copied!',
-        copiedCmyk: 'CMYK Copied!'
+        copiedCmyk: 'CMYK Copied!',
+        clickCopyHex: 'Click to copy HEX',
+        deleteColor: 'Delete color',
+        copyHex: 'Copy HEX',
+        copyHsl: 'Copy HSL',
+        copyRgb: 'Copy RGB',
+        copyCmyk: 'Copy CMYK',
+        historyCleared: 'History cleared!',
+        colorRemoved: 'Color removed',
+        copied: 'Copied: {0}',
+        pickedCopied: 'Picked & Copied: {0}',
+        pickedColor: 'Picked color: {0}',
+        eyeDropperNotSupported: 'EyeDropper is not supported in this browser.'
       },
       screencapture: {
         areaCapture: 'Custom Area',
@@ -85,7 +100,16 @@
         visibleDesc: 'Capture current view',
         fullDesc: 'Auto-scroll page',
         recordDesc: 'Record tab / screen',
-        fileAccessWarning: '⚠️ To preview local files directly in original quality, please enable <strong>"Allow access to file URLs"</strong> in <a href="#" id="open-extensions-link">extension settings</a>.'
+        fileAccessWarning: '⚠️ To preview local files directly in original quality, please enable <strong>"Allow access to file URLs"</strong> in <a href="#" id="open-extensions-link">extension settings</a>.',
+        activeTabNotFound: 'Active tab not found.',
+        systemPageRestricted: 'Cannot capture Chrome system pages or Chrome Web Store due to browser security restrictions. Please try on a normal webpage!',
+        downloadSuccess: 'Screenshot downloaded successfully!',
+        downloadFailed: 'Download failed. Please try again!',
+        historyCleared: 'Capture history cleared',
+        unableCopyImage: 'Unable to copy image',
+        fileNotFound: 'File not found in downloads.',
+        savedDownloads: 'Saved to Downloads',
+        enableFileAccess: 'Enable file access to preview'
       },
       downloader: {
         imagesTab: 'Images',
@@ -96,6 +120,7 @@
         emptyVectors: 'No vector SVG elements found on this page.',
         emptyVideos: 'No HTML5 videos found on this page.',
         emptySounds: 'No audio tracks found on this page.',
+        scanning: 'Scanning page...',
         scanningImages: 'Scanning page for images...',
         scanningVectors: 'Scanning page for vectors...',
         scanningVideos: 'Scanning page for videos...',
@@ -111,7 +136,30 @@
         sortType: 'Type',
         sortSize: 'Size',
         sortResolution: 'Resolution',
-        sortDuration: 'Duration'
+        sortDuration: 'Duration',
+        countImagesZero: '0 images found',
+        countVectorsZero: '0 vectors found',
+        countVideosZero: '0 videos found',
+        countSoundsZero: '0 sounds found',
+        foundImages: '{0} images found',
+        foundImagesOf: '{0} of {1} images found',
+        foundVectors: '{0} vectors found',
+        foundVectorsOf: '{0} of {1} vectors found',
+        foundVideos: '{0} videos found',
+        foundSounds: '{0} sounds found',
+        noImagesSearch: 'No images found matching your search.',
+        noVectorsSearch: 'No vectors found matching your search.',
+        previewImage: 'Preview image',
+        copyImageClipboard: 'Copy image to clipboard',
+        openNewTab: 'Open in new tab',
+        downloadImmediate: 'Download immediately',
+        previewVector: 'Preview vector',
+        copySvgCode: 'Copy SVG Code',
+        downloadSvgFile: 'Download SVG file',
+        scrubVideo: 'Scrub video',
+        copyVideoUrl: 'Copy video URL',
+        downloadVideoFile: 'Download video file',
+        scrubAudio: 'Scrub audio'
       },
       tools: {
         contextSection: 'Right-Click Context Menu',
@@ -143,7 +191,12 @@
         currentColor: 'Click to Reset to Original Color'
       },
       changelog: {
-        title: 'Version Changelog'
+        title: 'Version Changelog',
+        badgeFeature: 'New Feature',
+        badgeTweak: 'Feature Tweak & Improvement',
+        badgeBug: 'Bug Fix',
+        badgeOptimize: 'Performance Optimization',
+        badgeOther: 'Other Updates'
       },
       editor: {
         select: 'Select (A)',
@@ -188,7 +241,92 @@
         discardConfirm: 'Discard & Close',
         showHud: 'Show HUD (H)',
         switchToDark: 'Switch to Dark Theme',
-        switchToLight: 'Switch to Light Theme'
+        switchToLight: 'Switch to Light Theme',
+        chipSelect: 'A: Select',
+        chipBrush: 'B: Brush',
+        chipText: 'T: Text',
+        chipPolygon: 'M: Polygon',
+        chipEllipse: 'O: Ellipse',
+        chipLinePath: 'P: Line Path',
+        chipHideHud: 'H: Hide HUD',
+        chipCopyEdited: 'Ctrl C: Copy Edited',
+        chipPan: 'Middle: Pan',
+        chipZoom: 'Scroll: Zoom',
+        chipFastZoom: 'DblClick: Fast Zoom',
+        chipZoom100: '1: 100%',
+        chipFitScreen: '2: Fit Screen',
+        chipClose: 'ESC: Close',
+        popoverBrushSettings: 'BRUSH SETTINGS',
+        popoverStrokeSize: 'STROKE SIZE',
+        popoverPolygonSides: 'POLYGON SIDES',
+        popoverBgColor: 'BACKGROUND COLOR',
+        popoverTextColor: 'TEXT COLOR',
+        popoverStrokeColor: 'STROKE COLOR',
+        fixedToScreen: 'Fixed to Screen',
+        fixedToImage: 'Fixed to Image',
+        on: 'On',
+        off: 'Off',
+        setTransparent: 'Set Transparent',
+        customColorPicker: 'Custom Color Picker',
+        toggleSizeMode: 'Toggle Size Mode',
+        toggleLazyMouse: 'Toggle Smooth Lazy Mouse',
+        polygonSidesTooltip: 'Polygon Sides Count (Hover for slider, click to edit)',
+        toastDownloaded: 'Downloaded edited image!',
+        toastCopied: 'Copied edited image to clipboard!',
+        toastFailedCopy: 'Failed to copy image to clipboard',
+        toastClipboardNotSupported: 'Clipboard API not supported'
+      },
+      recordBar: {
+        dragToMove: 'Drag to move',
+        pause: 'Pause',
+        resume: 'Resume',
+        stopAndSave: 'Stop & Save',
+        minimize: 'Minimize Bar (Fade Bar)',
+        pauseResume: 'Pause / Resume',
+        stopSaveVideo: 'Stop & Save Video'
+      },
+      recorder: {
+        title: 'Screen Recorder',
+        modeSection: 'RECORDING MODE',
+        modeTab: 'Chrome Tab',
+        modeTabSub: 'Active browser tab',
+        modeScreen: 'Entire Screen',
+        modeScreenSub: 'Entire desktop screen',
+        modeWindow: 'Window',
+        modeWindowSub: 'Application window',
+        modeCamera: 'Webcam Only',
+        modeCameraSub: 'Camera feed only',
+        inputsSection: 'INPUTS & SETTINGS',
+        sysSound: 'System Sound',
+        sysSoundSub: 'Tab & system audio',
+        microphone: 'Microphone',
+        defaultMic: 'Default Microphone',
+        webcamCamera: 'Webcam Camera',
+        defaultCam: 'Default Camera',
+        format: 'Format',
+        formatSub: 'Output extension',
+        startRecording: 'Start Recording',
+        recordingLive: 'RECORDING LIVE',
+        liveFeed: 'LIVE FEED',
+        pause: 'Pause',
+        resume: 'Resume',
+        stopAndSave: 'Stop & Save',
+        cancel: 'Cancel',
+        pauseResume: 'Pause / Resume',
+        stopSaveVideo: 'Stop & Save Video'
+      },
+      contextMenu: {
+        yandex: '🔎 Search Image on Yandex',
+        tineye: '🔎 Search Image on TinEye',
+        captureArea: '📸 Capture Custom Area',
+        captureVisible: '📸 Capture Visible',
+        captureFull: '📸 Capture Full Page',
+        captureRecord: '🔴 Record Screen Video',
+        savePng: '🖼️ Save Image as PNG',
+        saveJpg: '🖼️ Save Image as JPG',
+        saveWebp: '🖼️ Save Image as WebP',
+        saveGif: '🖼️ Save Image as GIF',
+        savePdf: '📄 Save Image as PDF'
       }
     },
     vi: {
@@ -196,6 +334,8 @@
         switchPopup: 'Chuyển sang dạng Popup',
         openSidepanel: 'Mở dạng thanh bên (Side Panel)',
         toggleTheme: 'Đổi giao diện Sáng / Tối',
+        switchToDark: 'Chuyển sang giao diện Tối',
+        switchToLight: 'Chuyển sang giao diện Sáng',
         changelog: 'Nhật ký phiên bản',
         langToggle: 'Chuyển sang Tiếng Anh (English)',
         langBadge: 'VI'
@@ -232,7 +372,8 @@
         col1: '1 Cột',
         col2: '2 Cột',
         col3: '3 Cột',
-        copiedClipboard: 'Đã sao chép vào bộ nhớ tạm!'
+        copiedClipboard: 'Đã sao chép vào bộ nhớ tạm!',
+        auto: 'Tự động'
       },
       colorpicker: {
         pickColor: 'Chấm màu',
@@ -243,7 +384,19 @@
         copiedHex: 'Đã chép mã HEX!',
         copiedRgb: 'Đã chép mã RGB!',
         copiedHsl: 'Đã chép mã HSL!',
-        copiedCmyk: 'Đã chép mã CMYK!'
+        copiedCmyk: 'Đã chép mã CMYK!',
+        clickCopyHex: 'Nhấp để chép mã HEX',
+        deleteColor: 'Xóa màu này',
+        copyHex: 'Chép HEX',
+        copyHsl: 'Chép HSL',
+        copyRgb: 'Chép RGB',
+        copyCmyk: 'Chép CMYK',
+        historyCleared: 'Đã xóa lịch sử màu!',
+        colorRemoved: 'Đã xóa màu',
+        copied: 'Đã sao chép: {0}',
+        pickedCopied: 'Đã chấm & sao chép: {0}',
+        pickedColor: 'Đã chấm màu: {0}',
+        eyeDropperNotSupported: 'Trình duyệt không hỗ trợ công cụ EyeDropper.'
       },
       screencapture: {
         areaCapture: 'Vùng Tùy Chọn',
@@ -266,7 +419,16 @@
         visibleDesc: 'Chụp phần màn hình đang hiển thị',
         fullDesc: 'Tự động cuộn chụp trang',
         recordDesc: 'Quay Video Tab / Màn Hình',
-        fileAccessWarning: '⚠️ Để xem trước tệp cục bộ ở chất lượng gốc, vui lòng bật <strong>"Cho phép truy cập vào các URL tệp"</strong> trong <a href="#" id="open-extensions-link">cài đặt tiện ích</a>.'
+        fileAccessWarning: '⚠️ Để xem trước tệp cục bộ ở chất lượng gốc, vui lòng bật <strong>"Cho phép truy cập vào các URL tệp"</strong> trong <a href="#" id="open-extensions-link">cài đặt tiện ích</a>.',
+        activeTabNotFound: 'Không tìm thấy thẻ hoạt động.',
+        systemPageRestricted: 'Không thể chụp trang hệ thống Chrome hoặc Chrome Web Store do chính sách bảo mật. Vui lòng thử trên trang web thông thường!',
+        downloadSuccess: 'Đã tải ảnh chụp màn hình thành công!',
+        downloadFailed: 'Tải về thất bại. Vui lòng thử lại!',
+        historyCleared: 'Đã xóa lịch sử chụp màn hình',
+        unableCopyImage: 'Không thể sao chép hình ảnh',
+        fileNotFound: 'Không tìm thấy tệp trong thư mục tải về.',
+        savedDownloads: 'Đã lưu vào Tải về',
+        enableFileAccess: 'Bật quyền URL tệp để xem trước'
       },
       downloader: {
         imagesTab: 'Hình ảnh',
@@ -277,6 +439,7 @@
         emptyVectors: 'Không tìm thấy tệp vector nào trên trang này.',
         emptyVideos: 'Không tìm thấy video HTML5 nào trên trang này.',
         emptySounds: 'Không tìm thấy tệp âm thanh nào trên trang này.',
+        scanning: 'Đang quét trang...',
         scanningImages: 'Đang quét hình ảnh trên trang...',
         scanningVectors: 'Đang quét vector SVG trên trang...',
         scanningVideos: 'Đang quét video HTML5 trên trang...',
@@ -292,7 +455,30 @@
         sortType: 'Định dạng',
         sortSize: 'Dung lượng',
         sortResolution: 'Độ phân giải',
-        sortDuration: 'Thời lượng'
+        sortDuration: 'Thời lượng',
+        countImagesZero: '0 hình ảnh',
+        countVectorsZero: '0 vector',
+        countVideosZero: '0 video',
+        countSoundsZero: '0 âm thanh',
+        foundImages: 'Tìm thấy {0} hình ảnh',
+        foundImagesOf: 'Tìm thấy {0} / {1} hình ảnh',
+        foundVectors: 'Tìm thấy {0} vector',
+        foundVectorsOf: 'Tìm thấy {0} / {1} vector',
+        foundVideos: 'Tìm thấy {0} video',
+        foundSounds: 'Tìm thấy {0} âm thanh',
+        noImagesSearch: 'Không tìm thấy hình ảnh nào phù hợp với tìm kiếm.',
+        noVectorsSearch: 'Không tìm thấy vector nào phù hợp với tìm kiếm.',
+        previewImage: 'Xem trước hình ảnh',
+        copyImageClipboard: 'Sao chép ảnh vào bộ nhớ tạm',
+        openNewTab: 'Mở trong tab mới',
+        downloadImmediate: 'Tải về ngay',
+        previewVector: 'Xem trước vector',
+        copySvgCode: 'Sao chép mã SVG',
+        downloadSvgFile: 'Tải tệp SVG',
+        scrubVideo: 'Tua video',
+        copyVideoUrl: 'Sao chép liên kết video',
+        downloadVideoFile: 'Tải tệp video',
+        scrubAudio: 'Tua âm thanh'
       },
       tools: {
         contextSection: 'Menu Chuột Phải',
@@ -313,7 +499,7 @@
         donateBtn: 'Ủng hộ qua Ko-fi'
       },
       colorstudio: {
-        title: 'Color Studio',
+        title: 'Studio Phối Màu',
         addColor: '+ Thêm màu',
         saveColorTip: 'Lưu màu vào Lịch sử màu',
         dragSpectrum: 'Kéo để chọn Độ bão hòa & Độ sáng',
@@ -324,7 +510,12 @@
         currentColor: 'Nhấp để hoàn lại màu gốc'
       },
       changelog: {
-        title: 'Nhật ký phiên bản'
+        title: 'Nhật ký phiên bản',
+        badgeFeature: 'Tính năng mới',
+        badgeTweak: 'Cải tiến & Tinh chỉnh',
+        badgeBug: 'Sửa lỗi',
+        badgeOptimize: 'Tối ưu hóa hiệu năng',
+        badgeOther: 'Cập nhật khác'
       },
       editor: {
         select: 'Chọn (A)',
@@ -369,7 +560,92 @@
         discardConfirm: 'Hủy & Đóng lại',
         showHud: 'Hiện thanh công cụ (H)',
         switchToDark: 'Chuyển sang giao diện Tối',
-        switchToLight: 'Chuyển sang giao diện Sáng'
+        switchToLight: 'Chuyển sang giao diện Sáng',
+        chipSelect: 'A: Chọn',
+        chipBrush: 'B: Cọ vẽ',
+        chipText: 'T: Viết chữ',
+        chipPolygon: 'M: Đa giác',
+        chipEllipse: 'O: Bầu dục',
+        chipLinePath: 'P: Đoạn thẳng',
+        chipHideHud: 'H: Ẩn thanh công cụ',
+        chipCopyEdited: 'Ctrl C: Sao chép ảnh',
+        chipPan: 'Chuột giữa: Kéo ảnh',
+        chipZoom: 'Cuộn chuột: Thu phóng',
+        chipFastZoom: 'Nhấp đúp: Phóng nhanh',
+        chipZoom100: '1: 100%',
+        chipFitScreen: '2: Vừa khung',
+        chipClose: 'ESC: Đóng',
+        popoverBrushSettings: 'CÀI ĐẶT CỌ VẼ',
+        popoverStrokeSize: 'KÍCH THƯỚC NÉT VẼ',
+        popoverPolygonSides: 'SỐ CẠNH ĐA GIÁC',
+        popoverBgColor: 'MÀU NỀN',
+        popoverTextColor: 'MÀU CHỮ',
+        popoverStrokeColor: 'MÀU ĐƯỜNG VIỀN',
+        fixedToScreen: 'Cố định theo màn hình',
+        fixedToImage: 'Cố định theo ảnh',
+        on: 'Bật',
+        off: 'Tắt',
+        setTransparent: 'Đặt nền trong suốt',
+        customColorPicker: 'Bộ chọn màu tùy chỉnh',
+        toggleSizeMode: 'Đổi chế độ kích cỡ',
+        toggleLazyMouse: 'Bật/Tắt làm mượt chuột',
+        polygonSidesTooltip: 'Số cạnh đa giác (Rê chuột để chỉnh thanh trượt, nhấp để sửa)',
+        toastDownloaded: 'Đã tải ảnh đã chỉnh sửa!',
+        toastCopied: 'Đã sao chép ảnh đã chỉnh sửa vào clipboard!',
+        toastFailedCopy: 'Không thể sao chép ảnh vào clipboard',
+        toastClipboardNotSupported: 'Trình duyệt không hỗ trợ Clipboard API'
+      },
+      recordBar: {
+        dragToMove: 'Kéo để di chuyển',
+        pause: 'Tạm dừng',
+        resume: 'Tiếp tục',
+        stopAndSave: 'Dừng & Lưu',
+        minimize: 'Thu nhỏ thanh điều khiển',
+        pauseResume: 'Tạm dừng / Tiếp tục',
+        stopSaveVideo: 'Dừng & Lưu Video'
+      },
+      recorder: {
+        title: 'Quay video màn hình',
+        modeSection: 'CHẾ ĐỘ QUAY',
+        modeTab: 'Tab Chrome',
+        modeTabSub: 'Tab trình duyệt đang xem',
+        modeScreen: 'Toàn màn hình',
+        modeScreenSub: 'Toàn bộ màn hình desktop',
+        modeWindow: 'Cửa sổ ứng dụng',
+        modeWindowSub: 'Cửa sổ phần mềm riêng lẻ',
+        modeCamera: 'Chỉ Webcam',
+        modeCameraSub: 'Chỉ ghi hình từ webcam',
+        inputsSection: 'ÂM THANH & CÀI ĐẶT',
+        sysSound: 'Âm thanh hệ thống',
+        sysSoundSub: 'Âm thanh tab & máy tính',
+        microphone: 'Microphone',
+        defaultMic: 'Micro mặc định',
+        webcamCamera: 'Webcam Camera',
+        defaultCam: 'Camera mặc định',
+        format: 'Định dạng',
+        formatSub: 'Định dạng tệp video',
+        startRecording: 'Bắt đầu quay',
+        recordingLive: 'ĐANG QUAY TRỰC TIẾP',
+        liveFeed: 'HÌNH ẢNH TRỰC TIẾP',
+        pause: 'Tạm dừng',
+        resume: 'Tiếp tục',
+        stopAndSave: 'Dừng & Lưu',
+        cancel: 'Hủy',
+        pauseResume: 'Tạm dừng / Tiếp tục',
+        stopSaveVideo: 'Dừng & Lưu Video'
+      },
+      contextMenu: {
+        yandex: '🔎 Tìm ảnh trên Yandex',
+        tineye: '🔎 Tìm ảnh trên TinEye',
+        captureArea: '📸 Chụp vùng tùy chọn',
+        captureVisible: '📸 Chụp vùng hiển thị',
+        captureFull: '📸 Chụp toàn trang',
+        captureRecord: '🔴 Quay video màn hình',
+        savePng: '🖼️ Lưu ảnh dạng PNG',
+        saveJpg: '🖼️ Lưu ảnh dạng JPG',
+        saveWebp: '🖼️ Lưu ảnh dạng WebP',
+        saveGif: '🖼️ Lưu ảnh dạng GIF',
+        savePdf: '📄 Lưu ảnh dạng PDF'
       }
     }
   };
@@ -390,12 +666,26 @@
     return cur;
   }
 
-  function t(pathStr, fallback = '') {
-    const val = resolvePath(TRANSLATIONS[currentLang], pathStr);
-    if (val !== null && val !== undefined) return val;
-    const defVal = resolvePath(TRANSLATIONS[DEFAULT_LANG], pathStr);
-    if (defVal !== null && defVal !== undefined) return defVal;
-    return fallback || pathStr;
+  function t(pathStr, fallback = '', params = null) {
+    let val = resolvePath(TRANSLATIONS[currentLang], pathStr);
+    if (val === null || val === undefined) {
+      val = resolvePath(TRANSLATIONS[DEFAULT_LANG], pathStr);
+    }
+    if (val === null || val === undefined) {
+      val = fallback || pathStr;
+    }
+    if (params && typeof val === 'string') {
+      if (Array.isArray(params)) {
+        params.forEach((param, i) => {
+          val = val.replace(new RegExp(`\\{${i}\\}`, 'g'), String(param));
+        });
+      } else if (typeof params === 'object') {
+        Object.keys(params).forEach(k => {
+          val = val.replace(new RegExp(`\\{${k}\\}`, 'g'), String(params[k]));
+        });
+      }
+    }
+    return val;
   }
 
   function getLanguage() {
@@ -405,10 +695,10 @@
   function applyTranslations(root = document) {
     if (!root) return;
 
-    // 1. Text elements [data-i18n]
-    const textEls = root.querySelectorAll('[data-i18n]');
+    // 1. Text elements [data-i18n] and [data-i18n-html]
+    const textEls = root.querySelectorAll('[data-i18n], [data-i18n-html]');
     textEls.forEach(el => {
-      const key = el.getAttribute('data-i18n');
+      const key = el.getAttribute('data-i18n') || el.getAttribute('data-i18n-html');
       const translated = t(key);
       if (translated && translated !== key) {
         if (el.hasAttribute('data-i18n-html')) {
@@ -448,6 +738,13 @@
       const flagAlt = showEnFlag ? 'EN' : 'VI';
       langBtn.innerHTML = `<img class="lang-flag-icon" src="${flagSrc}" alt="${flagAlt}">`;
       langBtn.title = t('header.langToggle');
+    }
+
+    // 5. Update Theme Toggle title if present
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      themeBtn.title = isLight ? t('header.switchToDark') : t('header.switchToLight');
     }
 
     // Set document lang attribute

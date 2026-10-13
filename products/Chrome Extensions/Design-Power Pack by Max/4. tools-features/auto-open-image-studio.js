@@ -179,62 +179,62 @@
           <div class="modal-info-row modal-info-row-hints modal-info-row-expandable">
             <span class="modal-hint-chip">
               <img src="${getIconUrl('cursor.svg')}" alt="Select" class="hint-icon-svg" />
-              A: Select
+              <span data-i18n="editor.chipSelect">A: Select</span>
             </span>
             <span class="modal-hint-chip">
               <img src="${getIconUrl('brush.svg')}" alt="Brush" class="hint-icon-svg" />
-              B: Brush
+              <span data-i18n="editor.chipBrush">B: Brush</span>
             </span>
             <span class="modal-hint-chip">
               <img src="${getIconUrl('text-tool.svg')}" alt="Text" class="hint-icon-svg" />
-              T: Text
+              <span data-i18n="editor.chipText">T: Text</span>
             </span>
             <span class="modal-hint-chip">
               <img src="${getIconUrl('square.svg')}" alt="Polygon" class="hint-icon-svg" />
-              M: Polygon
+              <span data-i18n="editor.chipPolygon">M: Polygon</span>
             </span>
             <span class="modal-hint-chip">
               <img src="${getIconUrl('circle.svg')}" alt="Ellipse" class="hint-icon-svg" />
-              O: Ellipse
+              <span data-i18n="editor.chipEllipse">O: Ellipse</span>
             </span>
             <span class="modal-hint-chip">
               <img src="${getIconUrl('polygonal.svg')}" alt="Line Path" class="hint-icon-svg" />
-              P: Line Path
+              <span data-i18n="editor.chipLinePath">P: Line Path</span>
             </span>
 
             <span class="modal-hint-chip chip-purple">
               <img src="${getIconUrl('hide.svg')}" alt="Hide HUD" class="hint-icon-svg" />
-              H: Hide HUD
+              <span data-i18n="editor.chipHideHud">H: Hide HUD</span>
             </span>
             <span class="modal-hint-chip chip-purple">
               <img src="${getIconUrl('copy.svg')}" alt="Copy" class="hint-icon-svg" />
-              Ctrl C: Copy Edited
+              <span data-i18n="editor.chipCopyEdited">Ctrl C: Copy Edited</span>
             </span>
 
             <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('mouse.svg')}" alt="Pan" class="hint-icon-svg" />
-              Middle: Pan
+              <span data-i18n="editor.chipPan">Middle: Pan</span>
             </span>
             <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('zoom.svg')}" alt="Zoom" class="hint-icon-svg" />
-              Scroll: Zoom
+              <span data-i18n="editor.chipZoom">Scroll: Zoom</span>
             </span>
             <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('double-click.svg')}" alt="Fast Zoom" class="hint-icon-svg" />
-              DblClick: Fast Zoom
+              <span data-i18n="editor.chipFastZoom">DblClick: Fast Zoom</span>
             </span>
             <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('zoom.svg')}" alt="100%" class="hint-icon-svg" />
-              1: 100%
+              <span data-i18n="editor.chipZoom100">1: 100%</span>
             </span>
             <span class="modal-hint-chip chip-cyan">
               <img src="${getIconUrl('fullscreen.svg')}" alt="Fit" class="hint-icon-svg" />
-              2: Fit Screen
+              <span data-i18n="editor.chipFitScreen">2: Fit Screen</span>
             </span>
 
             <span class="modal-hint-chip chip-red">
               <img src="${getIconUrl('close.svg')}" alt="Close" class="hint-icon-svg" />
-              ESC: Close
+              <span data-i18n="editor.chipClose">ESC: Close</span>
             </span>
           </div>
 

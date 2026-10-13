@@ -45,16 +45,6 @@ namespace MaxApp.Common
             }
         }
 
-        public bool ShowLanguageSelector
-        {
-            get { return _viewEn != null && _viewEn.ShowLanguageSelector; }
-            set
-            {
-                if (_viewEn != null) _viewEn.ShowLanguageSelector = value;
-                if (_viewVi != null) _viewVi.ShowLanguageSelector = value;
-            }
-        }
-
         public InfoTabPanel()
         {
             _theme = ThemeTokens.Current ?? ThemeTokens.DarkTheme();
@@ -154,13 +144,11 @@ namespace MaxApp.Common
             if (_viewVi != null)
             {
                 _viewVi.Visible = isVi;
-                if (isVi) _viewVi.UpdateLanguageButtonsStyle();
             }
 
             if (_viewEn != null)
             {
                 _viewEn.Visible = !isVi;
-                if (!isVi) _viewEn.UpdateLanguageButtonsStyle();
             }
         }
 

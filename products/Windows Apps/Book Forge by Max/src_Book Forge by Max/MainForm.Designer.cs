@@ -183,7 +183,7 @@ namespace BookForge
             this.titleBarCustom.TitleText = "Book Forge by Max v1.0 (Beta)";
             this.titleBarCustom.ShowMaximizeButton = true;
             this.titleBarCustom.ShowAdminButton = false;
-            this.titleBarCustom.ShowLanguageButton = false;
+            this.titleBarCustom.ShowLanguageButton = true;
             this.titleBarCustom.ShowThemeButton = true;
             this.titleBarCustom.OnCloseRequested += () => this.Close();
             this.titleBarCustom.OnMinimizeRequested += () => this.WindowState = FormWindowState.Minimized;

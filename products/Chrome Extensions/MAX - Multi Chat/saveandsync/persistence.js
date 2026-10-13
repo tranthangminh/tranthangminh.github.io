@@ -16,7 +16,7 @@ async function saveSessionState() {
     };
     await chrome.storage.local.set({ "app_session_state": sessionData });
   } catch (err) {
-    console.error("Failed to save session state:", err);
+    // Session state save failed silently
   }
 }
 
@@ -91,7 +91,6 @@ async function loadSessionState() {
     }
     return true;
   } catch (err) {
-    console.error("Failed to load session state:", err);
     return false;
   }
 }

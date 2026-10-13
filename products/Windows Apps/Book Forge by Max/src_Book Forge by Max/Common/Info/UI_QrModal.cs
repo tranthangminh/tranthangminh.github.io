@@ -77,7 +77,7 @@ namespace MaxApp.Common
             // Thank you label
             lblThank = new Label
             {
-                Text = Loc.QrThankYou,
+                Text = Loc.IsVietnamese ? "Cám ơn bạn đã ủng hộ tác giả!" : "Thank you for supporting the author!",
                 Location = new Point(10, 286),
                 Size = new Size(300, 22),
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -88,7 +88,7 @@ namespace MaxApp.Common
             // Close Button
             btnClose = new RoundedButton
             {
-                Text = Loc.Close,
+                Text = Loc.IsVietnamese ? "Đóng" : "Close",
                 Location = new Point((320 - 110) / 2, 318),
                 Size = new Size(110, 32),
                 Font = ThemeTokens.FontSmall(FontStyle.Bold),

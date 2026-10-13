@@ -1,5 +1,7 @@
 // Core logic for the Dashboard UI (English Version)
 
+window.SYSTEM_AI_GROUP_ID = window.SYSTEM_AI_GROUP_ID || "system-ai-chat";
+
 // Main Group icon list — loaded dynamically from svg/main-icons/index.json at runtime
 // This is the fallback list used if index.json cannot be fetched
 window.MAIN_ICON_LIST = [
@@ -85,20 +87,20 @@ const paneFrameIdMap = {
 
 
 // Default Seed Data (Contains only empty default group and sub-group on clean installations)
-const SEED_DATA = [
-  {
+const SEED_DATA = Object.freeze([
+  Object.freeze({
     id: "main_cskh",
     name: "Customer Care",
     icon: "💬",
-    subGroups: [
-      {
+    subGroups: Object.freeze([
+      Object.freeze({
         id: "sub_cskh_main",
         name: "Channels",
-        tabs: []
-      }
-    ]
-  }
-];
+        tabs: Object.freeze([])
+      })
+    ])
+  })
+]);
 
 
 
@@ -124,7 +126,6 @@ async function loadDefaultChannelsFromCSV() {
       DEFAULT_CHANNELS_LIST = list;
       defaultChannelsByTag = tagsMap;
       defaultTagsList = Object.keys(tagsMap).sort();
-      console.log(`Loaded ${list.length} default channels from storage under ${defaultTagsList.length} tags:`, defaultTagsList);
       return;
     }
 
@@ -133,11 +134,14 @@ async function loadDefaultChannelsFromCSV() {
     const text = await response.text();
     const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
     if (lines.length <= 1) {
-      console.warn("channels.csv is empty or has only headers.");
       return;
     }
     
-    const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+    const parseRow = (typeof window.parseCSVRow === "function")
+      ? window.parseCSVRow
+      : (str => str.split(","));
+
+    const headers = parseRow(lines[0]).map(h => h.trim().toLowerCase());
     const idIdx = headers.indexOf("id");
     const nameIdx = headers.indexOf("tab_name");
     const url1Idx = headers.indexOf("tab_url_1");
@@ -158,7 +162,7 @@ async function loadDefaultChannelsFromCSV() {
     
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i];
-      const cols = line.split(",");
+      const cols = parseRow(line);
       if (cols.length >= 3) {
         const name = nameIdx !== -1 && cols[nameIdx] ? cols[nameIdx].trim() : "";
         const id = idIdx !== -1 && cols[idIdx] ? cols[idIdx].trim() : ("tab_" + name.toLowerCase().replace(/[^a-z0-9]/g, "_"));
@@ -229,9 +233,7 @@ async function loadDefaultChannelsFromCSV() {
     DEFAULT_CHANNELS_LIST = list;
     defaultChannelsByTag = tagsMap;
     defaultTagsList = Object.keys(tagsMap).sort();
-    console.log(`Loaded ${list.length} default channels under ${defaultTagsList.length} tags:`, defaultTagsList);
-  } catch (err) {
-    console.error("Failed to load default channels from CSV:", err);
+  } catch {
     // Fallback logic to prevent empty state in case fetch fails
     const fallbackList = [
       { id: "tab_zalo", name: "Zalo", url: "https://chat.zalo.me/", customFavicon: "", tags: ["Chat"] },
@@ -373,6 +375,12 @@ async function initApp() {
   let hasLoadedSession = false;
   if (result.app_hierarchy && result.app_hierarchy.length > 0) {
     appState.hierarchy = result.app_hierarchy;
+    // Migration: Migrate any legacy main_ai_multichat id to SYSTEM_AI_GROUP_ID
+    appState.hierarchy.forEach(g => {
+      if (g.id === "main_ai_multichat") {
+        g.id = SYSTEM_AI_GROUP_ID;
+      }
+    });
     // Triệt tiêu tận gốc: Reset toàn bộ trạng thái âm thanh tạm thời (isAudible) trên mọi tab về false khi khởi động
     appState.hierarchy.forEach(mainGroup => {
       if (mainGroup.subGroups) {
@@ -1058,8 +1066,6 @@ function selectTab(tabId, url) {
 
     window.loadIframeInPane("left", tabObj, tabObj.url, !!tabObj.openExternal);
     window.loadIframeInPane("right", tabObj, tabObj.urlRight, !!tabObj.openExternalRight);
-
-    console.log(`Initialized Split Link: ${tabObj.url} & ${tabObj.urlRight}`);
   } else {
     // ==================== SINGLE LINK LOGIC ====================
     if (appState.isSplitLinkActive) {
@@ -1151,7 +1157,6 @@ async function handleAddressBarSubmit(paneSide) {
       const iframe = wrapper.querySelector("iframe");
       if (iframe) {
         iframe.src = newUrl;
-        console.log(`Updated pane ${paneSide} iframe src from address bar to: ${newUrl}`);
       }
     }
 
@@ -1801,7 +1806,6 @@ function initPaneDragDropEvents() {
 
         setActivePane(targetView);
         selectTab(tabId, tabObj.url);
-        console.log(`Dropped tab ${tabId} into ${targetView} pane`);
       }
       
       draggedElement = null;
@@ -1860,8 +1864,12 @@ function registerEvents() {
     const infoModal = document.getElementById("info-modal");
     const settingsModal = document.getElementById("settings-modal");
 
-    // 1. ESC KEY -> Close active modal
+    // 1. ESC KEY -> Close active modal or floating donate nudge
     if (e.key === "Escape") {
+      const donateNudge = document.getElementById("donate-nudge");
+      if (donateNudge && donateNudge.classList.contains("show")) {
+        donateNudge.classList.remove("show");
+      }
       if (mainModal && mainModal.classList.contains("show")) closeModal("main-group-modal");
       else if (subModal && subModal.classList.contains("show")) closeModal("sub-group-modal");
       else if (tabModal && tabModal.classList.contains("show")) closeModal("tab-modal");
@@ -1870,7 +1878,26 @@ function registerEvents() {
       return;
     }
 
-    // 2. ENTER KEY -> Save active modal regardless of element focus
+    // 2. TAB KEY -> Modal Focus Trap (Cycle focus within visible modal)
+    if (e.key === "Tab") {
+      const activeModal = [mainModal, subModal, tabModal, settingsModal, infoModal].find(m => m && m.classList.contains("show"));
+      if (activeModal) {
+        const focusableElements = activeModal.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+        if (focusableElements.length > 0) {
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+          if (e.shiftKey && document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          } else if (!e.shiftKey && document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    }
+
+    // 3. ENTER KEY -> Save active modal regardless of element focus
     if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
       if (mainModal && mainModal.classList.contains("show")) {
         e.preventDefault();
@@ -1944,7 +1971,6 @@ function registerEvents() {
           iframe.setAttribute("allow", "geolocation; microphone; camera; midi; encrypted-media; clipboard-write; clipboard-read");
           iframe.src = url;
           wrapper.appendChild(iframe);
-          console.log(`Re-created left iframe node for tab: ${appState.leftTabId}`);
         }
       }
     }
@@ -1974,7 +2000,6 @@ function registerEvents() {
           iframe.setAttribute("allow", "geolocation; microphone; camera; midi; encrypted-media; clipboard-write; clipboard-read");
           iframe.src = url;
           wrapper.appendChild(iframe);
-          console.log(`Re-created right iframe node for tab: ${appState.rightTabId}`);
         }
       }
     }
@@ -2108,9 +2133,6 @@ window.testAudioState = function(tabId, isAudible = true) {
   if (tabObj) {
     tabObj.isAudible = isAudible;
     updateTabAudioIconUI(tabId, isAudible);
-    console.log(`Updated audio state for tab ${tabId} (${tabObj.name}): ${isAudible}`);
-  } else {
-    console.warn(`Tab ID ${tabId} not found.`);
   }
 };
 
@@ -2279,7 +2301,6 @@ function syncExistingTabsWithCSV() {
               if (tab.openExternal !== shouldBeExternal) {
                 tab.openExternal = shouldBeExternal;
                 changed = true;
-                console.log(`Synced tab "${tab.name}" openExternal property to: ${shouldBeExternal}`);
               }
             }
           });

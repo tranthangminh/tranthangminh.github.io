@@ -249,14 +249,14 @@ function renderCaptureHistory(items) {
     const previewHtml = isRecVideo
       ? `<div class="rec-video-placeholder" title="${safeFilename}">
            <span class="icon-mask" style="mask-image: url('svg/videos.svg'); -webkit-mask-image: url('svg/videos.svg'); width: 24px; height: 24px;"></span>
-           <span class="rec-video-label">Saved to Downloads</span>
+           <span class="rec-video-label">${(window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('screencapture.savedDownloads') : 'Saved to Downloads'}</span>
            ${recDate ? `<span class="rec-video-date">${recDate}</span>` : ''}
          </div>`
       : displayUrl
         ? `<img src="${escAttr(displayUrl)}" alt="${safeFilename}" loading="lazy" />`
         : `<div class="rec-video-placeholder img-no-access-placeholder" title="${safeFilename}">
              <span class="icon-mask" style="mask-image: url('svg/images.svg'); -webkit-mask-image: url('svg/images.svg'); width: 24px; height: 24px;"></span>
-             <span class="rec-video-label">Enable file access to preview</span>
+             <span class="rec-video-label">${(window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('screencapture.enableFileAccess') : 'Enable file access to preview'}</span>
              <span class="rec-video-date">${recDate}</span>
            </div>`;
     const rightBadge = isRecVideo ? 'VIDEO' : (item.width && item.height ? `${item.width}×${item.height}` : 'IMAGE');
@@ -380,7 +380,10 @@ function renderCaptureHistory(items) {
         if (item.downloadId && typeof chrome !== 'undefined' && chrome.downloads && chrome.downloads.show) {
           chrome.downloads.show(item.downloadId);
         } else {
-          window.showToast('File not found in downloads.');
+          const msg = (window.i18n && typeof window.i18n.t === 'function')
+            ? window.i18n.t('screencapture.fileNotFound')
+            : 'File not found in downloads.';
+          window.showToast(msg);
         }
       });
     }
@@ -390,7 +393,10 @@ function renderCaptureHistory(items) {
         e.stopPropagation();
         const isRecVideo = item.dataUrl === 'rec_video';
         if (!isFileSchemeAllowed) {
-          window.showToast("Please enable 'Allow access to file URLs' in extension settings to open local files.");
+          const msg = (window.i18n && typeof window.i18n.t === 'function')
+            ? window.i18n.t('screencapture.enableFileUrls')
+            : "Please enable 'Allow access to file URLs' in extension settings to open local files.";
+          window.showToast(msg);
         } else if (isRecVideo || item.localFileUrl) {
           if (!item.localFileUrl) {
             window.showToast("Local file not found.");
@@ -409,7 +415,12 @@ function renderCaptureHistory(items) {
 function clearCaptureHistory() {
   chrome.storage.local.set({ captureHistory: [] }, () => {
     renderCaptureHistory([]);
-    if (window.showToast) window.showToast('Capture history cleared');
+    if (window.showToast) {
+      const msg = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('screencapture.historyCleared')
+        : 'Capture history cleared';
+      window.showToast(msg);
+    }
   });
 }
 

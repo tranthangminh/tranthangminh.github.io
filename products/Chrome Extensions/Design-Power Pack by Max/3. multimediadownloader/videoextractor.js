@@ -198,9 +198,12 @@ function filterAndRenderVideos() {
   if (!gridContainer) return;
 
   if (allVideos.length === 0) {
+    const emptyMsg = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('downloader.emptyVideos')
+      : 'No videos found on this page.';
     gridContainer.innerHTML = `
       <div class="loading-state" style="animation: none;">
-        <p>No videos found on this page.</p>
+        <p>${emptyMsg}</p>
       </div>
     `;
     updateVideoCountSummary();
@@ -271,9 +274,11 @@ function filterAndRenderVideos() {
         Your browser does not support video previews.
       </video>
       <div class="video-scrubber-container">
-        <input type="range" class="video-scrubber" min="0" max="100" value="0" step="any" title="Scrub video">
+        <input type="range" class="video-scrubber" min="0" max="100" value="0" step="any" title="${(window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.scrubVideo') : 'Scrub video'}" data-i18n-title="downloader.scrubVideo">
       </div>
     `;
+
+    const t = (k, def) => ((window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t(k, def) : def);
 
     return window.createResourceCardHtml({
       id: originalIndex,
@@ -285,13 +290,13 @@ function filterAndRenderVideos() {
       badgeCenter: durationLabel,
       badgeRight: sizeLabel,
       actionsHtml: `
-        <button class="btn btn-ghost btn-icon copy-link-btn" title="Copy video URL">
+        <button class="btn btn-ghost btn-icon copy-link-btn" title="${t('downloader.copyVideoUrl', 'Copy video URL')}" data-i18n-title="downloader.copyVideoUrl">
           <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span>
         </button>
-        <button class="btn btn-ghost btn-icon open-tab-btn" title="Open in new tab">
+        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}" data-i18n-title="downloader.openNewTab">
           <span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span>
         </button>
-        <button class="btn btn-ghost btn-icon download-btn" title="Download video file">
+        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadVideoFile', 'Download video file')}" data-i18n-title="downloader.downloadVideoFile">
           <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span>
         </button>
       `
@@ -427,16 +432,22 @@ function updateVideoFilterCounts() {
   });
 
   const total = allVideos.length;
+  const allLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.all') : 'All';
+  const allLayoutsLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.allLayouts') : 'All Layouts';
+  const squareLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.square') : 'Square';
+  const wideLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.wide') : 'Wide';
+  const tallLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.tall') : 'Tall';
+
   if (typeSelect) {
-    typeSelect.options[0].text = `All (${total})`;
+    typeSelect.options[0].text = `${allLabel} (${total})`;
     setOpt(typeSelect.options[1], mp4, 'MP4');
     setOpt(typeSelect.options[2], webm, 'WebM');
   }
   if (layoutSelect) {
-    layoutSelect.options[0].text = `All Layouts (${layoutAll})`;
-    setOpt(layoutSelect.options[1], square, 'Square');
-    setOpt(layoutSelect.options[2], wide, 'Wide');
-    setOpt(layoutSelect.options[3], tall, 'Tall');
+    layoutSelect.options[0].text = `${allLayoutsLabel} (${layoutAll})`;
+    setOpt(layoutSelect.options[1], square, squareLabel);
+    setOpt(layoutSelect.options[2], wide, wideLabel);
+    setOpt(layoutSelect.options[3], tall, tallLabel);
   }
 }
 
@@ -535,7 +546,9 @@ function updateVideoSelectAllState() {
 function updateVideoCountSummary() {
   const countEl = document.getElementById('video-count-summary');
   if (countEl) {
-    countEl.textContent = `${allVideos.length} videos found`;
+    countEl.textContent = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('downloader.foundVideos', '{0} videos found', [allVideos.length])
+      : `${allVideos.length} videos found`;
   }
 }
 

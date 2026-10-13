@@ -10,6 +10,8 @@ Object.defineProperty(window, 'popoverTargetMode', {
 function openVectorColorPopover(mode = 'brushTool') {
   popoverTargetMode = mode;
 
+  const t = (k, fb) => (typeof window !== 'undefined' && window.i18n && window.i18n.t) ? window.i18n.t(k, fb) : fb;
+
   let popover = document.getElementById('vector-color-popover');
   const modal = document.getElementById('image-preview-modal') || document.body;
 
@@ -19,10 +21,10 @@ function openVectorColorPopover(mode = 'brushTool') {
     popover.className = 'vector-popover hidden';
     popover.innerHTML = `
       <div class="vector-popover-header">
-        <span id="vector-popover-title" class="vector-popover-title">BRUSH SETTINGS</span>
+        <span id="vector-popover-title" class="vector-popover-title">${t('editor.popoverBrushSettings', 'BRUSH SETTINGS')}</span>
         <div class="vector-popover-header-actions">
-          <div id="vector-popover-trans-btn" class="color-swatch transparent-swatch" title="Set Transparent" data-color="transparent"></div>
-          <div class="vector-popover-custom-wrap" title="Custom Color Picker">
+          <div id="vector-popover-trans-btn" class="color-swatch transparent-swatch" title="${t('editor.setTransparent', 'Set Transparent')}" data-color="transparent"></div>
+          <div class="vector-popover-custom-wrap" title="${t('editor.customColorPicker', 'Custom Color Picker')}">
             <input type="color" id="vector-popover-custom-color" class="vector-popover-custom-input">
           </div>
         </div>
@@ -74,12 +76,12 @@ function openVectorColorPopover(mode = 'brushTool') {
       <div id="vector-popover-toggles-section" class="vector-popover-section">
         <div class="vector-popover-toggles-row">
           <div class="vector-popover-toggle-col">
-            <span class="vector-popover-label-sm">Size Mode</span>
-            <button id="vector-popover-size-mode-btn" class="btn btn-secondary vector-popover-toggle-btn active" title="Toggle Size Mode">Fixed to Screen</button>
+            <span class="vector-popover-label-sm">${t('editor.toggleSizeMode', 'Size Mode')}</span>
+            <button id="vector-popover-size-mode-btn" class="btn btn-secondary vector-popover-toggle-btn active" title="${t('editor.toggleSizeMode', 'Toggle Size Mode')}">${t('editor.fixedToScreen', 'Fixed to Screen')}</button>
           </div>
           <div class="vector-popover-toggle-col">
-            <span class="vector-popover-label-sm">Lazy Mouse</span>
-            <button id="vector-popover-lazy-mouse-btn" class="btn btn-secondary vector-popover-toggle-btn" title="Toggle Smooth Lazy Mouse">Off</button>
+            <span class="vector-popover-label-sm">${t('editor.toggleLazyMouse', 'Lazy Mouse')}</span>
+            <button id="vector-popover-lazy-mouse-btn" class="btn btn-secondary vector-popover-toggle-btn" title="${t('editor.toggleLazyMouse', 'Toggle Smooth Lazy Mouse')}">${t('editor.off', 'Off')}</button>
           </div>
         </div>
       </div>
@@ -229,6 +231,7 @@ window.openVectorColorPopover = openVectorColorPopover;
 function updatePopoverValues() {
   const popover = document.getElementById('vector-color-popover');
   if (!popover) return;
+  const t = (k, fb) => (typeof window !== 'undefined' && window.i18n && window.i18n.t) ? window.i18n.t(k, fb) : fb;
   const obj = getSelectedObject();
   const mode = popoverTargetMode;
 
@@ -242,7 +245,7 @@ function updatePopoverValues() {
 
   // Mode visibility configuration:
   if (mode === 'brushTool') {
-    if (titleEl) titleEl.textContent = 'BRUSH SETTINGS';
+    if (titleEl) titleEl.textContent = t('editor.popoverBrushSettings', 'BRUSH SETTINGS');
     if (colorSec) colorSec.classList.remove('hidden');
     if (sizeSec) sizeSec.classList.remove('hidden');
     if (sidesSec) sidesSec.classList.add('hidden');
@@ -250,7 +253,7 @@ function updatePopoverValues() {
     if (opacitySec) opacitySec.classList.remove('hidden');
     if (transBtn) transBtn.classList.remove('hidden');
   } else if (mode === 'size') {
-    if (titleEl) titleEl.textContent = 'STROKE SIZE';
+    if (titleEl) titleEl.textContent = t('editor.popoverStrokeSize', 'STROKE SIZE');
     if (colorSec) colorSec.classList.add('hidden');
     if (sizeSec) sizeSec.classList.remove('hidden');
     if (sidesSec) sidesSec.classList.add('hidden');
@@ -258,7 +261,7 @@ function updatePopoverValues() {
     if (opacitySec) opacitySec.classList.add('hidden');
     if (transBtn) transBtn.classList.add('hidden');
   } else if (mode === 'sides') {
-    if (titleEl) titleEl.textContent = 'POLYGON SIDES';
+    if (titleEl) titleEl.textContent = t('editor.popoverPolygonSides', 'POLYGON SIDES');
     if (colorSec) colorSec.classList.add('hidden');
     if (sizeSec) sizeSec.classList.add('hidden');
     if (sidesSec) sidesSec.classList.remove('hidden');
@@ -268,9 +271,9 @@ function updatePopoverValues() {
   } else {
     // Color modes: 'strokeColor', 'textColor', 'bgColor'
     if (titleEl) {
-      if (mode === 'bgColor') titleEl.textContent = 'BACKGROUND COLOR';
-      else if (mode === 'textColor') titleEl.textContent = 'TEXT COLOR';
-      else titleEl.textContent = 'STROKE COLOR';
+      if (mode === 'bgColor') titleEl.textContent = t('editor.popoverBgColor', 'BACKGROUND COLOR');
+      else if (mode === 'textColor') titleEl.textContent = t('editor.popoverTextColor', 'TEXT COLOR');
+      else titleEl.textContent = t('editor.popoverStrokeColor', 'STROKE COLOR');
     }
     if (colorSec) colorSec.classList.remove('hidden');
     if (sizeSec) sizeSec.classList.add('hidden');
@@ -352,13 +355,13 @@ function updatePopoverValues() {
   const sizeModeBtn = popover.querySelector('#vector-popover-size-mode-btn');
   if (sizeModeBtn) {
     const isScreen = currentSizeMode === 'absolute';
-    sizeModeBtn.textContent = isScreen ? 'Fixed to Screen' : 'Fixed to Image';
+    sizeModeBtn.textContent = isScreen ? t('editor.fixedToScreen', 'Fixed to Screen') : t('editor.fixedToImage', 'Fixed to Image');
     sizeModeBtn.classList.toggle('active', isScreen);
   }
 
   const lazyMouseBtn = popover.querySelector('#vector-popover-lazy-mouse-btn');
   if (lazyMouseBtn) {
-    lazyMouseBtn.textContent = isLazyMouse ? 'On' : 'Off';
+    lazyMouseBtn.textContent = isLazyMouse ? t('editor.on', 'On') : t('editor.off', 'Off');
     lazyMouseBtn.classList.toggle('active', isLazyMouse);
   }
 

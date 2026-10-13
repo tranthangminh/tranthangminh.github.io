@@ -118,7 +118,15 @@ async function syncGoogleSheetManual(statusCallback) {
   try {
     if (statusCallback) statusCallback("connecting", "Connecting to Google Sheet Web App...");
 
-    const response = await fetch(url, { cache: "no-cache" });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    let response;
+    try {
+      response = await fetch(url, { cache: "no-cache", signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
     if (!response.ok) {
       throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
     }
@@ -168,8 +176,10 @@ async function syncGoogleSheetManual(statusCallback) {
     if (statusCallback) statusCallback("success", resultMsg);
     return true;
   } catch (err) {
-    console.error("Google Sheet Sync Error:", err);
-    if (statusCallback) statusCallback("error", `Sync failed: ${err.message}`);
+    const errorMsg = err.name === "AbortError"
+      ? "Sync failed: Connection timed out after 15 seconds."
+      : `Sync failed: ${err.message}`;
+    if (statusCallback) statusCallback("error", errorMsg);
     return false;
   }
 }
@@ -217,7 +227,6 @@ async function checkAndSyncGoogleSheetDaily() {
   const todayStr = new Date().toISOString().slice(0, 10);
 
   if (data.last_google_sheet_sync_date === todayStr) {
-    console.log("Google Sheet data is already up-to-date for today:", todayStr);
     const channelsCount = data.last_google_sheet_sync_channels_count || (window.DEFAULT_CHANNELS_LIST ? window.DEFAULT_CHANNELS_LIST.length : 0);
     const modelsCount = data.last_google_sheet_sync_models_count || (typeof appState !== "undefined" && appState.aiModels ? appState.aiModels.length : 0);
     const successMsg = `Successfully updated on ${todayStr}\n(${channelsCount} Default Channels, ${modelsCount} AI Models)`;
@@ -225,9 +234,7 @@ async function checkAndSyncGoogleSheetDaily() {
     return;
   }
 
-  console.log("Starting daily background sync from Google Sheet...");
   await syncGoogleSheetManual((step, msg) => {
-    console.log(`[Google Sheet Daily Sync] ${step}: ${msg}`);
     updateSyncStatusUI(step, msg);
   });
 }

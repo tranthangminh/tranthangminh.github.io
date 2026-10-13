@@ -34,7 +34,6 @@ chrome.action.onClicked.addListener(async () => {
 // Listen for storage changes to sync DNR Rules and Cookies
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === "local" && (changes.app_hierarchy || changes.ai_models)) {
-    console.log("Configuration changed, syncing DNR Rules & Cookies...");
     chrome.storage.local.get(["app_hierarchy", "ai_models"], (data) => {
       const urls = extractUrlsFromHierarchy(data.app_hierarchy || [], data.ai_models || []);
       updateDNRAntiFrameHeaders(urls);
@@ -81,19 +80,14 @@ chrome.cookies.onChanged.addListener((changeInfo) => {
           newCookie.domain = cookie.domain;
         }
 
-        chrome.cookies.set(newCookie).catch(err => {
-          console.warn(`Failed to sync changed cookie ${cookie.name}:`, err);
-        });
+        chrome.cookies.set(newCookie).catch(() => {});
       }
     });
   }
 });
 
-
-
 // Sync on installation/update and Service Worker wakeup
 chrome.runtime.onInstalled.addListener(async (details) => {
-  console.log("MAX Multi Chat Extension installed/updated. Reason:", details ? details.reason : "unknown");
   const data = await chrome.storage.local.get(["app_hierarchy", "ai_models"]);
   const urls = extractUrlsFromHierarchy(data.app_hierarchy || [], data.ai_models || []);
   updateDNRAntiFrameHeaders(urls);
@@ -108,13 +102,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 // Listen for navigation errors in sub_frames (iframes) and notify Dashboard
 chrome.webNavigation.onErrorOccurred.addListener((details) => {
   if (details.frameId > 0) {
-    console.warn(`Frame navigation error on: ${details.url}. Error: ${details.error}`);
     // Broadcast the error message to the Dashboard tab
     chrome.runtime.sendMessage({
       type: "IFRAME_LOAD_ERROR",
       url: details.url,
       error: details.error
-    }).catch(err => {
+    }).catch(() => {
       // Catch error when no active dashboard tab is listening
     });
   }
@@ -159,66 +152,8 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
           // Ignore when no dashboard tab is active/listening
         });
       }
-
-      // Inject audio observer into iframe subframe
-      chrome.scripting.executeScript({
-        target: { tabId: details.tabId, frameIds: [details.frameId] },
-        func: () => {
-          if (window.__maxAudioObserverInjected) return;
-          window.__maxAudioObserverInjected = true;
-
-          function checkMedia() {
-            const mediaEls = document.querySelectorAll("audio, video");
-            let isPlaying = false;
-            mediaEls.forEach(el => {
-              if (!el.paused && !el.ended && el.volume > 0 && !el.muted) {
-                isPlaying = true;
-              }
-            });
-            return isPlaying;
-          }
-
-          function notifyAudioState(playing) {
-            try {
-              window.parent.postMessage({
-                type: "MAX_AUDIO_STATE",
-                isAudible: playing,
-                tabId: window.name || "",
-                url: window.location.href
-              }, "*");
-            } catch (e) {}
-          }
-
-          document.addEventListener("play", () => notifyAudioState(true), true);
-          document.addEventListener("playing", () => notifyAudioState(true), true);
-          document.addEventListener("timeupdate", () => {
-            if (checkMedia()) notifyAudioState(true);
-          }, true);
-          document.addEventListener("pause", () => {
-            setTimeout(() => notifyAudioState(checkMedia()), 300);
-          }, true);
-          document.addEventListener("ended", () => {
-            setTimeout(() => notifyAudioState(checkMedia()), 300);
-          }, true);
-
-          setInterval(() => {
-            notifyAudioState(checkMedia());
-          }, 1500);
-        }
-      }).catch(() => {});
     } catch (err) {
-      console.warn("Failed to extract actual favicon in iframe:", err);
+      // Suppress extraction failure on restricted or sandboxed frames
     }
   }
-});
-
-
-
-
-
-// Run immediately on background start
-chrome.storage.local.get("app_hierarchy", (data) => {
-  const urls = extractUrlsFromHierarchy(data.app_hierarchy || []);
-  updateDNRAntiFrameHeaders(urls);
-  syncAllDomainCookies(urls);
 });

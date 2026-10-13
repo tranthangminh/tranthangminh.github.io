@@ -32,6 +32,8 @@ namespace BookForge
         // General
         public int SelectedTab { get; set; }
         public bool IsDarkTheme { get; set; }
+        public string Language { get; set; }
+        public bool IsFirstRun { get; set; }
         public int WindowWidth { get; set; }
         public int WindowHeight { get; set; }
 
@@ -58,6 +60,8 @@ namespace BookForge
 
             SelectedTab = 0;
             IsDarkTheme = true;
+            Language = "en";
+            IsFirstRun = false;
             WindowWidth = 660;
             WindowHeight = 780;
         }
@@ -123,7 +127,9 @@ namespace BookForge
 
             if (!File.Exists(path))
             {
-                return new BookForgeConfig();
+                BookForgeConfig cfg = new BookForgeConfig();
+                cfg.IsFirstRun = true;
+                return cfg;
             }
 
             try
@@ -216,6 +222,8 @@ namespace BookForge
             sb.AppendLine(string.Format("  \"PublishSettingsCollapsed\": {0},", c.PublishSettingsCollapsed ? "true" : "false"));
             sb.AppendLine(string.Format("  \"SelectedTab\": {0},", c.SelectedTab));
             sb.AppendLine(string.Format("  \"IsDarkTheme\": {0},", c.IsDarkTheme ? "true" : "false"));
+            sb.AppendLine(string.Format("  \"Language\": \"{0}\",", EscapeJson(c.Language)));
+            sb.AppendLine(string.Format("  \"IsFirstRun\": {0},", c.IsFirstRun ? "true" : "false"));
             sb.AppendLine(string.Format("  \"WindowWidth\": {0},", c.WindowWidth));
             sb.AppendLine(string.Format("  \"WindowHeight\": {0}", c.WindowHeight));
             sb.AppendLine("}");
@@ -271,6 +279,8 @@ namespace BookForge
 
                     case "selectedtab": config.SelectedTab = ParseInt(val, 0); break;
                     case "isdarktheme": config.IsDarkTheme = ParseBool(val, true); break;
+                    case "language": config.Language = unescaped; break;
+                    case "isfirstrun": config.IsFirstRun = ParseBool(val, false); break;
                     case "windowwidth": config.WindowWidth = ParseInt(val, 660); break;
                     case "windowheight": config.WindowHeight = ParseInt(val, 780); break;
                 }

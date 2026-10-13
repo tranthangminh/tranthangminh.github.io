@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Auto Clicker by Max")]
 [assembly: AssemblyDescription("Modern, high-performance portable Auto Clicker and Macro Automation tool.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Max")]
+[assembly: AssemblyCompany("Tr\u1EA7n Th\u1EAFng Minh")]
 [assembly: AssemblyProduct("Auto Clicker by Max")]
-[assembly: AssemblyCopyright("Copyright © 2026 Max. All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright \u00A9 2026 Tr\u1EA7n Th\u1EAFng Minh. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -31,3 +31,4 @@ using System.Runtime.InteropServices;
 //
 [assembly: AssemblyVersion("1.1.2.0")]
 [assembly: AssemblyFileVersion("1.1.2.0")]
+[assembly: AssemblyInformationalVersion("1.1.2")]

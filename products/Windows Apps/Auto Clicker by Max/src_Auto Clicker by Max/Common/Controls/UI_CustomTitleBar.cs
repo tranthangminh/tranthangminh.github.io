@@ -24,8 +24,9 @@ namespace MaxApp.Common
         private Image _cachedIcon = null;
 
         private const int BTN_WIDTH = 34;
-        private const int PREF_BTN_SIZE = 30;
+        private const int PREF_BTN_SIZE = 24;
         private const int TITLE_HEIGHT = 32;
+        private const int APP_ICON_SIZE = 24;
 
         // Button Visibility Feature Toggles (Configurable from outside, 0 modifications to Common)
         private bool _showClose = true;
@@ -154,7 +155,14 @@ namespace MaxApp.Common
             this.MouseUp += TitleBar_MouseUp;
             this.MouseDoubleClick += TitleBar_MouseDoubleClick;
 
+            Loc.OnLanguageChanged += HandleLanguageChanged;
+
             RecalculateLayout();
+        }
+
+        private void HandleLanguageChanged()
+        {
+            Invalidate();
         }
 
         /// <summary>
@@ -326,7 +334,7 @@ namespace MaxApp.Common
             if (_isHoverClose != oldClose || _isHoverMax != oldMax || _isHoverMin != oldMin ||
                 _isHoverLang != oldLang || _isHoverTheme != oldTheme || _isHoverAdmin != oldAdmin)
             {
-                UpdateTooltips();
+                if (_isHoverAdmin != oldAdmin) UpdateTooltips();
                 Invalidate();
             }
         }
@@ -336,30 +344,7 @@ namespace MaxApp.Common
             if (_toolTip == null) return;
             string tip = null;
 
-            if (_isHoverClose)
-            {
-                tip = Loc.Close;
-            }
-            else if (_isHoverMax)
-            {
-                Form parent = this.FindForm();
-                bool isMaximized = (parent != null && parent.WindowState == FormWindowState.Maximized);
-                tip = isMaximized ? Loc.Restore : Loc.Maximize;
-            }
-            else if (_isHoverMin)
-            {
-                tip = Loc.Minimize;
-            }
-            else if (_isHoverLang)
-            {
-                tip = Loc.IsVietnamese ? Loc.SwitchToEn : Loc.SwitchToVi;
-            }
-            else if (_isHoverTheme)
-            {
-                bool isDark = _theme != null && _theme.IsDark;
-                tip = isDark ? Loc.SwitchToLight : Loc.SwitchToDark;
-            }
-            else if (_isHoverAdmin)
+            if (_isHoverAdmin)
             {
                 bool isAdmin = UacHelper.IsRunningAsAdmin();
                 tip = isAdmin ? Loc.AdminRunning : Loc.AdminRequest;
@@ -517,7 +502,7 @@ namespace MaxApp.Common
 
             try
             {
-                Image svgIcon = SvgFileRenderer.GetAppIconImage(18);
+                Image svgIcon = SvgFileRenderer.GetAppIconImage(APP_ICON_SIZE);
                 if (svgIcon != null)
                 {
                     _cachedIcon = new Bitmap(svgIcon);
@@ -529,7 +514,7 @@ namespace MaxApp.Common
                 {
                     using (Bitmap bmp = parent.Icon.ToBitmap())
                     {
-                        _cachedIcon = new Bitmap(bmp, 18, 18);
+                        _cachedIcon = new Bitmap(bmp, APP_ICON_SIZE, APP_ICON_SIZE);
                         return _cachedIcon;
                     }
                 }
@@ -552,16 +537,16 @@ namespace MaxApp.Common
                 g.FillRectangle(bgBrush, this.ClientRectangle);
             }
 
-            // 2. App Icon (18x18, Y-centered at X = 0 or 8)
+            // 2. App Icon (24x24, Y-centered at X = 0 or 8)
             int iconX = 0;
-            int textStartX = 22;
+            int textStartX = 28;
 
             if (_showAppIcon)
             {
                 Image appIcon = GetAppIcon();
                 if (appIcon != null)
                 {
-                    g.DrawImage(appIcon, iconX, (this.Height - 18) / 2, 18, 18);
+                    g.DrawImage(appIcon, iconX, (this.Height - APP_ICON_SIZE) / 2, APP_ICON_SIZE, APP_ICON_SIZE);
                 }
                 else
                 {
@@ -667,26 +652,48 @@ namespace MaxApp.Common
             // 6. Language Button
             if (_showLang && !_rectLang.IsEmpty)
             {
-                Color langBg = _isHoverLang ? t.BgElevated : t.BgSecondary;
                 Color langBorder = _isHoverLang ? t.AccentPrimary : t.BorderColor;
-                Color langFg = _isHoverLang ? t.AccentPrimary : t.TextPrimary;
 
                 using (GraphicsPath langPath = GraphicsHelper.GetRoundedRectangle(_rectLang, 4))
                 {
-                    using (SolidBrush langBrush = new SolidBrush(langBg))
+                    using (SolidBrush langBrush = new SolidBrush(t.BgSecondary))
                     {
                         g.FillPath(langBrush, langPath);
                     }
+
+                    // If currently English -> show Vietnamese flag; If currently Vietnamese -> show English flag
+                    bool showVnFlag = !Loc.IsVietnamese;
+                    int iconSize = _rectLang.Width; // 30x30
+                    Image langIcon = SvgFileRenderer.GetLanguageIconImage(showVnFlag, iconSize);
+                    if (langIcon != null)
+                    {
+                        GraphicsState gState = g.Save();
+                        g.SetClip(langPath);
+                        g.DrawImage(langIcon, _rectLang.X, _rectLang.Y, _rectLang.Width, _rectLang.Height);
+                        if (_isHoverLang)
+                        {
+                            using (SolidBrush hoverOverlay = new SolidBrush(Color.FromArgb(40, 255, 255, 255)))
+                            {
+                                g.FillPath(hoverOverlay, langPath);
+                            }
+                        }
+                        g.Restore(gState);
+                    }
+                    else
+                    {
+                        using (Font langFont = ThemeTokens.FontMicro(FontStyle.Bold))
+                        {
+                            Color langFg = _isHoverLang ? t.AccentPrimary : t.TextPrimary;
+                            string langStr = Loc.IsVietnamese ? "EN" : "VI";
+                            TextRenderer.DrawText(g, langStr, langFont, _rectLang, langFg,
+                                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+                        }
+                    }
+
                     using (Pen langPen = new Pen(langBorder, 1f))
                     {
                         g.DrawPath(langPen, langPath);
                     }
-                }
-                using (Font langFont = ThemeTokens.FontMicro(FontStyle.Bold))
-                {
-                    string langStr = Loc.IsVietnamese ? "VI" : "EN";
-                    TextRenderer.DrawText(g, langStr, langFont, _rectLang, langFg,
-                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
                 }
             }
 
@@ -775,6 +782,7 @@ namespace MaxApp.Common
         {
             if (disposing)
             {
+                Loc.OnLanguageChanged -= HandleLanguageChanged;
                 if (_toolTip != null)
                 {
                     try { _toolTip.Dispose(); } catch { }

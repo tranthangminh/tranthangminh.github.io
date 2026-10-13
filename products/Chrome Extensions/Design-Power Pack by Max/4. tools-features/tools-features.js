@@ -42,6 +42,7 @@ function updateUnifiedContextMenus() {
   self._isUpdatingContextMenus = true;
 
   const storageKeys = [
+    'maxLanguage',
     'saveAsFileTypeEnabled',
     'saveAsFileType_jpg',
     'saveAsFileType_png',
@@ -59,17 +60,18 @@ function updateUnifiedContextMenus() {
   ];
 
   chrome.storage.local.get(storageKeys, (data) => {
+    const lang = data.maxLanguage || 'vi';
     // 1. Gather context menu specs from dedicated feature modules
     const captureItems = typeof getScreenCaptureContextMenuSpecs === 'function'
-      ? getScreenCaptureContextMenuSpecs(data)
+      ? getScreenCaptureContextMenuSpecs(data, lang)
       : [];
 
     const searchItems = typeof getImageSearchContextMenuSpecs === 'function'
-      ? getImageSearchContextMenuSpecs(data)
+      ? getImageSearchContextMenuSpecs(data, lang)
       : [];
 
     const saveAsItems = typeof getSaveAsContextMenuSpecs === 'function'
-      ? getSaveAsContextMenuSpecs(data)
+      ? getSaveAsContextMenuSpecs(data, lang)
       : [];
 
     const hasCapture = captureItems.length > 0;
@@ -163,6 +165,15 @@ if (typeof window === 'undefined' && typeof chrome !== 'undefined') {
   if (chrome.runtime && chrome.runtime.onMessage) {
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg && msg.action === 'update_context_menus') {
+        updateUnifiedContextMenus();
+      }
+    });
+  }
+
+  // Listen for language or settings storage changes
+  if (chrome.storage && chrome.storage.onChanged) {
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName === 'local' && changes.maxLanguage) {
         updateUnifiedContextMenus();
       }
     });

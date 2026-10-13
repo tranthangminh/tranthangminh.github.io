@@ -16,9 +16,9 @@
     <div class="recorder-header">
       <div class="recorder-brand">
         <img src="../svg/logo-MAX.svg" class="recorder-logo" alt="MAX Logo">
-        <h1 class="logo-text">MAX <span>Screen Recorder</span></h1>
+        <h1 class="logo-text">MAX <span data-i18n="recorder.title">Screen Recorder</span></h1>
       </div>
-      <button id="close-window-btn" class="recorder-close-btn" title="Close">✕</button>
+      <button id="close-window-btn" class="recorder-close-btn" title="Close" data-i18n-title="common.close">✕</button>
     </div>
 
     <!-- Setup View Container (Symmetrical 4 Left / 4 Right Layout) -->
@@ -27,7 +27,7 @@
         
         <!-- Left Column: 4 Recording Modes -->
         <div class="setup-col-left">
-          <span class="col-section-title">RECORDING MODE</span>
+          <span class="col-section-title" data-i18n="recorder.modeSection">RECORDING MODE</span>
           
           <div class="mode-selector-grid">
             <!-- Mode 1: Chrome Tab -->
@@ -36,8 +36,8 @@
                 <span class="icon-mask" style="mask-image: url('../svg/rec-tab.svg'); -webkit-mask-image: url('../svg/rec-tab.svg');"></span>
               </div>
               <div class="mode-text">
-                <span class="mode-label">Chrome Tab</span>
-                <span class="mode-sub">Active browser tab</span>
+                <span class="mode-label" data-i18n="recorder.modeTab">Chrome Tab</span>
+                <span class="mode-sub" data-i18n="recorder.modeTabSub">Active browser tab</span>
               </div>
             </div>
 
@@ -47,8 +47,8 @@
                 <span class="icon-mask" style="mask-image: url('../svg/rec-screen.svg'); -webkit-mask-image: url('../svg/rec-screen.svg');"></span>
               </div>
               <div class="mode-text">
-                <span class="mode-label">Entire Screen</span>
-                <span class="mode-sub">Entire desktop screen</span>
+                <span class="mode-label" data-i18n="recorder.modeScreen">Entire Screen</span>
+                <span class="mode-sub" data-i18n="recorder.modeScreenSub">Entire desktop screen</span>
               </div>
             </div>
 
@@ -58,8 +58,8 @@
                 <span class="icon-mask" style="mask-image: url('../svg/rec-window.svg'); -webkit-mask-image: url('../svg/rec-window.svg');"></span>
               </div>
               <div class="mode-text">
-                <span class="mode-label">Window</span>
-                <span class="mode-sub">Application window</span>
+                <span class="mode-label" data-i18n="recorder.modeWindow">Window</span>
+                <span class="mode-sub" data-i18n="recorder.modeWindowSub">Application window</span>
               </div>
             </div>
 
@@ -69,8 +69,8 @@
                 <span class="icon-mask" style="mask-image: url('../svg/rec-camera.svg'); -webkit-mask-image: url('../svg/rec-camera.svg');"></span>
               </div>
               <div class="mode-text">
-                <span class="mode-label">Webcam Only</span>
-                <span class="mode-sub">Camera feed only</span>
+                <span class="mode-label" data-i18n="recorder.modeCamera">Webcam Only</span>
+                <span class="mode-sub" data-i18n="recorder.modeCameraSub">Camera feed only</span>
               </div>
             </div>
           </div>
@@ -78,7 +78,7 @@
 
         <!-- Right Column: 4 Settings (System Sound, Mic, Cam, Format) -->
         <div class="setup-col-right">
-          <span class="col-section-title">INPUTS & SETTINGS</span>
+          <span class="col-section-title" data-i18n="recorder.inputsSection">INPUTS & SETTINGS</span>
 
           <div class="settings-group">
             <!-- Card 1: System Sound -->
@@ -88,8 +88,8 @@
                   <span class="icon-mask" style="mask-image: url('../svg/rec-syssound.svg'); -webkit-mask-image: url('../svg/rec-syssound.svg');"></span>
                 </div>
                 <div class="setting-info">
-                  <span class="setting-title">System Sound</span>
-                  <span class="setting-subtitle">Tab & system audio</span>
+                  <span class="setting-title" data-i18n="recorder.sysSound">System Sound</span>
+                  <span class="setting-subtitle" data-i18n="recorder.sysSoundSub">Tab & system audio</span>
                 </div>
               </div>
               <label class="toggle-switch">
@@ -105,9 +105,9 @@
                   <span class="icon-mask" style="mask-image: url('../svg/rec-mic.svg'); -webkit-mask-image: url('../svg/rec-mic.svg');"></span>
                 </div>
                 <div class="setting-info">
-                  <span class="setting-title">Microphone</span>
+                  <span class="setting-title" data-i18n="recorder.microphone">Microphone</span>
                   <select id="select-mic" class="device-select" disabled>
-                    <option value="">Default Microphone</option>
+                    <option value="" data-i18n="recorder.defaultMic">Default Microphone</option>
                   </select>
                 </div>
               </div>
@@ -124,9 +124,9 @@
                   <span class="icon-mask" style="mask-image: url('../svg/rec-webcam.svg'); -webkit-mask-image: url('../svg/rec-webcam.svg');"></span>
                 </div>
                 <div class="setting-info">
-                  <span class="setting-title">Webcam Camera</span>
+                  <span class="setting-title" data-i18n="recorder.webcamCamera">Webcam Camera</span>
                   <select id="select-cam" class="device-select" disabled>
-                    <option value="">Default Camera</option>
+                    <option value="" data-i18n="recorder.defaultCam">Default Camera</option>
                   </select>
                 </div>
               </div>
@@ -143,8 +143,8 @@
                   <span class="icon-mask" style="mask-image: url('../svg/rec-format.svg'); -webkit-mask-image: url('../svg/rec-format.svg');"></span>
                 </div>
                 <div class="setting-info">
-                  <span class="setting-title">Format</span>
-                  <span class="setting-subtitle">Output extension</span>
+                  <span class="setting-title" data-i18n="recorder.format">Format</span>
+                  <span class="setting-subtitle" data-i18n="recorder.formatSub">Output extension</span>
                 </div>
               </div>
               <div class="format-pill-group">
@@ -160,7 +160,7 @@
       <!-- Prominent Full-Width Start Recording Action Button -->
       <button id="start-record-btn" class="start-record-btn">
         <span class="rec-btn-dot"></span>
-        <span>Start Recording</span>
+        <span data-i18n="recorder.startRecording">Start Recording</span>
       </button>
     </div>
 
@@ -171,7 +171,7 @@
         <div class="record-view-header">
           <div class="active-record-badge">
             <span class="record-pulse-dot"></span>
-            <span class="badge-label">RECORDING LIVE</span>
+            <span class="badge-label" data-i18n="recorder.recordingLive">RECORDING LIVE</span>
           </div>
           <span id="recording-timer" class="recording-timer-text">00:00</span>
         </div>
@@ -181,26 +181,27 @@
           <video id="live-video-preview" class="live-preview-player" autoplay muted playsinline></video>
           <div class="live-watermark">
             <span class="watermark-dot"></span>
-            <span>LIVE FEED</span>
+            <span data-i18n="recorder.liveFeed">LIVE FEED</span>
           </div>
         </div>
 
         <!-- Action Control Buttons -->
         <div class="active-record-actions">
-          <button id="pause-btn" class="act-btn pause-btn" title="Pause / Resume">
-            <span id="pause-icon">⏸</span> <span id="pause-text">Pause</span>
+          <button id="pause-btn" class="act-btn pause-btn" title="Pause / Resume" data-i18n-title="recorder.pauseResume">
+            <span id="pause-icon">⏸</span> <span id="pause-text" data-i18n="recorder.pause">Pause</span>
           </button>
-          <button id="stop-btn" class="act-btn stop-btn" title="Stop & Save Video">
-            <span>⏹</span> <span>Stop & Save</span>
+          <button id="stop-btn" class="act-btn stop-btn" title="Stop & Save Video" data-i18n-title="recorder.stopSaveVideo">
+            <span>⏹</span> <span data-i18n="recorder.stopAndSave">Stop & Save</span>
           </button>
-          <button id="cancel-btn" class="act-btn cancel-btn" title="Cancel">
-            <span>✕</span> <span>Cancel</span>
+          <button id="cancel-btn" class="act-btn cancel-btn" title="Cancel" data-i18n-title="common.cancel">
+            <span>✕</span> <span data-i18n="common.cancel">Cancel</span>
           </button>
         </div>
       </div>
     </div>
   </div>
 
+  <script src="../common/locales.js"></script>
   <script src="../common/storage_schema.js"></script>
   <script src="../common/common_utils.js"></script>
   <script src="screencapture_recorder.js"></script>

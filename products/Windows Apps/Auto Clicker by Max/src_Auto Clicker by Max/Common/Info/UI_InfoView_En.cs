@@ -20,14 +20,10 @@ namespace MaxApp.Common
         private Panel picLogo;
         private RoundedButton btnCheckUpdates;
         private Label lblUpdateStatus;
-        private Label lblLangTitle;
-        private RoundedButton btnLangEn;
-        private RoundedButton btnLangVi;
 
         // Feature Toggles
         private bool _showKoFi = true;
         private bool _showCheckUpdates = true;
-        private bool _showLanguageSelector = true;
 
         public bool ShowKoFi
         {
@@ -39,12 +35,6 @@ namespace MaxApp.Common
         {
             get { return _showCheckUpdates; }
             set { if (_showCheckUpdates != value) { _showCheckUpdates = value; RelayoutContent(); } }
-        }
-
-        public bool ShowLanguageSelector
-        {
-            get { return _showLanguageSelector; }
-            set { if (_showLanguageSelector != value) { _showLanguageSelector = value; RelayoutContent(); } }
         }
 
         public InfoView_En()
@@ -87,7 +77,7 @@ namespace MaxApp.Common
 
             lblInfoAuthor = new Label
             {
-                Text = Loc.DevelopedBy,
+                Text = "This product is developed by Trần Thắng Minh (Max).",
                 Location = new Point(20, 46),
                 Size = new Size(348, 20),
                 Font = ThemeTokens.FontBase(FontStyle.Regular),
@@ -96,7 +86,7 @@ namespace MaxApp.Common
 
             lblInfoContact = new Label
             {
-                Text = Loc.FeedbackAndSupport,
+                Text = "For feedback, feature requests, or support:",
                 Location = new Point(20, 68),
                 Size = new Size(348, 18),
                 Font = ThemeTokens.FontBase(FontStyle.Regular),
@@ -231,44 +221,12 @@ namespace MaxApp.Common
                 Font = ThemeTokens.FontSmall(FontStyle.Italic),
                 UseMnemonic = false
             };
-
-            lblLangTitle = new Label
-            {
-                Text = "Language / Ngôn ngữ:",
-                Location = new Point(48, 422),
-                Size = new Size(160, 26),
-                TextAlign = ContentAlignment.MiddleRight,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                UseMnemonic = false
-            };
-
-            btnLangEn = new RoundedButton
-            {
-                Text = "EN",
-                Location = new Point(216, 420),
-                Size = new Size(54, 28),
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnLangEn.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.English;
-
-            btnLangVi = new RoundedButton
-            {
-                Text = "VI",
-                Location = new Point(278, 420),
-                Size = new Size(54, 28),
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnLangVi.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.Vietnamese;
-
             this.Controls.AddRange(new Control[] {
                 picAppIcon, lblInfoTitle, lblInfoAuthor, lblInfoContact,
                 lblFbTitle, linkFb, lblWebTitle, linkWeb,
                 lblSupportTitle, linkSupport,
                 picLogo,
-                btnCheckUpdates, lblUpdateStatus,
-                lblLangTitle, btnLangEn, btnLangVi
+                btnCheckUpdates, lblUpdateStatus
             });
         }
 
@@ -289,10 +247,6 @@ namespace MaxApp.Common
 
             if (btnCheckUpdates != null) btnCheckUpdates.Visible = _showCheckUpdates;
             if (lblUpdateStatus != null) lblUpdateStatus.Visible = _showCheckUpdates;
-
-            if (lblLangTitle != null) lblLangTitle.Visible = _showLanguageSelector;
-            if (btnLangEn != null) btnLangEn.Visible = _showLanguageSelector;
-            if (btnLangVi != null) btnLangVi.Visible = _showLanguageSelector;
 
             int curY = 90;
             if (lblFbTitle != null) lblFbTitle.Location = new Point(20, curY);
@@ -333,16 +287,6 @@ namespace MaxApp.Common
                 lblUpdateStatus.Location = new Point(20, curY);
                 lblUpdateStatus.Size = new Size(Math.Max(200, this.Width - 40), 18);
                 curY += 18;
-            }
-
-            if (lblLangTitle != null && btnLangEn != null && btnLangVi != null)
-            {
-                int langY = Math.Max(curY + 16, this.Height - 48);
-                int totalLangW = 160 + 8 + 54 + 8 + 54; // 284
-                int langStartX = Math.Max(10, (this.Width - totalLangW) / 2);
-                lblLangTitle.Location = new Point(langStartX, langY);
-                btnLangEn.Location = new Point(langStartX + 168, langY - 1);
-                btnLangVi.Location = new Point(langStartX + 230, langY - 1);
             }
 
             Invalidate();
@@ -389,33 +333,6 @@ namespace MaxApp.Common
                 btnCheckUpdates.BorderRadius = t.RadiusMd;
             }
             if (lblUpdateStatus != null) lblUpdateStatus.ForeColor = t.TextSecondary;
-            if (lblLangTitle != null) lblLangTitle.ForeColor = t.TextSecondary;
-
-            UpdateLanguageButtonsStyle();
-        }
-
-        public void UpdateLanguageButtonsStyle()
-        {
-            ThemeTokens t = _theme ?? ThemeTokens.Current ?? ThemeTokens.DarkTheme();
-            bool isVi = Loc.IsVietnamese;
-
-            if (btnLangEn != null)
-            {
-                btnLangEn.NormalColor = !isVi ? t.AccentPrimary : t.BgElevated;
-                btnLangEn.HoverColor = !isVi ? t.AccentPrimaryHover : t.AccentPrimary;
-                btnLangEn.ForeColor = !isVi ? Color.White : t.TextSecondary;
-                btnLangEn.BorderRadius = t.RadiusSm;
-                btnLangEn.Invalidate();
-            }
-
-            if (btnLangVi != null)
-            {
-                btnLangVi.NormalColor = isVi ? t.AccentPrimary : t.BgElevated;
-                btnLangVi.HoverColor = isVi ? t.AccentPrimaryHover : t.AccentPrimary;
-                btnLangVi.ForeColor = isVi ? Color.White : t.TextSecondary;
-                btnLangVi.BorderRadius = t.RadiusSm;
-                btnLangVi.Invalidate();
-            }
         }
     }
 }

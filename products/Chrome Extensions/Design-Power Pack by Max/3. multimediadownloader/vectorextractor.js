@@ -250,7 +250,9 @@ function filterAndRenderVectors() {
   }
 
   if (filtered.length === 0) {
-    const text = searchQuery ? 'No vectors found matching your search.' : 'No vectors found on this page.';
+    const text = searchQuery
+      ? (window.i18n ? window.i18n.t('downloader.noVectorsSearch') : 'No vectors found matching your search.')
+      : (window.i18n ? window.i18n.t('downloader.emptyVectors') : 'No vector SVG elements found on this page.');
     gridContainer.innerHTML = `
       <div class="loading-state" style="animation: none;">
         <p>${text}</p>
@@ -258,6 +260,8 @@ function filterAndRenderVectors() {
     `;
     return;
   }
+
+  const t = (k, def) => (window.i18n ? window.i18n.t(k, def) : def);
 
   gridContainer.innerHTML = filtered.map((vec) => {
     const originalIndex = allVectors.findIndex(v => v === vec);
@@ -291,16 +295,16 @@ function filterAndRenderVectors() {
       badgeLeft: typeLabel,
       badgeRight: sizeLabel,
       actionsHtml: `
-        <button class="btn btn-ghost btn-icon preview-btn" title="Preview vector">
+        <button class="btn btn-ghost btn-icon preview-btn" title="${t('downloader.previewVector', 'Preview vector')}" data-i18n-title="downloader.previewVector">
           <span class="icon-mask" style="mask-image: url('svg/eye.svg'); -webkit-mask-image: url('svg/eye.svg');"></span>
         </button>
-        <button class="btn btn-ghost btn-icon copy-code-btn" title="Copy SVG Code">
+        <button class="btn btn-ghost btn-icon copy-code-btn" title="${t('downloader.copySvgCode', 'Copy SVG Code')}" data-i18n-title="downloader.copySvgCode">
           <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span>
         </button>
-        <button class="btn btn-ghost btn-icon open-tab-btn" title="Open in new tab">
+        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}" data-i18n-title="downloader.openNewTab">
           <span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span>
         </button>
-        <button class="btn btn-ghost btn-icon download-btn" title="Download SVG file">
+        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadSvgFile', 'Download SVG file')}" data-i18n-title="downloader.downloadSvgFile">
           <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span>
         </button>
       `
@@ -314,9 +318,13 @@ function filterAndRenderVectors() {
   if (countEl) {
     const totalActive = allVectors.filter(v => !v.failed).length;
     if (searchQuery) {
-      countEl.textContent = `${filtered.length} of ${totalActive} vectors found`;
+      countEl.textContent = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('downloader.foundVectorsOf', '{0} of {1} vectors found', [filtered.length, totalActive])
+        : `${filtered.length} of ${totalActive} vectors found`;
     } else {
-      countEl.textContent = `${totalActive} vectors found`;
+      countEl.textContent = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('downloader.foundVectors', '{0} vectors found', [totalActive])
+        : `${totalActive} vectors found`;
     }
   }
 
@@ -345,10 +353,15 @@ function updateVectorFilterCounts() {
     }
   });
 
-  layoutSelect.options[0].text = `All Layouts (${active.length})`;
-  setOpt(layoutSelect.options[1], square, 'Square');
-  setOpt(layoutSelect.options[2], wide, 'Wide');
-  setOpt(layoutSelect.options[3], tall, 'Tall');
+  const allLayoutsLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.allLayouts') : 'All Layouts';
+  const squareLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.square') : 'Square';
+  const wideLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.wide') : 'Wide';
+  const tallLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.tall') : 'Tall';
+
+  layoutSelect.options[0].text = `${allLayoutsLabel} (${active.length})`;
+  setOpt(layoutSelect.options[1], square, squareLabel);
+  setOpt(layoutSelect.options[2], wide, wideLabel);
+  setOpt(layoutSelect.options[3], tall, tallLabel);
 }
 
 // Asynchronously resolve dimension for URL vector images
@@ -384,7 +397,9 @@ function resolveVectorDimensions(vectorList) {
         const countEl = document.getElementById('vector-count-summary');
         if (countEl) {
           const totalActive = allVectors.filter(v => !v.failed).length;
-          countEl.textContent = `${totalActive} vectors found`;
+          countEl.textContent = (window.i18n && typeof window.i18n.t === 'function')
+            ? window.i18n.t('downloader.foundVectors', '{0} vectors found', [totalActive])
+            : `${totalActive} vectors found`;
         }
       }
     };

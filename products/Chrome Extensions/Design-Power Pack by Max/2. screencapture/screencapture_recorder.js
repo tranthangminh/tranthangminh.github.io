@@ -13,8 +13,18 @@ let audioContextInstance = null;
 let selectedMode = 'tab'; // 'tab', 'screen', 'camera'
 let selectedFormat = 'mp4';
 
+const t = (k, fb) => (typeof window !== 'undefined' && window.i18n && window.i18n.t) ? window.i18n.t(k, fb) : fb;
+
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+    window.i18n.applyTranslations();
+  }
+  window.addEventListener('maxLanguageChanged', () => {
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations();
+    }
+  });
   initRecorderApp();
 });
 
@@ -155,22 +165,22 @@ async function populateDeviceSelects() {
         micCount++;
         const option = document.createElement('option');
         option.value = device.deviceId;
-        option.textContent = device.label || `Microphone ${micCount}`;
+        option.textContent = device.label || `${t('recorder.microphone', 'Microphone')} ${micCount}`;
         selectMic.appendChild(option);
       } else if (device.kind === 'videoinput' && selectCam) {
         camCount++;
         const option = document.createElement('option');
         option.value = device.deviceId;
-        option.textContent = device.label || `Camera ${camCount}`;
+        option.textContent = device.label || `${t('recorder.webcamCamera', 'Camera')} ${camCount}`;
         selectCam.appendChild(option);
       }
     });
 
     if (micCount === 0 && selectMic) {
-      selectMic.innerHTML = '<option value="">Default Microphone</option>';
+      selectMic.innerHTML = `<option value="">${t('recorder.defaultMic', 'Default Microphone')}</option>`;
     }
     if (camCount === 0 && selectCam) {
-      selectCam.innerHTML = '<option value="">Default Camera</option>';
+      selectCam.innerHTML = `<option value="">${t('recorder.defaultCam', 'Default Camera')}</option>`;
     }
   } catch (err) {
     console.warn('Could not enumerate media devices:', err);
@@ -393,12 +403,12 @@ function togglePauseResume() {
     mediaRecorder.pause();
     isPaused = true;
     if (pauseIcon) pauseIcon.textContent = '▶';
-    if (pauseText) pauseText.textContent = 'Resume';
+    if (pauseText) pauseText.textContent = t('recorder.resume', 'Resume');
   } else if (mediaRecorder.state === 'paused') {
     mediaRecorder.resume();
     isPaused = false;
     if (pauseIcon) pauseIcon.textContent = '⏸';
-    if (pauseText) pauseText.textContent = 'Pause';
+    if (pauseText) pauseText.textContent = t('recorder.pause', 'Pause');
   }
 }
 

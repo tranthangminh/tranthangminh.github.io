@@ -62,16 +62,25 @@ function handleAutoCapture() {
 function applyTheme(theme) {
   const themeToggleBtn = document.getElementById('theme-toggle-btn');
   const iconMask = themeToggleBtn ? themeToggleBtn.querySelector('.icon-mask') : null;
-  if (theme === 'light') {
+  const isLight = (theme === 'light');
+  if (isLight) {
     document.documentElement.setAttribute('data-theme', 'light');
-    if (themeToggleBtn) themeToggleBtn.title = "Switch to Dark Theme";
+    if (themeToggleBtn) {
+      themeToggleBtn.title = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('header.switchToDark')
+        : 'Switch to Dark Theme';
+    }
     if (iconMask) {
       iconMask.style.maskImage = "url('svg/dark-mode.svg')";
       iconMask.style.webkitMaskImage = "url('svg/dark-mode.svg')";
     }
   } else {
     document.documentElement.removeAttribute('data-theme');
-    if (themeToggleBtn) themeToggleBtn.title = "Switch to Light Theme";
+    if (themeToggleBtn) {
+      themeToggleBtn.title = (window.i18n && typeof window.i18n.t === 'function')
+        ? window.i18n.t('header.switchToLight')
+        : 'Switch to Light Theme';
+    }
     if (iconMask) {
       iconMask.style.maskImage = "url('svg/light-mode.svg')";
       iconMask.style.webkitMaskImage = "url('svg/light-mode.svg')";
@@ -98,6 +107,12 @@ function setupThemeToggle() {
     if (area === 'local' && changes.maxTheme) {
       applyTheme(changes.maxTheme.newValue);
     }
+  });
+
+  // Re-sync tooltip when language changes
+  window.addEventListener('maxLanguageChanged', () => {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    applyTheme(isLight ? 'light' : 'dark');
   });
 }
 

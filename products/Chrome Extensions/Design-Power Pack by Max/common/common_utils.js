@@ -219,12 +219,16 @@ function updateDownloadBtnState(btnId, count) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
 
+  const downloadLabel = (typeof window !== 'undefined' && window.i18n && typeof window.i18n.t === 'function')
+    ? window.i18n.t('downloader.downloadSelected')
+    : 'Download';
+
   if (count > 0) {
-    btn.textContent = `Download (${count})`;
+    btn.textContent = `${downloadLabel} (${count})`;
     btn.classList.remove('disabled');
     btn.disabled = false;
   } else {
-    btn.textContent = 'Download (0)';
+    btn.textContent = `${downloadLabel} (0)`;
     btn.classList.add('disabled');
     btn.disabled = true;
   }

@@ -1,5 +1,7 @@
 // Image Edit Overlay Export Operations Module (image_previewmodal-editor-export.js)
 
+const t = (k, fb) => (typeof window !== 'undefined' && window.i18n && window.i18n.t) ? window.i18n.t(k, fb) : fb;
+
 function saveEditChanges() {
   if (typeof commitObjectSession === 'function') commitObjectSession();
   const modalImg = document.getElementById('modal-image-preview');
@@ -35,7 +37,7 @@ function saveEditChanges() {
       document.body.removeChild(a);
     }
 
-    if (window.showToast) window.showToast('Downloaded edited image!');
+    if (window.showToast) window.showToast(t('editor.toastDownloaded', 'Downloaded edited image!'));
   };
 
   bgImg.onerror = () => {
@@ -50,7 +52,7 @@ function saveEditChanges() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    if (window.showToast) window.showToast('Downloaded edited image!');
+    if (window.showToast) window.showToast(t('editor.toastDownloaded', 'Downloaded edited image!'));
   };
 
   bgImg.src = cleanBgUrl;
@@ -70,20 +72,20 @@ function copyEditedImage() {
   const copyBlobToClipboard = (canvas) => {
     canvas.toBlob(async (blob) => {
       if (!blob) {
-        if (window.showToast) window.showToast('Failed to copy image');
+        if (window.showToast) window.showToast(t('editor.toastFailedCopy', 'Failed to copy image'));
         return;
       }
       try {
         if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
           const item = new ClipboardItem({ 'image/png': blob });
           await navigator.clipboard.write([item]);
-          if (window.showToast) window.showToast('Copied edited image to clipboard!');
+          if (window.showToast) window.showToast(t('editor.toastCopied', 'Copied edited image to clipboard!'));
         } else {
-          if (window.showToast) window.showToast('Clipboard API not supported');
+          if (window.showToast) window.showToast(t('editor.toastClipboardNotSupported', 'Clipboard API not supported'));
         }
       } catch (err) {
         console.error('Clipboard write error:', err);
-        if (window.showToast) window.showToast('Failed to copy image to clipboard');
+        if (window.showToast) window.showToast(t('editor.toastFailedCopy', 'Failed to copy image to clipboard'));
       }
     }, 'image/png');
   };

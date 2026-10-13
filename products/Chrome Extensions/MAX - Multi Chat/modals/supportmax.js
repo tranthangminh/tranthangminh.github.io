@@ -94,12 +94,22 @@ function initSupportMax() {
         return;
       }
 
-      // 2. Check if user clicked anywhere on Support MAX card or donation buttons
-      const card = e.target.closest('.donate-card, .support-max-container, .donate-btn, #donate-btn, #donate-btn-context, #donate-btn-nudge, #donate-nudge-link');
-      if (card) {
+      // 2. Only trigger support link when clicking dedicated donate buttons or links
+      const donateBtn = e.target.closest('.donate-btn, #donate-btn, #donate-btn-context, #donate-btn-nudge, #donate-nudge-link, #donate-btn-info-modal');
+      if (donateBtn) {
         e.preventDefault();
         e.stopPropagation();
         openSupportLink();
+      }
+    });
+
+    // Close floating donate nudge on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const nudgeEl = document.getElementById('donate-nudge');
+        if (nudgeEl && !nudgeEl.classList.contains('hidden')) {
+          hideDonateNudge();
+        }
       }
     });
   }

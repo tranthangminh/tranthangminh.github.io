@@ -28,17 +28,18 @@ function performTinEyeImageSearch(imageUrl) {
 }
 
 // ── Context Menu Spec Provider ──
-function getImageSearchContextMenuSpecs(data) {
+function getImageSearchContextMenuSpecs(data, lang = 'vi') {
   const searchMaster = data.searchImageMasterEnabled !== false;
   const yandexEnabled = searchMaster && (data.yandexSearchEnabled !== false);
   const tineyeEnabled = searchMaster && (data.tineyeSearchEnabled !== false);
 
+  const isVi = lang === 'vi';
   const items = [];
   if (yandexEnabled) {
     items.push({
       id: 'yandex_search_image',
       parentId: 'max_tools_parent',
-      title: '🔎 Search Image on Yandex',
+      title: isVi ? '🔎 Tìm ảnh trên Yandex' : '🔎 Search Image on Yandex',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }
@@ -46,7 +47,7 @@ function getImageSearchContextMenuSpecs(data) {
     items.push({
       id: 'tineye_search_image',
       parentId: 'max_tools_parent',
-      title: '🔎 Search Image on TinEye',
+      title: isVi ? '🔎 Tìm ảnh trên TinEye' : '🔎 Search Image on TinEye',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }

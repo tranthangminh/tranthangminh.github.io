@@ -211,16 +211,17 @@ function renderChangelog(container, rows) {
 
 function getCategoryBadge(cat) {
   const category = (cat || '').toLowerCase().trim();
+  const t = (k, def) => ((window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t(k, def) : def);
   if (category === 'feature' || category === 'new') {
-    return `<span class="badge changelog-type-badge feature" title="New Feature">✨</span>`;
+    return `<span class="badge changelog-type-badge feature" title="${t('changelog.badgeFeature', 'New Feature')}">✨</span>`;
   } else if (category === 'tweak' || category === 'adjust' || category === 'improvement') {
-    return `<span class="badge changelog-type-badge tweak" title="Feature Tweak & Improvement">🛠️</span>`;
+    return `<span class="badge changelog-type-badge tweak" title="${t('changelog.badgeTweak', 'Feature Tweak & Improvement')}">🛠️</span>`;
   } else if (category === 'bug' || category === 'fix') {
-    return `<span class="badge changelog-type-badge bug" title="Bug Fix">🐛</span>`;
+    return `<span class="badge changelog-type-badge bug" title="${t('changelog.badgeBug', 'Bug Fix')}">🐛</span>`;
   } else if (category === 'optimize' || category === 'perf' || category === 'speed') {
-    return `<span class="badge changelog-type-badge optimize" title="Performance Optimization">⚡</span>`;
+    return `<span class="badge changelog-type-badge optimize" title="${t('changelog.badgeOptimize', 'Performance Optimization')}">⚡</span>`;
   }
-  return `<span class="badge changelog-type-badge other" title="Other Updates">📌</span>`;
+  return `<span class="badge changelog-type-badge other" title="${t('changelog.badgeOther', 'Other Updates')}">📌</span>`;
 }
 
 function escapeHTML(str) {

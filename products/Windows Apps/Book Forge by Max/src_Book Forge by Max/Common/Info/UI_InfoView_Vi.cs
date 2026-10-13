@@ -23,15 +23,11 @@ namespace MaxApp.Common
         private Panel picLogo;
         private RoundedButton btnCheckUpdates;
         private Label lblUpdateStatus;
-        private Label lblLangTitle;
-        private RoundedButton btnLangEn;
-        private RoundedButton btnLangVi;
 
         // Feature Toggles
         private bool _showDonationQr = true;
         private bool _showBunGioHeo = true;
         private bool _showCheckUpdates = true;
-        private bool _showLanguageSelector = true;
 
         public bool ShowDonationQr
         {
@@ -49,12 +45,6 @@ namespace MaxApp.Common
         {
             get { return _showCheckUpdates; }
             set { if (_showCheckUpdates != value) { _showCheckUpdates = value; RelayoutContent(); } }
-        }
-
-        public bool ShowLanguageSelector
-        {
-            get { return _showLanguageSelector; }
-            set { if (_showLanguageSelector != value) { _showLanguageSelector = value; RelayoutContent(); } }
         }
 
         public InfoView_Vi()
@@ -97,7 +87,7 @@ namespace MaxApp.Common
 
             lblInfoAuthor = new Label
             {
-                Text = Loc.DevelopedBy,
+                Text = "Sản phẩm này được phát triển bởi Trần Thắng Minh (Max).",
                 Location = new Point(20, 46),
                 Size = new Size(348, 20),
                 Font = ThemeTokens.FontBase(FontStyle.Regular),
@@ -106,7 +96,7 @@ namespace MaxApp.Common
 
             lblInfoContact = new Label
             {
-                Text = Loc.FeedbackAndSupport,
+                Text = "Góp ý, yêu cầu tính năng hoặc hỗ trợ:",
                 Location = new Point(20, 68),
                 Size = new Size(348, 18),
                 Font = ThemeTokens.FontBase(FontStyle.Regular),
@@ -169,7 +159,7 @@ namespace MaxApp.Common
 
             linkSupport = new LinkLabel
             {
-                Text = Loc.ScanQr,
+                Text = "[Quét mã QR Ngân Hàng ↗]",
                 Location = new Point(136, 134),
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
@@ -186,7 +176,7 @@ namespace MaxApp.Common
             // Bun Gio Heo Minh Nhat
             lblBunGioHeoPrefix = new Label
             {
-                Text = Loc.BunGioHeoPrefix,
+                Text = "• Ủng hộ ",
                 Location = new Point(20, 156),
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
@@ -195,7 +185,7 @@ namespace MaxApp.Common
 
             linkBunGioHeo = new LinkLabel
             {
-                Text = Loc.BunGioHeoName,
+                Text = "Bún Giò Heo Minh Nhật",
                 Location = new Point(74, 156),
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
@@ -209,7 +199,7 @@ namespace MaxApp.Common
 
             lblBunGioHeoSuffix = new Label
             {
-                Text = Loc.BunGioHeoSuffix,
+                Text = "nhà tui",
                 Location = new Point(214, 156),
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
@@ -234,7 +224,7 @@ namespace MaxApp.Common
 
             btnCheckUpdates = new RoundedButton
             {
-                Text = Loc.CheckForUpdates,
+                Text = "Kiểm tra Cập nhật",
                 Location = new Point((388 - 180) / 2, 344),
                 Size = new Size(180, 32),
                 ForeColor = Color.White,
@@ -245,7 +235,7 @@ namespace MaxApp.Common
             {
                 btnCheckUpdates.Enabled = false;
                 if (_theme != null) lblUpdateStatus.ForeColor = _theme.TextSecondary;
-                lblUpdateStatus.Text = Loc.CheckingUpdates;
+                lblUpdateStatus.Text = "Đang kiểm tra cập nhật...";
                 UpdateChecker.CheckForUpdatesAsync(true, this.FindForm(), (res) =>
                 {
                     btnCheckUpdates.Enabled = true;
@@ -254,18 +244,18 @@ namespace MaxApp.Common
                         if (res.HasUpdate)
                         {
                             if (_theme != null) lblUpdateStatus.ForeColor = _theme.CYellow;
-                            lblUpdateStatus.Text = string.Format(Loc.UpdateAvailable, res.RemoteVersion);
+                            lblUpdateStatus.Text = string.Format("Đã có phiên bản mới: v{0}!", res.RemoteVersion);
                         }
                         else
                         {
                             if (_theme != null) lblUpdateStatus.ForeColor = _theme.CGreen;
-                            lblUpdateStatus.Text = string.Format(Loc.LatestVersion, AppInfo.Version);
+                            lblUpdateStatus.Text = string.Format("Bạn đang dùng phiên bản mới nhất (v{0}).", AppInfo.Version);
                         }
                     }
                     else
                     {
                         if (_theme != null) lblUpdateStatus.ForeColor = _theme.Danger;
-                        lblUpdateStatus.Text = Loc.CheckFailed;
+                        lblUpdateStatus.Text = "Kiểm tra thất bại. Vui lòng thử lại sau.";
                     }
                 });
             };
@@ -279,45 +269,13 @@ namespace MaxApp.Common
                 Font = ThemeTokens.FontSmall(FontStyle.Italic),
                 UseMnemonic = false
             };
-
-            lblLangTitle = new Label
-            {
-                Text = Loc.LanguageLabel,
-                Location = new Point(48, 422),
-                Size = new Size(160, 26),
-                TextAlign = ContentAlignment.MiddleRight,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                UseMnemonic = false
-            };
-
-            btnLangEn = new RoundedButton
-            {
-                Text = "EN",
-                Location = new Point(216, 420),
-                Size = new Size(54, 28),
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnLangEn.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.English;
-
-            btnLangVi = new RoundedButton
-            {
-                Text = "VI",
-                Location = new Point(278, 420),
-                Size = new Size(54, 28),
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnLangVi.Click += (s, e) => Loc.CurrentLanguage = AppLanguage.Vietnamese;
-
             this.Controls.AddRange(new Control[] {
                 picAppIcon, lblInfoTitle, lblInfoAuthor, lblInfoContact,
                 lblFbTitle, linkFb, lblWebTitle, linkWeb,
                 lblSupportTitle, linkSupport,
                 lblBunGioHeoPrefix, linkBunGioHeo, lblBunGioHeoSuffix,
                 picLogo,
-                btnCheckUpdates, lblUpdateStatus,
-                lblLangTitle, btnLangEn, btnLangVi
+                btnCheckUpdates, lblUpdateStatus
             });
         }
 
@@ -342,10 +300,6 @@ namespace MaxApp.Common
 
             if (btnCheckUpdates != null) btnCheckUpdates.Visible = _showCheckUpdates;
             if (lblUpdateStatus != null) lblUpdateStatus.Visible = _showCheckUpdates;
-
-            if (lblLangTitle != null) lblLangTitle.Visible = _showLanguageSelector;
-            if (btnLangEn != null) btnLangEn.Visible = _showLanguageSelector;
-            if (btnLangVi != null) btnLangVi.Visible = _showLanguageSelector;
 
             int curY = 90;
             if (lblFbTitle != null) lblFbTitle.Location = new Point(20, curY);
@@ -394,16 +348,6 @@ namespace MaxApp.Common
                 lblUpdateStatus.Location = new Point(20, curY);
                 lblUpdateStatus.Size = new Size(Math.Max(200, this.Width - 40), 18);
                 curY += 18;
-            }
-
-            if (lblLangTitle != null && btnLangEn != null && btnLangVi != null)
-            {
-                int langY = Math.Max(curY + 16, this.Height - 48);
-                int totalLangW = 160 + 8 + 54 + 8 + 54; // 284
-                int langStartX = Math.Max(10, (this.Width - totalLangW) / 2);
-                lblLangTitle.Location = new Point(langStartX, langY);
-                btnLangEn.Location = new Point(langStartX + 168, langY - 1);
-                btnLangVi.Location = new Point(langStartX + 230, langY - 1);
             }
 
             Invalidate();
@@ -458,33 +402,6 @@ namespace MaxApp.Common
                 btnCheckUpdates.BorderRadius = t.RadiusMd;
             }
             if (lblUpdateStatus != null) lblUpdateStatus.ForeColor = t.TextSecondary;
-            if (lblLangTitle != null) lblLangTitle.ForeColor = t.TextSecondary;
-
-            UpdateLanguageButtonsStyle();
-        }
-
-        public void UpdateLanguageButtonsStyle()
-        {
-            ThemeTokens t = _theme ?? ThemeTokens.Current ?? ThemeTokens.DarkTheme();
-            bool isVi = Loc.IsVietnamese;
-
-            if (btnLangEn != null)
-            {
-                btnLangEn.NormalColor = !isVi ? t.AccentPrimary : t.BgElevated;
-                btnLangEn.HoverColor = !isVi ? t.AccentPrimaryHover : t.AccentPrimary;
-                btnLangEn.ForeColor = !isVi ? Color.White : t.TextSecondary;
-                btnLangEn.BorderRadius = t.RadiusSm;
-                btnLangEn.Invalidate();
-            }
-
-            if (btnLangVi != null)
-            {
-                btnLangVi.NormalColor = isVi ? t.AccentPrimary : t.BgElevated;
-                btnLangVi.HoverColor = isVi ? t.AccentPrimaryHover : t.AccentPrimary;
-                btnLangVi.ForeColor = isVi ? Color.White : t.TextSecondary;
-                btnLangVi.BorderRadius = t.RadiusSm;
-                btnLangVi.Invalidate();
-            }
         }
     }
 }

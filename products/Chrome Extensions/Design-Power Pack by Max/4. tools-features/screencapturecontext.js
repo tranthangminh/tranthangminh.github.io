@@ -507,19 +507,20 @@ async function removeWebProgressHUDBg(tabId, delayMs = 600) {
 }
 
 // ── Context Menu Spec Provider ──
-function getScreenCaptureContextMenuSpecs(data) {
+function getScreenCaptureContextMenuSpecs(data, lang = 'vi') {
   const captureMaster = data.screenCaptureContextEnabled !== false;
   const captureArea = captureMaster && (data.captureContext_area !== false);
   const captureVisible = captureMaster && (data.captureContext_visible !== false);
   const captureFull = captureMaster && (data.captureContext_full !== false);
   const captureRecord = captureMaster && (data.captureContext_record !== false);
 
+  const isVi = lang === 'vi';
   const items = [];
   if (captureArea) {
     items.push({
       id: 'context_capture_area',
       parentId: 'max_tools_parent',
-      title: '📸 Capture Custom Area',
+      title: isVi ? '📸 Chụp vùng tùy chọn' : '📸 Capture Custom Area',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }
@@ -527,7 +528,7 @@ function getScreenCaptureContextMenuSpecs(data) {
     items.push({
       id: 'context_capture_visible',
       parentId: 'max_tools_parent',
-      title: '📸 Capture Visible',
+      title: isVi ? '📸 Chụp vùng hiển thị' : '📸 Capture Visible',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }
@@ -535,7 +536,7 @@ function getScreenCaptureContextMenuSpecs(data) {
     items.push({
       id: 'context_capture_full',
       parentId: 'max_tools_parent',
-      title: '📸 Capture Full Page',
+      title: isVi ? '📸 Chụp toàn trang' : '📸 Capture Full Page',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }
@@ -543,7 +544,7 @@ function getScreenCaptureContextMenuSpecs(data) {
     items.push({
       id: 'context_capture_record',
       parentId: 'max_tools_parent',
-      title: '🔴 Record Screen Video',
+      title: isVi ? '🔴 Quay video màn hình' : '🔴 Record Screen Video',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }

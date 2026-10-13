@@ -52,6 +52,8 @@ Common/
     ├── dark-mode.svg                # Icon Chế độ Tối
     ├── light-mode.svg               # Icon Chế độ Sáng
     ├── logo-MAX.svg                 # Logo thương hiệu MAX
+    ├── lang-EN.svg                  # Icon cờ tiếng Anh (Language English)
+    ├── lang-VN.svg                  # Icon cờ tiếng Việt (Language Vietnamese)
     └── QR_Vietcombank.svg           # Mã QR thanh toán Vietcombank
 ```
 
@@ -112,7 +114,7 @@ Mọi nút bấm đều có sẵn, được điều khiển qua các property sa
 | `ShowCloseButton` | `bool` | `true` | Nút đóng cửa sổ `[ X ]`. Hover đổi màu đỏ, click đóng form. |
 | `ShowMaximizeButton` | `bool` | `false` | Nút phóng to `[ 🗖 / 🗗 ]`. Click hoặc nhấp đúp tiêu đề để phóng to/khôi phục. *(Book Forge bật `true`, Auto Clicker tắt `false`)* |
 | `ShowMinimizeButton` | `bool` | `true` | Nút thu nhỏ `[ ─ ]`. Thu nhỏ cửa sổ xuống Taskbar. |
-| `ShowLanguageButton` | `bool` | `true` | Nút chuyển ngôn ngữ `[ EN ] / [ VI ]`. Tự động đảo ngôn ngữ toàn app. |
+| `ShowLanguageButton` | `bool` | `true` | Nút chuyển ngôn ngữ hiển thị icon vector cờ `[ lang-VN.svg ]` / `[ lang-EN.svg ]`. Click để chuyển đổi ngôn ngữ toàn app. |
 | `ShowThemeButton` | `bool` | `true` | Nút đổi theme `[ ☀️ / 🌙 ]`. Phát sự kiện `OnThemeToggleRequested`. |
 | `ShowAdminButton` | `bool` | `true` | Nút Administrator `[ admin.svg ]`. Highlight màu vàng hổ phách khi đang là Admin; click hỏi xác nhận nâng quyền. |
 | `ShowAppIcon` | `bool` | `true` | Hiển thị icon vector ứng dụng ở góc trái tiêu đề. |
@@ -133,12 +135,11 @@ Mọi nút bấm đều có sẵn, được điều khiển qua các property sa
 | `ShowBunGioHeo` | `bool` | `true` | Cụm thông tin Quán Bún Giò Heo Minh Nhật ở View Tiếng Việt. |
 | `ShowKoFi` | `bool` | `true` | Link ủng hộ qua Ko-fi ở View Tiếng Anh. |
 | `ShowCheckUpdates`| `bool` | `true` | Nút bấm "Check for Updates" / "Kiểm tra Cập nhật". |
-| `ShowLanguageSelector` | `bool` | `true` | Cụm nút chọn ngôn ngữ EN/VI ở cuối tab Info. |
 
 #### 4.2.1. Cơ Chế Tự Động Co Giãn Thông Minh (Responsive Auto-Layout)
 - `InfoTabPanel` được thiết kế tương thích với **bất kỳ kích thước Form nào**: từ cửa sổ nhỏ hẹp (`Width = 388` như Auto Clicker), cửa sổ rộng (`Width = 660` như Book Forge), đến khi phóng to toàn màn hình (Maximize).
 - Thẻ Card bên trong tự động co giãn với lề chuẩn `padX = 16`, `padY = 8` (`Size = (Width - 32, Height - 16)`).
-- Cả hai view Tiếng Anh (`InfoView_En`) và Tiếng Việt (`InfoView_Vi`) đều lắng nghe sự kiện `OnResize` và tự động tính toán căn giữa tuyệt đối `(this.Width - itemWidth) / 2` cho Logo MAX, nút Check for Updates, và cụm Language Selector.
+- Cả hai view Tiếng Anh (`InfoView_En`) và Tiếng Việt (`InfoView_Vi`) đều lắng nghe sự kiện `OnResize` và tự động tính toán căn giữa tuyệt đối `(this.Width - itemWidth) / 2` cho Logo MAX và nút Check for Updates.
 - Khi chuyển tab hoặc resize Form từ bên ngoài, chỉ cần gọi `infoTab.UpdateLayout()`.
 
 ---
@@ -194,11 +195,11 @@ ModernMessageBox.Show("Thao tác đã hoàn tất thành công!", "Thông Báo",
 ```
 
 ### 8. `FirstRunLanguageDialog`
-- Hộp thoại chào mừng lần đầu mở ứng dụng, mời người dùng chọn Tiếng Anh hoặc Tiếng Việt:
+- Hộp thoại chào mừng lần đầu mở ứng dụng với 2 thẻ cờ vector 100x100 sắc nét, bo góc và nhãn chữ "English" / "Tiếng Việt" trực quan bên dưới:
 ```csharp
 using (FirstRunLanguageDialog dlg = new FirstRunLanguageDialog())
 {
-    if (dlg.ShowDialog() == DialogResult.OK)
+    if (dlg.ShowDialog(this) == DialogResult.OK)
     {
         Loc.CurrentLanguage = dlg.SelectedLanguage;
     }

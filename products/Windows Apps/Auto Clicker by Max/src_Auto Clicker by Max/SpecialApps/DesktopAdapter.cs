@@ -297,45 +297,32 @@ namespace ModernAutoClicker.SpecialApps
                         catch { }
                     }
 
-                    // Fallback to Shell COM for special shell namespace items (This PC, Recycle Bin, etc.)
-                    Type shellType = Type.GetTypeFromProgID("Shell.Application");
-                    if (shellType != null)
+                    // Fallback for special shell namespace items (This PC, Recycle Bin, Control Panel, Network)
+                    string shellTarget = null;
+                    if (string.Equals(name, "This PC", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(name, "Computer", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(name, "My Computer", StringComparison.OrdinalIgnoreCase))
                     {
-                        dynamic shell = Activator.CreateInstance(shellType);
-                        dynamic desktop = shell.NameSpace(0);
-                        if (desktop != null)
-                        {
-                            dynamic item = desktop.ParseName(name);
-                            if (item == null) item = desktop.ParseName(name + ".lnk");
-                            if (item != null)
-                            {
-                                string path = (string)item.Path;
-                                if (!string.IsNullOrEmpty(path) && path.StartsWith("::"))
-                                {
-                                    Process.Start(new ProcessStartInfo("explorer.exe", path) { UseShellExecute = true });
-                                    return;
-                                }
-                                item.InvokeVerb("open");
-                                return;
-                            }
+                        shellTarget = "shell:MyComputerFolder";
+                    }
+                    else if (string.Equals(name, "Recycle Bin", StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(name, "Thùng rác", StringComparison.OrdinalIgnoreCase))
+                    {
+                        shellTarget = "shell:RecycleBinFolder";
+                    }
+                    else if (string.Equals(name, "Control Panel", StringComparison.OrdinalIgnoreCase))
+                    {
+                        shellTarget = "shell:ControlPanelFolder";
+                    }
+                    else if (string.Equals(name, "Network", StringComparison.OrdinalIgnoreCase))
+                    {
+                        shellTarget = "shell:NetworkPlacesFolder";
+                    }
 
-                            dynamic items = desktop.Items();
-                            for (int i = 0; i < (int)items.Count; i++)
-                            {
-                                dynamic it = items.Item(i);
-                                if (string.Equals((string)it.Name, name, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    string path = (string)it.Path;
-                                    if (!string.IsNullOrEmpty(path) && path.StartsWith("::"))
-                                    {
-                                        Process.Start(new ProcessStartInfo("explorer.exe", path) { UseShellExecute = true });
-                                        return;
-                                    }
-                                    it.InvokeVerb("open");
-                                    return;
-                                }
-                            }
-                        }
+                    if (!string.IsNullOrEmpty(shellTarget))
+                    {
+                        Process.Start(new ProcessStartInfo("explorer.exe", shellTarget) { UseShellExecute = true });
+                        return;
                     }
                 }
                 catch { }

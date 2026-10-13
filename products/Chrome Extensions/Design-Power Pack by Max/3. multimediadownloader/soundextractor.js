@@ -265,9 +265,12 @@ function renderSoundsGrid() {
   if (!gridContainer) return;
 
   if (allSounds.length === 0) {
+    const emptyMsg = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('downloader.emptySounds')
+      : 'No sounds found on this page.';
     gridContainer.innerHTML = `
       <div class="loading-state" style="animation: none;">
-        <p>No sounds found on this page.</p>
+        <p>${emptyMsg}</p>
       </div>
     `;
     updateSoundCountLabel();
@@ -326,10 +329,12 @@ function renderSoundsGrid() {
         <div class="sound-title" title="${window.escAttr(sound.filename)}">${window.escAttr(sound.filename)}</div>
         <audio class="sound-preview" src="${window.escAttr(sound.url)}" loop playsinline preload="metadata"></audio>
         <div class="sound-scrubber-container">
-          <input type="range" class="sound-scrubber" min="0" max="100" value="0" step="any" title="Scrub audio">
+          <input type="range" class="sound-scrubber" min="0" max="100" value="0" step="any" title="${(window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('downloader.scrubAudio') : 'Scrub audio'}" data-i18n-title="downloader.scrubAudio">
         </div>
       </div>
     `;
+
+    const t = (k, def) => ((window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t(k, def) : def);
 
     return window.createResourceCardHtml({
       id: sound.url,
@@ -340,10 +345,10 @@ function renderSoundsGrid() {
       badgeLeft: formatLabel,
       badgeRight: durationText,
       actionsHtml: `
-        <button class="btn btn-ghost btn-icon open-tab-btn" title="Open in new tab">
+        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}" data-i18n-title="downloader.openNewTab">
           <span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span>
         </button>
-        <button class="btn btn-ghost btn-icon download-btn" title="Download immediately">
+        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadImmediate', 'Download immediately')}" data-i18n-title="downloader.downloadImmediate">
           <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span>
         </button>
       `
@@ -461,7 +466,8 @@ function updateSoundFilterCounts() {
   });
 
   const total = allSounds.length;
-  typeSelect.options[0].text = `All (${total})`;
+  const allLabel = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.all') : 'All';
+  typeSelect.options[0].text = `${allLabel} (${total})`;
   setOpt(typeSelect.options[1], mp3, 'MP3');
   setOpt(typeSelect.options[2], wav, 'WAV');
   setOpt(typeSelect.options[3], ogg, 'OGG');
@@ -471,7 +477,9 @@ function updateSoundFilterCounts() {
 function updateSoundCountLabel() {
   const countEl = document.getElementById('sound-count-summary');
   if (countEl) {
-    countEl.textContent = `${allSounds.length} sounds found`;
+    countEl.textContent = (window.i18n && typeof window.i18n.t === 'function')
+      ? window.i18n.t('downloader.foundSounds', '{0} sounds found', [allSounds.length])
+      : `${allSounds.length} sounds found`;
   }
 }
 

@@ -218,7 +218,7 @@ async function convertAndSaveImage(srcUrl, targetFormat) {
 }
 
 // ── Context Menu Spec Provider ──
-function getSaveAsContextMenuSpecs(data) {
+function getSaveAsContextMenuSpecs(data, lang = 'vi') {
   const saveAsMaster = data.saveAsFileTypeEnabled !== false;
   const saveJpg = saveAsMaster && (data.saveAsFileType_jpg !== false);
   const savePng = saveAsMaster && (data.saveAsFileType_png !== false);
@@ -226,12 +226,13 @@ function getSaveAsContextMenuSpecs(data) {
   const saveGif = saveAsMaster && (data.saveAsFileType_gif !== false);
   const savePdf = saveAsMaster && (data.saveAsFileType_pdf !== false);
 
+  const isVi = lang === 'vi';
   const items = [];
   if (savePng) {
     items.push({
       id: 'save_as_png',
       parentId: 'max_tools_parent',
-      title: '🖼️ Save Image as PNG',
+      title: isVi ? '🖼️ Lưu ảnh dạng PNG' : '🖼️ Save Image as PNG',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }
@@ -239,7 +240,7 @@ function getSaveAsContextMenuSpecs(data) {
     items.push({
       id: 'save_as_jpg',
       parentId: 'max_tools_parent',
-      title: '🖼️ Save Image as JPG',
+      title: isVi ? '🖼️ Lưu ảnh dạng JPG' : '🖼️ Save Image as JPG',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }
@@ -247,7 +248,7 @@ function getSaveAsContextMenuSpecs(data) {
     items.push({
       id: 'save_as_webp',
       parentId: 'max_tools_parent',
-      title: '🖼️ Save Image as WebP',
+      title: isVi ? '🖼️ Lưu ảnh dạng WebP' : '🖼️ Save Image as WebP',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }
@@ -255,7 +256,7 @@ function getSaveAsContextMenuSpecs(data) {
     items.push({
       id: 'save_as_gif',
       parentId: 'max_tools_parent',
-      title: '🖼️ Save Image as GIF',
+      title: isVi ? '🖼️ Lưu ảnh dạng GIF' : '🖼️ Save Image as GIF',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }
@@ -263,7 +264,7 @@ function getSaveAsContextMenuSpecs(data) {
     items.push({
       id: 'save_as_pdf',
       parentId: 'max_tools_parent',
-      title: '📄 Save Image as PDF',
+      title: isVi ? '📄 Lưu ảnh dạng PDF' : '📄 Save Image as PDF',
       contexts: ['page', 'selection', 'link', 'image', 'video']
     });
   }
@@ -593,25 +594,27 @@ function startTabDirectRecording(streamId) {
     `;
     (document.head || document.documentElement).appendChild(style);
 
+    const t = (key, fallback) => (typeof window !== 'undefined' && window.i18n && window.i18n.t) ? window.i18n.t(key, fallback) : fallback;
+
     const container = document.createElement('div');
     container.id = 'max-record-bar-container';
     container.innerHTML = `
       <div class="max-record-bar">
-        <div class="max-record-drag-handle" title="Drag to move">⋮⋮</div>
+        <div class="max-record-drag-handle" title="${t('recordBar.dragToMove', 'Drag to move')}">⋮⋮</div>
         <div class="max-record-status">
           <span class="max-record-dot"></span>
           <span id="max-record-timer" class="max-record-timer">00:00</span>
         </div>
-        <button id="max-record-pause-btn" class="max-record-btn max-record-btn-pause" title="Pause / Resume">
-          <span id="max-record-pause-icon">⏸</span> <span id="max-record-pause-text">Pause</span>
+        <button id="max-record-pause-btn" class="max-record-btn max-record-btn-pause" title="${t('recordBar.pauseResume', 'Pause / Resume')}">
+          <span id="max-record-pause-icon">⏸</span> <span id="max-record-pause-text">${t('recordBar.pause', 'Pause')}</span>
         </button>
-        <button id="max-record-stop-btn" class="max-record-btn max-record-btn-stop" title="Stop & Save Video">
-          <span>⏹</span> <span>Stop & Save</span>
+        <button id="max-record-stop-btn" class="max-record-btn max-record-btn-stop" title="${t('recordBar.stopSaveVideo', 'Stop & Save Video')}">
+          <span>⏹</span> <span>${t('recordBar.stopAndSave', 'Stop & Save')}</span>
         </button>
-        <button id="max-record-hide-btn" class="max-record-btn max-record-btn-hide" title="Minimize Bar (Fade Bar)">
+        <button id="max-record-hide-btn" class="max-record-btn max-record-btn-hide" title="${t('recordBar.minimize', 'Minimize Bar (Fade Bar)')}">
           👁️
         </button>
-        <button id="max-record-cancel-btn" class="max-record-btn max-record-btn-cancel" title="Cancel">
+        <button id="max-record-cancel-btn" class="max-record-btn max-record-btn-cancel" title="${t('common.cancel', 'Cancel')}">
           <span>✕</span>
         </button>
       </div>
@@ -641,12 +644,12 @@ function startTabDirectRecording(streamId) {
           window.__maxMediaRecorder.pause();
           window.__maxIsRecordingPaused = true;
           if (pauseIcon) pauseIcon.textContent = '▶';
-          if (pauseText) pauseText.textContent = 'Resume';
+          if (pauseText) pauseText.textContent = t('recordBar.resume', 'Resume');
         } else if (window.__maxMediaRecorder.state === 'paused') {
           window.__maxMediaRecorder.resume();
           window.__maxIsRecordingPaused = false;
           if (pauseIcon) pauseIcon.textContent = '⏸';
-          if (pauseText) pauseText.textContent = 'Pause';
+          if (pauseText) pauseText.textContent = t('recordBar.pause', 'Pause');
         }
       });
     }

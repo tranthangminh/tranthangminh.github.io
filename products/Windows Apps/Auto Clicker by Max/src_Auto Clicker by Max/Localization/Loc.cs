@@ -39,12 +39,10 @@ namespace ModernAutoClicker.Localization
         }
 
         // ========================================================
-        // 1. MAIN TABS & TITLE BAR
+        // 1. MAIN TABS
         // ========================================================
         public static string TabSimple { get { return IsVietnamese ? "Cơ bản" : "Simple"; } }
         public static string TabAsianMode { get { return IsVietnamese ? "Chế độ \"Châu Á\"" : "Asian Mode"; } }
-        public static string LangBadge { get { return IsVietnamese ? "VI" : "EN"; } }
-        public static string LangToggleTooltip { get { return IsVietnamese ? "Đổi sang Tiếng Anh (English)" : "Switch to Vietnamese (Tiếng Việt)"; } }
 
         // ========================================================
         // 2. CLICK MODE CARD
@@ -180,56 +178,7 @@ namespace ModernAutoClicker.Localization
             }
         }
 
-        // ========================================================
-        // 10. INFO TAB (Preserving Author Name with Diacritics)
-        // ========================================================
-        public static string InfoAuthor
-        {
-            get
-            {
-                return IsVietnamese
-                    ? "Sản phẩm này được phát triển bởi Trần Thắng Minh (Max)."
-                    : "This product is developed by Trần Thắng Minh (Max).";
-            }
-        }
-        public static string InfoContact
-        {
-            get
-            {
-                return IsVietnamese
-                    ? "Góp ý, yêu cầu tính năng hoặc hỗ trợ:"
-                    : "For feedback, feature requests, or support:";
-            }
-        }
-        public static string InfoFacebookTitle { get { return "• Facebook:"; } }
-        public static string InfoMoreProductsTitle { get { return IsVietnamese ? "• Sản phẩm khác:" : "• More Products:"; } }
-        public static string InfoSupportTitle { get { return IsVietnamese ? "• Ủng hộ tác giả:" : "• Support me:"; } }
-        public static string InfoLanguageTitle { get { return IsVietnamese ? "• Ngôn ngữ:" : "• Language:"; } }
-        public static string BtnCheckUpdates { get { return IsVietnamese ? "Kiểm tra cập nhật" : "Check for Updates"; } }
-        public static string UpdateStatusHint { get { return IsVietnamese ? "Bấm nút phía trên để kiểm tra bản mới" : "Click above to check for updates"; } }
-        public static string UpdateChecking { get { return IsVietnamese ? "Đang kiểm tra cập nhật..." : "Checking for updates..."; } }
-        public static string UpdateLatest(string ver)
-        {
-            return IsVietnamese
-                ? string.Format("Bạn đang dùng phiên bản mới nhất (v{0}).", ver)
-                : string.Format("You have the latest version (v{0}).", ver);
-        }
-        public static string UpdateAvailable(string ver)
-        {
-            return IsVietnamese
-                ? string.Format("Đã có phiên bản mới: v{0}!", ver)
-                : string.Format("New version available: v{0}!", ver);
-        }
-        public static string UpdateFailed { get { return IsVietnamese ? "Kiểm tra thất bại. Không có kết nối mạng." : "Check failed. No internet connection."; } }
 
-        // Bún Giò Heo & Smart QR Bank strings (Vietnamese localized info)
-        public static string InfoBunGioHeoTitle { get { return "• Ủng hộ Bún Giò Heo Minh Nhật nhà tui"; } }
-        public static string InfoGoogleMaps { get { return "[Google Maps ↗]"; } }
-        public static string InfoQrBankTitle { get { return "• Ủng hộ tui:"; } }
-        public static string InfoQrPlaceholderTitle { get { return "[ Mã QR Bank ]"; } }
-        public static string InfoQrPlaceholderNoImage { get { return "(Chưa có file qr-bank.svg)"; } }
-        public static string InfoQrPlaceholderScanHint { get { return "Quét để chuyển khoản"; } }
-        public static string InfoQrHintSub { get { return "(Hỗ trợ mọi App Ngân Hàng & Ví MoMo)"; } }
 
         // ========================================================
         // 11. ASIAN MODE (ADVANCED TAB) TOOLBAR & BOTTOM BAR
@@ -348,15 +297,5 @@ namespace ModernAutoClicker.Localization
         public static string ColRep { get { return IsVietnamese ? "Lặp" : "Rep"; } }
         public static string ColDel { get { return IsVietnamese ? "Xóa" : "Del"; } }
         public static string ColNote { get { return IsVietnamese ? "Ghi Chú" : "Note"; } }
-
-        // ========================================================
-        // 15. UPDATE DIALOG
-        // ========================================================
-        public static string DialogUpdateTitle { get { return IsVietnamese ? "Có Bản Cập Nhật Mới" : "Update Available"; } }
-        public static string DialogUpdateHeading { get { return IsVietnamese ? "Đã có phiên bản mới của Auto Clicker by Max!" : "A new version of Auto Clicker by Max is available!"; } }
-        public static string DialogUpdateCurrent(string ver) { return IsVietnamese ? string.Format("Phiên bản hiện tại: v{0}", ver) : string.Format("Current version: v{0}", ver); }
-        public static string DialogUpdateLatest(string ver) { return IsVietnamese ? string.Format("Phiên bản mới nhất: v{0}", ver) : string.Format("Latest version: v{0}", ver); }
-        public static string DialogBtnUpdateNow { get { return IsVietnamese ? "Cập Nhật Ngay" : "Update Now"; } }
-        public static string DialogBtnLater { get { return IsVietnamese ? "Để Sau" : "Later"; } }
     }
 }

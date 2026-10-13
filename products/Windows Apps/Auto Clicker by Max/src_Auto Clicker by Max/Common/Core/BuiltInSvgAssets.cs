@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -92,6 +92,177 @@ namespace MaxApp.Common
   <polygon class=""st0"" points=""454.62 216.66 564.49 0 571.68 0 819.2 488.15 705.71 488.15 571.91 224.28 564.26 224.28 511.36 328.57 454.62 216.66""/>
 </svg>";
 
+        public const string LangVnSvg = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<svg id=""Layer_1"" xmlns=""http://www.w3.org/2000/svg"" version=""1.1"" viewBox=""0 0 24 24"">
+  <defs>
+    <style>
+      .st0 {
+        fill: #da251d;
+      }
+
+      .st1 {
+        fill: #ff0;
+      }
+    </style>
+  </defs>
+  <rect class=""st0"" width=""24"" height=""24""/>
+  <polygon class=""st1"" points=""15.07 13.8 20 10.21 13.89 10.21 12 4.4 10.11 10.21 4 10.21 8.93 13.8 7.05 19.6 12 16.01 16.95 19.6 15.07 13.8""/>
+</svg>";
+
+        public const string LangEnSvg = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<svg id=""Layer_1"" xmlns=""http://www.w3.org/2000/svg"" version=""1.1"" xmlns:xlink=""http://www.w3.org/1999/xlink"" viewBox=""0 0 24 24"">
+  <defs>
+    <style>
+      .st0 { fill: #b31942; }
+      .st1 { fill: #fff; }
+      .st2 { fill: none; }
+      .st3 { clip-path: url(#clippath-1); }
+      .st4 { stroke: #fff; stroke-miterlimit: 10; stroke-width: 1.85px; }
+      .st5 { fill: #012169; }
+      .st6 { fill: #0a3161; }
+      .st7 { clip-path: url(#clippath-2); }
+      .st8 { fill: #c8102e; }
+      .st9 { clip-path: url(#clippath); }
+    </style>
+    <clipPath id=""clippath"">
+      <rect class=""st2"" width=""24"" height=""24""/>
+    </clipPath>
+    <clipPath id=""clippath-1"">
+      <rect class=""st2"" x=""-6"" width=""36"" height=""24""/>
+    </clipPath>
+    <clipPath id=""clippath-2"">
+      <polygon class=""st2"" points=""12 12 30 12 30 24 12 24 -6 24 -6 12 -6 0 12 0 30 0 12 12""/>
+    </clipPath>
+  </defs>
+  <g class=""st9"">
+    <g class=""st3"">
+      <g>
+        <path class=""st5"" d=""M-6,0v24H30V0H-6Z""/>
+        <g>
+          <path d=""M-6,0L30,24M30,0L-6,24""/>
+          <polygon class=""st1"" points=""28.89 26.06 12 14.8 -4.89 26.06 -7.11 21.94 7.8 12 -7.11 2.05 -4.89 -2.05 12 9.2 28.89 -2.05 31.11 2.05 16.2 12 31.11 21.94 28.89 26.06""/>
+        </g>
+        <g class=""st7"">
+          <g>
+            <path d=""M-6,0L30,24M30,0L-6,24""/>
+            <polygon class=""st8"" points=""29.27 25.38 12 13.88 -5.26 25.38 -6.74 22.62 9.2 12 -6.74 1.38 -5.26 -1.38 12 10.12 29.27 -1.38 30.73 1.38 14.8 12 30.73 22.62 29.27 25.38""/>
+          </g>
+        </g>
+        <g>
+          <path class=""st8"" d=""M-6.72,8.8h15.84V-.79h5.76v9.6h15.84v6.4h-15.84v9.6h-5.76v-9.6H-6.72s0-6.41,0-6.4Z""/>
+          <path class=""st1"" d=""M15.6,25.6h-7.2v-9.6H-7.44v-7.99h15.84V-1.6h7.2V7.99h15.84v7.99h-15.84v9.61ZM9.84,24h4.32v-9.6h15.84v-4.8h-15.85V0h-4.32v9.6H-6v4.8h15.84v9.6Z""/>
+        </g>
+      </g>
+    </g>
+    <g>
+      <path class=""st0"" d=""M0,0h36v24H0""/>
+      <path class=""st4"" d=""M0,2.77h36M36,6.47H0M0,10.16h36M36,13.84H0M0,17.53h36M36,21.22H0""/>
+      <path class=""st6"" d=""M0,0h18.24v12.93H0""/>
+      <g>
+        <g id=""s18"">
+          <g id=""s9"">
+            <g id=""s5"">
+              <g id=""s4"">
+                <path id=""s"" class=""st1"" d=""M1.51.55l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s1"" class=""st1"" d=""M1.51,3.14l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s2"" class=""st1"" d=""M1.51,5.73l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s3"" class=""st1"" d=""M1.51,8.29l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+              </g>
+              <path id=""s6"" class=""st1"" d=""M1.51,10.91l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+            </g>
+            <g id=""s41"">
+              <path id=""s7"" class=""st1"" d=""M3.04,1.85l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+              <path id=""s8"" class=""st1"" d=""M3.04,4.42l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+              <path id=""s10"" class=""st1"" d=""M3.04,7.01l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+              <path id=""s11"" class=""st1"" d=""M3.04,9.6l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+            </g>
+          </g>
+          <g id=""s91"">
+            <g id=""s51"">
+              <g id=""s42"">
+                <path id=""s12"" class=""st1"" d=""M4.56.55l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s13"" class=""st1"" d=""M4.56,3.14l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s14"" class=""st1"" d=""M4.56,5.73l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s15"" class=""st1"" d=""M4.56,8.29l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+              </g>
+              <path id=""s16"" class=""st1"" d=""M4.56,10.91l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+            </g>
+            <g id=""s43"">
+              <path id=""s17"" class=""st1"" d=""M6.08,1.85l.43,1.33-1.14-.83h1.41l-1.14.83.44-1.33Z""/>
+              <path id=""s19"" class=""st1"" d=""M6.08,4.42l.43,1.33-1.14-.83h1.41l-1.14.83.44-1.33h0Z""/>
+              <path id=""s20"" class=""st1"" d=""M6.08,7.01l.43,1.34-1.14-.83h1.41l-1.14.83.44-1.34h0Z""/>
+              <path id=""s21"" class=""st1"" d=""M6.08,9.6l.43,1.34-1.14-.83h1.41l-1.14.83.44-1.34h0Z""/>
+            </g>
+          </g>
+        </g>
+        <g id=""s181"">
+          <g id=""s92"">
+            <g id=""s52"">
+              <g id=""s44"">
+                <path id=""s22"" class=""st1"" d=""M7.61.55l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s23"" class=""st1"" d=""M7.61,3.14l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s24"" class=""st1"" d=""M7.61,5.73l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s25"" class=""st1"" d=""M7.61,8.29l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+              </g>
+              <path id=""s26"" class=""st1"" d=""M7.61,10.91l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+            </g>
+            <g id=""s45"">
+              <path id=""s27"" class=""st1"" d=""M9.12,1.85l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+              <path id=""s28"" class=""st1"" d=""M9.12,4.42l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+              <path id=""s29"" class=""st1"" d=""M9.12,7.01l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+              <path id=""s30"" class=""st1"" d=""M9.12,9.6l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+            </g>
+          </g>
+          <g id=""s93"">
+            <g id=""s53"">
+              <g id=""s46"">
+                <path id=""s31"" class=""st1"" d=""M10.64.55l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s32"" class=""st1"" d=""M10.64,3.14l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s33"" class=""st1"" d=""M10.64,5.73l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+                <path id=""s34"" class=""st1"" d=""M10.64,8.29l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+              </g>
+              <path id=""s35"" class=""st1"" d=""M10.64,10.91l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+            </g>
+            <g id=""s47"">
+              <path id=""s36"" class=""st1"" d=""M12.16,1.85l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+              <path id=""s37"" class=""st1"" d=""M12.16,4.42l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+              <path id=""s38"" class=""st1"" d=""M12.16,7.01l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+              <path id=""s39"" class=""st1"" d=""M12.16,9.6l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+            </g>
+          </g>
+        </g>
+        <g id=""s94"">
+          <g id=""s54"">
+            <g id=""s48"">
+              <path id=""s40"" class=""st1"" d=""M13.68.55l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+              <path id=""s49"" class=""st1"" d=""M13.68,3.14l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+              <path id=""s50"" class=""st1"" d=""M13.68,5.73l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+              <path id=""s55"" class=""st1"" d=""M13.68,8.29l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+            </g>
+            <path id=""s56"" class=""st1"" d=""M13.68,10.91l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+          </g>
+          <g id=""s410"">
+            <path id=""s57"" class=""st1"" d=""M15.2,1.85l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+            <path id=""s58"" class=""st1"" d=""M15.2,4.42l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+            <path id=""s59"" class=""st1"" d=""M15.2,7.01l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+            <path id=""s60"" class=""st1"" d=""M15.2,9.6l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+          </g>
+        </g>
+        <g id=""s510"">
+          <g id=""s411"">
+            <path id=""s61"" class=""st1"" d=""M16.72.55l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+            <path id=""s62"" class=""st1"" d=""M16.72,3.14l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+            <path id=""s63"" class=""st1"" d=""M16.72,5.73l.43,1.33-1.14-.83h1.41l-1.14.83.43-1.33h0Z""/>
+            <path id=""s64"" class=""st1"" d=""M16.72,8.29l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+          </g>
+          <path id=""s65"" class=""st1"" d=""M16.72,10.91l.43,1.34-1.14-.83h1.41l-1.14.83.43-1.34h0Z""/>
+        </g>
+      </g>
+    </g>
+    <rect class=""st2"" width=""24"" height=""24""/>
+  </g>
+</svg>";
+
         private static string _cachedQrSvg = null;
 
         public static string GetBuiltInSvg(string nameOrPath)
@@ -103,6 +274,8 @@ namespace MaxApp.Common
             if (key == "dark-mode.svg") return DarkModeSvg;
             if (key == "light-mode.svg") return LightModeSvg;
             if (key == "logo-max.svg" || key == "logo.svg") return LogoMaxSvg;
+            if (key == "lang-vn.svg" || key == "lang_vn.svg" || key == "lang-vi.svg") return LangVnSvg;
+            if (key == "lang-en.svg" || key == "lang_en.svg") return LangEnSvg;
             if (key == "qr_vietcombank.svg")
             {
                 if (_cachedQrSvg == null)

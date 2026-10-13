@@ -32,6 +32,7 @@ function updateVectorUiOverlay() {
   const rotDeg = ((selectedObj.rotation || 0) * 180) / Math.PI;
 
   if (!svg) {
+    const t = (k, fb) => (typeof window !== 'undefined' && window.i18n && window.i18n.t) ? window.i18n.t(k, fb) : fb;
     const svgNS = 'http://www.w3.org/2000/svg';
     svg = document.createElementNS(svgNS, 'svg');
     svg.id = 'edit-ui-vector-overlay';
@@ -60,12 +61,12 @@ function updateVectorUiOverlay() {
         <rect id="vector-shadow-rect" />
         <rect id="vector-dash-rect" />
 
-        <g id="vector-rotate-handle" class="vector-handle" style="cursor: grab;" title="Rotate Object">
+        <g id="vector-rotate-handle" class="vector-handle" style="cursor: grab;" title="${t('editor.rotateObject', 'Rotate Object')}">
           <circle r="12" />
           <image id="vector-rotate-icon" href="${getSvgIconUrl('rotate.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
 
-        <g id="vector-scale-handle" class="vector-handle" style="cursor: nwse-resize;" title="Scale Object">
+        <g id="vector-scale-handle" class="vector-handle" style="cursor: nwse-resize;" title="${t('editor.scaleObject', 'Scale Object')}">
           <circle r="12" />
           <image id="vector-scale-icon" href="${getSvgIconUrl('scale.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
@@ -76,59 +77,59 @@ function updateVectorUiOverlay() {
         <line id="vector-toolbar-divider" />
         <line id="vector-toolbar-divider-2" />
         
-        <g id="vector-text-color-btn" class="vector-toolbar-btn" title="Text Color">
+        <g id="vector-text-color-btn" class="vector-toolbar-btn" title="${t('editor.textColor', 'Text Color')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
           <rect id="vector-text-color-indicator" width="16" height="16" x="-8" y="-8" fill="#ffffff" mask="url(#vector-text-color-mask)" />
         </g>
 
-        <g id="vector-color-btn" class="vector-toolbar-btn" title="Stroke Color">
+        <g id="vector-color-btn" class="vector-toolbar-btn" title="${t('editor.strokeColor', 'Stroke Color')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
           <rect id="vector-stroke-color-indicator" width="18" height="18" x="-9" y="-9" fill="#67e8f9" mask="url(#vector-stroke-mask)" />
         </g>
 
-        <g id="vector-bg-color-btn" class="vector-toolbar-btn" title="Background Color (Right-click: Transparent)">
+        <g id="vector-bg-color-btn" class="vector-toolbar-btn" title="${t('editor.bgColor', 'Background Color (Right-click: Transparent)')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
           <rect id="vector-bg-color-rect" width="18" height="18" x="-9" y="-9" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" />
           <line id="vector-bg-color-slash" x1="-7" y1="7" x2="7" y2="-7" stroke="var(--c-red)" stroke-width="2" stroke-linecap="round" class="hidden" />
         </g>
 
-        <g id="vector-align-btn" class="vector-toolbar-btn" title="Text Alignment">
+        <g id="vector-align-btn" class="vector-toolbar-btn" title="${t('editor.align', 'Text Alignment')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
           <image id="vector-align-icon" href="${getSvgIconUrl('align-left.svg')}" width="16" height="16" x="-8" y="-8" style="filter: invert(1);" />
         </g>
 
-        <g id="vector-bold-btn" class="vector-toolbar-btn" title="Toggle Bold">
+        <g id="vector-bold-btn" class="vector-toolbar-btn" title="${t('editor.bold', 'Toggle Bold')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
           <image href="${getSvgIconUrl('text-bold.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
 
-        <g id="vector-italic-btn" class="vector-toolbar-btn" title="Toggle Italic">
+        <g id="vector-italic-btn" class="vector-toolbar-btn" title="${t('editor.italic', 'Toggle Italic')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
           <image href="${getSvgIconUrl('text-italic.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
 
-        <g id="vector-underline-btn" class="vector-toolbar-btn" title="Toggle Underline">
+        <g id="vector-underline-btn" class="vector-toolbar-btn" title="${t('editor.underline', 'Toggle Underline')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
           <image href="${getSvgIconUrl('text-underline.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
 
-        <g id="vector-brush-size-btn" class="vector-toolbar-btn hidden" title="Brush Size (Click to type or cycle presets)">
+        <g id="vector-brush-size-btn" class="vector-toolbar-btn hidden" title="${t('editor.brushSize', 'Brush Size (Click to type or cycle presets)')}">
           <rect width="36" height="28" x="-18" y="-14" fill="transparent" rx="6" />
           <text id="vector-brush-size-text" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle" y="4">15px</text>
         </g>
 
-        <g id="vector-sides-btn" class="vector-toolbar-btn hidden" title="Polygon Sides Count (Hover for slider, click to edit)">
+        <g id="vector-sides-btn" class="vector-toolbar-btn hidden" title="${t('editor.polygonSidesTooltip', 'Polygon Sides Count (Hover for slider, click to edit)')}">
           <rect width="32" height="28" x="-16" y="-14" fill="transparent" rx="6" />
           <text id="vector-sides-text" font-size="11" font-weight="bold" fill="var(--accent-primary)" text-anchor="middle" y="4">4s</text>
         </g>
 
-        <g id="vector-brush-mode-btn" class="vector-toolbar-btn hidden" title="Toggle Size Mode (Fixed to Screen / Fixed to Image)">
+        <g id="vector-brush-mode-btn" class="vector-toolbar-btn hidden" title="${t('editor.toggleSizeMode', 'Toggle Size Mode (Fixed to Screen / Fixed to Image)')}">
           <rect width="58" height="22" x="-29" y="-11" fill="rgba(0, 242, 254, 0.15)" stroke="var(--accent-primary)" stroke-width="1" rx="5" />
           <text id="vector-brush-mode-text" font-size="10" font-weight="bold" fill="var(--accent-primary)" text-anchor="middle" y="3.5">Screen</text>
         </g>
 
         <!-- Standalone Delete Button on the Same Horizontal Row -->
-        <g id="vector-delete-handle" class="vector-handle" title="Delete Object">
+        <g id="vector-delete-handle" class="vector-handle" title="${t('editor.deleteObject', 'Delete Object')}">
           <circle r="14" />
           <image href="${getSvgIconUrl('close.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>

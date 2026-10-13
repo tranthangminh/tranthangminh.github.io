@@ -33,6 +33,12 @@
                 downloadTitle: 'Tải về Book Forge by Max v1.0 (Beta) (.zip)',
                 downloadAria: 'Tải về Book Forge by Max v1.0 (Beta)'
             },
+            blockInternetBigRed: {
+                title: 'Block Internet "Nhà Đỏ"',
+                desc: 'Công cụ hỗ trợ chặn và bỏ chặn kết nối Internet cho các phần mềm "Nhà Đỏ" nhanh chóng và tự động trên Windows.',
+                downloadTitle: 'Tải về Block Internet "Nhà Đỏ" (.zip)',
+                downloadAria: 'Tải về Block Internet "Nhà Đỏ"'
+            },
             powerpack: {
                 title: 'Design-Power Pack by Max',
                 desc: 'Bộ công cụ toàn diện cho Designer: Color Picker & Studio, Screen Grabber & Video Recorder, và Multimedia Asset Downloader.',
@@ -130,6 +136,12 @@
                 desc: 'Windows application for smart book content parsing, automatic chapter splitting, image extraction, and PDF book typesetting ready for professional printing.',
                 downloadTitle: 'Download Book Forge by Max v1.0 (Beta) (.zip)',
                 downloadAria: 'Download Book Forge by Max v1.0 (Beta)'
+            },
+            blockInternetBigRed: {
+                title: 'Block Internet "Big Red"',
+                desc: 'Windows utility to quickly and automatically block or unblock Internet access for "Big Red" applications.',
+                downloadTitle: 'Download Block Internet "Big Red" (.zip)',
+                downloadAria: 'Download Block Internet "Big Red"'
             },
             powerpack: {
                 title: 'Design-Power Pack by Max',
