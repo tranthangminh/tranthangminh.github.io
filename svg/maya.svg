@@ -1,0 +1,41 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 23" width="24" height="23">
+  <defs>
+    <linearGradient id="mayaGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#32c5c8"/>
+      <stop offset="50%" stop-color="#1aa0a3"/>
+      <stop offset="100%" stop-color="#087f83"/>
+    </linearGradient>
+    <linearGradient id="mayaGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#087074"/>
+      <stop offset="100%" stop-color="#1eb5b8"/>
+    </linearGradient>
+    <linearGradient id="mayaGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#149699"/>
+      <stop offset="100%" stop-color="#2bc2c5"/>
+    </linearGradient>
+    <linearGradient id="mayaGrad4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1ab1b4"/>
+      <stop offset="100%" stop-color="#0b7a7e"/>
+    </linearGradient>
+    <linearGradient id="mayaGrad5" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#076468"/>
+      <stop offset="100%" stop-color="#128b8f"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <!-- Facet 1: Right wing -->
+    <path d="M16.7959 0.6653 L24 0.6653 L14.3718 18.45 C14.3718 18.45 12.7496 13.7384 12.0524 12.057 Z" fill="url(#mayaGrad1)"/>
+    <!-- Facet 2: Right outer fold -->
+    <path d="M18.573 22.6558 L24 22.6558 L24 0.6653 C23.9954 12.1572 19.1654 22.6558 18.573 22.6558 Z" fill="url(#mayaGrad2)"/>
+    <!-- Facet 3: Center chevron -->
+    <path d="M14.3718 18.45 L9.8925 18.45 L0 0.6653 C1.7543 0.442 5.2584 0.1413 6.9945 0 L14.3718 18.45 Z" fill="url(#mayaGrad3)"/>
+    <!-- Facet 4: Left top curve -->
+    <path d="M5.7369 11.4282 C4.2514 17.2971 -0.0046 22.8289 0 22.8244 C4.9303 22.8244 5.992 22.109 5.992 21.7308 C5.992 21.5212 5.992 14.9732 5.992 11.8747 C5.9054 11.7289 5.8234 11.5785 5.7369 11.4282 Z" fill="url(#mayaGrad4)"/>
+    <!-- Facet 5: Left wing -->
+    <path d="M0 0.6653 L0 22.8244 C2.6976 18.368 4.2696 15.4517 5.6594 11.296 C2.2328 5.2356 0 0.6653 0 0.6653 Z" fill="url(#mayaGrad1)"/>
+    <!-- Facet 6: Right inner facet -->
+    <path d="M18.1993 21.7855 L18.573 22.6558 L18.573 11.1092 L18.1993 11.7334 Z" fill="url(#mayaGrad5)"/>
+    <!-- Facet 7: Right main stroke -->
+    <path d="M18.5548 11.132 L18.5548 22.6193 L18.5684 22.6558 C18.9557 22.6558 23.9954 10.2252 23.9954 0.6653 C23.9954 0.6653 20.9197 7.0811 18.5548 11.132 Z" fill="url(#mayaGrad1)"/>
+  </g>
+</svg>

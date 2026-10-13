@@ -6,7 +6,7 @@
   "SmoothMouseMove": true,
   "MapOverlayOpacity": 60,
   "IsDarkTheme": true,
-  "IsAdvancedTab": true,
+  "IsAdvancedTab": false,
   "LastUpdateCheckDate": "1.1.2@2026-10-12",
   "Language": "en",
   "AsianWindowWidth": 700,

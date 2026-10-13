@@ -227,12 +227,23 @@ async function scanPageResources() {
     window.resetVideosState();
   }
 
+  // Reset sounds state
+  if (typeof window.resetSoundsState === 'function') {
+    window.resetSoundsState();
+  }
+
   // Query active tab
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) {
     showErrorState('Cannot scan: No active tab found.');
     if (typeof window.showVectorErrorState === 'function') {
       window.showVectorErrorState('Cannot scan: No active tab found.');
+    }
+    if (typeof window.showVideoErrorState === 'function') {
+      window.showVideoErrorState('Cannot scan: No active tab found.');
+    }
+    if (typeof window.showSoundErrorState === 'function') {
+      window.showSoundErrorState('Cannot scan: No active tab found.');
     }
     return;
   }
@@ -260,6 +271,9 @@ async function scanPageResources() {
     showErrorState('Scanning is not allowed on Chrome system pages.');
     if (typeof window.showVectorErrorState === 'function') {
       window.showVectorErrorState('Scanning is not allowed on Chrome system pages.');
+    }
+    if (typeof window.showVideoErrorState === 'function') {
+      window.showVideoErrorState('Scanning is not allowed on Chrome system pages.');
     }
     if (typeof window.showSoundErrorState === 'function') {
       window.showSoundErrorState('Scanning is not allowed on Chrome system pages.');
@@ -316,6 +330,7 @@ async function scanPageResources() {
       if (typeof window.updateSoundsData === 'function') {
         window.updateSoundsData(data.sounds || []);
       }
+    } else {
       const getEmpty = (key, fallback) => (window.i18n ? window.i18n.t(key, fallback) : fallback);
       showErrorState(getEmpty('downloader.emptyImages', 'No images found on this page.'));
       if (typeof window.showVectorErrorState === 'function') {

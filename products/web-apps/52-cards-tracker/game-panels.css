@@ -1,0 +1,402 @@
+/* ==========================================================================
+   52 CARDS TRACKER - GAME PANELS STYLESHEET
+   Tiến Lên (Heo Radar, Tứ Quý Alert, Sort Hand), Blackjack & Poker Panels
+   Complies with _RULE-web-apps.md (< 500 lines)
+   ========================================================================== */
+
+/* 1. Base Game Panel Container */
+.game-panel {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: var(--border-radius-lg, 12px);
+    background: var(--bg-secondary, #222222);
+    border: 1px solid var(--border-color, #3a3a3a);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-secondary, #aaaaaa);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.panel-action-btn {
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--bg-tertiary, #343434);
+    color: var(--text-primary, #ffffff);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius, 6px);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+}
+
+.panel-action-btn:hover {
+    background: var(--bg-elevated, #464646);
+    border-color: var(--border-hover, #8a8a8a);
+}
+
+/* 2. Hand Card Common Slots (50x70px desktop, 36x52px mobile) */
+.hand-card {
+    width: 50px;
+    height: 70px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    user-select: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hand-card:not([data-id]) {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed var(--border-color, #444444);
+    color: var(--text-tertiary, #666666);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.hand-slot-num { opacity: 0.4; }
+
+.hand-card[data-id] {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+}
+
+.hand-card[data-id]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+.hand-card[data-id] .card-rank,
+.hand-card[data-id] .card-suit {
+    font-size: 25px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.hand-card[data-id].red { color: var(--c-red, #dc2626); }
+.hand-card[data-id].black { color: #0f172a; }
+
+/* 3. Tiến Lên: Heo Radar & Tứ Quý Alert */
+.heo-radar {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-color, #333333);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+}
+
+.heo-radar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.heo-radar-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-tertiary, #888888);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.heo-items {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.heo-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: var(--bg-tertiary, #1f1f1f);
+    border: 1px solid var(--border-color, #333333);
+    transition: all 0.2s ease;
+}
+
+.heo-card-name {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.heo-badge.is-red .heo-card-name { color: var(--c-red, #ff4d4d); }
+.heo-badge.is-black .heo-card-name { color: #e2e8f0; }
+
+.heo-status {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.heo-status.in-hand {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--c-green, #22c55e);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.heo-status.unplayed {
+    background: rgba(234, 179, 8, 0.15);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.heo-status.played {
+    background: rgba(148, 163, 184, 0.1);
+    color: #64748b;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    text-decoration: line-through;
+}
+
+.heo-badge.is-played {
+    opacity: 0.45;
+}
+
+/* Tứ Quý Alert Banner */
+.tuquy-alert {
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tuquy-alert.is-threat {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+}
+
+.tuquy-alert.is-safe {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #86efac;
+}
+
+/* Tiến Lên Hand (13 cards) */
+#tienlen-hand {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.tienlen-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+#addModeBtn {
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--bg-tertiary, #343434);
+    color: var(--text-primary, #ffffff);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius, 6px);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#addModeBtn:hover {
+    background: var(--bg-elevated, #464646);
+    border-color: var(--border-hover, #8a8a8a);
+}
+
+#addModeBtn.is-active {
+    background: var(--c-green, #22c55e);
+    color: #0f172a;
+    border-color: var(--c-green, #22c55e);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
+}
+
+#sortTienLenBtn {
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--bg-elevated, #444c5e);
+    color: var(--text-primary, #ffffff);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius, 6px);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#sortTienLenBtn:hover {
+    background: #50596e;
+    border-color: var(--border-hover, #8a8a8a);
+}
+
+/* 4. Blackjack Hand & Odds */
+#blackjack-hand {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#blackjack-info {
+    text-align: center;
+    margin-top: 10px;
+}
+
+#blackjack-total {
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+    color: var(--c-yellow, #ffd700);
+}
+
+#blackjack-chance {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.chance-pill {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: var(--border-radius-full, 9999px);
+    border: 1px solid var(--border-color, #3a3a3a);
+    background: var(--bg-primary, #191919);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.chance-pill.chance-safe {
+    color: var(--c-green, #22c55e);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.chance-pill.chance-bust {
+    color: var(--c-red, #ef4444);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.chance-pill.chance-neutral {
+    color: var(--text-tertiary, #888888);
+    border-color: var(--border-color, #3a3a3a);
+}
+
+/* 5. Texas Hold'em Poker Panel */
+.poker-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.poker-group-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary, #aaaaaa);
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+#poker-hole,
+#poker-community {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.poker-slot-label {
+    position: absolute;
+    bottom: 2px;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-tertiary, #888888);
+    text-transform: uppercase;
+}
+
+#poker-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.poker-pill {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: var(--bg-tertiary, #1f1f1f);
+    border: 1px solid var(--border-color, #333333);
+    color: var(--text-primary, #ffffff);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.poker-pill.is-highlight {
+    background: rgba(234, 179, 8, 0.15);
+    border-color: rgba(234, 179, 8, 0.4);
+    color: #fbbf24;
+}
+
+/* Responsive Scaling */
+@media (max-width: 768px) {
+    .hand-card {
+        width: 36px;
+        height: 52px;
+        border-radius: 5px;
+    }
+    .hand-card[data-id] .card-rank,
+    .hand-card[data-id] .card-suit {
+        font-size: 17px;
+    }
+    .heo-items {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    .heo-card-name { font-size: 13px; }
+    .heo-status { font-size: 9px; padding: 1px 4px; }
+    #tienlen-hand, #blackjack-hand, #poker-hole, #poker-community {
+        gap: 4px;
+    }
+}

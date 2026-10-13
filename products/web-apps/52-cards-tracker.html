@@ -3,1044 +3,214 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>52 Cards Tracker</title>
-
-
-    <!-- 
-░█████╗░░██████╗░██████╗
-██╔══██╗██╔════╝██╔════╝
-██║░░╚═╝╚█████╗░╚█████╗░
-██║░░██╗░╚═══██╗░╚═══██╗
-╚█████╔╝██████╔╝██████╔╝
-░╚════╝░╚═════╝░╚═════╝░-->
-
-    <style>
-        .app {
-            padding-bottom: 64px;
-            width: 100%;
-            max-width: 1024px;
-            /* 64 controls + 64 tabs + dư */
-        }
-
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #0f172a;
-            color: white;
-            margin: 0;
-            padding: 16px;
-            display: flex;
-            justify-content: center;
-        }
-
-        /*
-▀▀█▀▀ █▀▀█ █▀▀█ 　 █▀▀▄ █▀▀█ █▀▀█ 
-░▒█░░ █░░█ █░░█ 　 █▀▀▄ █▄▄█ █▄▄▀ 
-░▒█░░ ▀▀▀▀ █▀▀▀ 　 ▀▀▀░ ▀░░▀ ▀░▀▀ */
-
-        #gameSelect {
-            font-size: 30px;
-            font-weight: bold;
-            background: #020617;
-            color: #fff;
-            border-radius: 8px;
-            padding: 4px 8px;
-            border: 1px solid #1e293b;
-            min-width: 200px;
-            height: 44px;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .counter {
-            text-align: center;
-            font-size: 20px;
-            margin-bottom: 12px;
-        }
-
-        /*
-░█▀▀█ █▀▀█ ▀▀█▀▀ ▀▀█▀▀ █▀▀█ █▀▄▀█ 　 █▀▀▄ █▀▀█ █▀▀█ 
-░█▀▀▄ █──█ ──█── ──█── █──█ █─▀─█ 　 █▀▀▄ █▄▄█ █▄▄▀ 
-░█▄▄█ ▀▀▀▀ ──▀── ──▀── ▀▀▀▀ ▀───▀ 　 ▀▀▀─ ▀──▀ ▀─▀▀*/
-        .bottom-controls {
-            position: fixed;
-            bottom: 0px;
-            /* nằm trên bottom-tabs */
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: #020617;
-            border-top: 1px solid #1e293b;
-            z-index: 99;
-            display: flex;
-            justify-content: center;
-        }
-
-        .bottom-controls-inner {
-            width: 100%;
-            max-width: 1024px;
-            display: flex;
-        }
-
-        .bottom-controls button {
-            flex: 1;
-            border: none;
-            background: transparent;
-            color: #e5e7eb;
-            font-size: 20px;
-            font-weight: 600;
-            cursor: pointer;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .bottom-controls .hide {
-            background: #222222;
-            color: #fff;
-        }
-
-        .bottom-controls .show {
-            background: #22c55e;
-            color: #000;
-        }
-
-        .bottom-controls .undo {
-            background: #334155;
-            color: #fff;
-        }
-
-        .bottom-controls .redo {
-            background: #334155;
-            color: #fff;
-        }
-
-
-
-        /* 
-█▀▀ █▀▀█ █▀▀█ █▀▀▄ 
-█░░ █▄▄█ █▄▄▀ █░░█ 
-▀▀▀ ▀░░▀ ▀░▀▀ ▀▀▀░ */
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(13, 1fr);
-            gap: 5px;
-        }
-
-
-        .card {
-            height: 100px;
-            border-radius: 12px;
-            background: white;
-            border: 2px solid #e5e7eb;
-            font-weight: bold;
-
-            cursor: pointer;
-            user-select: none;
-            transition: 0.2s;
-
-            flex-direction: column;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 0.9;
-        }
-
-        .card.red {
-            color: #dc2626;
-        }
-
-        .card.black {
-            color: #020617;
-        }
-
-        .card.used {
-            opacity: 0.1;
-            filter: grayscale(100%);
-        }
-
-        .card {}
-
-        .card .suit,
-        .card .rank {
-            font-size: 45px;
-        }
-
-        /*
-█▀▄▀█ █▀█ █▄▄ █ █░░ █▀▀
-█░▀░█ █▄█ █▄█ █ █▄▄ ██▄*/
-        @media (max-width: 768px) {
-            .cards {
-                gap: 1px;
-            }
-
-            .card {
-                height: 55px;
-                border-radius: 5px;
-                border: 0px;
-            }
-
-            .card .suit,
-            .card .rank {
-                font-size: 20px;
-            }
-        }
-
-
-
-
-        /*
-▒█░▒█ ░▀░ █▀▀ ▀▀█▀▀ █▀▀█ █▀▀█ █░░█ 
-▒█▀▀█ ▀█▀ ▀▀█ ░░█░░ █░░█ █▄▄▀ █▄▄█ 
-▒█░▒█ ▀▀▀ ▀▀▀ ░░▀░░ ▀▀▀▀ ▀░▀▀ ▄▄▄█*/
-        .history-panel {
-            margin-top: 12px;
-            padding: 10px;
-            min-height: 65px;
-            border-radius: 12px;
-            background: linear-gradient(145deg, #1f1f1f, #2a2a2a);
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-        }
-
-        .history-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #aaa;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        #history {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-
-        .history-card {
-            width: 30px;
-            height: 40px;
-            border-radius: 5px;
-            background: #111;
-            cursor: pointer;
-
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-
-            transition: 0.2s;
-        }
-
-        .card-rank {
-            font-size: 13px;
-            font-weight: bold;
-            line-height: 1;
-        }
-
-        .card-suit {
-            font-size: 13px;
-            line-height: 1;
-            margin-top: 2px;
-        }
-
-        /* màu chất */
-        .history-card .red,
-        .card-suit.heart,
-        .card-suit.diamond {
-            color: #ff4d4d;
-        }
-
-        .history-card .black,
-        .card-suit.spade,
-        .card-suit.club {
-            color: #eee;
-        }
-
-        /*
-█▀▄▀█ █▀█ █▄▄ █ █░░ █▀▀
-█░▀░█ █▄█ █▄█ █ █▄▄ ██▄*/
-        @media (max-width: 768px) {
-            #history {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 1px;
-            }
-
-            .history-card {
-                width: 20px;
-                height: 40px;
-                border-radius: 3px;
-            }
-
-        }
-
-
-
-
-
-        .game-panel {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 12px;
-            background: linear-gradient(145deg, #1f1f1f, #2a2a2a);
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #aaa;
-            margin-bottom: 8px;
-        }
-
-        /*
-▀▀█▀▀ ░▀░ █▀▀ █▀▀▄ 　 ▒█░░░ █▀▀ █▀▀▄ 
-░▒█░░ ▀█▀ █▀▀ █░░█ 　 ▒█░░░ █▀▀ █░░█ 
-░▒█░░ ▀▀▀ ▀▀▀ ▀░░▀ 　 ▒█▄▄█ ▀▀▀ ▀░░▀*/
-        #tienlen-hand {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
-            margin-bottom: 8px;
-        }
-
-
-        /*
-▒█▀▀█ █░░ █▀▀█ █▀▀ █░█ ░░▀ █▀▀█ █▀▀ █░█ 
-▒█▀▀▄ █░░ █▄▄█ █░░ █▀▄ ░░█ █▄▄█ █░░ █▀▄ 
-▒█▄▄█ ▀▀▀ ▀░░▀ ▀▀▀ ▀░▀ █▄█ ▀░░▀ ▀▀▀ ▀░▀*/
-        #blackjack-hand {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-            /* căn giữa ngang */
-            align-items: center;
-            /* căn giữa dọc */
-        }
-
-        .hand-card {
-            width: 50px;
-            height: 70px;
-            border-radius: 8px;
-            background: #111;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 30px;
-            border: 2px solid #333;
-        }
-
-        .hand-card .card-rank,
-        .hand-card .card-suit {
-            font-size: 25px;
-            font-weight: bold;
-            line-height: 1;
-        }
-
-            {
-            font-size: 25px;
-            /* tăng size suit */
-            line-height: 1;
-            margin-top: 2px;
-        }
-
-
-        .hand-card.red {
-            color: #ff4d4d;
-        }
-
-        .hand-card.black {
-            color: #eee;
-        }
-
-        /* Căn giữa toàn bộ info */
-        #blackjack-info {
-            text-align: center;
-            margin-top: 8px;
-            font-weight: bold;
-            line-height: 1.2;
-        }
-
-        #blackjack-total {
-            font-size: 30px;
-            margin-bottom: 4px;
-        }
-
-        #blackjack-chance div {
-            font-size: 20px;
-            margin-top: 2px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title data-i18n="brand.documentTitle">52 Cards Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Design System & Shared SSO Styles -->
+    <link rel="stylesheet" href="../../common/theme.css">
+    <link rel="stylesheet" href="../../common/shared-auth.css">
+    <link rel="stylesheet" href="./52-cards-tracker/52-cards-tracker.css?v=20261014-5">
+    <link rel="stylesheet" href="./52-cards-tracker/game-panels.css?v=20261014-5">
 </head>
 
-<!--
-██████╗░░█████╗░██████╗░██╗░░░██╗
-██╔══██╗██╔══██╗██╔══██╗╚██╗░██╔╝
-██████╦╝██║░░██║██║░░██║░╚████╔╝░
-██╔══██╗██║░░██║██║░░██║░░╚██╔╝░░
-██████╦╝╚█████╔╝██████╔╝░░░██║░░░
-╚═════╝░░╚════╝░╚═════╝░░░░╚═╝░░░-->
-
 <body>
+    <!-- Top App Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="brand-icon" aria-hidden="true">🃏</div>
+            <h1 class="brand-title" data-i18n="brand.title">52 Cards Tracker</h1>
+        </div>
 
+        <!-- Header Actions: Right-to-Left (SSO -> Lang -> Sound) -->
+        <div class="header-actions">
+            <!-- Sound Toggle Button -->
+            <button type="button" class="icon-btn" id="soundToggleBtn" aria-label="Toggle Sound">🔊</button>
+
+            <!-- Bilingual Switcher (Sticky Header Pure CSS Flag Style) -->
+            <div class="lang-switch">
+                <button type="button" class="lang-btn lang-btn--toggle" id="langToggleBtn" data-lang="en" aria-label="Chuyển sang Tiếng Anh">
+                    <span class="lang-flag lang-flag--en" aria-hidden="true"></span>
+                    <span class="lang-code">EN</span>
+                </button>
+            </div>
+
+            <!-- Shared SSO Auth Slot -->
+            <div id="sharedAuthSlot"></div>
+        </div>
+    </header>
+
+    <!-- Main Container (Original Layout) -->
     <div class="app">
+        <!-- Top Bar: Game Select & Counter -->
         <div class="top-bar">
-            <select id="gameSelect" style="font-size: 20px; font-weight: bold; background: #020617; color: #fff; border-radius: 8px; padding: 4px 8px; border: 1px solid #1e293b;">
-                <option value="tienlen" selected>Tiến Lên</option>
-                <option value="poker">Poker</option>
-                <option value="blackjack">Blackjack</option>
+            <select id="gameSelect">
+                <option value="tienlen" selected data-i18n="gameModes.tienlen">Tiến Lên</option>
+                <option value="blackjack" data-i18n="gameModes.blackjack">Blackjack</option>
+                <option value="poker" data-i18n="gameModes.poker">Poker</option>
             </select>
             <div class="counter" id="counter">0 / 52🃏</div>
         </div>
 
+        <!-- 52 Cards Grid (13 Columns - Text Size Preserved at 45px / 20px) -->
         <div class="cards" id="cards"></div>
 
+        <!-- History Panel -->
         <div class="history-panel">
-            <div class="history-title">History</div>
+            <div class="history-title" data-i18n="history.title">History</div>
             <div id="history"></div>
         </div>
 
-
+        <!-- Tiến Lên Panel (Heo Radar, Tứ Quý Alert & 13 Cards Hand) -->
         <div class="game-panel" id="tienlen-panel">
-            <div class="panel-title">Tiến Lên Hand (13 cards)</div>
-            <div id="tienlen-hand">
-                <!-- 13 ô trống -->
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
+            <div class="panel-header">
+                <div class="panel-title" data-i18n="tienlen.title">Tiến Lên Hand (13 cards)</div>
             </div>
 
-            <button id="addModeBtn" style="margin-top:10px; padding:6px 12px; font-weight:bold; cursor:pointer;">Add Mode</button>
+            <!-- Radar 4 Con Heo -->
+            <div class="heo-radar" id="heoRadar"></div>
+
+            <!-- Tứ Quý Alert Banner -->
+            <div class="tuquy-alert is-safe" id="tuQuyAlert" data-i18n="tienlen.tuQuySafe">
+                ✅ An toàn: Không còn bộ Tứ Quý nguyên vẹn
+            </div>
+
+            <!-- 13 Hand Slots -->
+            <div id="tienlen-hand">
+                <div class="hand-card"><span class="hand-slot-num">1</span></div>
+                <div class="hand-card"><span class="hand-slot-num">2</span></div>
+                <div class="hand-card"><span class="hand-slot-num">3</span></div>
+                <div class="hand-card"><span class="hand-slot-num">4</span></div>
+                <div class="hand-card"><span class="hand-slot-num">5</span></div>
+                <div class="hand-card"><span class="hand-slot-num">6</span></div>
+                <div class="hand-card"><span class="hand-slot-num">7</span></div>
+                <div class="hand-card"><span class="hand-slot-num">8</span></div>
+                <div class="hand-card"><span class="hand-slot-num">9</span></div>
+                <div class="hand-card"><span class="hand-slot-num">10</span></div>
+                <div class="hand-card"><span class="hand-slot-num">11</span></div>
+                <div class="hand-card"><span class="hand-slot-num">12</span></div>
+                <div class="hand-card"><span class="hand-slot-num">13</span></div>
+            </div>
+
+            <!-- Tiến Lên Action Buttons -->
+            <div class="tienlen-controls">
+                <button type="button" id="addModeBtn" data-i18n="tienlen.addModeBtn">
+                    <span aria-hidden="true">🃏</span>
+                    <span data-i18n="tienlen.addModeBtn">Add Mode</span>
+                </button>
+                <button type="button" id="sortTienLenBtn">
+                    <span aria-hidden="true">📶</span>
+                    <span data-i18n="tienlen.sortBtn">Sort Hand</span>
+                </button>
+            </div>
         </div>
 
-
+        <!-- Blackjack Panel (5 Cards Hand & Soft Ace Odds) -->
         <div class="game-panel" id="blackjack-panel" style="display:none;">
-            <div class="panel-title">Blackjack Hand (5 cards)</div>
+            <div class="panel-header">
+                <div class="panel-title" data-i18n="blackjack.title">Blackjack Hand (5 cards)</div>
+                <button type="button" class="panel-action-btn" id="newBlackjackHandBtn">
+                    <span aria-hidden="true">🔄</span>
+                    <span data-i18n="blackjack.newHandBtn">Ván Mới</span>
+                </button>
+            </div>
+
             <div id="blackjack-hand">
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
-                <div class="hand-card"></div>
+                <div class="hand-card"><span class="hand-slot-num">1</span></div>
+                <div class="hand-card"><span class="hand-slot-num">2</span></div>
+                <div class="hand-card"><span class="hand-slot-num">3</span></div>
+                <div class="hand-card"><span class="hand-slot-num">4</span></div>
+                <div class="hand-card"><span class="hand-slot-num">5</span></div>
             </div>
 
             <div id="blackjack-info">
                 <div id="blackjack-total">Total: 0</div>
                 <div id="blackjack-chance">
-                    <div>Safe (≤21): 0%</div>
-                    <div>Bust (>21): 0%</div>
+                    <div class="chance-pill chance-neutral">Safe (≤21): --%</div>
+                    <div class="chance-pill chance-neutral">Bust (>21): --%</div>
                 </div>
-
             </div>
         </div>
+
+        <!-- Texas Hold'em Poker Panel (Hole & Community Cards Outs) -->
+        <div class="game-panel" id="poker-panel" style="display:none;">
+            <div class="panel-header">
+                <div class="panel-title" data-i18n="poker.title">Poker Texas Hold'em</div>
+                <button type="button" class="panel-action-btn" id="newPokerHandBtn">
+                    <span aria-hidden="true">🔄</span>
+                    <span data-i18n="poker.newHandBtn">Ván Mới</span>
+                </button>
+            </div>
+
+            <div class="poker-sections">
+                <!-- Hole Cards (2) -->
+                <div>
+                    <div class="poker-group-title" data-i18n="poker.holeTitle">Bài Tẩy (2 lá)</div>
+                    <div id="poker-hole">
+                        <div class="hand-card"><span class="hand-slot-num">H1</span></div>
+                        <div class="hand-card"><span class="hand-slot-num">H2</span></div>
+                    </div>
+                </div>
+
+                <!-- Community Cards (5) -->
+                <div>
+                    <div class="poker-group-title" data-i18n="poker.communityTitle">Bài Chung (5 lá)</div>
+                    <div id="poker-community">
+                        <div class="hand-card"><span class="hand-slot-num">Flop 1</span></div>
+                        <div class="hand-card"><span class="hand-slot-num">Flop 2</span></div>
+                        <div class="hand-card"><span class="hand-slot-num">Flop 3</span></div>
+                        <div class="hand-card"><span class="hand-slot-num">Turn</span></div>
+                        <div class="hand-card"><span class="hand-slot-num">River</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Poker Outs & Unseen Info -->
+            <div id="poker-info"></div>
+        </div>
+
+        <!-- Fixed Bottom Controls -->
         <div class="bottom-controls">
             <div class="bottom-controls-inner">
-                <button class="control hide" onclick="hideAll()">🙈 Hide</button>
-                <button class="control show" onclick="showAll()">👁️ Show</button>
-                <button class="control undo" onclick="undo()">↩️ Undo</button>
-                <button class="control redo" onclick="redo()">↪️ Redo</button>
+                <button type="button" class="control hide" id="hideBtn">
+                    <span aria-hidden="true">🙈</span>
+                    <span data-i18n="controls.hideAll">Hide</span>
+                </button>
+                <button type="button" class="control show" id="showBtn">
+                    <span aria-hidden="true">👁️</span>
+                    <span data-i18n="controls.showAll">Show</span>
+                </button>
+                <button type="button" class="control undo" id="undoBtn">
+                    <span aria-hidden="true">↩️</span>
+                    <span data-i18n="controls.undo">Undo</span>
+                </button>
+                <button type="button" class="control redo" id="redoBtn">
+                    <span aria-hidden="true">↪️</span>
+                    <span data-i18n="controls.redo">Redo</span>
+                </button>
             </div>
         </div>
     </div>
 
-
-    <!-- 
-░░░░░██╗░██████╗
-░░░░░██║██╔════╝
-░░░░░██║╚█████╗░
-██╗░░██║░╚═══██╗
-╚█████╔╝██████╔╝
-░╚════╝░╚═════╝░-->
-    <script>
-        // Thứ tự: Bích, Chuồn, Rô, Cơ
-        const suits = ["♠", "♣", "♦", "♥"];
-        const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-        const cardsContainer = document.getElementById("cards");
-        const counterEl = document.getElementById("counter");
-        const historyEl = document.getElementById("history");
-
-        let undoStack = [];
-        let redoStack = [];
-        const MAX_UNDO = 50;
-
-        function updateAll() {
-            // 1. Reset tất cả lá bài
-            document.querySelectorAll(".card").forEach(card => card.classList.remove("used"));
-
-            // 2. Duyệt qua history và đánh dấu các lá đã dùng
-            const historyIds = [...historyEl.querySelectorAll(".history-card")].map(el => el.dataset.id);
-            historyIds.forEach(id => {
-                const card = document.querySelector(`.card[data-id="${id}"]`);
-                if (card) card.classList.add("used");
-            });
-            // 3. Update counter
-            updateCounter();
-            // 4. Lưu state vào localStorage
-            saveState();
-            // ❌ Không snapshot ở đây nữa
-            //snapshotState();
-            // Cập nhật Blackjack hand
-            updateBlackjackHand();
-        }
-
-
-        function updateCounter() {
-            const used = document.querySelectorAll(".card.used").length;
-            counterEl.textContent = `${used} / 52🃏`;
-        }
-
-        function createCards() {
-            suits.forEach(suit => {
-                ranks.forEach(rank => {
-                    const card = document.createElement("div");
-                    card.className = "card";
-                    card.innerHTML = `<span class="rank">${rank}</span><span class="suit">${suit}</span>`;
-
-                    const cardId = `${rank}_${suit}`;
-                    card.dataset.id = cardId;
-                    card.dataset.rank = rank;
-                    card.dataset.suit = suit;
-
-
-
-                    if (suit === "♥" || suit === "♦") {
-                        card.classList.add("red");
-                    } else {
-                        card.classList.add("black");
-                    }
-
-                    //let holdTimer;
-
-                    card.addEventListener("click", () => {
-                        const isUsed = card.classList.toggle("used");
-
-                        if (isUsed) {
-                            addHistory(card);
-                        } else {
-                            removeHistory(card.dataset.id);
-                        }
-
-                        updateAll(); // ✅ mọi thứ qua updateAll
-                    });
-
-
-                    //card.addEventListener("mouseup", () => clearTimeout(holdTimer));
-                    //card.addEventListener("mouseleave", () => clearTimeout(holdTimer));
-
-                    cardsContainer.appendChild(card);
-                });
-            });
-        }
-
-        function resetSuit(suit) {
-            document.querySelectorAll(`.card[data-suit="${suit}"]`)
-                .forEach(card => card.classList.remove("used"));
-            saveState();
-            updateCounter();
-        }
-
-
-        function saveState() {
-            const used = [];
-            document.querySelectorAll(".card.used").forEach(card => {
-                used.push(card.dataset.id);
-            });
-            localStorage.setItem("usedCards", JSON.stringify(used));
-        }
-
-
-        function loadState() {
-            const used = JSON.parse(localStorage.getItem("usedCards") || "[]");
-
-            document.querySelectorAll(".card").forEach(card => {
-                if (used.includes(card.dataset.id)) {
-                    card.classList.add("used");
-                    addHistory(card);
-                }
-            });
-
-            updateCounter();
-        }
-
-        // Trả về mảng ID các lá bài chưa dùng
-        function getUnusedCardIds() {
-            // Lấy danh sách ID history
-            const historyIds = [...historyEl.querySelectorAll(".history-card")].map(el => el.dataset.id);
-
-            // Lấy các lá bài chưa dùng (chưa có class 'used') và không nằm trong history
-            const unused = [...document.querySelectorAll(".card")]
-                .filter(card => !card.classList.contains("used") && !historyIds.includes(card.dataset.id))
-                .map(card => card.dataset.id);
-
-            return unused; // ['A_♠', '2_♠', ...]
-        }
-
-
-
-        /*
-▒█▀▀█ █░░█ ▀▀█▀▀ ▀▀█▀▀ █▀▀█ █▀▀▄ █▀▀ 
-▒█▀▀▄ █░░█ ░░█░░ ░░█░░ █░░█ █░░█ ▀▀█ 
-▒█▄▄█ ░▀▀▀ ░░▀░░ ░░▀░░ ▀▀▀▀ ▀░░▀ ▀▀▀*/
-        function hideAll() {
-            document.querySelectorAll(".card").forEach(card => {
-                if (!card.classList.contains("used")) addHistory(card);
-            });
-            updateAll();
-        }
-
-
-        function showAll() {
-            historyEl.innerHTML = ""; // bỏ history
-            updateAll(); // đánh dấu lại tất cả lá bài chưa dùng
-        }
-
-
-
-
-
-
-        function snapshotState() {
-            const history = [...historyEl.querySelectorAll(".history-card")]
-                .map(el => el.dataset.id);
-
-            const used = [...document.querySelectorAll(".card.used")]
-                .map(card => card.dataset.id);
-
-            undoStack.push({
-                history,
-                used
-            });
-
-            // ❗ Có action mới → redo không còn hợp lệ
-            redoStack = [];
-
-            if (undoStack.length > MAX_UNDO) {
-                undoStack.shift();
-            }
-        }
-
-
-        function restoreState(state) {
-            // Xóa hết history cũ
-            historyEl.innerHTML = "";
-
-            // Khôi phục từng lá bài trong history
-            state.history.forEach(id => {
-                const card = document.querySelector(`.card[data-id="${id}"]`);
-                if (!card) return;
-
-                card.classList.add("used"); // đánh dấu lá bài đã dùng
-
-                // Tạo div history-card
-                const div = document.createElement("div");
-                div.className = "history-card";
-                div.dataset.id = id;
-
-                const colorClass = card.classList.contains("red") ? "red" : "black";
-                let suitClass = "";
-                switch (card.dataset.suit) {
-                    case "♥":
-                        suitClass = "heart";
-                        break;
-                    case "♦":
-                        suitClass = "diamond";
-                        break;
-                    case "♠":
-                        suitClass = "spade";
-                        break;
-                    case "♣":
-                        suitClass = "club";
-                        break;
-                }
-
-                div.innerHTML = `
-            <div class="card-rank ${colorClass}">${card.dataset.rank}</div>
-            <div class="card-suit ${suitClass} ${colorClass}">${card.dataset.suit}</div>
-        `;
-
-                // Click vào history-card để bỏ lá bài
-                div.addEventListener("click", () => {
-                    card.classList.remove("used");
-                    div.remove();
-                    updateAll();
-                    snapshotState();
-                });
-
-                historyEl.appendChild(div);
-            });
-
-            // Đồng bộ tất cả: counter, blackjack hand, localStorage
-            updateAll();
-        }
-
-
-
-
-
-
-        function undo() {
-            if (undoStack.length <= 1) return;
-
-            const current = undoStack.pop();
-            redoStack.push(current);
-
-            const prev = undoStack[undoStack.length - 1];
-            restoreState(prev);
-        }
-
-
-        function redo() {
-            if (redoStack.length === 0) return;
-
-            const next = redoStack.pop();
-            undoStack.push(next);
-
-            restoreState(next);
-        }
-
-        function initUndoStack() {
-            undoStack = [];
-            redoStack = [];
-            snapshotState(); // trạng thái ban đầu
-        }
-
-
-
-
-
-
-
-        createCards();
-        loadState();
-        initUndoStack();
-
-
-
-        /* 
-▀▀█▀▀ █▀▀█ █▀▀▄ 　 ▒█▀▀█ █▀▀█ █▀▀█ 
-░▒█░░ █▄▄█ █▀▀▄ 　 ▒█▀▀▄ █▄▄█ █▄▄▀ 
-░▒█░░ ▀░░▀ ▀▀▀░ 　 ▒█▄▄█ ▀░░▀ ▀░▀▀*/
-
-        const titleEl = document.getElementById("pageTitle");
-
-        const gameSelect = document.getElementById("gameSelect");
-
-        gameSelect.addEventListener("change", () => {
-            const game = gameSelect.value;
-            const gameText = gameSelect.options[gameSelect.selectedIndex].text;
-
-            // Show/Hide panel
-            tienLenPanel.style.display = (game === "tienlen") ? "block" : "none";
-            blackjackPanel.style.display = (game === "blackjack") ? "block" : "none";
-
-            // Update panel title
-            if (game === "tienlen") {
-                tienLenPanel.querySelector(".panel-title").textContent = `${gameText} Hand (13 cards)`;
-                // Không reset bài
-            } else if (game === "blackjack") {
-                blackjackPanel.querySelector(".panel-title").textContent = `${gameText} Hand (5 cards)`;
-                updateBlackjackHand();
-            }
-
-            // Lưu game lần cuối vào localStorage
-            localStorage.setItem("lastGame", game);
-        });
-
-
-
-
-
-
-
-        /*
-        ▒█░▒█ ░▀░ █▀▀ ▀▀█▀▀ █▀▀█ █▀▀█ █░░█ 
-        ▒█▀▀█ ▀█▀ ▀▀█ ░░█░░ █░░█ █▄▄▀ █▄▄█ 
-        ▒█░▒█ ▀▀▀ ▀▀▀ ░░▀░░ ▀▀▀▀ ▀░▀▀ ▄▄▄█*/
-
-        function addHistory(card) {
-            if (historyEl.querySelector(`.history-card[data-id="${card.dataset.id}"]`)) return;
-
-            const div = document.createElement("div");
-            div.className = "history-card";
-            div.dataset.id = card.dataset.id;
-
-            let suitClass = "";
-            switch (card.dataset.suit) {
-                case "♥":
-                    suitClass = "heart";
-                    break;
-                case "♦":
-                    suitClass = "diamond";
-                    break;
-                case "♠":
-                    suitClass = "spade";
-                    break;
-                case "♣":
-                    suitClass = "club";
-                    break;
-            }
-
-            // Lấy màu từ card gốc
-            const colorClass = card.classList.contains("red") ? "red" : "black";
-
-            div.innerHTML = `
-        <div class="card-rank ${colorClass}">${card.dataset.rank}</div>
-        <div class="card-suit ${suitClass} ${colorClass}">${card.dataset.suit}</div>
-    `;
-
-            div.addEventListener("click", () => {
-                card.classList.remove("used");
-                div.remove();
-                updateAll(); // update everything: counter + Blackjack hand + localStorage
-                snapshotState(); // giữ snapshot undo/redo
-            });
-
-            historyEl.appendChild(div);
-
-            snapshotState(); // chỉ snapshot khi add trực tiếp
-        }
-
-
-
-
-        function removeHistory(cardId) {
-            const item = historyEl.querySelector(`.history-card[data-id="${cardId}"]`);
-            if (item) item.remove();
-
-            // ✅ đồng bộ tất cả, bao gồm Blackjack hand
-            updateAll();
-        }
-
-        /*
-        ▀▀█▀▀ ░▀░ █▀▀ █▀▀▄ 　 ▒█░░░ █▀▀ █▀▀▄ 
-        ░▒█░░ ▀█▀ █▀▀ █░░█ 　 ▒█░░░ █▀▀ █░░█ 
-        ░▒█░░ ▀▀▀ ▀▀▀ ▀░░▀ 　 ▒█▄▄█ ▀▀▀ ▀░░▀*/
-
-        const tienLenPanel = document.getElementById("tienlen-panel");
-        const tienLenHandEl = document.getElementById("tienlen-hand");
-        const addModeBtn = document.getElementById("addModeBtn");
-
-        let addModeActive = false;
-
-        // Bật/tắt Add Mode
-        addModeBtn.addEventListener("click", () => {
-            addModeActive = !addModeActive;
-            addModeBtn.style.background = addModeActive ? "#22c55e" : "";
-            addModeBtn.style.color = addModeActive ? "#000" : "#fff";
-        });
-
-        // Khi click vào lá bài
-        document.querySelectorAll(".card").forEach(card => {
-            card.addEventListener("click", () => {
-                if (!addModeActive) return;
-
-                // Tìm ô trống đầu tiên trong 13 hand
-                const emptyCard = [...tienLenHandEl.querySelectorAll(".hand-card")].find(c => !c.dataset.id);
-                if (!emptyCard) return; // đã đầy 13 lá
-
-                // Điền thông tin lá bài
-                emptyCard.dataset.id = card.dataset.id;
-                const colorClass = card.classList.contains("red") ? "red" : "black";
-                let suitClass = "";
-                switch (card.dataset.suit) {
-                    case "♥":
-                        suitClass = "heart";
-                        break;
-                    case "♦":
-                        suitClass = "diamond";
-                        break;
-                    case "♠":
-                        suitClass = "spade";
-                        break;
-                    case "♣":
-                        suitClass = "club";
-                        break;
-                }
-                emptyCard.innerHTML = `
-            <div class="card-rank ${colorClass}">${card.dataset.rank}</div>
-            <div class="card-suit ${suitClass} ${colorClass}">${card.dataset.suit}</div>
-        `;
-                emptyCard.classList.remove("red", "black");
-                emptyCard.classList.add(colorClass);
-
-                // Đồng bộ lá bài đã dùng
-                if (!card.classList.contains("used")) {
-                    card.classList.add("used");
-                    addHistory(card); // thêm vào History
-                    updateAll();
-                }
-                snapshotState();
-            });
-        });
-
-        // Đồng bộ mờ/sáng khi updateAll
-        function updateTienLenHand() {
-            const handCards = [...tienLenHandEl.querySelectorAll(".hand-card")];
-            handCards.forEach(cardEl => {
-                if (!cardEl.dataset.id) return;
-
-                const mainCard = document.querySelector(`.card[data-id="${cardEl.dataset.id}"]`);
-                if (!mainCard) return;
-
-                // Nếu lá bài ở danh sách 52 mờ, hand cũng mờ
-                if (mainCard.classList.contains("used")) {
-                    cardEl.style.opacity = "0.1";
-                } else {
-                    cardEl.style.opacity = "1";
-                }
-            });
-        }
-
-        // Chỉnh updateAll để gọi luôn
-        const oldUpdateAll = updateAll;
-        updateAll = function() {
-            oldUpdateAll();
-            updateTienLenHand();
-        }
-
-
-        /*
-▒█▀▀█ █░░ █▀▀█ █▀▀ █░█ ░░▀ █▀▀█ █▀▀ █░█ 
-▒█▀▀▄ █░░ █▄▄█ █░░ █▀▄ ░░█ █▄▄█ █░░ █▀▄ 
-▒█▄▄█ ▀▀▀ ▀░░▀ ▀▀▀ ▀░▀ █▄█ ▀░░▀ ▀▀▀ ▀░▀*/
-
-        //update 5 ô blackjack dựa trên history
-        const blackjackPanel = document.getElementById("blackjack-panel");
-        const blackjackHandEl = document.getElementById("blackjack-hand");
-
-        function updateBlackjackHand() {
-            const handCards = blackjackHandEl.querySelectorAll(".hand-card");
-            const historyIds = [...historyEl.querySelectorAll(".history-card")].map(el => el.dataset.id);
-
-            handCards.forEach((cardEl, index) => {
-                const cardId = historyIds[index];
-                if (cardId) {
-                    const card = document.querySelector(`.card[data-id="${cardId}"]`);
-                    const colorClass = card.classList.contains("red") ? "red" : "black";
-                    let suitClass = "";
-                    switch (card.dataset.suit) {
-                        case "♥":
-                            suitClass = "heart";
-                            break;
-                        case "♦":
-                            suitClass = "diamond";
-                            break;
-                        case "♠":
-                            suitClass = "spade";
-                            break;
-                        case "♣":
-                            suitClass = "club";
-                            break;
-                    }
-
-                    cardEl.innerHTML = `
-                <div class="card-rank ${colorClass}">${card.dataset.rank}</div>
-                <div class="card-suit ${suitClass} ${colorClass}">${card.dataset.suit}</div>
-            `;
-                    cardEl.classList.remove("red", "black");
-                    cardEl.classList.add(colorClass);
-                } else {
-                    cardEl.innerHTML = "";
-                    cardEl.classList.remove("red", "black");
-                }
-            });
-
-            // Cập nhật tổng
-            const total = calculateHandValue();
-            let color = "#ffd700"; // vàng
-            if (total > 21) color = "#dc2626"; // đỏ
-            else if (total >= 16) color = "#22c55e"; // xanh
-            blackjackTotalEl.textContent = `Total: ${total}`;
-            blackjackTotalEl.style.color = color;
-
-            // Cập nhật % khả năng bốc thêm 1 lá
-            updateNextCardChance(total);
-        }
-
-        /*
-█▄▄ █░░ ▄▀█ █▀▀ █▄▀ ░░█ ▄▀█ █▀▀ █▄▀   ▀░▄▀ ▀░▄▀ ▀░▄▀
-█▄█ █▄▄ █▀█ █▄▄ █░█ █▄█ █▀█ █▄▄ █░█   ▄▀░▄ ▄▀░▄ ▄▀░▄*/
-        const blackjackTotalEl = document.getElementById("blackjack-total");
-        blackjackTotalEl.textContent = `Total: ${total}`;
-        blackjackTotalEl.style.color = color;
-
-        function getCardValue(rank) {
-            if (rank === "A") return 11; // mặc định là 11, sau tính chỉnh
-            if (["J", "Q", "K"].includes(rank)) return 10;
-            return parseInt(rank);
-        }
-
-        function calculateHandValue() {
-            const handCards = [...blackjackHandEl.querySelectorAll(".hand-card")];
-            let total = 0;
-            let aceCount = 0;
-
-            handCards.forEach(cardEl => {
-                const rankEl = cardEl.querySelector(".card-rank");
-                if (!rankEl) return;
-                const rank = rankEl.textContent;
-                let value = getCardValue(rank);
-                if (rank === "A") aceCount++;
-                total += value;
-            });
-
-            // Xử lý A = 1 nếu tổng > 21
-            while (total > 21 && aceCount > 0) {
-                total -= 10; // tính A = 1 thay vì 11
-                aceCount--;
-            }
-
-            return total;
-        }
-
-        function updateNextCardChance(currentTotal) {
-            const unusedCardIds = getUnusedCardIds(); // lá chưa dùng
-            let safeCount = 0;
-
-            unusedCardIds.forEach(id => {
-                const [rank, suit] = id.split("_");
-                let value = getCardValue(rank);
-                if (rank === "A") {
-                    if (currentTotal + 11 <= 21) value = 11;
-                    else value = 1;
-                }
-                if (currentTotal + value <= 21) safeCount++;
-            });
-
-            const totalCards = unusedCardIds.length;
-            let safePct = totalCards ? ((safeCount / totalCards) * 100).toFixed(1) : 0;
-            let bustPct = totalCards ? (100 - safePct).toFixed(1) : 0;
-
-            const chanceEl = document.getElementById("blackjack-chance");
-            chanceEl.innerHTML = `
-        <div style="color:#22c55e">Safe (≤21): ${safePct}%</div>
-        <div style="color:#dc2626">Bust (>21): ${bustPct}%</div>
-    `;
-        }
-    </script>
+    <!-- Firebase SDKs for Shared SSO & Realtime Cloud Sync -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <!-- Universal Shared SSO Engine -->
+    <script src="../../common/shared-auth-config.js"></script>
+    <script src="../../common/shared-auth.js"></script>
+
+    <!-- 52 Cards Tracker Submodules -->
+    <script src="./52-cards-tracker/52-cards-tracker-i18n.js?v=20261014-5"></script>
+    <script src="./52-cards-tracker/audio.js?v=20261014-5"></script>
+    <script src="./52-cards-tracker/deck.js?v=20261014-5"></script>
+    <script src="./52-cards-tracker/history.js?v=20261014-5"></script>
+    <script src="./52-cards-tracker/game-modes.js?v=20261014-5"></script>
+    <script src="./52-cards-tracker/app.js?v=20261014-5"></script>
 
     <!-- Shared Web App Visit Counter -->
     <script src="../../common/shared-webapp-counter.js" data-webapp-id="webapp-52cardstracker"></script>

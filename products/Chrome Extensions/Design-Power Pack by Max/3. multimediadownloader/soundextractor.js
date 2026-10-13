@@ -259,6 +259,15 @@ window.updateSoundsData = function(sounds) {
   renderSoundsGrid();
 };
 
+window.resetSoundsState = function() {
+  resetSoundsPreviewState();
+  allSounds = [];
+  selectedSounds.clear();
+  updateSoundDownloadButtonState();
+  const selectAllCheckbox = document.getElementById('select-all-sounds');
+  if (selectAllCheckbox) selectAllCheckbox.checked = false;
+};
+
 // Render sounds grid container
 function renderSoundsGrid() {
   const gridContainer = document.getElementById('sound-grid-container');
