@@ -1,10 +1,8 @@
 import {
-  getBaseDomain,
   isGoogleDomain,
   extractUrlsFromHierarchy,
   ensureGlobalAntiFrameDNRRule,
-  updateDNRAntiFrameHeaders,
-  forceSameSiteNoneForDomain,
+  applySameSiteNoneToCookie,
   syncAllDomainCookies
 } from "./connections/common.js";
 
@@ -36,7 +34,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === "local" && (changes.app_hierarchy || changes.ai_models)) {
     chrome.storage.local.get(["app_hierarchy", "ai_models"], (data) => {
       const urls = extractUrlsFromHierarchy(data.app_hierarchy || [], data.ai_models || []);
-      updateDNRAntiFrameHeaders(urls);
+      ensureGlobalAntiFrameDNRRule();
       syncAllDomainCookies(urls);
     });
   }
@@ -53,34 +51,13 @@ chrome.cookies.onChanged.addListener((changeInfo) => {
         try {
           const url = new URL(urlStr);
           return cookie.domain.includes(url.hostname) || url.hostname.includes(cookie.domain);
-        } catch (e) {
+        } catch {
           return false;
         }
       });
 
       if (isMonitored) {
-        const domainClean = cookie.domain.startsWith('.') ? cookie.domain.substring(1) : cookie.domain;
-        const protocol = "https://";
-        const url = `${protocol}${domainClean}${cookie.path}`;
-        
-        const newCookie = {
-          url: url,
-          name: cookie.name,
-          value: cookie.value,
-          path: cookie.path,
-          secure: true,
-          sameSite: "no_restriction",
-          expirationDate: cookie.expirationDate,
-          httpOnly: cookie.httpOnly,
-          storeId: cookie.storeId
-        };
-
-        // __Host- cookies must NOT have a domain attribute specified
-        if (!cookie.name.startsWith("__Host-")) {
-          newCookie.domain = cookie.domain;
-        }
-
-        chrome.cookies.set(newCookie).catch(() => {});
+        applySameSiteNoneToCookie(cookie);
       }
     });
   }
@@ -90,7 +67,7 @@ chrome.cookies.onChanged.addListener((changeInfo) => {
 chrome.runtime.onInstalled.addListener(async (details) => {
   const data = await chrome.storage.local.get(["app_hierarchy", "ai_models"]);
   const urls = extractUrlsFromHierarchy(data.app_hierarchy || [], data.ai_models || []);
-  updateDNRAntiFrameHeaders(urls);
+  ensureGlobalAntiFrameDNRRule();
   syncAllDomainCookies(urls);
 
   if (details && details.reason === "install") {

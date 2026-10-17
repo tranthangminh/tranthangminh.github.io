@@ -54,7 +54,7 @@ namespace BookForge
 
             if (!Directory.Exists(baseDir))
             {
-                try { Directory.CreateDirectory(baseDir); } catch { }
+                try { Directory.CreateDirectory(baseDir); } catch (Exception) { /* Non-critical base directory creation fallback */ }
             }
 
             return Path.Combine(baseDir, bookName);
@@ -79,20 +79,24 @@ namespace BookForge
 
             // 2. Copy templates if present in app directory
             string appDir = AppDomain.CurrentDomain.BaseDirectory;
-            string templatesDir = Path.Combine(appDir, "Templates");
-            if (!Directory.Exists(templatesDir))
+            string[] candidateDirs = new string[]
             {
-                templatesDir = Path.Combine(appDir, "for_zip", "Templates");
-            }
-            if (!Directory.Exists(templatesDir))
+                Path.Combine(appDir, "Templates"),
+                Path.Combine(appDir, "for_zip", "Templates"),
+                Path.Combine(appDir, "src_Book Forge by Max", "Templates")
+            };
+
+            string templatesDir = null;
+            foreach (string candidate in candidateDirs)
             {
-                templatesDir = Path.Combine(appDir, "src_Book Forge by Max", "Templates");
+                if (Directory.Exists(candidate))
+                {
+                    templatesDir = candidate;
+                    break;
+                }
             }
-            if (!Directory.Exists(templatesDir))
-            {
-                templatesDir = Path.Combine(appDir, "src_BookForge", "Templates");
-            }
-            if (!Directory.Exists(templatesDir))
+
+            if (templatesDir == null)
             {
                 try
                 {
@@ -107,11 +111,7 @@ namespace BookForge
                         }
                     }
                 }
-                catch { }
-            }
-            if (!Directory.Exists(templatesDir))
-            {
-                templatesDir = Path.Combine(appDir, "Templates");
+                catch (Exception) { /* Non-critical wildcard directory probe fallback */ }
             }
 
             if (Directory.Exists(templatesDir))
@@ -147,7 +147,7 @@ namespace BookForge
         {
             if (!Directory.Exists(dir))
             {
-                try { Directory.CreateDirectory(dir); } catch { }
+                try { Directory.CreateDirectory(dir); } catch (Exception) { /* Non-critical directory creation fallback */ }
             }
         }
 
@@ -155,7 +155,7 @@ namespace BookForge
         {
             if (File.Exists(src) && !File.Exists(dest))
             {
-                try { File.Copy(src, dest, false); } catch { }
+                try { File.Copy(src, dest, false); } catch (Exception) { /* Non-critical template copy fallback */ }
             }
         }
     }

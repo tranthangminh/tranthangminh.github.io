@@ -18,7 +18,10 @@
   width: 100%;
 }
 
-#download-images-btn{
+#download-images-btn,
+#download-vectors-btn,
+#download-videos-btn,
+#download-sounds-btn {
   height: 28px;
   border-radius: var(--border-radius-sm);
 }
@@ -183,9 +186,12 @@
 }
 
 .controls-row-3 .action-btn {
+  height: 28px !important;
+  border-radius: var(--border-radius-sm) !important;
   min-width: 100px !important;
   display: inline-flex !important;
   justify-content: center !important;
+  align-items: center !important;
 }
 
 .controls-row-4 {

@@ -182,7 +182,7 @@ function isConsultationMissingData(prod, dungtichStr, priceVal) {
   return checkFields.some(val => !val || val === "-");
 }
 
-// Hàm rút gọn giá hiển thị trên giao diện nút bấm (VD: 2.350.000 -> 2.350k, 500.000 -> 500k)
+// Hàm rút gọn giá hiển thị trên giao diện nút bấm (VD: 2.350.000 -> 2.350k, 500.000 -> 500k, 77.500 -> 77.5k)
 function formatPriceShort(priceStr) {
   let s = cleanString(priceStr).replace(/[đđ₫\s]/gi, "");
   if (!s || s === "-") return "-";
@@ -190,21 +190,23 @@ function formatPriceShort(priceStr) {
   // Nếu đã có chữ 'k' hoặc 'K' ở cuối thì giữ nguyên
   if (s.toLowerCase().endsWith("k")) return s;
 
-  // Nếu kết thúc bằng .000 (VD: 2.350.000 -> 2.350k)
-  if (s.endsWith(".000")) {
-    return s.slice(0, -4) + "k";
+  // Nếu là dạng số thập phân ngắn (VD: 77.5 hoặc 77,5)
+  if (/^\d+[.,]\d{1,2}$/.test(s)) {
+    const num = parseFloat(s.replace(",", "."));
+    return num + "k";
   }
 
-  // Nếu kết thúc bằng 000 không có dấu chấm (VD: 500000 -> 500k)
-  if (s.endsWith("000")) {
-    return s.slice(0, -3) + "k";
+  const cleanNum = s.replace(/\./g, "").replace(/,/g, "");
+  let num = parseFloat(cleanNum);
+  if (isNaN(num)) return s;
+
+  // Nếu là số rút gọn dạng nguyên (VD: 2.350 -> 2.350.000, 500 -> 500.000)
+  if (num < 10000) {
+    num = num * 1000;
   }
 
-  // Nếu là số ngắn đã rút gọn sẵn từ trước (VD: 2.350 -> 2.350k)
-  const numericOnly = s.replace(/\./g, "");
-  if (!isNaN(numericOnly) && numericOnly !== "") {
-    return s + "k";
-  }
-
-  return s;
+  const valInK = Math.round((num / 1000) * 100) / 100;
+  const parts = valInK.toString().split(".");
+  const intFormatted = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return parts.length > 1 ? `${intFormatted}.${parts[1]}k` : `${intFormatted}k`;
 }

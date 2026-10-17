@@ -1773,27 +1773,17 @@ namespace ModernAutoClicker.Advanced
             int colX = cboActionType.Location.X + cboActionType.Width + 5;
             int colW = 116;
 
-            if (cboIfTrue != null) cboIfTrue.Visible = false;
-            if (cboIfFalse != null) cboIfFalse.Visible = false;
-            if (lblIfMatch != null) lblIfMatch.Visible = false;
-            if (lblIfUnmatch != null) lblIfUnmatch.Visible = false;
-            if (pnlImageThumb != null) pnlImageThumb.Visible = false;
-            if (cboDragButton != null) cboDragButton.Visible = false;
-            if (numSimilarity != null) numSimilarity.Visible = false;
-            if (lblSimilarity != null) lblSimilarity.Visible = false;
-            if (numTimeout != null) numTimeout.Visible = false;
-            if (cboRepeatMode != null) cboRepeatMode.Visible = false;
-            if (numRepeatTimes != null) numRepeatTimes.Visible = false;
-            if (txtRepeatTime != null) txtRepeatTime.Visible = false;
-            if (lblLoopTo != null) lblLoopTo.Visible = false;
-            if (cboLoopTarget != null) cboLoopTarget.Visible = false;
-            if (lblLoopFinished != null) lblLoopFinished.Visible = false;
-            if (cboLoopFinished != null) cboLoopFinished.Visible = false;
-            if (lblPressKeyTitle != null) lblPressKeyTitle.Visible = false;
-            if (txtPressKey != null) txtPressKey.Visible = false;
-            if (btnPressClickOrder != null) btnPressClickOrder.Visible = false;
-            if (lblPressModeTitle != null) lblPressModeTitle.Visible = false;
-            if (cboPressClickMode != null) cboPressClickMode.Visible = false;
+            Control[] dynamicControls = new Control[] {
+                cboIfTrue, cboIfFalse, lblIfMatch, lblIfUnmatch, pnlImageThumb,
+                cboDragButton, numSimilarity, lblSimilarity, numTimeout, cboRepeatMode,
+                numRepeatTimes, txtRepeatTime, lblLoopTo, cboLoopTarget, lblLoopFinished,
+                cboLoopFinished, lblPressKeyTitle, txtPressKey, btnPressClickOrder,
+                lblPressModeTitle, cboPressClickMode
+            };
+            for (int i = 0; i < dynamicControls.Length; i++)
+            {
+                if (dynamicControls[i] != null) dynamicControls[i].Visible = false;
+            }
 
             if (_step.ActionType == MacroActionType.RunScript)
             {

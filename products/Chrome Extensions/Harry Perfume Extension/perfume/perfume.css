@@ -120,17 +120,57 @@
 }
 
 /* Ẩn hàng giá khi toggle off */
-.prices-hidden .item-prices {
+.prices-hidden .product-price-table {
   display: none;
 }
 
-.search-wrapper {
+/* Nút xem giá vốn (Admin) */
+.btn-toggle-cost-price {
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed) ease;
+  color: var(--text-secondary);
+}
+
+.btn-toggle-cost-price .cost-price-icon {
+  width: 17px;
+  height: 17px;
+  pointer-events: none !important;
+  border-radius: 0 !important;
+}
+
+.btn-toggle-cost-price:hover {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--c-purple);
+}
+
+.btn-toggle-cost-price.active {
+  background: var(--c-purple);
+  border-color: var(--border-color);
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.35);
+  color: var(--text-dark);
+}
+
+.search-wrapper,
+.order-search-wrapper {
   position: relative;
   flex: 1;
 }
 
-#searchBox {
+#searchBox,
+.order-search-input {
   width: 100%;
+  height: 34px;
   padding: 7px 35px 7px 14px;
   box-sizing: border-box;
   background-color: var(--bg-input);
@@ -138,21 +178,25 @@
   color: var(--text-primary);
   border-radius: 8px;
   font-size: 13px;
-  transition: all var(--transition-speed) ease;
+  outline: none;
+  transition: all var(--transition-speed, 0.25s) ease;
 }
 
-#searchBox::placeholder {
+#searchBox::placeholder,
+.order-search-input::placeholder {
   color: var(--text-secondary);
   opacity: 0.6;
 }
 
-#searchBox:focus {
+#searchBox:focus,
+.order-search-input:focus {
   outline: none;
   border-color: var(--gold-primary);
   box-shadow: 0 0 10px var(--gold-glow);
 }
 
-.btn-clear {
+.btn-clear,
+.order-search-clear {
   position: absolute;
   right: 12px;
   top: 50%;
@@ -163,13 +207,14 @@
   font-size: 18px;
   cursor: pointer;
   padding: 0;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
-  transition: color var(--transition-speed) ease;
+  transition: color var(--transition-speed, 0.25s) ease;
 }
 
-.btn-clear:hover {
+.btn-clear:hover,
+.order-search-clear:hover {
   color: var(--gold-primary);
 }
 
@@ -177,7 +222,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 2px 2px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -322,66 +367,7 @@
   color: var(--gold-primary);
 }
 
-.item-prices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
-}
 
-.item-price-pill {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 5px;
-  white-space: nowrap;
-  text-align: center;
-  transition: all var(--transition-speed) ease;
-}
-
-.item-price-full {
-  color: var(--c-yellow);
-  background: var(--c-yellow-bg);
-  border: 1px solid var(--gold-glow);
-}
-
-.item-price-tester {
-  color: var(--c-orange);
-  background: var(--c-orange-bg);
-  border: 1px solid rgba(249, 115, 22, 0.25);
-}
-
-.item-price-chiet {
-  color: var(--text-secondary);
-  background: rgba(163, 163, 179, 0.12);
-  border: 1px solid rgba(163, 163, 179, 0.25);
-}
-
-.item-price-goc {
-  color: var(--c-cyan);
-  background: var(--c-cyan-bg);
-  border: 1px solid rgba(6, 182, 212, 0.25);
-}
-
-.search-item:hover .item-price-pill.item-price-full {
-  border-color: var(--c-yellow);
-  background: var(--gold-glow);
-}
-
-.search-item:hover .item-price-pill.item-price-tester {
-  border-color: var(--c-orange);
-  background: var(--c-orange-bg);
-}
-
-.search-item:hover .item-price-pill.item-price-chiet {
-  border-color: var(--text-secondary);
-  background: rgba(163, 163, 179, 0.2);
-}
-
-.search-item:hover .item-price-pill.item-price-goc {
-  border-color: var(--c-cyan);
-  background: rgba(6, 182, 212, 0.2);
-}
 
 .stock-zero {
   color: var(--c-red) !important;
@@ -414,4 +400,94 @@
 /* Chi tiết nước hoa -> Đã được tách riêng ra file perfume-preview.css */
 
 /* Dải lịch sử xem gần đây -> Đã được tách riêng ra file perfume-recent.css */
+
+/* ==========================================================================
+   BẢNG HIỂN THỊ GIÁ 3 CỘT CHUẨN THỐNG NHẤT (Loại | Giá | Tồn Kho)
+   Dùng chung cho cả Giá Bán và Giá Vốn - Thẻ bọc ngoài 180px
+   ========================================================================== */
+.product-price-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 250px;
+  max-width: 250px;
+  margin-top: 5px;
+  background: var(--bg-sexondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 4px 6px;
+  box-sizing: border-box;
+  transition: border-color var(--transition-speed) ease;
+}
+
+.search-item:hover .product-price-table.price-table-sell {
+  border-color: rgba(229, 193, 88, 0.45);
+}
+
+.search-item:hover .product-price-table.price-table-cost {
+  border-color: rgba(192, 132, 252, 0.45);
+}
+
+.product-price-table .product-price-row {
+  display: grid !important;
+  grid-template-columns: 1fr 54px 30px !important;
+  align-items: center;
+  gap: 6px;
+  padding: 1.5px 0;
+  font-size: 11px;
+  line-height: 1.35;
+  box-sizing: border-box;
+  background: transparent !important;
+  border: none !important;
+  width: 100%;
+}
+
+.product-price-table .price-col-type {
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-price-table .price-col-val {
+  font-weight: 700;
+  text-align: right;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.product-price-table .price-col-stock {
+  font-weight: 700;
+  font-size: 10px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.product-price-table .price-col-stock.stock-empty {
+  opacity: 0.35;
+  font-weight: 500;
+}
+
+/* Màu sắc phân loại biến thể (theo hệ màu Token) */
+.product-price-table .price-row-full {
+  color: var(--c-yellow); /* Giá Bán Fullbox: Vàng thương hiệu */
+}
+
+.product-price-table .price-row-full-cost {
+  color: var(--c-purple); /* Giá Vốn Fullbox: Tím quản trị */
+}
+
+.product-price-table .price-row-tester {
+  color: var(--c-orange); /* Tester: Cam */
+}
+
+.product-price-table .price-row-chiet {
+  color: var(--text-secondary); /* Chiết: Bạc/Xám */
+}
+
+.product-price-table .price-row-goc {
+  color: var(--c-cyan); /* Gốc: Lam */
+}
+
 

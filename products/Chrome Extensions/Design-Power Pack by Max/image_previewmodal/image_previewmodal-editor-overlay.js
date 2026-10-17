@@ -590,283 +590,86 @@ window.openInlineVectorSidesInput = openInlineVectorSidesInput;
     alignIcon.setAttribute('href', alignSvgUrl);
   }
 
+  // Configure Toolbar Capsule buttons declaratively based on tool type
+  const allToolbarItems = [colorBtn, bgColorBtn, textColorBtn, brushSizeBtn, vectorSidesBtn, brushModeBtn, alignBtn, boldBtn, italicBtn, underlineBtn, deleteBtn, toolbarDivider];
+  allToolbarItems.forEach(el => el && el.classList.add('hidden'));
+
+  let layout;
   if (selectedObj.type === 'brush') {
-    // Brush Tool: Items 2 (Stroke Color), 4 (Stroke Size), 5 (Screen/Image Mode)
-    if (vectorSidesBtn) vectorSidesBtn.classList.add('hidden');
-    if (textColorBtn) textColorBtn.classList.add('hidden');
-    if (bgColorBtn) bgColorBtn.classList.add('hidden');
-    if (alignBtn) alignBtn.classList.add('hidden');
-    if (boldBtn) boldBtn.classList.add('hidden');
-    if (italicBtn) italicBtn.classList.add('hidden');
-    if (underlineBtn) underlineBtn.classList.add('hidden');
-    if (toolbarDivider) toolbarDivider.classList.add('hidden');
-
-    if (colorBtn) {
-      colorBtn.classList.remove('hidden');
-      colorBtn.setAttribute('transform', 'translate(-52, 0)');
-      const strokeIndicator = colorBtn.querySelector('#vector-stroke-color-indicator');
-      if (strokeIndicator) strokeIndicator.setAttribute('fill', selectedObj.color || brushColor || '#67e8f9');
-    }
-
-    if (brushSizeBtn) {
-      brushSizeBtn.classList.remove('hidden');
-      brushSizeBtn.setAttribute('transform', 'translate(-16, 0)');
-      const textEl = brushSizeBtn.querySelector('#vector-brush-size-text');
-      const rawSize = (selectedObj.size || 15) * (selectedObj.scale || 1);
-      const curSize = Number(rawSize.toFixed(1));
-      if (textEl) textEl.textContent = `${curSize}px`;
-    }
-
-    if (brushModeBtn) {
-      brushModeBtn.classList.remove('hidden');
-      brushModeBtn.setAttribute('transform', 'translate(34, 0)');
-      const modeText = brushModeBtn.querySelector('#vector-brush-mode-text');
-      const isScreen = (selectedObj.sizeMode || brushSizeMode) === 'absolute';
-      if (modeText) modeText.textContent = isScreen ? 'Screen' : 'Image';
-    }
-
-    if (deleteBtn) {
-      deleteBtn.classList.remove('hidden');
-      deleteBtn.setAttribute('transform', 'translate(96, 0)');
-    }
-    if (toolbarBox) {
-      toolbarBox.setAttribute('x', '-72');
-      toolbarBox.setAttribute('y', '-16');
-      toolbarBox.setAttribute('width', '144');
-      toolbarBox.setAttribute('height', '32');
-    }
+    layout = { box: [-72, 144], items: [[colorBtn, -52], [brushSizeBtn, -16], [brushModeBtn, 34], [deleteBtn, 96]] };
   } else if (selectedObj.type === 'shape') {
-    // Shape Tool: Items 2 (Stroke Color), 3 (Background Color), 4 (Stroke Size), [5 (Sides if polygon)], 6 (Screen/Image Mode)
-    if (textColorBtn) textColorBtn.classList.add('hidden');
-    if (alignBtn) alignBtn.classList.add('hidden');
-    if (boldBtn) boldBtn.classList.add('hidden');
-    if (italicBtn) italicBtn.classList.add('hidden');
-    if (underlineBtn) underlineBtn.classList.add('hidden');
-    if (toolbarDivider) toolbarDivider.classList.add('hidden');
-
-    const vectorSidesBtn = svg.querySelector('#vector-sides-btn');
-    const isPolygonal = selectedObj.shapeType === 'polygonal';
-    const isEllipse = selectedObj.shapeType === 'ellipse';
-
-    if (isPolygonal) {
-      if (bgColorBtn) bgColorBtn.classList.add('hidden');
-      if (vectorSidesBtn) vectorSidesBtn.classList.add('hidden');
-
-      if (colorBtn) {
-        colorBtn.classList.remove('hidden');
-        colorBtn.setAttribute('transform', 'translate(-52, 0)');
-        const strokeIndicator = colorBtn.querySelector('#vector-stroke-color-indicator');
-        if (strokeIndicator) strokeIndicator.setAttribute('fill', selectedObj.color || brushColor || '#67e8f9');
-      }
-
-      if (brushSizeBtn) {
-        brushSizeBtn.classList.remove('hidden');
-        brushSizeBtn.setAttribute('transform', 'translate(-16, 0)');
-        const textEl = brushSizeBtn.querySelector('#vector-brush-size-text');
-        const rawSize = (selectedObj.size || 15) * (selectedObj.scale || 1);
-        const curSize = Number(rawSize.toFixed(1));
-        if (textEl) textEl.textContent = `${curSize}px`;
-      }
-
-      if (brushModeBtn) {
-        brushModeBtn.classList.remove('hidden');
-        brushModeBtn.setAttribute('transform', 'translate(34, 0)');
-        const modeText = brushModeBtn.querySelector('#vector-brush-mode-text');
-        const isScreen = (selectedObj.sizeMode || brushSizeMode) === 'absolute';
-        if (modeText) modeText.textContent = isScreen ? 'Screen' : 'Image';
-      }
-
-      if (deleteBtn) {
-        deleteBtn.classList.remove('hidden');
-        deleteBtn.setAttribute('transform', 'translate(96, 0)');
-      }
-      if (toolbarBox) {
-        toolbarBox.setAttribute('x', '-72');
-        toolbarBox.setAttribute('y', '-16');
-        toolbarBox.setAttribute('width', '144');
-        toolbarBox.setAttribute('height', '32');
-      }
-    } else if (isEllipse) {
-      if (vectorSidesBtn) vectorSidesBtn.classList.add('hidden');
-
-      if (colorBtn) {
-        colorBtn.classList.remove('hidden');
-        colorBtn.setAttribute('transform', 'translate(-68, 0)');
-        const strokeIndicator = colorBtn.querySelector('#vector-stroke-color-indicator');
-        if (strokeIndicator) strokeIndicator.setAttribute('fill', selectedObj.color || brushColor || '#67e8f9');
-      }
-
-      if (bgColorBtn) {
-        bgColorBtn.classList.remove('hidden');
-        bgColorBtn.setAttribute('transform', 'translate(-36, 0)');
-
-        const rectEl = bgColorBtn.querySelector('#vector-bg-color-rect');
-        const slashEl = bgColorBtn.querySelector('#vector-bg-color-slash');
-        const isTransparent = !selectedObj.backgroundColor || selectedObj.backgroundColor === 'transparent';
-        if (rectEl) rectEl.setAttribute('fill', isTransparent ? 'none' : selectedObj.backgroundColor);
-        if (slashEl) slashEl.classList.toggle('hidden', !isTransparent);
-      }
-
-      if (brushSizeBtn) {
-        brushSizeBtn.classList.remove('hidden');
-        brushSizeBtn.setAttribute('transform', 'translate(-4, 0)');
-        const textEl = brushSizeBtn.querySelector('#vector-brush-size-text');
-        const rawSize = (selectedObj.size || 15) * (selectedObj.scale || 1);
-        const curSize = Number(rawSize.toFixed(1));
-        if (textEl) textEl.textContent = `${curSize}px`;
-      }
-
-      if (brushModeBtn) {
-        brushModeBtn.classList.remove('hidden');
-        brushModeBtn.setAttribute('transform', 'translate(44, 0)');
-        const modeText = brushModeBtn.querySelector('#vector-brush-mode-text');
-        const isScreen = (selectedObj.sizeMode || brushSizeMode) === 'absolute';
-        if (modeText) modeText.textContent = isScreen ? 'Screen' : 'Image';
-      }
-
-      if (deleteBtn) {
-        deleteBtn.classList.remove('hidden');
-        deleteBtn.setAttribute('transform', 'translate(108, 0)');
-      }
-      if (toolbarBox) {
-        toolbarBox.setAttribute('x', '-84');
-        toolbarBox.setAttribute('y', '-16');
-        toolbarBox.setAttribute('width', '168');
-        toolbarBox.setAttribute('height', '32');
-      }
+    if (selectedObj.shapeType === 'polygonal') {
+      layout = { box: [-72, 144], items: [[colorBtn, -52], [brushSizeBtn, -16], [brushModeBtn, 34], [deleteBtn, 96]] };
+    } else if (selectedObj.shapeType === 'ellipse') {
+      layout = { box: [-84, 168], items: [[colorBtn, -68], [bgColorBtn, -36], [brushSizeBtn, -4], [brushModeBtn, 44], [deleteBtn, 108]] };
     } else {
-      // Polygon / Rectangle Shape with Sides Selector
-      if (colorBtn) {
-        colorBtn.classList.remove('hidden');
-        colorBtn.setAttribute('transform', 'translate(-88, 0)');
-        const strokeIndicator = colorBtn.querySelector('#vector-stroke-color-indicator');
-        if (strokeIndicator) strokeIndicator.setAttribute('fill', selectedObj.color || brushColor || '#67e8f9');
-      }
-
-      if (bgColorBtn) {
-        bgColorBtn.classList.remove('hidden');
-        bgColorBtn.setAttribute('transform', 'translate(-56, 0)');
-
-        const rectEl = bgColorBtn.querySelector('#vector-bg-color-rect');
-        const slashEl = bgColorBtn.querySelector('#vector-bg-color-slash');
-        const isTransparent = !selectedObj.backgroundColor || selectedObj.backgroundColor === 'transparent';
-        if (rectEl) rectEl.setAttribute('fill', isTransparent ? 'none' : selectedObj.backgroundColor);
-        if (slashEl) slashEl.classList.toggle('hidden', !isTransparent);
-      }
-
-      if (brushSizeBtn) {
-        brushSizeBtn.classList.remove('hidden');
-        brushSizeBtn.setAttribute('transform', 'translate(-24, 0)');
-        const textEl = brushSizeBtn.querySelector('#vector-brush-size-text');
-        const rawSize = (selectedObj.size || 15) * (selectedObj.scale || 1);
-        const curSize = Number(rawSize.toFixed(1));
-        if (textEl) textEl.textContent = `${curSize}px`;
-      }
-
-      if (vectorSidesBtn) {
-        vectorSidesBtn.classList.remove('hidden');
-        vectorSidesBtn.setAttribute('transform', 'translate(16, 0)');
-        const textEl = vectorSidesBtn.querySelector('#vector-sides-text');
-        const sides = selectedObj.sides || 4;
-        if (textEl) textEl.textContent = `${sides}s`;
-      }
-
-      if (brushModeBtn) {
-        brushModeBtn.classList.remove('hidden');
-        brushModeBtn.setAttribute('transform', 'translate(66, 0)');
-        const modeText = brushModeBtn.querySelector('#vector-brush-mode-text');
-        const isScreen = (selectedObj.sizeMode || brushSizeMode) === 'absolute';
-        if (modeText) modeText.textContent = isScreen ? 'Screen' : 'Image';
-      }
-
-      if (deleteBtn) {
-        deleteBtn.classList.remove('hidden');
-        deleteBtn.setAttribute('transform', 'translate(130, 0)');
-      }
-
-      if (toolbarBox) {
-        toolbarBox.setAttribute('x', '-106');
-        toolbarBox.setAttribute('y', '-16');
-        toolbarBox.setAttribute('width', '212');
-        toolbarBox.setAttribute('height', '32');
-      }
+      layout = { box: [-106, 212], items: [[colorBtn, -88], [bgColorBtn, -56], [brushSizeBtn, -24], [vectorSidesBtn, 16], [brushModeBtn, 66], [deleteBtn, 130]] };
     }
   } else {
-    // Text Tool: Items 1 (Text Color), 3 (Background Color), Divider, 6 (Align), 7 (Bold), 8 (Italic), 9 (Underline)
-    if (vectorSidesBtn) vectorSidesBtn.classList.add('hidden');
-    if (colorBtn) colorBtn.classList.add('hidden');
-    if (brushSizeBtn) brushSizeBtn.classList.add('hidden');
-    if (brushModeBtn) brushModeBtn.classList.add('hidden');
-
-    if (textColorBtn) {
-      textColorBtn.classList.remove('hidden');
-      textColorBtn.setAttribute('transform', 'translate(-80, 0)');
-      const textIndicator = textColorBtn.querySelector('#vector-text-color-indicator');
-      if (textIndicator) textIndicator.setAttribute('fill', selectedObj.color || textColor || '#ffffff');
-    }
-
-    if (bgColorBtn) {
-      bgColorBtn.classList.remove('hidden');
-      bgColorBtn.setAttribute('transform', 'translate(-48, 0)');
-
-      const rectEl = bgColorBtn.querySelector('#vector-bg-color-rect');
-      const slashEl = bgColorBtn.querySelector('#vector-bg-color-slash');
-      const isTransparent = !selectedObj.backgroundColor || selectedObj.backgroundColor === 'transparent';
-      if (rectEl) rectEl.setAttribute('fill', isTransparent ? 'none' : selectedObj.backgroundColor);
-      if (slashEl) slashEl.classList.toggle('hidden', !isTransparent);
-    }
-
-    if (toolbarDivider) {
-      toolbarDivider.classList.remove('hidden');
-      toolbarDivider.setAttribute('x1', '-30');
-      toolbarDivider.setAttribute('y1', '-10');
-      toolbarDivider.setAttribute('x2', '-30');
-      toolbarDivider.setAttribute('y2', '10');
-    }
-
-    if (alignBtn) {
-      alignBtn.classList.remove('hidden');
-      alignBtn.setAttribute('transform', 'translate(-12, 0)');
-    }
-    if (boldBtn) {
-      boldBtn.classList.remove('hidden');
-      boldBtn.setAttribute('transform', 'translate(18, 0)');
-      if (selectedObj.fontWeight === 'bold') {
-        boldBtn.classList.add('active');
-      } else {
-        boldBtn.classList.remove('active');
-      }
-    }
-    if (italicBtn) {
-      italicBtn.classList.remove('hidden');
-      italicBtn.setAttribute('transform', 'translate(48, 0)');
-      if (selectedObj.fontStyle === 'italic') {
-        italicBtn.classList.add('active');
-      } else {
-        italicBtn.classList.remove('active');
-      }
-    }
-    if (underlineBtn) {
-      underlineBtn.classList.remove('hidden');
-      underlineBtn.setAttribute('transform', 'translate(78, 0)');
-      if (selectedObj.textDecoration === 'underline') {
-        underlineBtn.classList.add('active');
-      } else {
-        underlineBtn.classList.remove('active');
-      }
-    }
-
-    if (deleteBtn) {
-      deleteBtn.classList.remove('hidden');
-      deleteBtn.setAttribute('transform', 'translate(124, 0)');
-    }
-    if (toolbarBox) {
-      toolbarBox.setAttribute('x', '-100');
-      toolbarBox.setAttribute('y', '-16');
-      toolbarBox.setAttribute('width', '200');
-      toolbarBox.setAttribute('height', '32');
-    }
+    // Text Tool
+    layout = { box: [-100, 200], items: [[textColorBtn, -80], [bgColorBtn, -48], [toolbarDivider, null], [alignBtn, -12], [boldBtn, 18], [italicBtn, 48], [underlineBtn, 78], [deleteBtn, 124]] };
   }
+
+  if (toolbarBox && layout.box) {
+    toolbarBox.setAttribute('x', layout.box[0]);
+    toolbarBox.setAttribute('y', '-16');
+    toolbarBox.setAttribute('width', layout.box[1]);
+    toolbarBox.setAttribute('height', '32');
+  }
+
+  layout.items.forEach(([el, x]) => {
+    if (!el) return;
+    el.classList.remove('hidden');
+    if (x !== null) el.setAttribute('transform', `translate(${x}, 0)`);
+  });
+
+  if (selectedObj.type !== 'brush' && selectedObj.type !== 'shape' && toolbarDivider) {
+    toolbarDivider.setAttribute('x1', '-30');
+    toolbarDivider.setAttribute('y1', '-10');
+    toolbarDivider.setAttribute('x2', '-30');
+    toolbarDivider.setAttribute('y2', '10');
+  }
+
+  // Update component states & indicators
+  if (colorBtn && !colorBtn.classList.contains('hidden')) {
+    const strokeIndicator = colorBtn.querySelector('#vector-stroke-color-indicator');
+    if (strokeIndicator) strokeIndicator.setAttribute('fill', selectedObj.color || brushColor || '#67e8f9');
+  }
+  if (textColorBtn && !textColorBtn.classList.contains('hidden')) {
+    const textIndicator = textColorBtn.querySelector('#vector-text-color-indicator');
+    if (textIndicator) textIndicator.setAttribute('fill', selectedObj.color || textColor || '#ffffff');
+  }
+  if (bgColorBtn && !bgColorBtn.classList.contains('hidden')) {
+    const rectEl = bgColorBtn.querySelector('#vector-bg-color-rect');
+    const slashEl = bgColorBtn.querySelector('#vector-bg-color-slash');
+    const isTransparent = !selectedObj.backgroundColor || selectedObj.backgroundColor === 'transparent';
+    if (rectEl) rectEl.setAttribute('fill', isTransparent ? 'none' : selectedObj.backgroundColor);
+    if (slashEl) slashEl.classList.toggle('hidden', !isTransparent);
+  }
+  if (brushSizeBtn && !brushSizeBtn.classList.contains('hidden')) {
+    const textEl = brushSizeBtn.querySelector('#vector-brush-size-text');
+    const rawSize = (selectedObj.size || 15) * (selectedObj.scale || 1);
+    if (textEl) textEl.textContent = `${Number(rawSize.toFixed(1))}px`;
+  }
+  if (brushModeBtn && !brushModeBtn.classList.contains('hidden')) {
+    const modeText = brushModeBtn.querySelector('#vector-brush-mode-text');
+    const isScreen = (selectedObj.sizeMode || brushSizeMode) === 'absolute';
+    if (modeText) modeText.textContent = isScreen ? 'Screen' : 'Image';
+  }
+  if (vectorSidesBtn && !vectorSidesBtn.classList.contains('hidden')) {
+    const textEl = vectorSidesBtn.querySelector('#vector-sides-text');
+    if (textEl) textEl.textContent = `${selectedObj.sides || 4}s`;
+  }
+  if (boldBtn && !boldBtn.classList.contains('hidden')) {
+    boldBtn.classList.toggle('active', selectedObj.fontWeight === 'bold');
+  }
+  if (italicBtn && !italicBtn.classList.contains('hidden')) {
+    italicBtn.classList.toggle('active', selectedObj.fontStyle === 'italic');
+  }
+  if (underlineBtn && !underlineBtn.classList.contains('hidden')) {
+    underlineBtn.classList.toggle('active', selectedObj.textDecoration === 'underline');
+  }
+
 
   // Update Color & BgColor indicators
   const colorIconPath = svg.querySelector('#vector-color-icon-path');

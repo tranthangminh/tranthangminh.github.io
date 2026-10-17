@@ -19,56 +19,20 @@
   padding: 8px 10px;
   display: flex;
   gap: 8px;
+  align-items: center;
   background: var(--bg-secondary);
   flex-shrink: 0;
-  z-index: 20;
+  z-index: 30;
   border-bottom: 1px solid var(--border-color);
-}
-
-.order-search-wrapper {
   position: relative;
-  flex: 1;
-}
-
-.order-search-input {
-  width: 100%;
-  height: 34px;
-  padding: 0 30px 0 10px;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 12.5px;
-  box-sizing: border-box;
-  outline: none;
-  transition: var(--transition);
-}
-
-.order-search-input:focus {
-  border-color: var(--gold-primary);
-  box-shadow: 0 0 6px var(--gold-glow);
-}
-
-.order-search-clear {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 15px;
-  cursor: pointer;
-  padding: 3px 5px;
-  display: none;
 }
 
 .btn-order-add-manual {
   height: 34px;
-  padding: 0 9px;
+  padding: 0 10px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--gold-primary);
   font-size: 11.5px;
   font-weight: 600;
@@ -85,20 +49,23 @@
   border-color: var(--gold-primary);
 }
 
-/* Dropdown gợi ý tìm kiếm sản phẩm */
+/* Dropdown gợi ý tìm kiếm sản phẩm - Bề ngang 100%, kéo dài chiều dọc */
 .order-search-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
+  width: 100%;
+  box-sizing: border-box;
   background: var(--bg-card);
   border: 1px solid var(--gold-primary);
-  border-radius: 6px;
-  margin-top: 4px;
-  max-height: 240px;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  margin-top: 0;
+  max-height: min(400px, calc(100vh - 120px));
   overflow-y: auto;
   z-index: 50;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.95);
   display: none;
 }
 
@@ -207,7 +174,7 @@
 }
 
 .order-item-card:hover {
-  border-color: #666;
+  border-color: var(--border-color);
 }
 
 /* Hàng 1: Xóa, Ảnh, Tên SP, Đơn vị */
@@ -289,8 +256,8 @@ input.order-item-name-manual:hover {
 }
 
 input.order-item-name-manual:focus {
-  background: var(--bg-input, #1e1e22);
-  border-color: var(--gold-primary, #e5c158);
+  background: var(--bg-input);
+  border-color: var(--gold-primary);
   box-shadow: 0 0 0 2px rgba(229, 193, 88, 0.15);
 }
 
@@ -359,7 +326,7 @@ input.order-item-name-manual:focus {
 }
 
 .btn-qty:hover {
-  background: #444;
+  background: var(--border-color);
   color: var(--gold-primary);
 }
 
@@ -595,7 +562,7 @@ input.order-item-name-manual:focus {
 
 .btn-order-add-promo:hover {
   background: var(--gold-primary);
-  color: #121214;
+  color: var(--text-dark);
 }
 
 .order-promo-summary {
@@ -635,7 +602,7 @@ input.order-item-name-manual:focus {
 
 .order-promo-tag-del:hover {
   opacity: 1;
-  color: #ef4444;
+  color: var(--c-red);
 }
 
 /* Danh sách chọn khuyến mãi trong Modal */
@@ -675,14 +642,66 @@ input.order-item-name-manual:focus {
 .order-promo-info {
   flex: 1;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.order-promo-top {
+  display: flex;
   align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 
 .order-promo-name {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-promo-count {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.order-promo-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.order-promo-type {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.order-promo-type.promo-type-full {
+  background: var(--c-orange-bg);
+  color: var(--c-orange);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+}
+
+.order-promo-type.promo-type-chiet {
+  background: var(--c-blue-bg);
+  color: var(--c-blue);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+}
+
+.order-promo-type.promo-type-both {
+  background: var(--c-yellow-bg);
+  color: var(--gold-primary);
+  border: 1px solid rgba(229, 193, 88, 0.35);
 }
 
 .order-promo-badge {
@@ -762,7 +781,7 @@ input.order-item-name-manual:focus {
 .btn-order-create-invoice {
   flex: 1;
   height: 36px;
-  background: linear-gradient(135deg, var(--gold-primary), #caa038);
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
   border: none;
   border-radius: 6px;
   color: var(--text-dark);
@@ -911,7 +930,7 @@ input.order-item-name-manual:focus {
   overflow-y: auto;
   border-radius: 6px;
   border: 1px solid var(--border-color);
-  background: #111;
+  background: var(--bg-input);
   text-align: center;
 }
 
@@ -952,7 +971,7 @@ input.order-item-name-manual:focus {
   flex: 1;
   height: 36px;
   background: var(--bg-secondary);
-  color: #60a5fa;
+  color: var(--c-blue);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 12px;
@@ -967,8 +986,8 @@ input.order-item-name-manual:focus {
 }
 
 .btn-invoice-view:hover {
-  background: var(--bg-hover);
-  border-color: #60a5fa;
+  background: var(--bg-card);
+  border-color: var(--c-blue);
 }
 
 .btn-invoice-download {

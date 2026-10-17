@@ -14,19 +14,93 @@ let orderDiscountType = "percent"; // "percent" | "amount"
 let orderAppliedPromoIds = []; // Danh sách ID khuyến mãi đang áp dụng
 let orderShippingFee = 0; // 0 = Freeship
 
-// Danh sách chương trình khuyến mãi (sẵn sàng nạp/mở rộng từ Google Sheet sau này)
-let orderAvailablePromotions = [
+// Chương trình khuyến mãi mặc định của shop (luôn bảo lưu)
+const DEFAULT_PROMOTIONS = [
   {
     id: "promo_birthday",
     name: "Chúc mừng sinh nhật",
     type: "percent",
     value: 5,
-    desc: "Giảm 5% đơn hàng"
+    saleType: 3,
+    desc: "Giảm 5% đơn hàng",
+    productNames: new Set()
   }
 ];
 
+// Danh sách chương trình khuyến mãi (mặc định Chúc mừng sinh nhật + nạp động từ Google Sheet)
+let orderAvailablePromotions = [...DEFAULT_PROMOTIONS];
+
 if (typeof window !== "undefined") {
   window.orderAvailablePromotions = orderAvailablePromotions;
+}
+
+// Phân loại đơn vị sản phẩm cho khuyến mãi (Fullbox, Chiết, Tester, Gốc)
+function getItemPromoCategory(item) {
+  const u = (item?.unit || "").toLowerCase();
+  if (u.includes("tester")) return "tester";
+  if (u.includes("gốc")) return "goc";
+  if (u.includes("chiết") || /5ml|10ml|20ml/.test(u)) return "chiet";
+  if (u.includes("full")) return "full";
+  return "other";
+}
+
+// Kiểm tra món hàng có đủ điều kiện hưởng khuyến mãi promo không
+function isItemEligibleForPromo(item, promo) {
+  if (!item || !promo) return false;
+  if (promo.productNames?.size > 0 && !promo.productNames.has((item.name || "").trim().toLowerCase())) {
+    return false;
+  }
+  const cat = getItemPromoCategory(item);
+  if (promo.saleType === 1) return cat === "full";
+  if (promo.saleType === 2) return cat === "chiet";
+  return cat === "full" || cat === "chiet";
+}
+
+// Trích xuất & gom nhóm các chương trình khuyến mãi từ dữ liệu allProducts của Sheet
+function syncPromotionsFromProducts(products) {
+  if (!Array.isArray(products) || products.length === 0) return;
+  const promoMap = new Map();
+
+  products.forEach((prod) => {
+    const pName = String(prod?.sales_promotion || "").trim();
+    if (!pName || pName === "-" || pName === "0") return;
+
+    const numRate = parseInt(String(prod.discount_rate || "").replace(/\D/g, ""), 10) || 0;
+    if (numRate <= 0) return;
+
+    let saleType = parseInt(prod.sale_type, 10);
+    if (isNaN(saleType) || saleType < 1 || saleType > 3) saleType = 3;
+
+    const prodName = (prod.name || "").trim().toLowerCase();
+    const promoKey = `${pName.toLowerCase()}__${numRate}__${saleType}`;
+
+    if (!promoMap.has(promoKey)) {
+      promoMap.set(promoKey, {
+        id: "promo_" + promoKey.replace(/[^a-z0-9]/g, "_"),
+        name: pName,
+        rate: numRate,
+        type: numRate <= 100 ? "percent" : "amount",
+        value: numRate,
+        saleType: saleType,
+        productNames: new Set(prodName ? [prodName] : [])
+      });
+    } else if (prodName) {
+      promoMap.get(promoKey).productNames.add(prodName);
+    }
+  });
+
+  orderAvailablePromotions = [...DEFAULT_PROMOTIONS, ...promoMap.values()];
+  window.orderAvailablePromotions = orderAvailablePromotions;
+
+  if (typeof renderOrderTotals === "function") {
+    renderOrderTotals();
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.syncPromotionsFromProducts = syncPromotionsFromProducts;
+  window.getItemPromoCategory = getItemPromoCategory;
+  window.isItemEligibleForPromo = isItemEligibleForPromo;
 }
 
 let currentEditingItemId = null;
@@ -51,6 +125,9 @@ function isValidPhoneNumber(phone) {
 
 // Khởi tạo tab Đơn Hàng
 async function initOrderModule() {
+  if (typeof allProducts !== "undefined" && Array.isArray(allProducts) && allProducts.length > 0) {
+    syncPromotionsFromProducts(allProducts);
+  }
   await loadOrderDraft();
   setupOrderEventListeners();
   renderOrderCart();
@@ -71,7 +148,9 @@ async function saveOrderDraft() {
     if (typeof StorageHelper !== "undefined") {
       await StorageHelper.set("activeOrderDraft", draft);
     }
-  } catch (e) {}
+  } catch (e) {
+    // Bỏ qua lỗi ghi storage bản nháp
+  }
 }
 
 // Tải bản nháp đơn hàng
@@ -91,7 +170,9 @@ async function loadOrderDraft() {
         if (typeof draft.shippingFee === "number") orderShippingFee = draft.shippingFee;
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    // Bản nháp lỗi hoặc rỗng
+  }
   
   // Đồng bộ lên các ô nhập thông tin khách hàng
   const inputName = document.getElementById("orderCustomerName");
@@ -160,12 +241,20 @@ function setupOrderEventListeners() {
   const btnReset = document.getElementById("btnOrderReset");
   const btnCreateInvoice = document.getElementById("btnOrderCreateInvoice");
 
-  // 1. Tìm kiếm sản phẩm từ kho allProducts
+  const debouncedOrderSearch = typeof debounce === "function"
+    ? debounce(handleOrderSearch, 150)
+    : handleOrderSearch;
+
+  const debouncedSaveDraft = typeof debounce === "function"
+    ? debounce(saveOrderDraft, 300)
+    : saveOrderDraft;
+
+  // 1. Tìm kiếm sản phẩm từ kho allProducts (Có Debounce)
   if (searchInput) {
     searchInput.addEventListener("input", () => {
       const q = searchInput.value.trim();
       if (searchClear) searchClear.style.display = q ? "block" : "none";
-      handleOrderSearch(q);
+      debouncedOrderSearch(q);
     });
 
     searchInput.addEventListener("focus", () => {
@@ -200,7 +289,7 @@ function setupOrderEventListeners() {
     });
   }
 
-  // 3. Thông tin khách hàng thay đổi
+  // 3. Thông tin khách hàng thay đổi (Có Debounce)
   const inputName = document.getElementById("orderCustomerName");
   const inputPhone = document.getElementById("orderCustomerPhone");
   const inputAddress = document.getElementById("orderCustomerAddress");
@@ -208,8 +297,9 @@ function setupOrderEventListeners() {
   if (inputName) {
     inputName.addEventListener("input", () => {
       orderCustomer.name = inputName.value.trim();
-      saveOrderDraft();
+      debouncedSaveDraft();
     });
+    inputName.addEventListener("blur", saveOrderDraft);
   }
 
   if (inputPhone) {
@@ -223,14 +313,130 @@ function setupOrderEventListeners() {
       inputPhone.value = v;
       orderCustomer.phone = v;
       validatePhoneUI(inputPhone);
-      saveOrderDraft();
+      debouncedSaveDraft();
     });
+    inputPhone.addEventListener("blur", saveOrderDraft);
   }
 
   if (inputAddress) {
     inputAddress.addEventListener("input", () => {
       orderCustomer.address = inputAddress.value.trim();
-      saveOrderDraft();
+      debouncedSaveDraft();
+    });
+    inputAddress.addEventListener("blur", saveOrderDraft);
+  }
+
+  // 3.1. Ủy quyền sự kiện giỏ hàng (Event Delegation) tránh rò rỉ và gắn lặp listener khi render
+  const listContainer = document.getElementById("orderItemList");
+  if (listContainer) {
+    listContainer.addEventListener("click", (e) => {
+      // Nút Xóa
+      const btnDel = e.target.closest(".btn-order-item-del");
+      if (btnDel) {
+        const id = btnDel.dataset.id;
+        orderItems = orderItems.filter((it) => it.id !== id);
+        saveOrderDraft();
+        renderOrderCart();
+        return;
+      }
+
+      // Click vào Thẻ Đơn Vị -> Mở Modal Chọn Đổi Đơn Vị Nhanh
+      const unitBadge = e.target.closest(".order-item-unit");
+      if (unitBadge) {
+        const item = orderItems.find((it) => it.id === unitBadge.dataset.id);
+        if (item) openUnitPickerModal(item);
+        return;
+      }
+
+      // Nút Giảm SL
+      const btnMinus = e.target.closest(".btn-qty-minus");
+      if (btnMinus) {
+        const item = orderItems.find((it) => it.id === btnMinus.dataset.id);
+        if (item) {
+          if (item.qty > 1) {
+            item.qty -= 1;
+            item.subtotal = item.qty * item.finalPrice;
+            saveOrderDraft();
+            renderOrderCart();
+          } else {
+            if (confirm(`Xóa "${item.name}" khỏi đơn hàng?`)) {
+              orderItems = orderItems.filter((it) => it.id !== item.id);
+              saveOrderDraft();
+              renderOrderCart();
+            }
+          }
+        }
+        return;
+      }
+
+      // Nút Tăng SL
+      const btnPlus = e.target.closest(".btn-qty-plus");
+      if (btnPlus) {
+        const item = orderItems.find((it) => it.id === btnPlus.dataset.id);
+        if (item) {
+          item.qty += 1;
+          item.subtotal = item.qty * item.finalPrice;
+          saveOrderDraft();
+          renderOrderCart();
+        }
+        return;
+      }
+
+      // Click vào Đơn giá -> Mở Modal Chỉnh Sửa Giá & Chiết Khấu
+      const priceBox = e.target.closest(".order-price-clickable");
+      if (priceBox) {
+        const item = orderItems.find((it) => it.id === priceBox.dataset.id);
+        if (item) openItemPriceModal(item);
+        return;
+      }
+    });
+
+    // Event delegation: Đổi số lượng trực tiếp
+    listContainer.addEventListener("change", (e) => {
+      const inputQty = e.target.closest(".order-qty-input");
+      if (inputQty) {
+        const item = orderItems.find((it) => it.id === inputQty.dataset.id);
+        if (item) {
+          let val = parseInt(inputQty.value.replace(/\D/g, ""), 10);
+          if (isNaN(val) || val < 1) val = 1;
+          item.qty = val;
+          item.subtotal = item.qty * item.finalPrice;
+          saveOrderDraft();
+          renderOrderCart();
+        }
+      }
+    });
+
+    // Event delegation: Sửa tên trực tiếp cho sản phẩm thủ công
+    listContainer.addEventListener("input", (e) => {
+      const nameInput = e.target.closest(".order-item-name-manual");
+      if (nameInput) {
+        const item = orderItems.find((it) => it.id === nameInput.dataset.id);
+        if (item) {
+          item.name = nameInput.value;
+          debouncedSaveDraft();
+        }
+      }
+    });
+
+    listContainer.addEventListener("focusout", (e) => {
+      const nameInput = e.target.closest(".order-item-name-manual");
+      if (nameInput) {
+        const item = orderItems.find((it) => it.id === nameInput.dataset.id);
+        if (item) {
+          const val = nameInput.value.trim();
+          item.name = val || "Sản phẩm ngoài kho";
+          nameInput.value = item.name;
+          saveOrderDraft();
+        }
+      }
+    });
+
+    listContainer.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.target.classList.contains("order-item-name-manual")) {
+        e.preventDefault();
+        e.target.blur();
+      }
     });
   }
 
@@ -408,7 +614,7 @@ function handleOrderSearch(query) {
 
     if (nameNorm.includes(qNorm) || shortNorm.includes(qNorm)) {
       matchedProducts.push(prod);
-      if (matchedProducts.length >= 8) break;
+      if (matchedProducts.length >= 20) break;
     }
   }
 
@@ -458,11 +664,14 @@ function handleOrderSearch(query) {
           name: prod.name,
           unit: v.unit,
           price: v.price,
+          costPrice: v.costPrice || 0,
           img: hasImg ? imgUrl : "",
           isManual: false
         });
         const searchInput = document.getElementById("orderSearchInput");
         if (searchInput) searchInput.value = "";
+        const searchClear = document.getElementById("orderSearchClear");
+        if (searchClear) searchClear.style.display = "none";
         searchDropdown.style.display = "none";
       });
       variantContainer.appendChild(btn);
@@ -491,7 +700,8 @@ function extractProductVariants(prod) {
     const pNum = getPriceNum(p);
     if (pNum > 0) {
       const unit = typeof getDungTichText === "function" ? getDungTichText("Full", dt) : (dt ? `Fullbox ${dt}` : "Fullbox");
-      variants.push({ unit, price: pNum });
+      const cost = getPriceNum(prod['giavonfull' + i]);
+      variants.push({ unit, price: pNum, costPrice: cost });
     }
   }
 
@@ -502,7 +712,8 @@ function extractProductVariants(prod) {
     const pNum = getPriceNum(p);
     if (pNum > 0) {
       const unit = typeof getDungTichText === "function" ? getDungTichText("Tester", dt) : (dt ? `Tester ${dt}` : "Tester");
-      variants.push({ unit, price: pNum });
+      const cost = getPriceNum(prod['giavontest' + i]);
+      variants.push({ unit, price: pNum, costPrice: cost });
     }
   }
 
@@ -511,7 +722,8 @@ function extractProductVariants(prod) {
     const p = prod['gia' + k];
     const pNum = getPriceNum(p);
     if (pNum > 0) {
-      variants.push({ unit: `Chiết ${k}`, price: pNum });
+      const cost = getPriceNum(prod['giavon' + k]);
+      variants.push({ unit: `Chiết ${k}`, price: pNum, costPrice: cost });
     }
   });
 
@@ -522,7 +734,7 @@ function extractProductVariants(prod) {
     const pNum = getPriceNum(p);
     if (pNum > 0) {
       const unit = typeof getDungTichText === "function" ? getDungTichText("Gốc", dt) : (dt ? `Gốc ${dt}` : "Gốc");
-      variants.push({ unit, price: pNum });
+      variants.push({ unit, price: pNum, costPrice: 0 });
     }
   }
 
@@ -530,13 +742,16 @@ function extractProductVariants(prod) {
 }
 
 // Thêm sản phẩm vào đơn hàng
-function addProductToOrder({ name, unit, price, img = "", isManual = false }) {
+function addProductToOrder({ name, unit, price, costPrice = 0, img = "", isManual = false }) {
   const itemUnit = unit || (isManual ? "Full 30ml" : "Món");
   const existing = orderItems.find((item) => item.name === name && item.unit === itemUnit);
 
   if (existing) {
     existing.qty += 1;
     existing.subtotal = existing.qty * existing.finalPrice;
+    if (costPrice && !existing.costPrice) {
+      existing.costPrice = costPrice;
+    }
   } else {
     orderItems.push({
       id: "item_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
@@ -544,6 +759,7 @@ function addProductToOrder({ name, unit, price, img = "", isManual = false }) {
       unit: itemUnit,
       img: img || "",
       qty: 1,
+      costPrice: costPrice || 0,
       originalPrice: price,
       finalPrice: price,
       discountVal: 0,
@@ -598,16 +814,19 @@ function renderOrderCart() {
       ? `<span class="order-price-original">(${formatVND(item.originalPrice)})</span>` 
       : "";
 
+    const safeName = typeof escAttr === "function" ? escAttr(item.name || "") : String(item.name || "").replace(/"/g, '&quot;');
+    const safeUnit = typeof escAttr === "function" ? escAttr(item.unit || (item.isManual ? "Full 30ml" : "Món")) : "";
+
     const nameHTML = item.isManual
-      ? `<input type="text" class="order-item-name-manual" value="${(item.name || '').replace(/"/g, '&quot;')}" placeholder="Nhập tên sản phẩm..." title="Click để sửa tên sản phẩm">`
-      : `<span class="order-item-name" title="${item.name}">${item.name}</span>`;
+      ? `<input type="text" class="order-item-name-manual" data-id="${item.id}" value="${safeName}" placeholder="Nhập tên sản phẩm..." title="Click để sửa tên sản phẩm">`
+      : `<span class="order-item-name" title="${safeName}">${safeName}</span>`;
 
     card.innerHTML = `
       <!-- HÀNG 1: Ảnh SP, Tên SP, Đơn vị -->
       <div class="order-item-row-1">
         ${imgHTML}
         ${nameHTML}
-        <span class="order-item-unit" data-id="${item.id}" title="Click để đổi dung tích / đơn vị">${item.unit || (item.isManual ? "Full 30ml" : "Món")}</span>
+        <span class="order-item-unit" data-id="${item.id}" title="Click để đổi dung tích / đơn vị">${safeUnit}</span>
       </div>
 
       <!-- HÀNG 2: Số lượng, Đơn giá, Thành tiền, Nút xóa ✕ -->
@@ -632,90 +851,6 @@ function renderOrderCart() {
       </div>
     `;
 
-    // 0. Sửa tên trực tiếp cho sản phẩm thủ công ngoài kho
-    if (item.isManual) {
-      const nameInput = card.querySelector(".order-item-name-manual");
-      if (nameInput) {
-        nameInput.addEventListener("input", () => {
-          item.name = nameInput.value;
-          saveOrderDraft();
-        });
-        nameInput.addEventListener("blur", () => {
-          const val = nameInput.value.trim();
-          if (!val) {
-            nameInput.value = "Sản phẩm ngoài kho";
-            item.name = nameInput.value;
-          } else {
-            item.name = val;
-          }
-          saveOrderDraft();
-        });
-        nameInput.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            nameInput.blur();
-          }
-        });
-      }
-    }
-
-    // 1. Nút Xóa
-    const btnDel = card.querySelector(".btn-order-item-del");
-    btnDel.addEventListener("click", () => {
-      orderItems = orderItems.filter((it) => it.id !== item.id);
-      saveOrderDraft();
-      renderOrderCart();
-    });
-
-    // 2. Click vào Thẻ Đơn Vị -> Mở Modal Chọn Đổi Đơn Vị Nhanh
-    const unitBadge = card.querySelector(".order-item-unit");
-    unitBadge.addEventListener("click", () => {
-      openUnitPickerModal(item);
-    });
-
-    // 3. Nút Giảm SL
-    const btnMinus = card.querySelector(".btn-qty-minus");
-    btnMinus.addEventListener("click", () => {
-      if (item.qty > 1) {
-        item.qty -= 1;
-        item.subtotal = item.qty * item.finalPrice;
-        saveOrderDraft();
-        renderOrderCart();
-      } else {
-        if (confirm(`Xóa "${item.name}" khỏi đơn hàng?`)) {
-          orderItems = orderItems.filter((it) => it.id !== item.id);
-          saveOrderDraft();
-          renderOrderCart();
-        }
-      }
-    });
-
-    // 4. Nút Tăng SL
-    const btnPlus = card.querySelector(".btn-qty-plus");
-    btnPlus.addEventListener("click", () => {
-      item.qty += 1;
-      item.subtotal = item.qty * item.finalPrice;
-      saveOrderDraft();
-      renderOrderCart();
-    });
-
-    // 5. Ô nhập SL trực tiếp
-    const inputQty = card.querySelector(".order-qty-input");
-    inputQty.addEventListener("change", () => {
-      let val = parseInt(inputQty.value.replace(/\D/g, ""), 10);
-      if (isNaN(val) || val < 1) val = 1;
-      item.qty = val;
-      item.subtotal = item.qty * item.finalPrice;
-      saveOrderDraft();
-      renderOrderCart();
-    });
-
-    // 6. Click vào Đơn giá -> Mở Modal Chỉnh Sửa Giá & Chiết Khấu
-    const priceBox = card.querySelector(".order-price-clickable");
-    priceBox.addEventListener("click", () => {
-      openItemPriceModal(item);
-    });
-
     listContainer.appendChild(card);
   });
 
@@ -738,66 +873,55 @@ function calculateOrderTotals() {
   // Chiết khấu sản phẩm = Tổng chưa giảm giá - Tiền hàng sau giảm món
   const productDiscount = Math.max(0, rawItemsTotal - itemsTotal);
 
-  // 1. GOM CÁC KHOẢN GIẢM TIỀN MẶT (VNĐ) ĐỂ TRỪ TRƯỚC
-  // a) Khuyến mãi khác (nếu chọn VNĐ)
-  let otherCashDiscount = 0;
+  // 1. Chiết khấu khác của đơn hàng
+  let otherDiscountMoney = 0;
   if (orderDiscountType === "amount") {
-    otherCashDiscount = Math.max(0, orderDiscountValue || 0);
-  }
-
-  // b) Các khuyến mãi tick chọn loại VNĐ
-  let promoCashDiscount = 0;
-  orderAppliedPromoIds.forEach((promoId) => {
-    const p = orderAvailablePromotions.find((item) => item.id === promoId);
-    if (p && p.type === "amount") {
-      promoCashDiscount += Math.max(0, p.value || 0);
-    }
-  });
-
-  // Tổng tiền mặt trừ trước (không vượt quá itemsTotal)
-  const totalCashDiscount = Math.min(itemsTotal, otherCashDiscount + promoCashDiscount);
-
-  // Số tiền còn lại sau khi trừ tiền mặt, làm cơ sở tính %
-  const remainingBase = Math.max(0, itemsTotal - totalCashDiscount);
-
-  // 2. TÍNH CÁC KHOẢN GIẢM PHẦN TRĂM (%) TRÊN SỐ TIỀN CÒN LẠI (remainingBase)
-  // a) Chiết khấu hạng thẻ (%)
-  const memberPct = Math.max(0, Math.min(100, orderMemberDiscountPercent || 0));
-  const memberDiscountMoney = Math.round(remainingBase * (memberPct / 100));
-
-  // b) Khuyến mãi khác (%)
-  let otherPercentMoney = 0;
-  if (orderDiscountType === "percent") {
+    otherDiscountMoney = Math.min(itemsTotal, Math.max(0, orderDiscountValue || 0));
+  } else {
     const pct = Math.max(0, Math.min(100, orderDiscountValue || 0));
-    otherPercentMoney = Math.round(remainingBase * (pct / 100));
+    otherDiscountMoney = Math.round(itemsTotal * (pct / 100));
   }
 
-  // c) Các chương trình khuyến mãi tick chọn (loại % hoặc VNĐ)
+  // 2. Chiết khấu hạng thẻ thành viên (%)
+  const memberPct = Math.max(0, Math.min(100, orderMemberDiscountPercent || 0));
+  const memberDiscountMoney = Math.round(itemsTotal * (memberPct / 100));
+
+  // 3. Các chương trình khuyến mãi tick chọn (Xét theo từng chai & loại Full/Chiết)
   const appliedPromosList = [];
   let promosDiscountMoney = 0;
 
   orderAppliedPromoIds.forEach((promoId) => {
     const p = orderAvailablePromotions.find((item) => item.id === promoId);
     if (p) {
+      // Tính tổng tiền các món trong giỏ hàng thỏa mãn điều kiện chai & loại của khuyến mãi này
+      let eligibleSubtotal = 0;
+      orderItems.forEach((it) => {
+        if (isItemEligibleForPromo(it, p)) {
+          eligibleSubtotal += (it.finalPrice || 0) * (it.qty || 1);
+        }
+      });
+
       let promoAmount = 0;
-      if (p.type === "percent") {
-        promoAmount = Math.round(remainingBase * ((p.value || 0) / 100));
-      } else {
-        promoAmount = Math.min(itemsTotal, p.value || 0);
+      if (eligibleSubtotal > 0) {
+        if (p.type === "percent") {
+          promoAmount = Math.round(eligibleSubtotal * ((p.value || 0) / 100));
+        } else {
+          promoAmount = Math.min(eligibleSubtotal, p.value || 0);
+        }
       }
+
       appliedPromosList.push({
         id: p.id,
         name: p.name,
         type: p.type,
         value: p.value,
-        amount: promoAmount
+        saleType: p.saleType,
+        amount: promoAmount,
+        eligibleSubtotal: eligibleSubtotal
       });
       promosDiscountMoney += promoAmount;
     }
   });
-
-  // Số tiền chiết khấu khác thực tế:
-  const otherDiscountMoney = (orderDiscountType === "amount") ? Math.min(itemsTotal, otherCashDiscount) : otherPercentMoney;
 
   // Tổng chiết khấu đơn (không vượt quá itemsTotal)
   const totalOrderDiscountMoney = Math.min(itemsTotal, memberDiscountMoney + otherDiscountMoney + promosDiscountMoney);
@@ -866,9 +990,13 @@ function renderOrderTotals() {
       orderAppliedPromoIds.forEach((id) => {
         const p = orderAvailablePromotions.find((it) => it.id === id);
         if (p) {
+          let typeLabel = "Full & Chiết";
+          if (p.saleType === 1) typeLabel = "Full";
+          else if (p.saleType === 2) typeLabel = "Chiết";
+
           const tag = document.createElement("span");
           tag.className = "order-promo-tag";
-          tag.innerHTML = `🎁 ${p.name} (${p.type === "percent" ? `-${p.value}%` : `-${formatVND(p.value)}`}) <span class="order-promo-tag-del" title="Bỏ chọn">✕</span>`;
+          tag.innerHTML = `🎁 ${typeof escAttr === "function" ? escAttr(p.name) : p.name} (${p.type === "percent" ? `-${p.value}%` : `-${formatVND(p.value)}`}) [${typeLabel}] <span class="order-promo-tag-del" title="Bỏ chọn">✕</span>`;
           tag.querySelector(".order-promo-tag-del").addEventListener("click", () => {
             orderAppliedPromoIds = orderAppliedPromoIds.filter((x) => x !== id);
             renderOrderTotals();
@@ -1035,6 +1163,7 @@ function openUnitPickerModal(item) {
         // Cập nhật đơn vị và tính lại giá
         item.unit = v.unit;
         item.originalPrice = v.price;
+        item.costPrice = v.costPrice || 0;
 
         // Giữ nguyên tỷ lệ chiết khấu nếu có
         if (item.discountType === "percent" && item.discountVal > 0) {
@@ -1412,6 +1541,8 @@ function setupInvoicePreviewModal() {
         } else {
           window.open(blobUrl, "_blank");
         }
+        // Thu hồi blob URL sau 10 giây tránh rò rỉ bộ nhớ (Memory Leak Prevention)
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
       } else if (currentInvoiceResult && currentInvoiceResult.dataUrl) {
         window.open(currentInvoiceResult.dataUrl, "_blank");
       }
@@ -1461,6 +1592,11 @@ function setupPromoModal() {
 
   if (btnClose) btnClose.addEventListener("click", closeModal);
   if (btnCancel) btnCancel.addEventListener("click", closeModal);
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
 
   if (btnOpen) {
     btnOpen.addEventListener("click", () => {
@@ -1480,11 +1616,29 @@ function setupPromoModal() {
       const isChecked = orderAppliedPromoIds.includes(promo.id);
       const itemEl = document.createElement("label");
       itemEl.className = "order-promo-item";
+
+      let typeBadge = '<span class="order-promo-type promo-type-both">Full & Chiết</span>';
+      if (promo.saleType === 1) typeBadge = '<span class="order-promo-type promo-type-full">Full</span>';
+      else if (promo.saleType === 2) typeBadge = '<span class="order-promo-type promo-type-chiet">Chiết</span>';
+
+      const countText = promo.productNames?.size
+        ? `<span class="order-promo-count">(${promo.productNames.size} chai)</span>`
+        : "";
+
+      const safeId = typeof escAttr === "function" ? escAttr(promo.id) : promo.id;
+      const safeName = typeof escAttr === "function" ? escAttr(promo.name) : promo.name;
+
       itemEl.innerHTML = `
-        <input type="checkbox" value="${promo.id}" ${isChecked ? "checked" : ""}>
+        <input type="checkbox" value="${safeId}" ${isChecked ? "checked" : ""}>
         <div class="order-promo-info">
-          <span class="order-promo-name">${promo.name}</span>
-          <span class="order-promo-badge">${promo.type === "percent" ? `-${promo.value}%` : `-${formatVND(promo.value)}`}</span>
+          <div class="order-promo-top">
+            <span class="order-promo-name">${safeName}</span>
+            ${countText}
+          </div>
+          <div class="order-promo-badges">
+            ${typeBadge}
+            <span class="order-promo-badge">${promo.type === "percent" ? `-${promo.value}%` : `-${formatVND(promo.value)}`}</span>
+          </div>
         </div>
       `;
       listEl.appendChild(itemEl);

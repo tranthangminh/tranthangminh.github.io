@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="news/news-detail.css">
   <link rel="stylesheet" href="news/news-add.css">
   <link rel="stylesheet" href="order/order.css">
+  <link rel="stylesheet" href="import/import.css">
 </head>
 <body>
   <!-- Toast thông báo -->
@@ -43,20 +44,49 @@
         </button>
       </div>
     </div>
-    <!-- Thanh Tab Điều Hướng -->
+    <!-- Khối Tab Điều Hướng Thống Nhất -->
     <div class="tab-row">
-      <button id="tabImport" class="tab-btn" type="button" style="display: none;">Nhập</button>
-      <button id="tabPerfume" class="tab-btn active" type="button">Nước Hoa</button>
-      <button id="tabNews" class="tab-btn" type="button">Văn Mẫu</button>
-      <button id="tabOrder" class="tab-btn" type="button">Đơn Hàng</button>
+      <div class="tab-row-group">
+        <button id="tabPerfume" class="tab-btn active" type="button">Nước Hoa</button>
+        <button id="tabNews" class="tab-btn" type="button">Văn Mẫu</button>
+        <button id="tabOrder" class="tab-btn" type="button">Đơn Hàng</button>
+      </div>
+      <div id="tabRowSub" class="tab-row-group tab-row-sub" style="display: none;">
+        <button id="tabImport" class="tab-btn" type="button" style="display: none;">Nhập</button>
+      </div>
     </div>
   </div>
 
   <!-- Nội dung Tab 0: Nhập -->
   <div id="paneImport" class="tab-pane" style="display: none;">
-    <div style="padding: 20px 15px; text-align: center; color: var(--text-secondary); width: 100%; box-sizing: border-box;">
-      <h3 style="color: var(--gold-primary); margin-bottom: 8px;">📥 Tab Nhập Dữ Liệu</h3>
-      <p style="font-size: 12px; line-height: 1.5;">Khu vực quản trị nhập liệu dành riêng cho Quản Trị Viên.</p>
+    <div class="import-container">
+      <!-- Toolbar tìm kiếm & Nút Sửa -->
+      <div class="import-toolbar">
+        <div class="import-search-wrapper">
+          <input type="text" id="importSearchBox" class="import-search-input" placeholder="Tìm nhập hàng (tên, ngày, người nhập, gửi)...">
+          <button type="button" id="importSearchClear" class="import-search-clear" title="Xóa">&times;</button>
+        </div>
+        <button type="button" id="btnImportEdit" class="btn-import-edit" title="Chế độ chỉnh sửa nhanh">
+          <span class="import-edit-icon">✏️</span>
+          <span class="import-edit-label" style="display: none;">Xong</span>
+        </button>
+        <button type="button" id="btnImportCancelEdit" class="btn-import-cancel" title="Hủy bỏ chỉnh sửa" style="display: none;">✕</button>
+      </div>
+
+      <!-- Thống kê nhanh số mục và tổng tiền -->
+      <div class="import-summary-bar">
+        <span id="importSummaryCount">0 mục</span>
+        <span id="importSummaryTotal" class="import-summary-total">Tổng: 0đ</span>
+      </div>
+
+      <!-- Thanh trạng thái tải dữ liệu Nhập -->
+      <div id="importLoadingBar" class="import-loading-bar" style="display: none;">
+        <span class="import-spinner">⏳</span>
+        <span class="import-loading-text">Đang đồng bộ danh sách nhập từ Google Sheet...</span>
+      </div>
+
+      <!-- Danh sách thẻ cuộn -->
+      <div id="importListContainer" class="import-list"></div>
     </div>
   </div>
 
@@ -86,6 +116,9 @@
         <svg class="money-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21.56 24">
           <path class="st0" d="M13.22,10.17c0,1.69-2.74,3.06-6.11,3.06s-6.11-1.37-6.11-3.06M13.22,10.17c0-1.69-2.74-3.06-6.11-3.06s-6.11,1.37-6.11,3.06M13.22,10.17v4.89M1,10.17v4.89M20.56,4.06c0-1.69-2.74-3.06-6.11-3.06-2.42,0-4.51.7-5.5,1.72M20.56,4.06c0,1.13-1.23,2.12-3.06,2.65M20.56,4.06v10.39c0,.9-1.23,1.69-3.06,2.12M20.56,9.56c0,.92-1.28,1.73-3.18,2.15M13.22,15.06c0,1.69-2.74,3.06-6.11,3.06s-6.11-1.37-6.11-3.06M13.22,15.06v4.89c0,1.69-2.74,3.06-6.11,3.06s-6.11-1.37-6.11-3.06v-4.89"/>
         </svg>
+      </button>
+      <button id="btnToggleCostPrice" class="btn-toggle-cost-price" title="Xem giá vốn (Quản trị)" type="button" style="display: none;">
+        <span class="icon-mask cost-price-icon" style="mask-image: url('svg/cost-price.svg'); -webkit-mask-image: url('svg/cost-price.svg');"></span>
       </button>
 
       <!-- Bộ lọc giá & dung tích (Nằm bên trong search-row) -->
@@ -288,14 +321,14 @@
     <div class="order-container">
       <!-- Toolbar tìm kiếm & Thêm SP (Pinned Top) -->
       <div class="order-toolbar">
-        <div class="order-search-wrapper">
+        <div class="search-wrapper order-search-wrapper">
           <input type="text" id="orderSearchInput" class="order-search-input" placeholder="🔍 Tìm SP thêm vào đơn (tên, mùi hương)..." autocomplete="off">
-          <button type="button" id="orderSearchClear" class="order-search-clear">&times;</button>
-          <div id="orderSearchDropdown" class="order-search-dropdown"></div>
+          <button type="button" id="orderSearchClear" class="btn-clear order-search-clear" title="Xóa tìm kiếm" style="display: none;">&times;</button>
         </div>
         <button type="button" id="btnOrderAddManual" class="btn-order-add-manual" title="Thêm sản phẩm ngoài kho (dùng 1 lần, không cần ảnh)">
           <span>+ SP Ngoài</span>
         </button>
+        <div id="orderSearchDropdown" class="order-search-dropdown"></div>
       </div>
 
       <!-- Scrollable Body: Chỉ danh sách SP (Cuộn độc lập) -->
@@ -633,5 +666,6 @@
   <script src="news/news-add.js"></script>
   <script src="order/order-canvas.js"></script>
   <script src="order/order.js"></script>
+  <script src="import/import.js"></script>
 </body>
 </html>

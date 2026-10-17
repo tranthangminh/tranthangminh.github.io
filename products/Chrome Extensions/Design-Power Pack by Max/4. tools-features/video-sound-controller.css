@@ -47,7 +47,7 @@
   gap: 6px !important;
 }
 
-/* Active visible state when mouse moves */
+/* Active visible state when mouse moves or controller is hovered/focused */
 .max-video-speed-controller.max-visible {
   opacity: var(--max-hud-opacity, 0.5) !important;
   visibility: visible !important;
@@ -58,8 +58,15 @@
               transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.max-video-speed-controller.max-visible:hover {
+.max-video-speed-controller:hover,
+.max-video-speed-controller:focus-within,
+.max-video-speed-controller:has(.max-open),
+.max-video-speed-controller:has(.max-hover-open),
+.max-video-speed-controller:has(.max-popover-visible) {
   opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
 }
 
 /* Control buttons (+ and - and settings) */
@@ -186,7 +193,9 @@
   background: transparent !important;
 }
 
-/* JS class triggers popover (set by mouseenter on badge or popover itself) */
+/* CSS-first hover/focus or JS fallback triggers popover */
+.max-speed-display-container:hover .max-speed-presets,
+.max-speed-display-container:focus-within .max-speed-presets,
 .max-speed-presets.max-popover-visible {
   opacity: 1 !important;
   visibility: visible !important;

@@ -140,7 +140,6 @@ namespace BookForge
             try
             {
                 string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "src_Book Forge by Max", "app.ico");
-                if (!File.Exists(iconPath)) iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "src_BookForge", "app.ico");
                 if (!File.Exists(iconPath))
                 {
                     try
@@ -148,13 +147,13 @@ namespace BookForge
                         string[] srcDirs = Directory.GetDirectories(AppDomain.CurrentDomain.BaseDirectory, "src_*");
                         if (srcDirs.Length > 0) iconPath = Path.Combine(srcDirs[0], "app.ico");
                     }
-                    catch { }
+                    catch (Exception) { /* Non-critical icon search fallback */ }
                 }
 
                 if (File.Exists(iconPath)) this.Icon = new Icon(iconPath);
                 else if (File.Exists("app.ico")) this.Icon = new Icon("app.ico");
             }
-            catch { }
+            catch (Exception) { /* Non-critical icon loading fallback */ }
 
             // 1. Toolbar Panel
             pnlHeader = new Panel();
@@ -339,7 +338,7 @@ namespace BookForge
                     RelayoutHeaderCard();
                     RelayoutRightHeader();
                 }
-                catch { }
+                catch (Exception) { /* Non-critical splitter distance fallback */ }
             });
 
             splitEditor.Panel1.Resize += (s, e) =>
@@ -846,7 +845,7 @@ namespace BookForge
                 {
                     return File.ReadAllText(projectFilePath, Encoding.UTF8);
                 }
-                catch { }
+                catch (Exception) { /* Non-critical project file read fallback */ }
             }
 
             string tmpl = FindTemplatePath(fileName);
@@ -856,7 +855,7 @@ namespace BookForge
                 {
                     return File.ReadAllText(tmpl, Encoding.UTF8);
                 }
-                catch { }
+                catch (Exception) { /* Non-critical template read fallback */ }
             }
 
             return "";
@@ -864,43 +863,45 @@ namespace BookForge
 
         private string FindTemplatePath(string fileName)
         {
-            string asmDir = "";
-            try { asmDir = Path.GetDirectoryName(typeof(FrontMatterEditorForm).Assembly.Location); } catch { }
-
-            System.Collections.Generic.List<string> probePaths = new System.Collections.Generic.List<string>();
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-
-            if (!string.IsNullOrEmpty(asmDir))
+            try
             {
-                probePaths.Add(Path.Combine(asmDir, "for_zip", "Templates", fileName));
-                probePaths.Add(Path.Combine(asmDir, "src_Book Forge by Max", "Templates", fileName));
-                probePaths.Add(Path.Combine(asmDir, "src_BookForge", "Templates", fileName));
-                probePaths.Add(Path.Combine(asmDir, "Templates", fileName));
+                string asmDir = Path.GetDirectoryName(typeof(FrontMatterEditorForm).Assembly.Location);
+                if (!string.IsNullOrEmpty(asmDir) && Directory.Exists(asmDir))
+                {
+                    baseDir = asmDir;
+                }
             }
+            catch (Exception) { /* Non-critical assembly directory fallback */ }
 
-            probePaths.Add(Path.Combine(baseDir, "for_zip", "Templates", fileName));
-            probePaths.Add(Path.Combine(baseDir, "src_Book Forge by Max", "Templates", fileName));
-            probePaths.Add(Path.Combine(baseDir, "src_BookForge", "Templates", fileName));
-            probePaths.Add(Path.Combine(baseDir, "Templates", fileName));
-            probePaths.Add(Path.Combine("for_zip", "Templates", fileName));
-            probePaths.Add(Path.Combine("src_Book Forge by Max", "Templates", fileName));
-            probePaths.Add(Path.Combine("src_BookForge", "Templates", fileName));
-            probePaths.Add(Path.Combine("Templates", fileName));
+            string[] candidateDirs = new string[]
+            {
+                Path.Combine(baseDir, "Templates"),
+                Path.Combine(baseDir, "for_zip", "Templates"),
+                Path.Combine(baseDir, "src_Book Forge by Max", "Templates"),
+                Path.Combine(baseDir, "src_Book Forge by Max"),
+                baseDir
+            };
+
+            foreach (string dir in candidateDirs)
+            {
+                string p = Path.Combine(dir, fileName);
+                if (File.Exists(p)) return p;
+            }
 
             try
             {
                 string[] srcDirs = Directory.GetDirectories(baseDir, "src_*");
                 foreach (string sDir in srcDirs)
                 {
-                    probePaths.Add(Path.Combine(sDir, "Templates", fileName));
+                    string p1 = Path.Combine(sDir, "Templates", fileName);
+                    if (File.Exists(p1)) return p1;
+                    string p2 = Path.Combine(sDir, fileName);
+                    if (File.Exists(p2)) return p2;
                 }
             }
-            catch { }
+            catch (Exception) { /* Non-critical wildcard directory probe fallback */ }
 
-            foreach (string p in probePaths)
-            {
-                if (!string.IsNullOrEmpty(p) && File.Exists(p)) return p;
-            }
             return "";
         }
 
@@ -1531,7 +1532,7 @@ namespace BookForge
                     }
                     return string.Format("data:{0};base64,{1}", mime, Convert.ToBase64String(bytes));
                 }
-                catch { }
+                catch (Exception) { /* Non-critical image encode fallback */ }
             }
 
             return relativePath;
@@ -1560,49 +1561,9 @@ namespace BookForge
                 if (File.Exists(p5)) return p5;
             }
 
-            // Check templates and assembly directory
+            // Check templates and app directory
             string tmpl = FindTemplatePath(fileName);
             if (!string.IsNullOrEmpty(tmpl) && File.Exists(tmpl)) return tmpl;
-
-            string asmDir = "";
-            try { asmDir = Path.GetDirectoryName(typeof(FrontMatterEditorForm).Assembly.Location); } catch { }
-            System.Collections.Generic.List<string> probeList = new System.Collections.Generic.List<string>();
-            string appBaseDir = AppDomain.CurrentDomain.BaseDirectory;
-
-            if (!string.IsNullOrEmpty(asmDir))
-            {
-                probeList.Add(Path.Combine(asmDir, "for_zip", "Templates", fileName));
-                probeList.Add(Path.Combine(asmDir, "src_Book Forge by Max", "Templates", fileName));
-                probeList.Add(Path.Combine(asmDir, "src_BookForge", "Templates", fileName));
-                probeList.Add(Path.Combine(asmDir, "Templates", fileName));
-                probeList.Add(Path.Combine(asmDir, "src_Book Forge by Max", fileName));
-                probeList.Add(Path.Combine(asmDir, "src_BookForge", fileName));
-                probeList.Add(Path.Combine(asmDir, fileName));
-            }
-
-            probeList.Add(Path.Combine(appBaseDir, "for_zip", "Templates", fileName));
-            probeList.Add(Path.Combine(appBaseDir, "src_Book Forge by Max", "Templates", fileName));
-            probeList.Add(Path.Combine(appBaseDir, "src_BookForge", "Templates", fileName));
-            probeList.Add(Path.Combine(appBaseDir, "Templates", fileName));
-            probeList.Add(Path.Combine(appBaseDir, "src_Book Forge by Max", fileName));
-            probeList.Add(Path.Combine(appBaseDir, "src_BookForge", fileName));
-            probeList.Add(Path.Combine(appBaseDir, fileName));
-
-            try
-            {
-                string[] srcDirs = Directory.GetDirectories(appBaseDir, "src_*");
-                foreach (string sDir in srcDirs)
-                {
-                    probeList.Add(Path.Combine(sDir, "Templates", fileName));
-                    probeList.Add(Path.Combine(sDir, fileName));
-                }
-            }
-            catch { }
-
-            foreach (string p in probeList)
-            {
-                if (!string.IsNullOrEmpty(p) && File.Exists(p)) return p;
-            }
 
             return "";
         }

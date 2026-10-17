@@ -469,9 +469,9 @@ namespace ModernAutoClicker
 
                 FileManager.AtomicWriteAllText(GetSettingsFilePath(), sb.ToString(), Encoding.UTF8);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine("Failed to save settings: " + ex.Message);
+                // Silently ignore settings write failure if disk is locked
             }
         }
 

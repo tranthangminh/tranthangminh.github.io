@@ -98,9 +98,9 @@ namespace ModernAutoClicker
                                     }
                                 }
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
-                                System.Diagnostics.Debug.WriteLine(string.Format("Failed to parse script from {0}: {1}", file, ex.Message));
+                                // Skip corrupted or unreadable external script file
                             }
                         }
 

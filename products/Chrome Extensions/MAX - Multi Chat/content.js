@@ -134,6 +134,34 @@
       return lower.includes('stop') || lower.includes('dừng') || lower.includes('cancel');
     }
 
+    const AI_SITE_SELECTORS = [
+      {
+        match: "chatgpt.com",
+        input: '#prompt-textarea, textarea[placeholder*="Ask"], div[contenteditable="true"]',
+        btn: 'button[data-testid="send-button"], button[data-testid*="send"], button[aria-label*="Send"]'
+      },
+      {
+        match: "gemini.google.com",
+        input: '.ql-editor[contenteditable="true"], rich-textarea .ql-editor, rich-textarea textarea',
+        btn: '.send-button-container button, button[aria-label="Send message"], button[aria-label*="Send"], button[aria-label*="Gửi"]'
+      },
+      {
+        match: "claude.ai",
+        input: 'div[contenteditable="true"], .ProseMirror[contenteditable="true"], [data-testid="textarea"]',
+        btn: 'button[aria-label="Send Message"], button[aria-label*="Send" i]'
+      },
+      {
+        match: "deepseek.com",
+        input: '#chat-input, textarea',
+        btn: 'div[class*="send-btn"], button[class*="send"], div[class*="send"]'
+      },
+      {
+        match: "perplexity.ai",
+        input: 'textarea[placeholder*="Ask"], textarea',
+        btn: 'button[aria-label*="Submit"], button[aria-label*="Send"], button[class*="bg-super"]'
+      }
+    ];
+
     function handleAISyncPrompt(prompt, promptId) {
       if (!prompt) return;
 
@@ -145,125 +173,28 @@
       lastHandledPromptTime = now;
 
       const host = window.location.hostname.toLowerCase();
+      const siteConfig = AI_SITE_SELECTORS.find(c => host.includes(c.match));
 
-      let inputEl = null;
-      let submitBtn = null;
+      const inputSelector = siteConfig ? siteConfig.input : 'textarea, div[contenteditable="true"]';
+      const btnSelector = siteConfig ? siteConfig.btn : 'button[type="submit"], button[aria-label*="send" i]';
 
-      if (host.includes("chatgpt.com")) {
-        inputEl = document.getElementById("prompt-textarea") || 
-                  document.querySelector('textarea[placeholder*="Ask"]') ||
-                  document.querySelector('div[contenteditable="true"]');
-        if (inputEl) {
-          if (inputEl.tagName === 'TEXTAREA' || inputEl.tagName === 'INPUT') {
-            setNativeInputValue(inputEl, prompt);
-          } else {
-            setNativeContentEditableValue(inputEl, prompt);
-          }
-          setTimeout(() => {
-            submitBtn = document.querySelector('button[data-testid="send-button"]') ||
-                        document.querySelector('button[data-testid*="send"]') ||
-                        document.querySelector('button[aria-label*="Send"]');
-            if (submitBtn && !submitBtn.disabled && !isStopButton(submitBtn)) {
-              submitBtn.click();
-            } else if (!submitBtn) {
-              simulateEnterKey(inputEl);
-            }
-          }, 200);
-        }
-      } else if (host.includes("gemini.google.com")) {
-        inputEl = document.querySelector('.ql-editor[contenteditable="true"]') ||
-                  document.querySelector('rich-textarea .ql-editor') ||
-                  document.querySelector('rich-textarea textarea');
-        if (inputEl) {
-          if (inputEl.tagName === 'TEXTAREA') {
-            setNativeInputValue(inputEl, prompt);
-          } else {
-            setNativeContentEditableValue(inputEl, prompt);
-          }
-          setTimeout(() => {
-            submitBtn = document.querySelector('.send-button-container button') ||
-                        document.querySelector('button[aria-label="Send message"]') ||
-                        document.querySelector('button[aria-label*="Send"]') ||
-                        document.querySelector('button[aria-label*="Gửi"]');
-            if (submitBtn && !submitBtn.disabled && !isStopButton(submitBtn)) {
-              submitBtn.click();
-            } else if (!submitBtn) {
-              simulateEnterKey(inputEl);
-            }
-          }, 200);
-        }
-      } else if (host.includes("claude.ai")) {
-        inputEl = document.querySelector('div[contenteditable="true"]') ||
-                  document.querySelector('.ProseMirror[contenteditable="true"]') ||
-                  document.querySelector('[data-testid="textarea"]');
-        if (inputEl) {
-          if (inputEl.tagName === 'TEXTAREA') {
-            setNativeInputValue(inputEl, prompt);
-          } else {
-            setNativeContentEditableValue(inputEl, prompt);
-          }
-          setTimeout(() => {
-            submitBtn = document.querySelector('button[aria-label="Send Message"]') ||
-                        document.querySelector('button[aria-label*="Send"]') ||
-                        document.querySelector('button[aria-label*="send"]');
-            if (submitBtn && !submitBtn.disabled && !isStopButton(submitBtn)) {
-              submitBtn.click();
-            } else if (!submitBtn) {
-              simulateEnterKey(inputEl);
-            }
-          }, 200);
-        }
-      } else if (host.includes("deepseek.com")) {
-        inputEl = document.getElementById("chat-input") || document.querySelector('textarea');
-        if (inputEl) {
-          setNativeInputValue(inputEl, prompt);
-          setTimeout(() => {
-            submitBtn = document.querySelector('div[class*="send-btn"]') ||
-                        document.querySelector('button[class*="send"]') ||
-                        document.querySelector('div[class*="send"]');
-            if (submitBtn && !isStopButton(submitBtn)) {
-              submitBtn.click();
-            } else if (!submitBtn) {
-              simulateEnterKey(inputEl);
-            }
-          }, 200);
-        }
-      } else if (host.includes("perplexity.ai")) {
-        inputEl = document.querySelector('textarea[placeholder*="Ask"]') || document.querySelector('textarea');
-        if (inputEl) {
-          setNativeInputValue(inputEl, prompt);
-          setTimeout(() => {
-            submitBtn = document.querySelector('button[aria-label*="Submit"]') ||
-                        document.querySelector('button[aria-label*="Send"]') ||
-                        document.querySelector('button[class*="bg-super"]');
-            if (submitBtn && !isStopButton(submitBtn)) {
-              submitBtn.click();
-            } else if (!submitBtn) {
-              simulateEnterKey(inputEl);
-            }
-          }, 200);
-        }
+      const inputEl = document.querySelector(inputSelector);
+      if (!inputEl) return;
+
+      if (inputEl.tagName === 'TEXTAREA' || inputEl.tagName === 'INPUT') {
+        setNativeInputValue(inputEl, prompt);
       } else {
-        // Generic fallback for any other AI/chat interface (Poe, Copilot, custom sites)
-        inputEl = document.querySelector('textarea') || document.querySelector('div[contenteditable="true"]');
-        if (inputEl) {
-          if (inputEl.tagName === 'TEXTAREA' || inputEl.tagName === 'INPUT') {
-            setNativeInputValue(inputEl, prompt);
-          } else {
-            setNativeContentEditableValue(inputEl, prompt);
-          }
-          setTimeout(() => {
-            submitBtn = document.querySelector('button[type="submit"]') ||
-                        document.querySelector('button[aria-label*="send" i]') ||
-                        document.querySelector('button[aria-label*="Send" i]');
-            if (submitBtn && !isStopButton(submitBtn)) {
-              submitBtn.click();
-            } else if (!submitBtn) {
-              simulateEnterKey(inputEl);
-            }
-          }, 200);
-        }
+        setNativeContentEditableValue(inputEl, prompt);
       }
+
+      setTimeout(() => {
+        const submitBtn = document.querySelector(btnSelector);
+        if (submitBtn && !submitBtn.disabled && !isStopButton(submitBtn)) {
+          submitBtn.click();
+        } else if (!submitBtn) {
+          simulateEnterKey(inputEl);
+        }
+      }, 200);
     }
 
     function simulateEnterKey(element) {

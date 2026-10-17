@@ -9,10 +9,17 @@
   window.__maxContentScriptInjected = true;
 
   let lastRightClickCoords = { x: 0, y: 0 };
+  let lastRightClickTarget = null;
 
-  // Listen for context menu right-clicks to store coordinates
+  // Listen for context menu right-clicks to store coordinates and target
   document.addEventListener('contextmenu', (e) => {
     lastRightClickCoords = { x: e.clientX, y: e.clientY };
+    const modalImg = document.getElementById('modal-image-preview');
+    if (e.target && (e.target.id === 'image-previewmodal-editcanvas' || e.target.closest('#image-preview-modal')) && modalImg) {
+      lastRightClickTarget = modalImg;
+    } else {
+      lastRightClickTarget = e.target;
+    }
   }, true);
 
   function safeSendMessage(message, callback) {
@@ -130,6 +137,16 @@
     }
 
     const elements = getElementsUnderPoint(document, x, y);
+    if (lastRightClickTarget && !elements.includes(lastRightClickTarget)) {
+      elements.unshift(lastRightClickTarget);
+    }
+    if (lastRightClickTarget) {
+      try {
+        lastRightClickTarget.querySelectorAll?.('img').forEach(im => elements.push(im));
+        const parentCard = lastRightClickTarget.closest?.('a, [role="button"], article, figure, .card, div');
+        if (parentCard) parentCard.querySelectorAll?.('img').forEach(im => elements.push(im));
+      } catch (e) {}
+    }
 
     for (const el of elements) {
       if (el.tagName === 'IMG') {
@@ -253,28 +270,59 @@
 
   function getImageDetails(url) {
     return new Promise((resolve) => {
+      // 1. Check if the element is already rendered in the current DOM
+      try {
+        const domImg = Array.from(document.querySelectorAll('img')).find(el => el.currentSrc === url || el.src === url);
+        if (domImg && domImg.naturalWidth > 0 && domImg.naturalHeight > 0) {
+          resolve({
+            url: url,
+            width: domImg.naturalWidth,
+            height: domImg.naturalHeight,
+            loaded: true,
+            format: getUrlExtension(url),
+            sizeText: ''
+          });
+          return;
+        }
+      } catch (e) {}
+
+      // 2. Otherwise load via Image constructor
       const img = new Image();
       let resolved = false;
 
       const onResolve = (success) => {
         if (resolved) return;
         resolved = true;
-        const w = (success && img.naturalWidth) ? img.naturalWidth : 0;
-        const h = (success && img.naturalHeight) ? img.naturalHeight : 0;
+        const w = (success && img.naturalWidth) ? img.naturalWidth : (success ? 100 : 0);
+        const h = (success && img.naturalHeight) ? img.naturalHeight : (success ? 100 : 0);
         resolve({
           url: url,
           width: w,
           height: h,
-          loaded: success && w > 0 && h > 0,
+          loaded: w > 0 && h > 0,
           format: getUrlExtension(url),
           sizeText: ''
         });
       };
 
       img.onload = () => onResolve(true);
-      img.onerror = () => onResolve(false);
+      img.onerror = () => {
+        // If image failed to load in page context due to CSP/CORS/Referrer, but URL is valid, still treat as candidate
+        if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:image/'))) {
+          onResolve(true);
+        } else {
+          onResolve(false);
+        }
+      };
 
-      setTimeout(() => onResolve(false), 2000);
+      setTimeout(() => {
+        if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+          onResolve(true);
+        } else {
+          onResolve(false);
+        }
+      }, 1500);
+
       img.src = url;
     });
   }

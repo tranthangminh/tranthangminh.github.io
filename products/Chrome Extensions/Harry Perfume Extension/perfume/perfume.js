@@ -1,5 +1,7 @@
 // Cấu hình DOM của Nước Hoa (Perfume Tab)
 const btnTogglePrice = document.getElementById("btnTogglePrice");
+window.isCostPriceMode = false;
+window.currentPerfumeList = [];
 
 
 
@@ -37,15 +39,17 @@ function getProductDisplayName(prod) {
   return displayName;
 }
 
-// Hàm ghép tên hiển thị dạng HTML (chứa icon SVG giới tính)
+// Hàm ghép tên hiển thị dạng HTML (chứa icon SVG giới tính, chống XSS)
 function getProductDisplayNameHTML(prod) {
   const genderIcon = getGenderIconHTML(prod.sex);
   const name = cleanString(prod.name);
   const shortName = cleanString(prod.tenrutgon);
   
-  let displayName = name;
+  const safeName = typeof escAttr === "function" ? escAttr(name) : name;
+  let displayName = safeName;
   if (shortName && shortName !== "-") {
-    displayName += ` (${shortName})`;
+    const safeShort = typeof escAttr === "function" ? escAttr(shortName) : shortName;
+    displayName += ` (${safeShort})`;
   }
   
   return genderIcon ? `${genderIcon}${displayName}` : displayName;
@@ -61,8 +65,98 @@ function updateProductCount(visibleCount, totalCount) {
   if (searchCountBar) searchCountBar.style.display = totalCount > 0 ? "flex" : "none";
 }
 
+// Hàm dựng bảng hiển thị giá 3 cột chuẩn thống nhất (Loại | Giá | Tồn Kho) dùng chung cho cả Giá Bán và Giá Vốn
+function renderProductPriceTable(prod, isCost) {
+  const rows = [];
+
+  // 1. Fullbox 1..5
+  for (let i = 1; i <= 5; i++) {
+    const p = cleanString(isCost ? prod['giavonfull' + i] : prod['giafull' + i]);
+    const dt = cleanString(prod['dungtich' + i]);
+    const st = cleanString(prod['tonkhofull' + i]);
+    if (p && p !== "-") {
+      const dtVal = formatDungTichValue(dt);
+      const typeName = dtVal ? (dtVal.toLowerCase().startsWith("full") ? dtVal : `Full ${dtVal}`) : "Full";
+      const shortPrice = formatPriceShort(p);
+      const stockHTML = (st && st !== "-")
+        ? `<span class="price-col-stock ${st === "0" ? "stock-zero" : "stock-positive"}">(${st === "0" ? "0" : st})</span>`
+        : `<span class="price-col-stock stock-empty">-</span>`;
+      const rowClass = isCost ? "product-price-row price-row-full-cost" : "product-price-row price-row-full";
+      rows.push(`
+        <div class="${rowClass}">
+          <span class="price-col-type">${typeName}</span>
+          <span class="price-col-val">${shortPrice}</span>
+          ${stockHTML}
+        </div>
+      `);
+    }
+  }
+
+  // 2. Tester 1..5
+  for (let i = 1; i <= 5; i++) {
+    const p = cleanString(isCost ? prod['giavontest' + i] : prod['giatester' + i]);
+    const dt = cleanString(prod['dungtich' + i]);
+    if (p && p !== "-") {
+      const dtVal = formatDungTichValue(dt);
+      const typeName = dtVal ? (dtVal.toLowerCase().startsWith("tester") ? dtVal : `Tester ${dtVal}`) : "Tester";
+      const shortPrice = formatPriceShort(p);
+      rows.push(`
+        <div class="product-price-row price-row-tester">
+          <span class="price-col-type">${typeName}</span>
+          <span class="price-col-val">${shortPrice}</span>
+          <span class="price-col-stock stock-empty">-</span>
+        </div>
+      `);
+    }
+  }
+
+  // 3. Chiết 5ml, 10ml, 20ml
+  const chietKeys = ["5ml", "10ml", "20ml"];
+  chietKeys.forEach(k => {
+    const p = cleanString(isCost ? prod['giavon' + k] : prod['gia' + k]);
+    if (p && p !== "-") {
+      const shortPrice = formatPriceShort(p);
+      rows.push(`
+        <div class="product-price-row price-row-chiet">
+          <span class="price-col-type">${k}</span>
+          <span class="price-col-val">${shortPrice}</span>
+          <span class="price-col-stock stock-empty">-</span>
+        </div>
+      `);
+    }
+  });
+
+  // 4. Gốc 1..5 (Chỉ hiển thị ở chế độ Giá Bán vì không có cột giá vốn gốc)
+  if (!isCost) {
+    for (let i = 1; i <= 5; i++) {
+      const p = cleanString(prod['giagoc' + i]);
+      const dt = cleanString(prod['dungtichgoc' + i]);
+      const st = cleanString(prod['tonkhogoc' + i]);
+      if (p && p !== "-") {
+        const dtVal = formatDungTichValue(dt);
+        const typeName = dtVal ? (dtVal.toLowerCase().startsWith("gốc") || dtVal.toLowerCase().startsWith("goc") ? dtVal : `Gốc ${dtVal}`) : "Gốc";
+        const shortPrice = formatPriceShort(p);
+        const stockHTML = (st && st !== "-")
+          ? `<span class="price-col-stock ${st === "0" ? "stock-zero" : "stock-positive"}">(${st === "0" ? "0" : st})</span>`
+          : `<span class="price-col-stock stock-empty">-</span>`;
+        rows.push(`
+          <div class="product-price-row price-row-goc">
+            <span class="price-col-type">${typeName}</span>
+            <span class="price-col-val">${shortPrice}</span>
+            ${stockHTML}
+          </div>
+        `);
+      }
+    }
+  }
+
+  if (rows.length === 0) return "";
+  return `<div class="product-price-table ${isCost ? 'price-table-cost' : 'price-table-sell'}">${rows.join("")}</div>`;
+}
+
 // Hiển thị danh sách sản phẩm
 function renderList(products) {
+  window.currentPerfumeList = products;
   searchResult.innerHTML = "";
   
   updateProductCount(products.length, allProducts.length);
@@ -77,6 +171,8 @@ function renderList(products) {
     return;
   }
   
+  const isCost = !!window.isCostPriceMode;
+
   products.forEach(prod => {
     const item = document.createElement("div");
     item.className = "search-item";
@@ -89,72 +185,12 @@ function renderList(products) {
       imgHTML = `<img src="svg/logo.svg" class="item-thumb item-thumb-placeholder" alt="${cleanString(prod.name)}">`;
     }
     
-    const displayName = getProductDisplayName(prod);
     const stockInfo = getProductTotalStock(prod);
     const stockBadge = stockInfo.hasValid
       ? `<span class="item-stock${stockInfo.total === 0 ? ' item-stock-zero' : ''}">📦${stockInfo.total}</span>`
       : "";
 
-    // Hàng giá nhỏ bên dưới tên — hiển thị đầy đủ chi tiết giống Giá bán nhanh
-    const pillsHTML = [];
-
-    // 1. Fullbox 1..5
-    for (let i = 1; i <= 5; i++) {
-      const p = cleanString(prod['giafull' + i]);
-      const dt = cleanString(prod['dungtich' + i]);
-      const st = cleanString(prod['tonkhofull' + i]);
-      if (p && p !== "-") {
-        const dtVal = formatDungTichValue(dt) || "Full";
-        const shortPrice = formatPriceShort(p);
-        let stockText = "";
-        if (st && st !== "-") {
-          stockText = ` <span class="${st === "0" ? "stock-zero" : "stock-positive"}">(${st === "0" ? "0" : st})</span>`;
-        }
-        pillsHTML.push(`<span class="item-price-pill item-price-full">${dtVal} - ${shortPrice}${stockText}</span>`);
-      }
-    }
-
-    // 2. Tester 1..5
-    for (let i = 1; i <= 5; i++) {
-      const p = cleanString(prod['giatester' + i]);
-      const dt = cleanString(prod['dungtich' + i]);
-      if (p && p !== "-") {
-        const dtVal = formatDungTichValue(dt) || "Tester";
-        const shortPrice = formatPriceShort(p);
-        pillsHTML.push(`<span class="item-price-pill item-price-tester">${dtVal} - ${shortPrice}</span>`);
-      }
-    }
-
-    // 3. Chiết 5ml, 10ml, 20ml
-    const chietKeys = ["5ml", "10ml", "20ml"];
-    chietKeys.forEach(k => {
-      const p = cleanString(prod['gia' + k]);
-      if (p && p !== "-") {
-        const shortPrice = formatPriceShort(p);
-        pillsHTML.push(`<span class="item-price-pill item-price-chiet">${k} - ${shortPrice}</span>`);
-      }
-    });
-
-    // 4. Gốc 1..5
-    for (let i = 1; i <= 5; i++) {
-      const p = cleanString(prod['giagoc' + i]);
-      const dt = cleanString(prod['dungtichgoc' + i]);
-      const st = cleanString(prod['tonkhogoc' + i]);
-      if (p && p !== "-") {
-        const dtVal = formatDungTichValue(dt);
-        const label = dtVal || "Gốc";
-        const shortPrice = formatPriceShort(p);
-        let stockText = "";
-        if (st && st !== "-") {
-          stockText = ` <span class="${st === "0" ? "stock-zero" : "stock-positive"}">(${st === "0" ? "0" : st})</span>`;
-        }
-        pillsHTML.push(`<span class="item-price-pill item-price-goc">${label} - ${shortPrice}${stockText}</span>`);
-      }
-    }
-
-    const priceRow = pillsHTML.length > 0 
-      ? `<div class="item-prices">${pillsHTML.join("")}</div>` 
-      : "";
+    const priceRow = renderProductPriceTable(prod, isCost);
 
     item.innerHTML = `
       ${imgHTML}
@@ -217,5 +253,16 @@ function refreshStockDisplay() {
 }
 
 // Chi tiết sản phẩm đã được di chuyển hoàn toàn sang perfume-preview.js
+
+// Hàm làm mới lại hiển thị Tab Nước hoa khi chuyển đổi trạng thái (Giá Vốn / Giá Bán)
+window.refreshPerfumeView = function() {
+  if (typeof detailView !== "undefined" && detailView && detailView.style.display !== "none" && typeof currentProduct !== "undefined" && currentProduct && typeof showDetail === "function") {
+    showDetail(currentProduct);
+  } else if (typeof searchResult !== "undefined" && searchResult && searchResult.style.display !== "none") {
+    const listToRender = (window.currentPerfumeList && window.currentPerfumeList.length > 0) ? window.currentPerfumeList : allProducts;
+    renderList(listToRender);
+  }
+};
+
 
 // Các bộ lắng nghe sự kiện tìm kiếm và ẩn/hiện giá đã được chuyển sang perfume-search.js

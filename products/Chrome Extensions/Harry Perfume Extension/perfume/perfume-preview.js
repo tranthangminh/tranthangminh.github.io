@@ -287,13 +287,19 @@ async function showDetail(prod) {
   // Tổng hợp danh sách biến thể dung tích & giá khả dụng
   const activeBadges = [];
   
-  function addOption(type, dungtichRaw, priceRaw, key, stockRaw) {
-    const price = cleanString(priceRaw);
+  function addOption(type, dungtichRaw, priceRaw, key, stockRaw, costPriceRaw = "") {
+    const sellPrice = cleanString(priceRaw);
+    const costPrice = cleanString(costPriceRaw);
+    const isCost = !!window.isCostPriceMode;
+    const isCostActive = isCost && costPrice && costPrice !== "-";
+
+    // Ở chế độ giá vốn, ưu tiên lấy costPrice nếu có
+    const activePrice = isCostActive ? costPrice : sellPrice;
     const dtVal = formatDungTichValue(dungtichRaw);
     const stock = cleanString(stockRaw);
     
     // Nếu không có giá thì không hiển thị nút này
-    const hasPrice = (price && price !== "-");
+    const hasPrice = (activePrice && activePrice !== "-");
     if (!hasPrice) return;
     
     let dungtichText = getDungTichText(type, dungtichRaw);
@@ -312,9 +318,10 @@ async function showDetail(prod) {
       group = "Chiết";
     }
 
-    const displayPrice = hasPrice ? price : "-";
-    const text = generateConsultationText(prod, dungtichText, displayPrice);
-    const isMissing = isConsultationMissingData(prod, dungtichText, displayPrice);
+    const displayPrice = hasPrice ? activePrice : "-";
+    // AN TOÀN TUYỆT ĐỐI: Văn mẫu tư vấn gửi khách hàng LUÔN dùng Giá Bán (sellPrice), không bao giờ để lộ giá vốn!
+    const text = generateConsultationText(prod, dungtichText, (sellPrice && sellPrice !== "-") ? sellPrice : displayPrice);
+    const isMissing = isConsultationMissingData(prod, dungtichText, (sellPrice && sellPrice !== "-") ? sellPrice : displayPrice);
 
     activeBadges.push({
       key: key,
@@ -322,6 +329,7 @@ async function showDetail(prod) {
       group: group,
       label: labelText,
       price: displayPrice,
+      isCostActive: isCostActive,
       text: text,
       isMissing: isMissing,
       stock: stock
@@ -331,29 +339,33 @@ async function showDetail(prod) {
   // 1. Fullbox 1..5
   for (let i = 1; i <= 5; i++) {
     const p = cleanString(prod['giafull' + i]);
+    const cost = cleanString(prod['giavonfull' + i]);
     const dt = cleanString(prod['dungtich' + i]);
     const st = cleanString(prod['tonkhofull' + i]);
-    addOption("Full", dt, p, `full_${i}`, st);
+    addOption("Full", dt, p, `full_${i}`, st, cost);
   }
 
   // 2. Tester 1..5
   for (let i = 1; i <= 5; i++) {
     const p = cleanString(prod['giatester' + i]);
+    const cost = cleanString(prod['giavontest' + i]);
     const dt = cleanString(prod['dungtich' + i]);
-    addOption("Tester", dt, p, `tester_${i}`);
+    addOption("Tester", dt, p, `tester_${i}`, "", cost);
   }
 
   // 3. Chiết 5ml, 10ml, 20ml
-  addOption("5ml", "5ml", prod.gia5ml, "5ml");
-  addOption("10ml", "10ml", prod.gia10ml, "10ml");
-  addOption("20ml", "20ml", prod.gia20ml, "20ml");
+  addOption("5ml", "5ml", prod.gia5ml, "5ml", "", prod.giavon5ml);
+  addOption("10ml", "10ml", prod.gia10ml, "10ml", "", prod.giavon10ml);
+  addOption("20ml", "20ml", prod.gia20ml, "20ml", "", prod.giavon20ml);
 
-  // 4. Gốc 1..5
-  for (let i = 1; i <= 5; i++) {
-    const p = cleanString(prod['giagoc' + i]);
-    const dt = cleanString(prod['dungtichgoc' + i]);
-    const st = cleanString(prod['tonkhogoc' + i]);
-    addOption("Gốc", dt, p, `goc_${i}`, st);
+  // 4. Gốc 1..5 (Chỉ hiển thị khi không ở chế độ giá vốn vì gốc không có giá vốn)
+  if (!window.isCostPriceMode) {
+    for (let i = 1; i <= 5; i++) {
+      const p = cleanString(prod['giagoc' + i]);
+      const dt = cleanString(prod['dungtichgoc' + i]);
+      const st = cleanString(prod['tonkhogoc' + i]);
+      addOption("Gốc", dt, p, `goc_${i}`, st);
+    }
   }
 
   // Vẽ các nút giá linh hoạt vào 4 hàng (Full, Tester, Chiết, Gốc)
@@ -406,7 +418,7 @@ async function showDetail(prod) {
     }
 
     if (badge.group === "Full") {
-      btn.classList.add("price-badge-full");
+      btn.classList.add(badge.isCostActive ? "price-badge-full-cost" : "price-badge-full");
     } else if (badge.group === "Tester") {
       btn.classList.add("price-badge-tester");
     } else if (badge.group === "Chiết") {
@@ -414,6 +426,7 @@ async function showDetail(prod) {
     } else if (badge.group === "Gốc") {
       btn.classList.add("price-badge-goc");
     }
+
     btn.type = "button";
     btn.title = `Copy ${badge.group} ${badge.label}`;
     const hasStock = badge.stock && badge.stock !== "-";

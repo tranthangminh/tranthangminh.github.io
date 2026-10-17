@@ -119,9 +119,6 @@ body, html {
   color: var(--color-add-group) !important;
 }
 
-.group-item.active .icon-mask {
-  background-color: white !important;
-}
 
 .group-item.add-btn {
   background-color: transparent;
@@ -346,23 +343,6 @@ body, html {
   text-overflow: ellipsis;
 }
 
-.btn-icon-small {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: background var(--transition-speed);
-}
-
-.btn-icon-small:hover {
-  background-color: var(--bg-hover);
-}
-
-.btn-icon-small.danger:hover {
-  background-color: rgba(239, 68, 68, 0.1);
-}
 
 .sub-groups-container {
   flex: 1;
@@ -526,8 +506,6 @@ body, html {
 .btn-icon-small.edit-btn:hover .icon-mask,
 .btn-icon-small.clone-btn:hover .icon-mask {
   background-color: var(--accent-primary);
-}
-  background-color: var(--accent-primary, #6366f1);
 }
 
 .btn-icon-small.danger:hover .icon-mask {
@@ -813,9 +791,11 @@ body, html {
 
 /* Iframe Container & Persistence */
 .frames-holder {
+  flex: 1;
   width: 100%;
   height: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 .iframe-wrapper {
@@ -1165,12 +1145,6 @@ body, html {
   width: 100%;
 }
 
-.frames-holder {
-  flex: 1;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-}
 
 /* ==================== DRAG & DROP STYLING ==================== */
 .tab-link-item[draggable="true"] {
@@ -1244,33 +1218,6 @@ body, html {
   background-color: var(--accent-primary);
 }
 
-.icon-sub-sidebar-toggle {
-  background-color: var(--text-secondary);
-  mask: url(svg/close.svg) no-repeat center;
-  -webkit-mask: url(svg/close.svg) no-repeat center;
-  mask-size: contain;
-  -webkit-mask-size: contain;
-  width: 22px;
-  height: 22px;
-  display: block;
-  margin: 0 auto;
-  transition: background-color var(--transition-speed);
-}
-
-.sidebar-btn:hover .icon-sub-sidebar-toggle {
-  background-color: var(--accent-primary);
-  filter: brightness(1.5);
-}
-
-/* Dynamic mask icon change when collapsed */
-#btn-toggle-sub-sidebar.collapsed .icon-sub-sidebar-toggle {
-  mask-image: url(svg/open.svg);
-  -webkit-mask-image: url(svg/open.svg);
-  background-color: #ffffff !important;
-}
-#btn-toggle-sub-sidebar.collapsed {
-  background-color: var(--accent-primary);
-}
 
 #btn-toggle-split-view.active {
   background-color: var(--accent-primary);

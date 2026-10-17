@@ -1,5 +1,6 @@
-// connections/weavy.js
-// Bypass Weavy iframe detection using Main World script injection.
+// connections/frame-bypass.js
+// Universal Main World script injection to bypass iframe/window.top embedding detection
+// (used for Telegram Web, Weavy, and other embedded messaging clients).
 (function() {
   function bypassProperty(obj, prop, value) {
     try {
@@ -8,12 +9,12 @@
         configurable: true
       });
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
 
-  // Try bypassing parent, top, self to refer to window
+  // Bypass parent, top, self to refer to window
   if (!bypassProperty(window, 'parent', window)) {
     bypassProperty(Window.prototype, 'parent', window);
   }

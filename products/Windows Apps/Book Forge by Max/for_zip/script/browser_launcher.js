@@ -90,6 +90,27 @@ async function launchRobustBrowser(puppeteerMod, options = {}) {
         }
     };
 
+    const browserProcess = browser.process ? browser.process() : null;
+    if (browserProcess && browserProcess.pid) {
+        const killBrowserSync = () => {
+            try {
+                if (process.platform === 'win32') {
+                    require('child_process').execSync(`taskkill /F /T /PID ${browserProcess.pid}`, { stdio: 'ignore' });
+                } else {
+                    browserProcess.kill('SIGKILL');
+                }
+            } catch (e) {}
+            try {
+                fs.rmSync(tempProfile, { recursive: true, force: true });
+            } catch (e) {}
+        };
+
+        process.once('exit', killBrowserSync);
+        process.once('SIGINT', () => { killBrowserSync(); process.exit(1); });
+        process.once('SIGTERM', () => { killBrowserSync(); process.exit(1); });
+        process.once('SIGHUP', () => { killBrowserSync(); process.exit(1); });
+    }
+
     return browser;
 }
 

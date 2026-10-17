@@ -13,20 +13,31 @@ function formatBytes(bytes) {
   return `${(bytes / 1024).toFixed(0)} KB`;
 }
 
-// Helper escAttr làm sạch chuỗi chống XSS/Injection khi render thuộc tính HTML
+// Helper escAttr làm sạch chuỗi chống XSS/Injection khi render thuộc tính và nội dung HTML
 function escAttr(val) {
   if (val === null || val === undefined) return '';
   return String(val)
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+// Helper debounce trì hoãn xử lý cho input/search/drag
+function debounce(fn, delay = 200) {
+  let timer = null;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
 }
 
 if (typeof window !== "undefined") {
   window.DEFAULT_SETTINGS = DEFAULT_SETTINGS;
   window.formatBytes = formatBytes;
   window.escAttr = escAttr;
+  window.debounce = debounce;
 }
 
 // StorageHelper: Wrapper giúp đọc/ghi dữ liệu qua chrome.storage.local
@@ -36,7 +47,7 @@ const StorageHelper = {
     return new Promise((resolve) => {
       if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get([key], (result) => {
-          if (chrome.runtime.lastError) {
+          if (chrome.runtime?.lastError) {
             resolve(defaultValue);
           } else {
             resolve(result[key] !== undefined ? result[key] : defaultValue);
@@ -47,6 +58,7 @@ const StorageHelper = {
           const val = localStorage.getItem(key);
           resolve(val !== null ? JSON.parse(val) : defaultValue);
         } catch (e) {
+          // Fallback an toàn khi localStorage bị chặn hoặc chuỗi JSON hỏng
           resolve(defaultValue);
         }
       }
@@ -62,7 +74,9 @@ const StorageHelper = {
       } else {
         try {
           localStorage.setItem(key, JSON.stringify(value));
-        } catch (e) {}
+        } catch (e) {
+          // Bỏ qua nếu quota localStorage vượt giới hạn
+        }
         resolve();
       }
     });
@@ -77,7 +91,9 @@ const StorageHelper = {
       } else {
         try {
           localStorage.removeItem(key);
-        } catch (e) {}
+        } catch (e) {
+          // Bỏ qua nếu key không tồn tại
+        }
         resolve();
       }
     });

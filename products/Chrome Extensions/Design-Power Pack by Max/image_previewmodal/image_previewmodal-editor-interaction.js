@@ -718,18 +718,53 @@ function handleGlobalWindowMouseUp(e) {
 window.handleGlobalWindowMouseUp = handleGlobalWindowMouseUp;
 
 // Native Image Context Menu Pass-Through (Allows full Chrome native <img> right-click context menu)
+function disableDrawingLayerPointerEvents() {
+  if (editCanvas) editCanvas.style.pointerEvents = 'none';
+  const svgOverlay = document.getElementById('edit-ui-vector-overlay');
+  if (svgOverlay) svgOverlay.style.pointerEvents = 'none';
+}
+
+function restoreDrawingLayerPointerEvents() {
+  if (editCanvas) editCanvas.style.pointerEvents = 'auto';
+  const svgOverlay = document.getElementById('edit-ui-vector-overlay');
+  if (svgOverlay) svgOverlay.style.pointerEvents = '';
+}
+
+// Pass-through right click directly to underlying <img>
 window.addEventListener('pointerdown', (e) => {
-  if (e.button === 2 && !window.isDrawingPolygonal) {
-    if (editCanvas) editCanvas.style.pointerEvents = 'none';
-    const svgOverlay = document.getElementById('edit-ui-vector-overlay');
-    if (svgOverlay) svgOverlay.style.pointerEvents = 'none';
+  if ((e.button === 2 || (e.button === 0 && e.ctrlKey)) && !window.isDrawingPolygonal) {
+    disableDrawingLayerPointerEvents();
   }
 }, true);
 
-window.addEventListener('contextmenu', () => {
-  setTimeout(() => {
-    if (editCanvas) editCanvas.style.pointerEvents = 'auto';
-    const svgOverlay = document.getElementById('edit-ui-vector-overlay');
-    if (svgOverlay) svgOverlay.style.pointerEvents = '';
-  }, 40);
+window.addEventListener('mousedown', (e) => {
+  if ((e.button === 2 || (e.button === 0 && e.ctrlKey)) && !window.isDrawingPolygonal) {
+    disableDrawingLayerPointerEvents();
+  }
 }, true);
+
+window.addEventListener('contextmenu', (e) => {
+  if (!window.isDrawingPolygonal) {
+    disableDrawingLayerPointerEvents();
+  }
+}, true);
+
+// Restore drawing layer pointer events when user moves cursor back or left-clicks
+window.addEventListener('pointermove', (e) => {
+  if (e.buttons === 0 && editCanvas && editCanvas.style.pointerEvents === 'none') {
+    restoreDrawingLayerPointerEvents();
+  }
+}, true);
+
+window.addEventListener('pointerdown', (e) => {
+  if (e.button === 0 && !e.ctrlKey && editCanvas && editCanvas.style.pointerEvents === 'none') {
+    restoreDrawingLayerPointerEvents();
+  }
+}, true);
+
+window.addEventListener('keydown', (e) => {
+  if (editCanvas && editCanvas.style.pointerEvents === 'none') {
+    restoreDrawingLayerPointerEvents();
+  }
+}, true);
+

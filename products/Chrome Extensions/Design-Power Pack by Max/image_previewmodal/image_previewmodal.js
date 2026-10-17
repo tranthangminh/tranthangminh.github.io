@@ -151,10 +151,6 @@ function initPreviewModal() {
   }
 
   function forceClosePreviewModal() {
-    if (modal && modal.classList.contains('editor-page-modal')) {
-      window.close();
-      return;
-    }
     if (modal) modal.classList.add('hidden');
     if (typeof window.exitEditMode === 'function') {
       window.exitEditMode();

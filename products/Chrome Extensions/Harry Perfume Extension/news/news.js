@@ -9,55 +9,8 @@ const groupColorMap = {
   "7": "tag-purple"
 };
 
-// Dữ liệu Tin Nhanh mặc định nạp từ CSV
+// Dữ liệu Tin Nhanh mặc định nạp từ Sheet
 let defaultNewsData = [];
-
-// Hàm parse CSV hỗ trợ các trường bọc trong dấu ngoặc kép "" và có ký tự xuống dòng \n
-function parseCSVText(csvText) {
-  const result = [];
-  let row = [];
-  let field = "";
-  let inQuotes = false;
-  
-  for (let i = 0; i < csvText.length; i++) {
-    const c = csvText[i];
-    const nextC = csvText[i + 1];
-    
-    if (inQuotes) {
-      if (c === '"') {
-        if (nextC === '"') {
-          field += '"';
-          i++;
-        } else {
-          inQuotes = false;
-        }
-      } else {
-        field += c;
-      }
-    } else {
-      if (c === '"') {
-        inQuotes = true;
-      } else if (c === ',') {
-        row.push(field);
-        field = "";
-      } else if (c === '\r') {
-        // Bỏ qua \r
-      } else if (c === '\n') {
-        row.push(field);
-        result.push(row);
-        row = [];
-        field = "";
-      } else {
-        field += c;
-      }
-    }
-  }
-  if (field !== "" || row.length > 0) {
-    row.push(field);
-    result.push(row);
-  }
-  return result;
-}
 
 // Hàm nạp dữ liệu Tin Nhanh từ dữ liệu Google Sheet (allProducts / cachedProducts)
 async function loadDefaultNewsFromSheet() {
@@ -114,7 +67,9 @@ async function getLocalNews() {
 async function saveLocalNews(localNews) {
   try {
     await StorageHelper.set("localNewsData", localNews);
-  } catch (e) {}
+  } catch (e) {
+    // Bỏ qua lỗi ghi storage nháp
+  }
 }
 
 // Khởi tạo danh sách thẻ kết hợp mặc định và tự tạo

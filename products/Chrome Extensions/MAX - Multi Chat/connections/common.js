@@ -2,14 +2,6 @@
 // This script is imported by the service worker (background.js) to manage
 // declarativeNetRequest rules and SameSite cookie sync for embedded iframes.
 
-// Helper: Extract base domain (e.g. chat.zalo.me -> zalo.me)
-function getBaseDomain(hostname) {
-  const parts = hostname.split('.');
-  if (parts.length >= 2) {
-    return parts.slice(-2).join('.');
-  }
-  return hostname;
-}
 
 // Helper: Check if domain belongs to Google services (Google cookies are sensitive and tamper-proof)
 function isGoogleDomain(domain) {
@@ -147,8 +139,35 @@ async function ensureGlobalAntiFrameDNRRule() {
   }
 }
 
-async function updateDNRAntiFrameHeaders(urls) {
-  await ensureGlobalAntiFrameDNRRule();
+// Applies SameSite=None; Secure to a single cookie object (skipping Google domains)
+async function applySameSiteNoneToCookie(cookie) {
+  if (!cookie || isGoogleDomain(cookie.domain)) return;
+  if (cookie.sameSite === "no_restriction" && cookie.secure) return;
+
+  const domainClean = cookie.domain.startsWith('.') ? cookie.domain.substring(1) : cookie.domain;
+  const url = `https://${domainClean}${cookie.path}`;
+
+  const newCookie = {
+    url: url,
+    name: cookie.name,
+    value: cookie.value,
+    path: cookie.path,
+    secure: true,
+    sameSite: "no_restriction",
+    expirationDate: cookie.expirationDate,
+    httpOnly: cookie.httpOnly,
+    storeId: cookie.storeId
+  };
+
+  if (!cookie.name.startsWith("__Host-")) {
+    newCookie.domain = cookie.domain;
+  }
+
+  try {
+    await chrome.cookies.set(newCookie);
+  } catch {
+    // Ignore individual cookie set failures
+  }
 }
 
 // 2. SameSite Cookie Sync (Bypass Cookie SameSite restriction in iframe)
@@ -158,36 +177,9 @@ async function forceSameSiteNoneForDomain(domain) {
   try {
     const cookies = await chrome.cookies.getAll({ domain: domain });
     for (const cookie of cookies) {
-      if (cookie.sameSite !== "no_restriction" || !cookie.secure) {
-        const domainClean = cookie.domain.startsWith('.') ? cookie.domain.substring(1) : cookie.domain;
-        const protocol = "https://"; // Must be secure (https) for SameSite=None
-        const url = `${protocol}${domainClean}${cookie.path}`;
-        
-        const newCookie = {
-          url: url,
-          name: cookie.name,
-          value: cookie.value,
-          path: cookie.path,
-          secure: true,
-          sameSite: "no_restriction",
-          expirationDate: cookie.expirationDate,
-          httpOnly: cookie.httpOnly,
-          storeId: cookie.storeId
-        };
-        
-        // __Host- cookies must NOT have a domain attribute specified
-        if (!cookie.name.startsWith("__Host-")) {
-          newCookie.domain = cookie.domain;
-        }
-        
-        try {
-          await chrome.cookies.set(newCookie);
-        } catch (setErr) {
-          // Ignore individual cookie set failures
-        }
-      }
+      await applySameSiteNoneToCookie(cookie);
     }
-  } catch (err) {
+  } catch {
     // Ignore domain cookie sync errors
   }
 }
@@ -206,7 +198,7 @@ function syncAllDomainCookies(urls) {
         domains.add(`.${parts.slice(-2).join('.')}`);
         domains.add(parts.slice(-2).join('.'));
       }
-    } catch (e) {}
+    } catch {}
   });
 
   domains.forEach(domain => {
@@ -216,11 +208,10 @@ function syncAllDomainCookies(urls) {
 
 // Export for ES module import in service worker
 export {
-  getBaseDomain,
   isGoogleDomain,
   extractUrlsFromHierarchy,
   ensureGlobalAntiFrameDNRRule,
-  updateDNRAntiFrameHeaders,
+  applySameSiteNoneToCookie,
   forceSameSiteNoneForDomain,
   syncAllDomainCookies
 };

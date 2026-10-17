@@ -68,7 +68,6 @@ let appState = {
   activeMainGroupId: null,
   activeTabId: null,
   theme: "dark",
-  subSidebarCollapsed: false,
   splitViewActive: false,
   activeView: "left",
   leftTabId: null,
@@ -293,12 +292,6 @@ function setupSidebarHoverGroup() {
   });
 }
 
-let autohideHoverGraceEndTime = 0;
-
-function isAutohideHoverGraceActive() {
-  return appState.autohideActive && Date.now() < autohideHoverGraceEndTime;
-}
-
 function setupAutohideHoverEvents() {
   const autohideBar = document.getElementById("autohide-bar");
   const sidebarsWrapper = document.getElementById("sidebars-wrapper");
@@ -309,14 +302,12 @@ function setupAutohideHoverEvents() {
   autohideBar.addEventListener("mouseenter", () => {
     if (appState.autohideActive) {
       appContainer.classList.add("sidebar-visible");
-      autohideHoverGraceEndTime = Date.now() + 750; // 750ms grace period lock
     }
   });
 
   sidebarsWrapper.addEventListener("mouseleave", () => {
     if (appState.autohideActive) {
       appContainer.classList.remove("sidebar-visible");
-      autohideHoverGraceEndTime = 0;
     }
   });
 }
@@ -351,14 +342,9 @@ function applyAutohideState() {
 async function initApp() {
   const result = await chrome.storage.local.get(["app_hierarchy", "app_settings", "ai_models"]);
   
-  // Settings initialization (Theme & Sidebar Collapse)
-  if (result.app_settings) {
-    if (result.app_settings.theme) {
-      appState.theme = result.app_settings.theme;
-    }
-    if (result.app_settings.subSidebarCollapsed !== undefined) {
-      appState.subSidebarCollapsed = result.app_settings.subSidebarCollapsed;
-    }
+  // Settings initialization (Theme)
+  if (result.app_settings && result.app_settings.theme) {
+    appState.theme = result.app_settings.theme;
   }
 
   if (typeof loadAIModelsFromCSV === "function") {
@@ -573,8 +559,7 @@ async function saveHierarchyToStorage() {
 async function saveSettingsToStorage() {
   await chrome.storage.local.set({ 
     "app_settings": { 
-      theme: appState.theme,
-      subSidebarCollapsed: appState.subSidebarCollapsed
+      theme: appState.theme
     } 
   });
 }
@@ -599,18 +584,8 @@ function toggleTheme() {
 }
 
 function applySubSidebarCollapse() {
-  // sidebar-sub is always in collapsed state.
-  // Expanding is handled purely by CSS :hover (overlay, no layout shift).
   const sidebar = document.getElementById("sidebar-sub");
-  const toggleBtn = document.getElementById("btn-toggle-sub-sidebar");
   if (sidebar) sidebar.classList.add("collapsed");
-  // Hide the toggle button since it's no longer needed
-  if (toggleBtn) toggleBtn.style.display = "none";
-}
-
-// toggleSubSidebar kept for backward-compat but is now a no-op
-function toggleSubSidebar() {
-  // No-op: sidebar expand/collapse is handled by CSS :hover
 }
 
 // 4. Render Main Sidebar (Column 1)
@@ -1817,7 +1792,6 @@ function initPaneDragDropEvents() {
 
 function registerEvents() {
   document.getElementById("theme-toggle-btn")?.addEventListener("click", toggleTheme);
-  document.getElementById("btn-toggle-sub-sidebar")?.addEventListener("click", toggleSubSidebar);
   document.getElementById("btn-toggle-split-view")?.addEventListener("click", toggleSplitView);
   document.getElementById("btn-toggle-window-mode")?.addEventListener("click", handleWindowModeToggle);
   document.getElementById("btn-toggle-autohide")?.addEventListener("click", toggleAutohide);

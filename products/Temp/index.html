@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuẩn Hóa Tên Sản Phẩm - Fuzzy Keyword Matcher</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-badge">🔍 Matcher</div>
+                <div>
+                    <h1 class="app-title">Công Cụ Chuẩn Hóa Tên Sản Phẩm</h1>
+                    <p class="app-subtitle">Tách từ khóa đối chiếu tên chưa chuẩn với Master Data - 100% Offline trên trình duyệt</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="btnLoadSample" title="Nạp dữ liệu mẫu ví dụ để kiểm tra">
+                    <span>🧪 Nạp dữ liệu mẫu</span>
+                </button>
+                <button class="btn btn-danger" id="btnClearAll" title="Xóa toàn bộ nội dung">
+                    <span>🗑️ Xóa trắng</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTROLS & SETTINGS -->
+        <section class="toolbar-section">
+            <div class="settings-group">
+                <label for="minWordsInput" class="setting-item">
+                    <span class="setting-label">Số từ trùng tối thiểu:</span>
+                    <input type="number" id="minWordsInput" min="1" max="10" value="2" class="input-number">
+                    <span class="setting-hint">(< 2 từ sẽ để trống để tránh bắt nhầm hãng/mẫu)</span>
+                </label>
+                <label class="setting-item checkbox-label">
+                    <input type="checkbox" id="autoMatchCheckbox" checked>
+                    <span>Tự động đối chiếu khi gõ hoặc dán</span>
+                </label>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary btn-large" id="btnRunMatch">
+                    <span>⚡ Bắt Đầu Chuẩn Hóa</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- INPUTS GRID (2 COLUMNS) -->
+        <main class="inputs-grid">
+            <!-- CỘT 1: TÊN CHUẨN (MASTER DATA) -->
+            <section class="panel panel-master">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <span class="panel-icon">📊</span>
+                        <div>
+                            <h2 class="panel-title">Tên Chuẩn (Master Data)</h2>
+                            <span class="panel-desc">Copy cột G từ tab <b>📊Master Data</b> dán vào đây</span>
+                        </div>
+                    </div>
+                    <div class="panel-meta">
+                        <span class="counter-badge" id="masterCount">0 tên</span>
+                        <button class="btn-icon" id="btnPasteMaster" title="Dán nhanh từ Clipboard">📋 Dán</button>
+                        <button class="btn-icon" id="btnClearMaster" title="Xóa cột này">✕</button>
+                    </div>
+                </div>
+                <div class="textarea-wrap">
+                    <textarea id="masterInput" placeholder="Dán danh sách tên chuẩn vào đây, mỗi tên một dòng...&#10;Ví dụ:&#10;Prada Luna Rossa Carbon EDT 100ml&#10;Prada Luna Rossa Black EDP 100ml&#10;Dior Sauvage EDT 100ml&#10;Bleu De Chanel EDP 100ml" spellcheck="false"></textarea>
+                </div>
+            </section>
+
+            <!-- CỘT 2: TÊN CHƯA CHUẨN (NHẬP HÀNG) -->
+            <section class="panel panel-raw">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <span class="panel-icon">🔄</span>
+                        <div>
+                            <h2 class="panel-title">Tên Chưa Chuẩn (Nhập Hàng)</h2>
+                            <span class="panel-desc">Copy cột G từ tab <b>🔄Nhập hàng</b> dán vào đây</span>
+                        </div>
+                    </div>
+                    <div class="panel-meta">
+                        <span class="counter-badge" id="rawCount">0 tên</span>
+                        <button class="btn-icon" id="btnPasteRaw" title="Dán nhanh từ Clipboard">📋 Dán</button>
+                        <button class="btn-icon" id="btnClearRaw" title="Xóa cột này">✕</button>
+                    </div>
+                </div>
+                <div class="textarea-wrap">
+                    <textarea id="rawInput" placeholder="Dán danh sách tên nhập ghi đại đại vào đây, mỗi tên một dòng...&#10;Ví dụ:&#10;Prada Carbon Luna Rossa EDT 100ml Tester&#10;dior sauvage edt 100ml tester chính hãng&#10;chanel bleu edp 100ml nguyên seal&#10;1 chai nước hoa lạ hoắc 50ml" spellcheck="false"></textarea>
+                </div>
+            </section>
+        </main>
+
+        <!-- RESULTS SECTION -->
+        <section class="results-section">
+            <div class="results-header">
+                <div class="results-title-group">
+                    <h2 class="results-title">Kết Quả Đối Chiếu</h2>
+                    <div class="stats-group">
+                        <span class="stat-pill stat-total">Tổng: <strong id="statTotal">0</strong></span>
+                        <span class="stat-pill stat-matched">Đã khớp: <strong id="statMatched">0</strong></span>
+                        <span class="stat-pill stat-unmatched">Để trống: <strong id="statUnmatched">0</strong></span>
+                    </div>
+                </div>
+                <div class="results-actions">
+                    <div class="filter-group">
+                        <select id="filterSelect" class="select-control">
+                            <option value="all">Hiển thị: Tất cả dòng</option>
+                            <option value="matched">Chỉ xem dòng ĐÃ KHỚP</option>
+                            <option value="unmatched">Chỉ xem dòng ĐỂ TRỐNG</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" id="btnCopyResultColumn" title="Copy đúng 1 cột kết quả để dán thẳng vào ô B2 trên Google Sheet">
+                        <span>📋 Copy Cột Kết Quả (để dán vào Sheet)</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btnCopyFullTable" title="Copy bảng 3 cột">
+                        <span>📑 Copy Toàn Bảng</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RESULT TABLE -->
+            <div class="table-container">
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th class="col-stt">STT</th>
+                            <th class="col-raw">Tên Chưa Chuẩn (Đầu vào)</th>
+                            <th class="col-matched">Tên Chuẩn Khớp Nhất (Kết quả điền cột B)</th>
+                            <th class="col-tokens">Từ Khóa Trùng Khớp</th>
+                            <th class="col-status">Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTableBody">
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                Chưa có dữ liệu. Hãy dán danh sách tên vào 2 ô phía trên hoặc bấm nút <b>"🧪 Nạp dữ liệu mẫu"</b> để dùng thử!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TOAST NOTIFICATION -->
+        <div id="toast" class="toast">Đã copy vào clipboard!</div>
+    </div>
+
+    <script src="./app.js"></script>
+</body>
+</html>

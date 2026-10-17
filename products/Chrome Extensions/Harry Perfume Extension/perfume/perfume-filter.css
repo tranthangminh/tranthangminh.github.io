@@ -108,16 +108,21 @@
   text-align: center;
 }
 
-.filter-size-btn:hover {
-  border-color: var(--border-hover);
+.filter-size-btn:hover,
+.filter-gender-btn:hover,
+.filter-tag-btn:hover {
+  background: var(--c-yellow-bg);
+  border-color: var(--gold-primary);
   color: var(--text-primary);
 }
 
-.filter-size-btn.active {
-  background: rgba(229, 193, 88, 0.15);
+.filter-size-btn.active,
+.filter-gender-btn.active,
+.filter-tag-btn.active
+ {
+  background: var(--gold-primary);
   border-color: var(--gold-primary);
-  color: var(--gold-primary);
-  box-shadow: 0 2px 6px var(--gold-glow);
+  color: var(--bg-primary);
 }
 
 /* Dòng nhập khoảng giá */
@@ -160,8 +165,8 @@
 /* Nút xóa bộ lọc */
 .btn-clear-filter {
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
+  border: 1px solid var(--c-red);
+  color: var(--c-red);
   border-radius: 6px;
   width: 26px;
   height: 26px;
@@ -175,9 +180,9 @@
 }
 
 .btn-clear-filter:hover {
-  background: var(--c-red-bg);
-  color: var(--c-red);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: var(--c-red);
+  color: var(--text-primary);
+  border-color: var(--c-red);
 }
 
 /* Dải chọn giới tính (Nam, Nữ, Unisex) */
@@ -216,18 +221,6 @@
   object-fit: contain;
 }
 
-.filter-gender-btn:hover {
-  border-color: var(--gold-primary);
-  color: var(--text-primary);
-}
-
-.filter-gender-btn.active {
-  background: rgba(229, 193, 88, 0.15);
-  border-color: var(--gold-primary);
-  color: var(--gold-primary);
-  box-shadow: 0 2px 6px var(--gold-glow);
-}
-
 /* Dải chọn tag mùa/thời điểm */
 .filter-tags-row {
   display: flex;
@@ -251,18 +244,6 @@
   transition: all var(--transition);
   text-align: center;
   white-space: nowrap; /* Ngăn xuống dòng chữ bên trong nút */
-}
-
-.filter-tag-btn:hover {
-  border-color: var(--gold-primary);
-  color: var(--text-primary);
-}
-
-.filter-tag-btn.active {
-  background: var(--c-yellow-bg);
-  border-color: var(--gold-primary);
-  color: var(--gold-primary);
-  box-shadow: 0 2px 6px var(--gold-glow);
 }
 
 /* Thanh tóm tắt bộ lọc đang hoạt động */

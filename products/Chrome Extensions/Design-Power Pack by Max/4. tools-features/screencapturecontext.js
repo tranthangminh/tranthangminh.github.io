@@ -1,344 +1,183 @@
 /**
  * screencapturecontext.js — Design-Power Pack by Max
- * Screen Capture Context Menu Handling (Visible Area, Custom Area, Full Page, Screen Recorder)
+ * Screen Capture Context Menu Handling (Visible, Area, Full Page, Recorder)
  */
 
-function sanitizeFilenameForScreenCapture(name) {
-  if (!name) return 'screenshot';
-  let cleanName = name.replace(/[\\/:*?"<>|]/g, '_');
-  cleanName = cleanName.replace(/[^a-zA-Z0-9\s._-]/g, '');
-  return cleanName.trim().replace(/\s+/g, ' ').replace(/_+/g, '_') || 'screenshot';
+function sanitizeCaptureFilename(name) {
+  return (name || 'screenshot').replace(/[\\/:*?"<>|]/g, '_').replace(/[^a-zA-Z0-9\s._-]/g, '').trim().replace(/\s+/g, ' ') || 'screenshot';
 }
 
-function getFormattedTimestampForScreenCapture() {
-  const now = new Date();
-  const yy = String(now.getFullYear()).slice(-2);
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const dd = String(now.getDate()).padStart(2, '0');
-  const secondsFromMidnight = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  return `${yy}${mm}${dd}-${secondsFromMidnight}`;
+function getCaptureTimestamp() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const sec = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+  return `${String(d.getFullYear()).slice(-2)}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${sec}`;
 }
 
-// Safe wrapper for chrome.tabs.captureVisibleTab with auto-retry and quota backoff
-async function safeCaptureVisibleTab(windowId, formatOptions = { format: 'png' }, retries = 5, initialDelay = 650) {
-  for (let attempt = 0; attempt < retries; attempt++) {
+function isProtectedUrl(url) {
+  if (!url) return false;
+  return url.startsWith('chrome://') || url.startsWith('chrome-extension://') || url.startsWith('about:') ||
+         url.includes('chrome.google.com/webstore') || url.includes('chromewebstore.google.com');
+}
+
+function notifyProtectedPage(tab) {
+  if (!tab?.id || !chrome.action?.setBadgeText) return;
+  try {
+    chrome.action.setBadgeText({ tabId: tab.id, text: '✕' });
+    chrome.action.setBadgeBackgroundColor?.({ tabId: tab.id, color: '#ef4444' });
+    setTimeout(() => chrome.action.setBadgeText({ tabId: tab.id, text: '' }), 3000);
+  } catch {}
+}
+
+async function safeCaptureVisibleTab(windowId, formatOptions = { format: 'png' }, retries = 4) {
+  for (let i = 0; i < retries; i++) {
     try {
-      const dataUrl = await new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         chrome.tabs.captureVisibleTab(windowId, formatOptions, (res) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError.message));
-          } else if (!res) {
-            reject(new Error('Empty screenshot returned.'));
-          } else {
-            resolve(res);
-          }
+          if (chrome.runtime.lastError || !res) reject(new Error(chrome.runtime.lastError?.message || 'Empty'));
+          else resolve(res);
         });
       });
-      return dataUrl;
     } catch (err) {
-      const errMsg = err.message || '';
-      const isQuotaError = errMsg.includes('MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND') ||
-                           errMsg.includes('quota') ||
-                           errMsg.includes('exceeds');
-      if (attempt < retries - 1) {
-        const waitTime = isQuotaError ? Math.min(3000, Math.round(initialDelay * Math.pow(1.5, attempt))) : 500;
-        await new Promise(r => setTimeout(r, waitTime));
-      } else {
-        throw err;
-      }
+      if (i < retries - 1) await new Promise(r => setTimeout(r, 500));
+      else throw err;
     }
   }
 }
 
-// ── Open Screen Recorder Popup Window (Single Instance with Auto Focus) ──
 function openScreenRecorderWindow() {
-  if (typeof chrome === 'undefined' || !chrome.windows || !chrome.tabs) return;
+  if (!chrome.windows || !chrome.tabs) return;
+  const url = chrome.runtime.getURL('2. screencapture/screencapture_recorder.html');
 
-  const recorderUrl = chrome.runtime.getURL('2. screencapture/screencapture_recorder.html');
-
-  // Query existing tabs to check if a recorder window is already open
-  chrome.tabs.query({ url: recorderUrl }, (tabs) => {
-    if (!chrome.runtime.lastError && tabs && tabs.length > 0) {
-      const existingTab = tabs[0];
-      if (existingTab.windowId) {
-        chrome.windows.update(existingTab.windowId, { focused: true }, () => {
-          if (chrome.runtime.lastError) {}
-          if (existingTab.id) {
-            chrome.tabs.update(existingTab.id, { active: true }, () => {
-              if (chrome.runtime.lastError) {}
-            });
-          }
-        });
-        return;
-      }
+  chrome.tabs.query({ url }, (tabs) => {
+    if (tabs?.[0]?.windowId) {
+      chrome.windows.update(tabs[0].windowId, { focused: true });
+      chrome.tabs.update(tabs[0].id, { active: true });
+      return;
     }
-
-    // If not open yet, create a new popup window
-    chrome.windows.create({
-      url: recorderUrl,
-      type: 'popup',
-      width: 550,
-      height: 580,
-      focused: true
-    });
+    chrome.windows.create({ url, type: 'popup', width: 550, height: 580, focused: true });
   });
 }
 
-// Helper: convert DataURL to target MIME in Service Worker using OffscreenCanvas
 async function convertDataUrlFormatBg(dataUrl, mime) {
   if (!dataUrl || !mime) return dataUrl;
   try {
-    const res = await fetch(dataUrl);
-    const blob = await res.blob();
+    const blob = await (await fetch(dataUrl)).blob();
     if (blob.type === mime) return dataUrl;
     const bitmap = await createImageBitmap(blob);
     const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(bitmap, 0, 0);
-    const outBlob = await canvas.convertToBlob({
-      type: mime,
-      quality: 1.0
+    canvas.getContext('2d').drawImage(bitmap, 0, 0);
+    const outBlob = await canvas.convertToBlob({ type: mime, quality: 1.0 });
+    return await new Promise(resolve => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result);
+      r.readAsDataURL(outBlob);
     });
-    return await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(outBlob);
-    });
-  } catch (e) {
-    console.error('convertDataUrlFormatBg failed:', e);
+  } catch {
     return dataUrl;
   }
 }
 
-// ── Perform Visible Area Capture directly in Background with Resolution Scale & Format ──
+// ── Direct Visible Capture ──
 async function performVisibleCaptureDirectly(tab) {
-  if (!tab || !tab.id) return;
-
-  function isProtectedUrlBg(url) {
-    if (!url) return false;
-    return url.startsWith('chrome://') || 
-           url.startsWith('chrome-extension://') || 
-           url.startsWith('about:') || 
-           url.includes('chrome.google.com/webstore') || 
-           url.includes('chromewebstore.google.com');
-  }
-
-  function notifyProtectedPageRestriction(targetTab) {
-    if (chrome.action && chrome.action.setBadgeText && targetTab && targetTab.id) {
-      try {
-        chrome.action.setBadgeText({ tabId: targetTab.id, text: '✕' });
-        if (chrome.action.setBadgeBackgroundColor) {
-          chrome.action.setBadgeBackgroundColor({ tabId: targetTab.id, color: '#ef4444' });
-        }
-        setTimeout(() => {
-          chrome.action.setBadgeText({ tabId: targetTab.id, text: '' });
-        }, 3000);
-      } catch (err) {
-        console.warn('Could not set error badge for protected tab:', err);
-      }
-    }
-  }
-
-  if (isProtectedUrlBg(tab.url)) {
-    notifyProtectedPageRestriction(tab);
+  if (!tab?.id) return;
+  if (isProtectedUrl(tab.url)) {
+    notifyProtectedPage(tab);
     return;
   }
 
   const scaleData = await new Promise(r => chrome.storage.local.get(['maxSettings', 'captureFormat', 'captureResolutionScale'], r));
-  const saved = scaleData['maxSettings'] || {};
+  const saved = scaleData.maxSettings || {};
   const scale = parseInt(scaleData.captureResolutionScale, 10) || 1;
   const fmtKey = scaleData.captureFormat || saved.captureFormat || 'jpg';
-  const map = {
-    png:  { ext: 'png',  mime: 'image/png',  chromeFormat: 'png'  },
+  const formatMap = {
+    png:  { ext: 'png',  mime: 'image/png',  chromeFormat: 'png' },
     jpg:  { ext: 'jpg',  mime: 'image/jpeg', chromeFormat: 'jpeg' },
-    webp: { ext: 'webp', mime: 'image/webp', chromeFormat: 'png'  }
+    webp: { ext: 'webp', mime: 'image/webp', chromeFormat: 'png' }
   };
-  const formatConfig = map[fmtKey] || map['jpg'];
-
-  let folderPrefix = '';
-  if (saved.downloadLocation === 'subfolder') {
-    const folder = (saved.subfolderName || 'MAX Downloads').replace(/[/\\]+$/, '');
-    folderPrefix = folder + '/';
-  }
+  const fmt = formatMap[fmtKey] || formatMap.jpg;
+  const folder = saved.downloadLocation === 'subfolder' ? `${(saved.subfolderName || 'MAX Downloads').replace(/[/\\]+$/, '')}/` : '';
 
   let dataUrl = null;
 
   if (scale > 1 && chrome.debugger) {
     try {
       await new Promise(r => chrome.debugger.attach({ tabId: tab.id }, '1.3', r));
-      const layoutRes = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: () => ({ baseDpr: window.devicePixelRatio || 1 })
-      });
-      const baseDpr = (layoutRes && layoutRes[0]) ? layoutRes[0].result.baseDpr : 1;
+      const res = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => window.devicePixelRatio || 1 });
+      const dpr = res?.[0]?.result || 1;
 
       await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Emulation.setDeviceMetricsOverride', {
-        width: 0,
-        height: 0,
-        deviceScaleFactor: baseDpr * scale,
-        mobile: false
+        width: 0, height: 0, deviceScaleFactor: dpr * scale, mobile: false
       }, r));
+      await new Promise(r => setTimeout(r, 200));
 
-      await new Promise(r => setTimeout(r, 250));
-
-      const cdpFmt = formatConfig.mime === 'image/jpeg' ? 'jpeg' : 'png';
-      const cdpMimePrefix = formatConfig.mime === 'image/jpeg' ? 'data:image/jpeg;base64,' : 'data:image/png;base64,';
-      const cdpParams = { format: cdpFmt, fromSurface: true };
-      if (cdpFmt === 'jpeg') cdpParams.quality = 100;
-
-      const cdpRes = await new Promise((resolve) => {
-        chrome.debugger.sendCommand({ tabId: tab.id }, 'Page.captureScreenshot', cdpParams, (r) => {
-          if (chrome.runtime.lastError || !r || !r.data) resolve(null);
-          else resolve(cdpMimePrefix + r.data);
-        });
-      });
-
-      if (cdpRes) dataUrl = cdpRes;
+      const cdpFmt = fmt.mime === 'image/jpeg' ? 'jpeg' : 'png';
+      const cdpRes = await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Page.captureScreenshot', { format: cdpFmt, fromSurface: true, quality: 100 }, (d) => r(d?.data)));
+      if (cdpRes) dataUrl = (fmt.mime === 'image/jpeg' ? 'data:image/jpeg;base64,' : 'data:image/png;base64,') + cdpRes;
 
       await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Emulation.clearDeviceMetricsOverride', {}, r));
       await new Promise(r => chrome.debugger.detach({ tabId: tab.id }, r));
-    } catch (e) {
-      try { chrome.debugger.detach({ tabId: tab.id }, () => {}); } catch(err) { /* Already detached */ }
+    } catch {
+      try { chrome.debugger.detach({ tabId: tab.id }, () => {}); } catch {}
     }
   }
 
-  if (!dataUrl) {
-    dataUrl = await safeCaptureVisibleTab(tab.windowId, { format: formatConfig.chromeFormat });
+  if (!dataUrl) dataUrl = await safeCaptureVisibleTab(tab.windowId, { format: fmt.chromeFormat });
+  if (!dataUrl) return;
+
+  dataUrl = await convertDataUrlFormatBg(dataUrl, fmt.mime);
+
+  let finalW = 0, finalH = 0;
+  if (typeof applyMaxDimensionLimitsToDataUrl === 'function') {
+    const processed = await applyMaxDimensionLimitsToDataUrl(dataUrl, 0, 0, saved.maxCaptureWidth || 0, saved.maxCaptureHeight ?? 16000, fmt.mime);
+    dataUrl = processed.dataUrl;
+    finalW = processed.width;
+    finalH = processed.height;
   }
 
-  if (dataUrl) {
-    dataUrl = await convertDataUrlFormatBg(dataUrl, formatConfig.mime);
+  const title = sanitizeCaptureFilename(tab.title);
+  const filename = `${folder}${title} - ${getCaptureTimestamp()}.${fmt.ext}`;
 
-    const maxW = saved.maxCaptureWidth || 0;
-    const maxH = saved.maxCaptureHeight !== undefined ? saved.maxCaptureHeight : 16000;
-    let finalW = 0;
-    let finalH = 0;
-
-    if (typeof applyMaxDimensionLimitsToDataUrl === 'function') {
-      const processed = await applyMaxDimensionLimitsToDataUrl(dataUrl, 0, 0, maxW, maxH, formatConfig.mime);
-      dataUrl = processed.dataUrl;
-      finalW = processed.width;
-      finalH = processed.height;
+  downloadSingleResource(dataUrl, filename, {
+    callback: (downloadId) => {
+      saveVerifiedCaptureHistoryItem?.({
+        id: `cap_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+        filename,
+        ext: fmt.ext.toUpperCase(),
+        width: finalW,
+        height: finalH,
+        timestamp: Date.now(),
+        pageTitle: tab.title || 'Webpage',
+        pageUrl: tab.url || '',
+        downloadId
+      });
     }
+  });
 
-    const title = tab.title ? sanitizeFilenameForScreenCapture(tab.title) : 'screenshot';
-    const timestamp = getFormattedTimestampForScreenCapture();
-    const filename = (folderPrefix || '') + `${title} - ${timestamp}.${formatConfig.ext}`;
-
-    downloadSingleResource(dataUrl, filename, {
-      callback: (downloadId) => {
-        const newItem = {
-          id: 'cap_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-          filename: filename,
-          ext: formatConfig.ext.toUpperCase(),
-          width: finalW,
-          height: finalH,
-          timestamp: Date.now(),
-          pageTitle: tab.title || 'Webpage',
-          pageUrl: tab.url || '',
-          downloadId: downloadId
-        };
-        if (typeof saveVerifiedCaptureHistoryItem === 'function') {
-          saveVerifiedCaptureHistoryItem(newItem);
-        } else {
-          chrome.storage.local.get({ captureHistory: [] }, (res) => {
-            let history = res.captureHistory || [];
-            history = [newItem, ...history.filter(h => h.filename !== newItem.filename)].slice(0, 20);
-            chrome.storage.local.set({ captureHistory: history });
-          });
-        }
-      }
-    });
-
-    // Show web toast on page
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      args: ['Visible area captured & saved!'],
-      func: (msg) => {
-        let toast = document.getElementById('max-web-toast');
-        if (!toast) {
-          toast = document.createElement('div');
-          toast.id = 'max-web-toast';
-          toast.style.cssText = `
-            position: fixed !important;
-            bottom: 30px !important;
-            left: 50% !important;
-            transform: translateX(-50%) translateY(20px) !important;
-            background: var(--accent-primary, #00f2fe) !important;
-            color: var(--text-on-accent, #0f172a) !important;
-            border: 1px solid var(--accent-primary, #00f2fe) !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
-            padding: 12px 24px !important;
-            border-radius: 24px !important;
-            z-index: 2147483647 !important;
-            font-family: system-ui, -apple-system, sans-serif !important;
-            font-size: 13px !important;
-            font-weight: 600 !important;
-            opacity: 0 !important;
-            transition: all 0.3s ease !important;
-            pointer-events: auto !important;
-          `;
-          (document.body || document.documentElement).appendChild(toast);
-        }
-        toast.textContent = msg;
-        setTimeout(() => { toast.style.transform = 'translateX(-50%) translateY(0)'; toast.style.opacity = '1'; }, 50);
-        setTimeout(() => { toast.style.transform = 'translateX(-50%) translateY(20px)'; toast.style.opacity = '0'; }, 3000);
-      }
-    }).catch(() => {});
-  }
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    args: ['Visible area captured & saved!'],
+    func: (msg) => window.showToast?.(msg)
+  }).catch(() => {});
 }
 
-// ── Perform Full Page Capture directly in Background without opening Popup ──
+// ── Direct Full Page Capture ──
 async function performFullPageCaptureDirectly(tab) {
-  if (!tab || !tab.id) return;
-
-  function isProtectedUrlBg(url) {
-    if (!url) return false;
-    return url.startsWith('chrome://') || 
-           url.startsWith('chrome-extension://') || 
-           url.startsWith('about:') || 
-           url.includes('chrome.google.com/webstore') || 
-           url.includes('chromewebstore.google.com');
-  }
-
-  if (isProtectedUrlBg(tab.url)) {
-    notifyProtectedPageRestriction(tab);
+  if (!tab?.id) return;
+  if (isProtectedUrl(tab.url)) {
+    notifyProtectedPage(tab);
     return;
   }
 
   await updateWebProgressHUDBg(tab.id, 0, 'Connecting to page...');
 
   const scaleData = await new Promise(r => chrome.storage.local.get(['maxSettings', 'captureResolutionScale'], r));
-  const savedSettings = scaleData['maxSettings'] || {};
-  const rawScale = parseInt(scaleData.captureResolutionScale || savedSettings.captureResolutionScale, 10) || 1;
-  const scale = Math.min(Math.max(1, rawScale), 2);
-
-  let isCdpScaled = false;
-  if (scale > 1 && chrome.debugger) {
-    try {
-      await new Promise(r => chrome.debugger.attach({ tabId: tab.id }, '1.3', r));
-      const layoutRes = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: () => ({ width: window.innerWidth, height: window.innerHeight, baseDpr: window.devicePixelRatio || 1 })
-      });
-      const layout = (layoutRes && layoutRes[0]) ? layoutRes[0].result : { width: 1920, height: 1080, baseDpr: 1 };
-      await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Emulation.setDeviceMetricsOverride', {
-        width: layout.width,
-        height: layout.height,
-        deviceScaleFactor: layout.baseDpr * scale,
-        mobile: false
-      }, r));
-      await new Promise(r => setTimeout(r, 150));
-      isCdpScaled = true;
-    } catch (e) {
-      try { chrome.debugger.detach({ tabId: tab.id }, () => {}); } catch(err) { /* Already detached */ }
-    }
-  }
+  const saved = scaleData.maxSettings || {};
+  const scale = Math.min(Math.max(1, parseInt(scaleData.captureResolutionScale || saved.captureResolutionScale, 10) || 1), 2);
+  const isCdpScaled = false;
 
   let pageInfo = null;
-
   try {
-    // 0. Inject DOM Strategy Modules
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       files: [
@@ -349,218 +188,116 @@ async function performFullPageCaptureDirectly(tab) {
       ]
     });
 
-    // 1. Measure layout & initialize universal keyboard snap
     const results = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => {
-        if (window.__maxScreenCapture) {
-          if (window.__maxScreenCapture.initContainers) {
-            window.__maxScreenCapture.initContainers();
-          }
-          if (window.__maxScreenCapture.initUniversalSnap) {
-            window.__maxScreenCapture.initUniversalSnap();
-          }
-          if (window.__maxScreenCapture.prepareLayout) {
-            return window.__maxScreenCapture.prepareLayout();
-          }
-        }
+        window.__maxScreenCapture?.initContainers?.();
+        window.__maxScreenCapture?.initUniversalSnap?.();
+        if (window.__maxScreenCapture?.prepareLayout) return window.__maxScreenCapture.prepareLayout();
         return {
-          scrollHeight: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, document.documentElement.clientHeight),
+          scrollHeight: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
           clientHeight: window.innerHeight,
           clientWidth: window.innerWidth,
           devicePixelRatio: window.devicePixelRatio || 1,
-          originalOverflow: document.body.style.overflow,
-          originalScrollTop: window.scrollY || document.documentElement.scrollTop,
-          originalHtmlScrollBehavior: document.documentElement.style.scrollBehavior,
-          originalBodyScrollBehavior: document.body.style.scrollBehavior
+          originalScrollTop: window.scrollY || document.documentElement.scrollTop
         };
       }
     });
 
-    if (!results || !results[0]) {
-      throw new Error('Failed to read webpage layout data.');
-    }
+    pageInfo = results?.[0]?.result;
+    if (!pageInfo) throw new Error('Cannot measure layout.');
 
-    pageInfo = results[0].result;
-    const { scrollHeight, clientHeight, clientWidth, devicePixelRatio } = pageInfo;
-
-    // Read format settings early for single-pass check
     const storageData = await new Promise(r => chrome.storage.local.get(['maxSettings', 'captureFormat'], r));
-    const saved = storageData['maxSettings'] || {};
-    const fmtKey = storageData.captureFormat || saved.captureFormat || 'jpg';
-    const map = {
-      png:  { ext: 'png',  mime: 'image/png'  },
-      jpg:  { ext: 'jpg',  mime: 'image/jpeg' },
-      webp: { ext: 'webp', mime: 'image/webp' }
-    };
-    const fmt = map[fmtKey] || map['jpg'];
+    const fmtKey = storageData.captureFormat || storageData.maxSettings?.captureFormat || 'jpg';
+    const fmt = { png: { ext: 'png', mime: 'image/png' }, jpg: { ext: 'jpg', mime: 'image/jpeg' }, webp: { ext: 'webp', mime: 'image/webp' } }[fmtKey] || { ext: 'jpg', mime: 'image/jpeg' };
 
-    // 🚀 CDP Re-render Engine (Single-Pass for <=16kpx, Big-Chunking for >16kpx)
     if (typeof captureSinglePassFullPage === 'function') {
-      const singlePassDone = await captureSinglePassFullPage({
-        tab: tab,
-        pageInfo: pageInfo,
-        fmt: fmt,
-        saved: saved,
-        isCdpScaled: isCdpScaled,
-        scale: scale
-      });
-      if (singlePassDone) return;
+      const done = await captureSinglePassFullPage({ tab, pageInfo, fmt, saved, isCdpScaled: false, scale });
+      if (done) return;
     }
-
     await removeWebProgressHUDBg(tab.id, 0);
-
-  } catch (error) {
-    console.error('Direct full page capture error:', error);
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      args: ['Could not complete full page screenshot on this webpage.'],
+      func: (msg) => window.showToast?.(msg)
+    }).catch(() => {});
+  } catch (err) {
+    console.error('Full page capture error:', err);
     if (isCdpScaled && chrome.debugger) {
       try {
         await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Emulation.clearDeviceMetricsOverride', {}, r));
         await new Promise(r => chrome.debugger.detach({ tabId: tab.id }, r));
-      } catch (e) {
-        // Safe ignore if debugger already disconnected
-      }
+      } catch {}
     }
-    if (pageInfo && tab && tab.id) {
-      try {
-        await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          args: [pageInfo.originalScrollTop || 0],
-          func: (top) => { window.scrollTo(0, top); }
-        });
-      } catch (e) {
-        // Tab may have closed before restoring scroll
-      }
+    if (pageInfo?.originalScrollTop && tab?.id) {
+      chrome.scripting.executeScript({ target: { tabId: tab.id }, args: [pageInfo.originalScrollTop], func: (top) => window.scrollTo(0, top) }).catch(() => {});
     }
     await removeWebProgressHUDBg(tab.id, 0);
   }
 }
 
-// Helper: Web Progress HUD in Background
-async function updateWebProgressHUDBg(tabId, percent, text) {
+// Web Progress HUD
+async function updateWebProgressHUDBg(tabId, pct, text) {
   try {
     await chrome.scripting.executeScript({
       target: { tabId },
-      args: [percent, text],
-      func: (pct, txt) => {
+      args: [pct, text],
+      func: (p, t) => {
         let hud = document.getElementById('max-capture-progress-hud');
         if (!hud) {
           hud = document.createElement('div');
           hud.id = 'max-capture-progress-hud';
-          hud.style.cssText = `
-            position: fixed !important;
-            bottom: 24px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            z-index: 2147483647 !important;
-            background: var(--bg-primary, #0f172a) !important;
-            border: 1px solid var(--accent-primary, #00f2fe) !important;
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 254, 0.25) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            color: var(--text-primary, #f8fafc) !important;
-            padding: 12px 22px !important;
-            border-radius: 14px !important;
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            gap: 6px !important;
-            min-width: 240px !important;
-            pointer-events: none !important;
-            user-select: none !important;
-            opacity: 1 !important;
-            transition: opacity 0.25s ease !important;
-          `;
-          hud.innerHTML = `
-            <div id="max-hud-text" style="font-size: 12px !important; font-weight: 600 !important; color: var(--text-primary, #f8fafc) !important; text-align: center !important; letter-spacing: 0.2px !important;">Connecting...</div>
-            <div style="width: 100% !important; height: 6px !important; background: var(--bg-secondary, rgba(255, 255, 255, 0.12)) !important; border-radius: 3px !important; overflow: hidden !important;">
-              <div id="max-hud-bar" style="width: 0% !important; height: 100% !important; background: var(--accent-primary, #00f2fe) !important; border-radius: 3px !important; transition: width 0.15s ease !important;"></div>
-            </div>
-          `;
+          hud.style.cssText = 'position:fixed!important;bottom:24px!important;left:50%!important;transform:translateX(-50%)!important;z-index:2147483647!important;background:#0f172a!important;border:1px solid #00f2fe!important;box-shadow:0 12px 36px rgba(0,0,0,0.6)!important;color:#f8fafc!important;padding:12px 22px!important;border-radius:14px!important;font-family:sans-serif!important;min-width:220px!important;pointer-events:none!important;';
+          hud.innerHTML = '<div id="max-hud-text" style="font-size:12px!important;font-weight:600!important;text-align:center!important;margin-bottom:6px!important;">Connecting...</div><div style="width:100%!important;height:6px!important;background:rgba(255,255,255,0.12)!important;border-radius:3px!important;overflow:hidden!important;"><div id="max-hud-bar" style="width:0%!important;height:100%!important;background:#00f2fe!important;transition:width 0.15s ease!important;"></div></div>';
           (document.body || document.documentElement).appendChild(hud);
         }
-        const textEl = document.getElementById('max-hud-text');
-        const barEl = document.getElementById('max-hud-bar');
-        if (textEl) textEl.textContent = txt;
-        if (barEl) barEl.style.width = pct + '%';
+        document.getElementById('max-hud-text').textContent = t;
+        document.getElementById('max-hud-bar').style.width = `${p}%`;
       }
     });
-  } catch (e) {}
+  } catch {}
 }
 
-async function removeWebProgressHUDBg(tabId, delayMs = 600) {
+async function removeWebProgressHUDBg(tabId, delayMs = 500) {
   try {
     await chrome.scripting.executeScript({
       target: { tabId },
       args: [delayMs],
-      func: (delay) => {
+      func: (d) => {
         const hud = document.getElementById('max-capture-progress-hud');
-        if (hud) {
-          hud.style.opacity = '0';
-          setTimeout(() => {
-            if (hud && hud.parentNode) hud.parentNode.removeChild(hud);
-          }, delay);
-        }
+        if (hud) setTimeout(() => hud.remove(), d);
       }
     });
-  } catch (e) {}
+  } catch {}
 }
 
 // ── Context Menu Spec Provider ──
 function getScreenCaptureContextMenuSpecs(data, lang = 'vi') {
-  const captureMaster = data.screenCaptureContextEnabled !== false;
-  const captureArea = captureMaster && (data.captureContext_area !== false);
-  const captureVisible = captureMaster && (data.captureContext_visible !== false);
-  const captureFull = captureMaster && (data.captureContext_full !== false);
-  const captureRecord = captureMaster && (data.captureContext_record !== false);
-
+  if (data.screenCaptureContextEnabled === false) return [];
   const isVi = lang === 'vi';
-  const items = [];
-  if (captureArea) {
-    items.push({
-      id: 'context_capture_area',
+  const items = [
+    { key: 'area',    id: 'context_capture_area',    title: isVi ? '📸 Chụp vùng tùy chọn' : '📸 Capture Custom Area' },
+    { key: 'visible', id: 'context_capture_visible', title: isVi ? '📸 Chụp vùng hiển thị' : '📸 Capture Visible' },
+    { key: 'full',    id: 'context_capture_full',    title: isVi ? '📸 Chụp toàn trang' : '📸 Capture Full Page' },
+    { key: 'record',  id: 'context_capture_record',  title: isVi ? '🔴 Quay video màn hình' : '🔴 Record Screen Video' }
+  ];
+
+  return items
+    .filter(i => data[`captureContext_${i.key}`] !== false)
+    .map(i => ({
+      id: i.id,
       parentId: 'max_tools_parent',
-      title: isVi ? '📸 Chụp vùng tùy chọn' : '📸 Capture Custom Area',
+      title: i.title,
       contexts: ['page', 'selection', 'link', 'image', 'video']
-    });
-  }
-  if (captureVisible) {
-    items.push({
-      id: 'context_capture_visible',
-      parentId: 'max_tools_parent',
-      title: isVi ? '📸 Chụp vùng hiển thị' : '📸 Capture Visible',
-      contexts: ['page', 'selection', 'link', 'image', 'video']
-    });
-  }
-  if (captureFull) {
-    items.push({
-      id: 'context_capture_full',
-      parentId: 'max_tools_parent',
-      title: isVi ? '📸 Chụp toàn trang' : '📸 Capture Full Page',
-      contexts: ['page', 'selection', 'link', 'image', 'video']
-    });
-  }
-  if (captureRecord) {
-    items.push({
-      id: 'context_capture_record',
-      parentId: 'max_tools_parent',
-      title: isVi ? '🔴 Quay video màn hình' : '🔴 Record Screen Video',
-      contexts: ['page', 'selection', 'link', 'image', 'video']
-    });
-  }
-  return items;
+    }));
 }
 
-// ── Context Menu Action Handler ──
 function handleScreenCaptureContextMenuClick(info, tab) {
   switch (info.menuItemId) {
     case 'context_capture_area':
-      if (tab && tab.id) {
+      if (tab?.id) {
         if (typeof createSelectionOverlay === 'function') {
-          chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: createSelectionOverlay
-          }).catch(err => console.error('Failed to inject area capture overlay:', err));
+          chrome.scripting.executeScript({ target: { tabId: tab.id }, func: createSelectionOverlay }).catch(() => {});
         } else {
           chrome.tabs.sendMessage(tab.id, { action: 'start_area_capture' });
         }
@@ -579,18 +316,13 @@ function handleScreenCaptureContextMenuClick(info, tab) {
   return false;
 }
 
-// Export for background script & window
-if (typeof self !== 'undefined') {
-  self.openScreenRecorderWindow = openScreenRecorderWindow;
-  self.performVisibleCaptureDirectly = performVisibleCaptureDirectly;
-  self.performFullPageCaptureDirectly = performFullPageCaptureDirectly;
-  self.getScreenCaptureContextMenuSpecs = getScreenCaptureContextMenuSpecs;
-  self.handleScreenCaptureContextMenuClick = handleScreenCaptureContextMenuClick;
-}
-if (typeof window !== 'undefined') {
-  window.openScreenRecorderWindow = openScreenRecorderWindow;
-  window.performVisibleCaptureDirectly = performVisibleCaptureDirectly;
-  window.performFullPageCaptureDirectly = performFullPageCaptureDirectly;
-  window.getScreenCaptureContextMenuSpecs = getScreenCaptureContextMenuSpecs;
-  window.handleScreenCaptureContextMenuClick = handleScreenCaptureContextMenuClick;
-}
+// Exports
+(function(g) {
+  g.sanitizeCaptureFilename = sanitizeCaptureFilename;
+  g.getCaptureTimestamp = getCaptureTimestamp;
+  g.openScreenRecorderWindow = openScreenRecorderWindow;
+  g.performVisibleCaptureDirectly = performVisibleCaptureDirectly;
+  g.performFullPageCaptureDirectly = performFullPageCaptureDirectly;
+  g.getScreenCaptureContextMenuSpecs = getScreenCaptureContextMenuSpecs;
+  g.handleScreenCaptureContextMenuClick = handleScreenCaptureContextMenuClick;
+})(typeof self !== 'undefined' ? self : (typeof window !== 'undefined' ? window : globalThis));

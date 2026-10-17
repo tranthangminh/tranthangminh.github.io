@@ -143,11 +143,11 @@ function renderAISubSidebar(container) {
       iconText: ai.iconText,
       iconBgColor: ai.iconBgColor
     };
-    const iconEl = (typeof createTabIconElement === "function")
-      ? createTabIconElement(modelTabObj)
-      : document.createElement("div");
-
-    if (typeof createTabIconElement !== "function") {
+    let iconEl;
+    if (typeof createTabIconElement === "function") {
+      iconEl = createTabIconElement(modelTabObj);
+    } else {
+      iconEl = document.createElement("div");
       iconEl.className = "tab-favicon";
       iconEl.innerHTML = `<img src="${ai.icon}" alt="${ai.name}" style="width:100%;height:100%;object-fit:contain;">`;
     }

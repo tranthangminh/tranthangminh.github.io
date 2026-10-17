@@ -377,8 +377,25 @@ async function captureSinglePassFullPage(options) {
       folderPrefix = folder + '/';
     }
 
-    const title = tab.title ? sanitizeFilenameForScreenCapture(tab.title) : 'fullpage';
-    const timestamp = getFormattedTimestampForScreenCapture();
+    const resolveSanitize = (typeof sanitizeCaptureFilename === 'function')
+      ? sanitizeCaptureFilename
+      : (typeof self !== 'undefined' && typeof self.sanitizeCaptureFilename === 'function')
+        ? self.sanitizeCaptureFilename
+        : (name) => (name || 'fullpage').replace(/[\\/:*?"<>|]/g, '_').trim();
+
+    const resolveTimestamp = (typeof getCaptureTimestamp === 'function')
+      ? getCaptureTimestamp
+      : (typeof self !== 'undefined' && typeof self.getCaptureTimestamp === 'function')
+        ? self.getCaptureTimestamp
+        : () => {
+            const d = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const sec = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+            return `${String(d.getFullYear()).slice(-2)}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${sec}`;
+          };
+
+    const title = resolveSanitize(tab.title);
+    const timestamp = resolveTimestamp();
     const filename = (folderPrefix || '') + `${title} - ${timestamp}.${fmt.ext}`;
 
     downloadSingleResource(finalDataUrl, filename, {

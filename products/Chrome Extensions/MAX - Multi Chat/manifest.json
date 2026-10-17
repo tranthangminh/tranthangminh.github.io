@@ -37,18 +37,12 @@
       "world": "MAIN"
     },
     {
-      "matches": ["*://web.telegram.org/*"],
-      "js": ["connections/telegram.js"],
-      "all_frames": true,
-      "run_at": "document_start",
-      "world": "MAIN"
-    },
-    {
       "matches": [
+        "*://web.telegram.org/*",
         "*://*.weavy.com/*",
         "*://*.weavy.io/*"
       ],
-      "js": ["connections/weavy.js"],
+      "js": ["connections/frame-bypass.js"],
       "all_frames": true,
       "run_at": "document_start",
       "world": "MAIN"

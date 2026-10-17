@@ -40,19 +40,14 @@ namespace BookForge
                 try
                 {
                     int pid = runningProcess.Id;
-                    ProcessStartInfo psi = new ProcessStartInfo("taskkill", string.Format("/F /T /PID {0}", pid));
-                    psi.CreateNoWindow = true;
-                    psi.UseShellExecute = false;
-                    using (Process p = Process.Start(psi))
-                    {
-                        if (p != null) p.WaitForExit(2000);
-                    }
+                    JobObjectHelper.TerminateProcessTree(pid);
                 }
                 catch
                 {
-                    try { runningProcess.Kill(); } catch { }
+                    try { runningProcess.Kill(); } catch (Exception) { /* Process might already be dead or access denied */ }
                 }
             }
+            JobObjectHelper.TerminateAllProcesses();
         }
 
         public Task<bool> RunCommandAsync(string workingDir, string scriptRelativePath, string arguments)
@@ -89,21 +84,27 @@ namespace BookForge
                     appDir = asmDir;
                 }
             }
-            catch { }
-            string scriptPath = Path.Combine(appDir, "script", scriptRelativePath);
-            if (!File.Exists(scriptPath))
+            catch (Exception) { /* Non-critical assembly directory fallback */ }
+
+            string[] candidatePaths = new string[]
             {
-                scriptPath = Path.Combine(appDir, "for_zip", "script", scriptRelativePath);
-            }
-            if (!File.Exists(scriptPath))
+                Path.Combine(appDir, "script", scriptRelativePath),
+                Path.Combine(appDir, "for_zip", "script", scriptRelativePath),
+                Path.Combine(appDir, "src_Book Forge by Max", "script", scriptRelativePath),
+                Path.Combine(workingDir, "script", scriptRelativePath)
+            };
+
+            string scriptPath = null;
+            foreach (string candidate in candidatePaths)
             {
-                scriptPath = Path.Combine(appDir, "src_Book Forge by Max", "script", scriptRelativePath);
+                if (File.Exists(candidate))
+                {
+                    scriptPath = candidate;
+                    break;
+                }
             }
-            if (!File.Exists(scriptPath))
-            {
-                scriptPath = Path.Combine(appDir, "src_BookForge", "script", scriptRelativePath);
-            }
-            if (!File.Exists(scriptPath))
+
+            if (scriptPath == null)
             {
                 try
                 {
@@ -118,20 +119,12 @@ namespace BookForge
                         }
                     }
                 }
-                catch { }
-            }
-            if (!File.Exists(scriptPath))
-            {
-                scriptPath = Path.Combine(workingDir, "script", scriptRelativePath);
-            }
-            if (!File.Exists(scriptPath))
-            {
-                scriptPath = Path.Combine(appDir, "script", scriptRelativePath);
+                catch (Exception) { /* Non-critical wildcard directory probe fallback */ }
             }
 
-            if (!File.Exists(scriptPath))
+            if (string.IsNullOrEmpty(scriptPath) || !File.Exists(scriptPath))
             {
-                EmitLog(string.Format("[ERROR] Script file not found: {0}", scriptPath));
+                EmitLog(string.Format("[ERROR] Script file not found: {0}", Path.Combine(appDir, "script", scriptRelativePath)));
                 if (OnCompleted != null) OnCompleted(false, "Missing script file");
                 return false;
             }
@@ -171,7 +164,7 @@ namespace BookForge
                     }
                 }
             }
-            catch { }
+            catch (Exception) { /* Non-critical environment configuration fallback */ }
 
             EmitLog(string.Format("[*] Launching: node {0} {1}", Path.GetFileName(scriptPath), arguments));
             if (!string.IsNullOrEmpty(edgePath))
@@ -206,9 +199,10 @@ namespace BookForge
                     };
 
                     p.Start();
+                    JobObjectHelper.TrackProcess(p);
                     if (isCancelled)
                     {
-                        try { p.Kill(); } catch { }
+                        try { p.Kill(); } catch (Exception) { /* Process may already have exited */ }
                         return false;
                     }
 
@@ -217,7 +211,7 @@ namespace BookForge
                     p.WaitForExit();
 
                     int exitCode = -1;
-                    try { exitCode = p.ExitCode; } catch { }
+                    try { exitCode = p.ExitCode; } catch (Exception) { /* Exit code may be unavailable if terminated externally */ }
                     bool success = (exitCode == 0) && !isCancelled;
                     if (OnCompleted != null)
                     {
@@ -292,7 +286,7 @@ namespace BookForge
                 string scriptNodeSub = Path.Combine(appDir, "script", "node.exe");
                 if (File.Exists(scriptNodeSub)) return scriptNodeSub;
             }
-            catch { }
+            catch (Exception) { /* Non-critical local node probe fallback */ }
 
             // 2. Check current PATH
             string pathEnv = Environment.GetEnvironmentVariable("PATH");
@@ -306,7 +300,7 @@ namespace BookForge
                         string full = Path.Combine(p.Trim(), "node.exe");
                         if (File.Exists(full)) return full;
                     }
-                    catch { }
+                    catch (Exception) { /* Ignore invalid or inaccessible PATH segment */ }
                 }
             }
 

@@ -192,7 +192,6 @@ namespace BookForge
             try
             {
                 string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "src_Book Forge by Max", "app.ico");
-                if (!File.Exists(iconPath)) iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "src_BookForge", "app.ico");
                 if (!File.Exists(iconPath))
                 {
                     try
@@ -200,7 +199,7 @@ namespace BookForge
                         string[] srcDirs = Directory.GetDirectories(AppDomain.CurrentDomain.BaseDirectory, "src_*");
                         if (srcDirs.Length > 0) iconPath = Path.Combine(srcDirs[0], "app.ico");
                     }
-                    catch { }
+                    catch (Exception) { /* Non-critical icon search fallback */ }
                 }
 
                 if (File.Exists(iconPath))
@@ -212,42 +211,13 @@ namespace BookForge
                     Icon = new Icon("app.ico");
                 }
             }
-            catch { }
+            catch (Exception) { /* Non-critical icon loading fallback */ }
         }
 
         private void btnThemeToggle_Click(object sender, EventArgs e)
         {
-            ThemeTokens t = ThemeTokens.Current;
-            if (t.IsDark)
-            {
-                CopyThemeValues(ThemeTokens.LightTheme(), t);
-            }
-            else
-            {
-                CopyThemeValues(ThemeTokens.DarkTheme(), t);
-            }
+            ThemeTokens.Current = ThemeTokens.Current.IsDark ? ThemeTokens.LightTheme() : ThemeTokens.DarkTheme();
             ApplyThemeToAllControls();
-        }
-
-        private void CopyThemeValues(ThemeTokens src, ThemeTokens dest)
-        {
-            dest.IsDark = src.IsDark;
-            dest.BgPrimary = src.BgPrimary;
-            dest.BgSecondary = src.BgSecondary;
-            dest.BgTertiary = src.BgTertiary;
-            dest.BgElevated = src.BgElevated;
-            dest.TextPrimary = src.TextPrimary;
-            dest.TextSecondary = src.TextSecondary;
-            dest.TextTertiary = src.TextTertiary;
-            dest.AccentPrimary = src.AccentPrimary;
-            dest.AccentPrimaryHover = src.AccentPrimaryHover;
-            dest.BorderColor = src.BorderColor;
-            dest.BorderHover = src.BorderHover;
-            dest.Success = src.Success;
-            dest.Danger = src.Danger;
-            dest.Warning = src.Warning;
-            dest.HotkeyBoxBg = src.HotkeyBoxBg;
-            dest.HotkeyBoxText = src.HotkeyBoxText;
         }
 
         private void ApplyThemeToAllControls()
@@ -677,32 +647,25 @@ namespace BookForge
             return false;
         }
 
-        private bool IsValidExtractSource(string path)
+        private bool HasAnyValidPath(string path, DragDropBox.PathValidationDelegate validator)
         {
             var list = ParsePaths(path);
-            if (list.Count > 0)
+            foreach (var p in list)
             {
-                foreach (var p in list)
-                {
-                    string r;
-                    if (ValidateExtractInput(p, out r)) return true;
-                }
+                string r;
+                if (validator(p, out r)) return true;
             }
             return false;
         }
 
+        private bool IsValidExtractSource(string path)
+        {
+            return HasAnyValidPath(path, ValidateExtractInput);
+        }
+
         private bool IsValidPublishSource(string path)
         {
-            var list = ParsePaths(path);
-            if (list.Count > 0)
-            {
-                foreach (var p in list)
-                {
-                    string r;
-                    if (ValidatePublishInput(p, out r)) return true;
-                }
-            }
-            return false;
+            return HasAnyValidPath(path, ValidatePublishInput);
         }
 
         private void UpdatePublishProjectInspector(string path)
@@ -1197,7 +1160,7 @@ namespace BookForge
                         string targetMd = Path.Combine(bookTargetDir, Path.GetFileName(src));
                         if (!File.Exists(targetMd))
                         {
-                            try { File.Copy(src, targetMd, true); } catch { }
+                            try { File.Copy(src, targetMd, true); } catch (Exception) { /* Non-critical markdown copy fallback */ }
                         }
 
                         if (runner.IsCancelled) break;
@@ -1571,7 +1534,18 @@ namespace BookForge
         {
             if (!string.IsNullOrEmpty(activeBookDir) && Directory.Exists(activeBookDir))
             {
-                try { System.Diagnostics.Process.Start("explorer.exe", activeBookDir); } catch { }
+                try
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", activeBookDir);
+                }
+                catch (Exception ex)
+                {
+                    AppendLog(string.Format("[!] Could not open folder: {0}", ex.Message));
+                }
+            }
+            else
+            {
+                AppendLog("[!] Output folder is not available yet. Please complete a run first.");
             }
         }
 
@@ -1579,7 +1553,18 @@ namespace BookForge
         {
             if (!string.IsNullOrEmpty(generatedPdfPath) && File.Exists(generatedPdfPath))
             {
-                try { System.Diagnostics.Process.Start(generatedPdfPath); } catch { }
+                try
+                {
+                    System.Diagnostics.Process.Start(generatedPdfPath);
+                }
+                catch (Exception ex)
+                {
+                    AppendLog(string.Format("[!] Could not open PDF: {0}", ex.Message));
+                }
+            }
+            else
+            {
+                AppendLog("[!] Generated PDF file does not exist yet. Please publish a book first.");
             }
         }
 
@@ -1764,7 +1749,7 @@ namespace BookForge
             {
                 this.MaximizedBounds = Screen.FromHandle(this.Handle).WorkingArea;
             }
-            catch { }
+            catch (Exception) { /* Non-critical screen bounds calculation fallback */ }
             if (titleBarCustom != null) titleBarCustom.Invalidate();
             UpdateDynamicLayout();
             if (this.WindowState != FormWindowState.Minimized)
@@ -1844,7 +1829,13 @@ namespace BookForge
                     runner.Cancel();
                 }
             }
-            catch { }
+            catch (Exception) { /* Non-critical runner cancellation fallback */ }
+
+            try
+            {
+                JobObjectHelper.TerminateAllProcesses();
+            }
+            catch (Exception) { /* Non-critical process termination fallback */ }
 
             SaveConfig();
             base.OnFormClosing(e);
@@ -1877,7 +1868,8 @@ namespace BookForge
                 if (!string.IsNullOrEmpty(c.ExtractSourcePath))
                 {
                     txtExtractSource.Text = c.ExtractSourcePath;
-                    dropExtract.SelectedPath = c.ExtractSourcePath;
+                    var pList = ParsePaths(c.ExtractSourcePath);
+                    dropExtract.SelectedPaths = pList.ToArray();
                 }
 
                 if (string.Equals(c.OutputLocationMode, "AppFolder", StringComparison.OrdinalIgnoreCase))
@@ -1936,8 +1928,9 @@ namespace BookForge
                 if (!string.IsNullOrEmpty(c.PublishFolderPath))
                 {
                     txtPublishFolder.Text = c.PublishFolderPath;
-                    dropPublish.SelectedPath = c.PublishFolderPath;
-                    activeBookDir = c.PublishFolderPath;
+                    var pList = ParsePaths(c.PublishFolderPath);
+                    dropPublish.SelectedPaths = pList.ToArray();
+                    if (pList.Count > 0) activeBookDir = pList[0];
                 }
 
                 chkSourceTranslated.Checked = c.SourceTranslated;
@@ -2019,17 +2012,9 @@ namespace BookForge
                 }
 
                 // Theme
-                ThemeTokens t = ThemeTokens.Current;
-                if (c.IsDarkTheme != t.IsDark)
+                if (c.IsDarkTheme != ThemeTokens.Current.IsDark)
                 {
-                    if (c.IsDarkTheme)
-                    {
-                        CopyThemeValues(ThemeTokens.DarkTheme(), t);
-                    }
-                    else
-                    {
-                        CopyThemeValues(ThemeTokens.LightTheme(), t);
-                    }
+                    ThemeTokens.Current = c.IsDarkTheme ? ThemeTokens.DarkTheme() : ThemeTokens.LightTheme();
                     ApplyThemeToAllControls();
                 }
 
@@ -2105,7 +2090,7 @@ namespace BookForge
 
                 ConfigManager.Save(c);
             }
-            catch { }
+            catch (Exception) { /* Non-critical window bounds config save fallback */ }
         }
     }
 }

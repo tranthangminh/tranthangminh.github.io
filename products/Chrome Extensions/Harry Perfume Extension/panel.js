@@ -132,7 +132,7 @@ function stopSmoothProgress() {
 }
 
 // Xử lý sự kiện click nút Refresh (Thực hiện làm mới hoặc Hủy làm mới dở dang)
-function handleRefreshButtonClick() {
+async function handleRefreshButtonClick() {
   if (refreshAbortController) {
     // Nếu đang trong quá trình Refresh -> Hủy làm mới dở dang
     refreshAbortController.abort();
@@ -141,16 +141,59 @@ function handleRefreshButtonClick() {
     resetRefreshButtonUI(false);
     updateHeaderProgress("Đã hủy", "Cập nhật", "normal", 3000);
     showToast("🚫 Đã hủy cập nhật dữ liệu!");
+    if (typeof window.hideImportLoadingIndicator === "function") {
+      window.hideImportLoadingIndicator();
+    }
     return;
   }
-  fetchSheetData();
+
+  let isAdmin = false;
+  if (typeof StorageHelper !== "undefined") {
+    isAdmin = await StorageHelper.get("isAdminLoggedIn", false);
+  }
+
+  refreshAbortController = new AbortController();
+  if (btnRefresh) {
+    btnRefresh.classList.remove("refresh-failed");
+    btnRefresh.classList.add("is-refreshing");
+    btnRefresh.title = "Đang làm mới... (Bấm để Hủy)";
+  }
+
+  try {
+    // 1. NẾU LÀ ADMIN: Tải danh sách Nhập ĐẦU TIÊN
+    if (isAdmin && typeof window.fetchImportData === "function") {
+      updateHeaderProgress("Đang kết nối...", "Google Sheet Nhập", "normal");
+      if (typeof window.showImportLoadingIndicator === "function") {
+        window.showImportLoadingIndicator();
+      }
+      try {
+        await window.fetchImportData(false);
+        updateHeaderProgress("Đã tải xong", "Nhập Hàng", "normal", 1200);
+      } catch (err) {
+        console.warn("Lỗi tải Import trong refresh:", err);
+      } finally {
+        if (typeof window.hideImportLoadingIndicator === "function") {
+          window.hideImportLoadingIndicator();
+        }
+      }
+    }
+
+    // 2. TIẾP THEO: Tải danh sách Nước Hoa
+    updateHeaderProgress("Đang kết nối...", "Google WebApp", "normal");
+    await fetchSheetData();
+  } catch (err) {
+    console.error("Lỗi làm mới:", err);
+    resetRefreshButtonUI(true);
+  }
 }
 
 // Hàm tải dữ liệu từ Google Sheet Web App (Hỗ trợ Tiến trình thật 100% theo KB & số dòng)
 async function fetchSheetData() {
   const isSilent = allProducts.length > 0;
   
-  refreshAbortController = new AbortController();
+  if (!refreshAbortController) {
+    refreshAbortController = new AbortController();
+  }
   if (btnRefresh) {
     btnRefresh.classList.remove("refresh-failed");
     btnRefresh.classList.add("is-refreshing");
@@ -256,12 +299,20 @@ async function fetchSheetData() {
     // Tải thành công 100% & Dữ liệu hợp lệ -> Tiến hành ghi đè dữ liệu
     allProducts = data;
     await StorageHelper.set("cachedProducts", data);
+    if (typeof syncPromotionsFromProducts === "function") {
+      syncPromotionsFromProducts(allProducts);
+    }
 
     if (isSilent) {
       refreshAbortController = null;
       resetRefreshButtonUI(false); // Thành công -> Nút bình thường
       updateHeaderProgress("Đã cập nhật", `${totalRows} sản phẩm ✨`, "success", 4000);
-      showToast(`✨ Đã cập nhật thành công ${totalRows} sản phẩm!`);
+
+      const isAdminUser = typeof StorageHelper !== "undefined" ? await StorageHelper.get("isAdminLoggedIn", false) : false;
+      const toastMsgText = isAdminUser && typeof window.hasImportData === "function" && window.hasImportData()
+        ? `✨ Đã làm mới toàn bộ dữ liệu Nhập và ${totalRows} sản phẩm!`
+        : `✨ Đã cập nhật thành công ${totalRows} sản phẩm!`;
+      showToast(toastMsgText);
 
       // Cập nhật lại UI hiện tại
       if (detailView.style.display !== "none" && currentProduct) {
@@ -337,13 +388,14 @@ async function copyText(text, label) {
 
 // Hàm copy hình ảnh từ URL vào clipboard bằng Canvas
 async function copyImage(imgUrl) {
+  let objectURL = null;
   try {
     showToast("⏳ Đang xử lý copy ảnh...");
     const response = await fetch(imgUrl);
     const blob = await response.blob();
     
     const img = new Image();
-    const objectURL = URL.createObjectURL(blob);
+    objectURL = URL.createObjectURL(blob);
     
     img.onload = () => {
       const canvas = document.createElement("canvas");
@@ -354,26 +406,38 @@ async function copyImage(imgUrl) {
       
       canvas.toBlob(async (pngBlob) => {
         try {
+          if (!pngBlob) throw new Error("toBlob failed");
           await navigator.clipboard.write([
             new ClipboardItem({
               "image/png": pngBlob
             })
           ]);
           showToast("✨ Đã copy ảnh sản phẩm!");
-          URL.revokeObjectURL(objectURL);
         } catch (err) {
           showToast("❌ Trình duyệt không hỗ trợ copy ảnh.");
+        } finally {
+          if (objectURL) {
+            URL.revokeObjectURL(objectURL);
+            objectURL = null;
+          }
         }
       }, "image/png");
     };
     
     img.onerror = () => {
       showToast("❌ Lỗi xử lý định dạng ảnh.");
-      URL.revokeObjectURL(objectURL);
+      if (objectURL) {
+        URL.revokeObjectURL(objectURL);
+        objectURL = null;
+      }
     };
     
     img.src = objectURL;
   } catch (error) {
+    if (objectURL) {
+      URL.revokeObjectURL(objectURL);
+      objectURL = null;
+    }
     showToast("❌ Không thể copy ảnh (CORS hoặc kết nối lỗi).");
   }
 }
@@ -421,6 +485,7 @@ const tabImport = document.getElementById("tabImport");
 const tabPerfume = document.getElementById("tabPerfume");
 const tabNews = document.getElementById("tabNews");
 const tabOrder = document.getElementById("tabOrder");
+const tabRowSub = document.getElementById("tabRowSub");
 
 const paneImport = document.getElementById("paneImport");
 const panePerfume = document.getElementById("panePerfume");
@@ -431,10 +496,19 @@ const paneOrder = document.getElementById("paneOrder");
 async function checkAdminLoginStatus() {
   try {
     const isLoggedIn = await StorageHelper.get("isAdminLoggedIn", false);
-    if (isLoggedIn && tabImport) {
-      tabImport.style.display = "block";
+    const btnToggleCostPrice = document.getElementById("btnToggleCostPrice");
+    if (isLoggedIn) {
+      if (tabRowSub) tabRowSub.style.display = "flex";
+      if (tabImport) tabImport.style.display = "block";
+      if (btnToggleCostPrice) btnToggleCostPrice.style.display = "flex";
+    } else {
+      if (tabRowSub) tabRowSub.style.display = "none";
+      if (tabImport) tabImport.style.display = "none";
+      if (btnToggleCostPrice) btnToggleCostPrice.style.display = "none";
     }
-  } catch (e) {}
+  } catch (e) {
+    // Bỏ qua lỗi nạp quyền admin
+  }
 }
 
 // Bấm nút bí mật góc trên trái
@@ -471,9 +545,15 @@ if (loginForm) {
     if (user === "harryparfym" && pass === "Skilllioned88@") {
       await StorageHelper.set("isAdminLoggedIn", true);
       if (loginModal) loginModal.style.display = "none";
+      const btnToggleCostPrice = document.getElementById("btnToggleCostPrice");
+      if (btnToggleCostPrice) btnToggleCostPrice.style.display = "flex";
+      if (tabRowSub) tabRowSub.style.display = "flex";
       if (tabImport) {
         tabImport.style.display = "block";
         tabImport.click();
+      }
+      if (typeof window.fetchImportData === "function") {
+        window.fetchImportData(false);
       }
       showToast("✨ Đăng nhập Quản trị thành công!");
     } else {
@@ -501,9 +581,30 @@ if (btnConfirmLogout) {
   btnConfirmLogout.addEventListener("click", async () => {
     await StorageHelper.set("isAdminLoggedIn", false);
     if (logoutModal) logoutModal.style.display = "none";
+    if (tabRowSub) tabRowSub.style.display = "none";
     if (tabImport) tabImport.style.display = "none";
+    const btnToggleCostPrice = document.getElementById("btnToggleCostPrice");
+    if (btnToggleCostPrice) {
+      btnToggleCostPrice.style.display = "none";
+      btnToggleCostPrice.classList.remove("active");
+    }
+    if (window.isCostPriceMode) {
+      window.isCostPriceMode = false;
+      if (typeof window.refreshPerfumeView === "function") {
+        window.refreshPerfumeView();
+      }
+    }
+    if (typeof window.clearImportData === "function") {
+      window.clearImportData();
+    }
+    if (typeof StorageHelper !== "undefined") {
+      await StorageHelper.remove("cachedImportData");
+    }
     if (tabPerfume && tabImport && tabImport.classList.contains("active")) {
       tabPerfume.click();
+    }
+    if (typeof StorageHelper !== "undefined") {
+      await StorageHelper.set("lastActiveTabId", "tabPerfume");
     }
     showToast("✨ Đã đăng xuất khỏi quyền Quản trị!");
   });
@@ -519,11 +620,20 @@ function switchTab(activeTab, activePane) {
   });
   if (activeTab) activeTab.classList.add("active");
   if (activePane) activePane.style.display = "flex";
+  if (activeTab && activeTab.id && typeof StorageHelper !== "undefined") {
+    StorageHelper.set("lastActiveTabId", activeTab.id);
+  }
 }
 
 if (tabImport) {
   tabImport.addEventListener("click", () => {
     switchTab(tabImport, paneImport);
+    if (typeof window.refreshImportView === "function") {
+      window.refreshImportView();
+    }
+    if (typeof window.fetchImportData === "function" && typeof window.hasImportData === "function" && window.hasImportData() === 0) {
+      window.fetchImportData(false);
+    }
   });
 }
 
@@ -555,15 +665,32 @@ if (tabOrder) {
 btnRefresh.addEventListener("click", handleRefreshButtonClick);
 btnRetry.addEventListener("click", () => fetchSheetData());
 
+// Hỗ trợ phím Escape đóng nhanh tất cả modal đang mở (Modal Accessibility)
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    const activeModals = document.querySelectorAll(".modal-overlay");
+    activeModals.forEach((modal) => {
+      if (modal.style.display !== "none") {
+        modal.style.display = "none";
+      }
+    });
+  }
+});
+
 // Hàm đọc cache sản phẩm
 async function loadCachedProducts() {
   try {
     const cached = await StorageHelper.get("cachedProducts");
     if (cached && Array.isArray(cached)) {
       allProducts = cached;
+      if (typeof syncPromotionsFromProducts === "function") {
+        syncPromotionsFromProducts(allProducts);
+      }
       return true;
     }
-  } catch (e) {}
+  } catch (e) {
+    // Cache lỗi hoặc chưa có dữ liệu
+  }
   return false;
 }
 
@@ -597,7 +724,9 @@ async function fetchStockOnly() {
       // Cập nhật UI hiện tại mà không reload toàn bộ
       if (typeof refreshStockDisplay === "function") refreshStockDisplay();
     }
-  } catch(e) {}
+  } catch(e) {
+    // Lỗi polling ngầm không ảnh hưởng UI
+  }
 }
 
 // Kích hoạt đồng bộ dữ liệu
@@ -609,6 +738,24 @@ window.addEventListener("DOMContentLoaded", async () => {
     loadingView.style.display = "none";
     searchResult.style.display = "block";
     performSearch(searchBox.value);
+  }
+
+  // Khôi phục tab mở cuối cùng (Remember Last Active Tab)
+  try {
+    if (typeof StorageHelper !== "undefined") {
+      const lastTabId = await StorageHelper.get("lastActiveTabId", "tabPerfume");
+      const isAdmin = await StorageHelper.get("isAdminLoggedIn", false);
+      let targetTabId = lastTabId;
+      if (targetTabId === "tabImport" && !isAdmin) {
+        targetTabId = "tabPerfume";
+      }
+      const tabEl = document.getElementById(targetTabId);
+      if (tabEl) {
+        tabEl.click();
+      }
+    }
+  } catch (e) {
+    // Bỏ qua lỗi khôi phục tab
   }
 
   // Mở app lên là thực hiện cập nhật dữ liệu từ Google Sheet ngay lập tức

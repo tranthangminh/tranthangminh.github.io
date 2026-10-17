@@ -36,15 +36,12 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     if (typeof renderSubSidebar === "function") renderSubSidebar();
   }
 
-  // 2. Sync Settings (Sidebar toggle only, excluding Theme)
+  // 2. Sync Settings (Theme)
   if (changes.app_settings) {
     const newSettings = changes.app_settings.newValue;
-    if (newSettings) {
-      // Sync Sidebar Collapse state
-      if (newSettings.subSidebarCollapsed !== undefined && newSettings.subSidebarCollapsed !== appState.subSidebarCollapsed) {
-        appState.subSidebarCollapsed = newSettings.subSidebarCollapsed;
-        if (typeof applySubSidebarCollapse === "function") applySubSidebarCollapse(appState.subSidebarCollapsed);
-      }
+    if (newSettings && newSettings.theme && newSettings.theme !== appState.theme) {
+      appState.theme = newSettings.theme;
+      if (typeof applyTheme === "function") applyTheme(appState.theme);
     }
   }
 });

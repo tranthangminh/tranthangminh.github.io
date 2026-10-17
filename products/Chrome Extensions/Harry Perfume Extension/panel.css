@@ -392,39 +392,55 @@ body {
   color: var(--gold-primary);
 }
 
-/* Tab Navigation */
+/* Tab Navigation - Khối Thống Nhất & Solid Line Dividers */
 .tab-row {
   display: flex;
+  flex-direction: column;
   background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   margin: 0px 10px;
-  gap: 4px;
+  overflow: hidden;
+}
+
+.tab-row-group {
+  display: flex;
+  width: 100%;
+}
+
+.tab-row-sub {
+  border-top: 1px solid var(--border-color);
 }
 
 .tab-btn {
   flex: 1;
   background: none;
-  border: 1px solid transparent;
+  border: none;
   color: var(--text-secondary);
-  font-family: "Outfit", sans-serif;
   font-weight: 700;
-  font-size: 14px;
-  padding: 10px 10px;
-  border-radius: 6px;
+  font-size: 13.5px;
+  padding: 7px 7px;
+  border-radius: 0;
   cursor: pointer;
-  transition: all var(--transition-speed) ease;
+  transition: all var(--transition-speed, 0.25s) ease;
   text-align: center;
+  outline: none;
+  white-space: nowrap;
+}
+
+.tab-row-group .tab-btn:not(:last-child) {
+  border-right: 1px solid var(--border-color);
 }
 
 .tab-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
 }
 
 .tab-btn.active {
-  background-color: rgba(229, 193, 88, 0.12);
+  background-color: rgba(229, 193, 88, 0.15);
   color: var(--gold-primary);
-  box-shadow: 0 2px 8px var(--gold-glow);
-  border: 1px solid rgba(229, 193, 88, 0.35);
+  box-shadow: inset 0 0 10px rgba(229, 193, 88, 0.12);
 }
 
 .tab-pane {
@@ -521,7 +537,7 @@ body {
 }
 
 .login-error-msg {
-  color: #ef4444;
+  color: var(--c-red);
   font-size: 11px;
   font-weight: 600;
   margin-bottom: 12px;

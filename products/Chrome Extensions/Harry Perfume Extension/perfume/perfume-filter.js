@@ -166,14 +166,24 @@ function formatInputWithSuffix(inputEl) {
 }
 
 // Ràng buộc con trỏ và định dạng cho ô nhập khoảng giá
+const debouncedPriceFilterSearch = typeof debounce === "function"
+  ? debounce(() => {
+      if (typeof performSearch === "function") {
+        performSearch(searchBox.value);
+      }
+    }, 200)
+  : () => {
+      if (typeof performSearch === "function") {
+        performSearch(searchBox.value);
+      }
+    };
+
 function setupPriceInputFormatting(inputEl) {
   if (!inputEl) return;
   
   inputEl.addEventListener("input", () => {
     formatInputWithSuffix(inputEl);
-    if (typeof performSearch === "function") {
-      performSearch(searchBox.value);
-    }
+    debouncedPriceFilterSearch();
   });
   
   // Ngăn con trỏ nhảy vào phần hậu tố .000

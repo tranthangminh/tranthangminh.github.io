@@ -135,7 +135,7 @@
 }
 
 .scent-value {
-  color: #e2e2e9;
+  color: var(--text-primary);
 }
 
 .similar-block {
@@ -498,7 +498,7 @@
 }
 
 .consultation-section:hover {
-  border-color: #3f3f4e;
+  border-color: var(--border-color);
 }
 
 .price-consultation-area {
@@ -555,3 +555,20 @@
   margin-bottom: 4px;
   text-align: left;
 }
+
+/* Thẻ giá chai Full hiển thị Giá Vốn trong Chi Tiết (dùng màu Token) */
+.price-badge.price-badge-full-cost {
+  border-color: rgba(192, 132, 252, 0.4) !important;
+  background: var(--c-purple-bg) !important;
+}
+
+.price-badge.price-badge-full-cost .price-val {
+  color: var(--c-purple) !important;
+}
+
+.price-badge.price-badge-full-cost:hover {
+  border-color: var(--c-purple) !important;
+  background: rgba(192, 132, 252, 0.20) !important;
+  box-shadow: 0 2px 8px rgba(192, 132, 252, 0.35) !important;
+}
+
