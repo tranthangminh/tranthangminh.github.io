@@ -7,11 +7,11 @@
 }
 
 select, option, button, input, textarea {
-  font-family: var(--font-family, 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+  font-family: var(--font-family, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif) !important;
 }
 
 body {
-  font-family: var(--font-family, 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+  font-family: var(--font-family, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif) !important;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   width: 100vw;
@@ -325,7 +325,7 @@ body {
   font-family: var(--font-family, sans-serif) !important;
 }
 
-/* Dropdown styling with Outfit font */
+/* Dropdown styling */
 .device-select {
   font-family: var(--font-family, sans-serif) !important;
   background-color: var(--bg-primary);

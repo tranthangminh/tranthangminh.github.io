@@ -279,6 +279,19 @@ body {
     line-height: 1.2;
 }
 
+.product-card-link {
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--accent-primary);
+    text-transform: lowercase;
+    letter-spacing: normal;
+    margin: 2px 0 0;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .product-card-desc {
     font-size: var(--font-sm);
     line-height: 1.45;
@@ -328,6 +341,37 @@ body {
 
 .product-download-btn:active {
     transform: translateY(0);
+}
+
+/* Category Pill Badge (Footer - Left Aligned) */
+.product-category-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 26px;
+    padding: 0 10px;
+    background: var(--pill-color, var(--accent-primary));
+    border: 1px solid var(--pill-color, var(--accent-primary));
+    border-radius: 9999px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    user-select: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    max-width: calc(100% - 28px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
+}
+
+.product-card:hover .product-category-pill {
+    transform: translateY(-1px);
+    filter: brightness(1.18);
+    box-shadow: 0 2px 10px var(--pill-glow, rgba(229, 9, 20, 0.35));
 }
 
 .product-download-icon {
@@ -545,6 +589,18 @@ body {
     [data-product-section="web-apps"] .product-card-tag {
         font-size: 10px;
         margin-top: 1px;
+    }
+
+    [data-product-section="web-apps"] .product-card-link {
+        font-size: 10px;
+        margin-top: 1px;
+    }
+
+    [data-product-section="web-apps"] .product-category-pill {
+        height: 22px;
+        padding: 0 7px;
+        font-size: 10px;
+        letter-spacing: 0.03em;
     }
 
     /* Ẩn chữ đơn vị dài trên thẻ vuông mobile để không tràn viền */

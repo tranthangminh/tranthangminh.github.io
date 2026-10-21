@@ -1,39 +1,22 @@
 // Tính năng Tìm kiếm Nước Hoa (Perfume Search Logic)
 
-// Tìm kiếm nước hoa (fuzzy: tách từ khóa theo khoảng trắng)
+// Tìm kiếm nước hoa thông minh bằng Shared Product Search Engine (Fuzzy Keyword Overlap & Best-Match Ranking)
 function performSearch(keyword) {
-  const normalizedKeyword = removeAccents(keyword).trim();
+  const cleanKeyword = (keyword || "").trim();
   
-  if (!normalizedKeyword) {
+  if (!cleanKeyword) {
     renderList(allProducts);
     return;
   }
   
-  const tokens = normalizedKeyword.split(/\s+/).filter(t => t.length > 0);
-  
-  const filtered = allProducts.filter(prod => {
-    const displayName = getProductDisplayName(prod);
-    const normalizedDisplay = removeAccents(displayName);
-    const normalizedName = removeAccents(prod.name);
-    const normalizedShort = removeAccents(prod.tenrutgon);
-    
-    // Kết hợp mọi thông tin tên để tìm kiếm bao phủ toàn diện
-    const combinedStr = `${normalizedDisplay} ${normalizedName} ${normalizedShort}`;
-    return tokens.every(token => combinedStr.includes(token));
-  });
-  
+  const filtered = searchProducts(cleanKeyword, allProducts, { limit: 0 });
   renderList(filtered);
 }
 
-const debouncedPerformSearch = typeof debounce === "function"
-  ? debounce((kw) => {
-      performSearch(kw);
-      scrollToTop();
-    }, 150)
-  : (kw) => {
-      performSearch(kw);
-      scrollToTop();
-    };
+const debouncedPerformSearch = debounce((kw) => {
+  performSearch(kw);
+  scrollToTop();
+}, 150);
 
 // Sự kiện Tìm kiếm
 searchBox.addEventListener("input", (e) => {
@@ -110,14 +93,10 @@ if (btnToggleCostPrice) {
         StorageHelper.set("hidePrices", false);
       }
       btnToggleCostPrice.setAttribute("title", "Đang xem Giá Vốn (Click để quay lại Giá Bán)");
-      if (typeof showToast === "function") {
-        showToast("💎 Chế độ Quản trị: Đang hiển thị GIÁ VỐN");
-      }
+      showToast("💎 Chế độ Quản trị: Đang hiển thị GIÁ VỐN");
     } else {
       btnToggleCostPrice.setAttribute("title", "Xem Giá Vốn (Quản trị)");
-      if (typeof showToast === "function") {
-        showToast("✨ Đã quay lại GIÁ BÁN niêm yết");
-      }
+      showToast("✨ Đã quay lại GIÁ BÁN niêm yết");
     }
 
     if (typeof window.refreshPerfumeView === "function") {

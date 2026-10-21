@@ -45,10 +45,10 @@ function getProductDisplayNameHTML(prod) {
   const name = cleanString(prod.name);
   const shortName = cleanString(prod.tenrutgon);
   
-  const safeName = typeof escAttr === "function" ? escAttr(name) : name;
+  const safeName = escAttr(name);
   let displayName = safeName;
   if (shortName && shortName !== "-") {
-    const safeShort = typeof escAttr === "function" ? escAttr(shortName) : shortName;
+    const safeShort = escAttr(shortName);
     displayName += ` (${safeShort})`;
   }
   

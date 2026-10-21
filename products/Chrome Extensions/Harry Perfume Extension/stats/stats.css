@@ -1,0 +1,119 @@
+/* ==========================================================================
+   HARRY PERFUME EXTENSION - STATS (ANALYTICS) CONTAINER & SUBNAV STYLES
+   ========================================================================== */
+
+#paneStats {
+  height: 100%;
+  overflow: hidden;
+}
+
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: "Nunito", sans-serif;
+  overflow: hidden;
+}
+
+/* Thanh điều hướng 3 mục thống kê con chia đều 3 cột */
+.stats-subnav {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  gap: 6px;
+  box-sizing: border-box;
+}
+
+.stats-subnav-btn {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 4px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-family: "Nunito", sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  outline: none;
+  transition: all var(--transition, 0.2s) ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.stats-subnav-btn .stats-subnav-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  pointer-events: none;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.stats-subnav-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--gold-primary);
+  background-color: var(--bg-hover);
+}
+
+.stats-subnav-btn:hover .stats-subnav-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.stats-subnav-btn.active {
+  background-color: var(--c-yellow-bg);
+  color: var(--gold-primary);
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.stats-subnav-btn.active .stats-subnav-icon {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.stats-subnav-btn:active {
+  transform: scale(0.97);
+}
+
+/* Vùng hiển thị nội dung từng mục thống kê con (con bên trong tự quản lý scroll) */
+.stats-subpane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px 10px 10px 10px;
+  box-sizing: border-box;
+}
+
+.stats-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+  background-color: var(--bg-card);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  gap: 8px;
+}

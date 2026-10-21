@@ -108,7 +108,7 @@ Mọi thành phần giao diện bắt buộc phải dùng CSS Variables từ `th
 - Manifest V3 cấm hoàn toàn `eval()`, `new Function()`, `setTimeout("string")`. Mọi logic xử lý hình ảnh, canvas và tính toán toán học phải được viết bằng code thuần túy.
 
 ## 5.2 Không Phụ Thuộc Tài Nguyên Mạng Ngoài (Zero External CDN)
-- Font chữ (`Outfit`), icon SVG và thư viện đều phải tự lưu trữ cục bộ trong extension (`web_accessible_resources`). Không import bất kỳ link script/css/font nào từ internet bên ngoài.
+- Font chữ (System UI Font Stack có sẵn trên mọi OS), icon SVG và thư viện đều phải tự lưu trữ cục bộ trong extension (`web_accessible_resources`). Không import bất kỳ link script/css/font nào từ internet bên ngoài.
 
 ## 5.3 Cấm Đặt Tên File/Thư Mục Bắt Đầu Bằng Dấu Gạch Dưới `_`
 - **Quy tắc Chromium bắt buộc:** Chromium bảo lưu tiền tố `_` cho hệ thống (chỉ cho phép các thư mục đặc biệt như `_locales` và `_metadata`).

@@ -58,9 +58,52 @@ function initProductDownloadCounters() {
     }
 }
 
+function initCategoryPillsRainbow() {
+    const pills = Array.from(document.querySelectorAll('.product-category-pill'));
+    if (!pills.length) return;
+
+    const uniqueCategories = [];
+    pills.forEach(pill => {
+        const text = pill.innerText.trim();
+        if (text && !uniqueCategories.includes(text)) {
+            uniqueCategories.push(text);
+        }
+    });
+
+    const total = uniqueCategories.length;
+    const colorMap = {};
+
+    uniqueCategories.forEach((cat, index) => {
+        let hue = 5;
+        if (total > 1) {
+            hue = Math.round(5 + (index * (285 - 5)) / (total - 1));
+        }
+        let lightness = 48;
+        if (hue >= 40 && hue <= 85) {
+            lightness = 38;
+        } else if (hue > 85 && hue <= 165) {
+            lightness = 38;
+        } else if (hue > 165 && hue <= 200) {
+            lightness = 42;
+        }
+        const color = `hsl(${hue}, 82%, ${lightness}%)`;
+        const glow = `hsla(${hue}, 82%, ${lightness}%, 0.45)`;
+        colorMap[cat] = { color, glow };
+    });
+
+    pills.forEach(pill => {
+        const text = pill.innerText.trim();
+        if (colorMap[text] && !pill.style.getPropertyValue('--pill-color')) {
+            pill.style.setProperty('--pill-color', colorMap[text].color);
+            pill.style.setProperty('--pill-glow', colorMap[text].glow);
+        }
+    });
+}
+
 function initProducts() {
     initProductsTabs();
     initProductDownloadCounters();
+    initCategoryPillsRainbow();
 }
 
 if (document.readyState === 'loading') {

@@ -325,6 +325,8 @@ async function captureSinglePassFullPage(options) {
       func: (origScrollTop) => {
         const hud = document.getElementById('max-capture-progress-hud');
         if (hud) hud.style.setProperty('visibility', 'visible', 'important');
+        const floating = document.getElementById('max-floating-tools-host');
+        if (floating) floating.style.removeProperty('display');
         window.scrollTo(0, origScrollTop);
       }
     }).catch(() => {});
@@ -446,6 +448,8 @@ async function captureSinglePassFullPage(options) {
       target: { tabId: tabId },
       args: [pageInfo ? pageInfo.originalScrollTop || 0 : 0],
       func: (origScrollTop) => {
+        const floating = document.getElementById('max-floating-tools-host');
+        if (floating) floating.style.removeProperty('display');
         window.scrollTo(0, origScrollTop);
       }
     }).catch(() => {});

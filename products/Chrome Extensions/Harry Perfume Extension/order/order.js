@@ -107,21 +107,7 @@ let currentEditingItemId = null;
 let itemDiscountModalType = "percent"; // "percent" | "amount"
 let currentPickerItemId = null;
 
-// Hàm định dạng số tiền VNĐ
-function formatVND(num) {
-  if (isNaN(num) || num === null || num === undefined) return "0đ";
-  return Number(num).toLocaleString("vi-VN") + "đ";
-}
-
-// Hàm kiểm tra tính hợp lệ của số điện thoại
-function isValidPhoneNumber(phone) {
-  const p = String(phone || "").trim();
-  if (!p) return true; // Cho phép rỗng khi đang gõ
-  if (p.startsWith("+")) {
-    return /^\+\d{9,13}$/.test(p);
-  }
-  return /^0\d{9}$/.test(p);
-}
+// (formatVND, isValidPhoneNumber được nạp từ common/formatters.js - Single Source of Truth)
 
 // Khởi tạo tab Đơn Hàng
 async function initOrderModule() {
@@ -241,13 +227,8 @@ function setupOrderEventListeners() {
   const btnReset = document.getElementById("btnOrderReset");
   const btnCreateInvoice = document.getElementById("btnOrderCreateInvoice");
 
-  const debouncedOrderSearch = typeof debounce === "function"
-    ? debounce(handleOrderSearch, 150)
-    : handleOrderSearch;
-
-  const debouncedSaveDraft = typeof debounce === "function"
-    ? debounce(saveOrderDraft, 300)
-    : saveOrderDraft;
+  const debouncedOrderSearch = debounce(handleOrderSearch, 150);
+  const debouncedSaveDraft = debounce(saveOrderDraft, 300);
 
   // 1. Tìm kiếm sản phẩm từ kho allProducts (Có Debounce)
   if (searchInput) {
@@ -576,7 +557,7 @@ function setupOrderEventListeners() {
 
         saveOrderDraft();
         renderOrderCart();
-        if (typeof showToast === "function") showToast("✨ Đã làm mới đơn hàng!");
+        showToast("✨ Đã làm mới đơn hàng!");
       }
     });
   }
@@ -604,19 +585,7 @@ function handleOrderSearch(query) {
     return;
   }
 
-  const qNorm = typeof removeAccents === "function" ? removeAccents(query) : query.toLowerCase();
-  const matchedProducts = [];
-
-  for (let i = 0; i < allProducts.length; i++) {
-    const prod = allProducts[i];
-    const nameNorm = typeof removeAccents === "function" ? removeAccents(prod.name) : (prod.name || "").toLowerCase();
-    const shortNorm = typeof removeAccents === "function" ? removeAccents(prod.tenrutgon) : (prod.tenrutgon || "").toLowerCase();
-
-    if (nameNorm.includes(qNorm) || shortNorm.includes(qNorm)) {
-      matchedProducts.push(prod);
-      if (matchedProducts.length >= 20) break;
-    }
-  }
+  const matchedProducts = searchProducts(query, allProducts, { limit: 20 });
 
   if (matchedProducts.length === 0) {
     searchDropdown.innerHTML = `<div style="padding: 12px; text-align: center; color: var(--text-secondary); font-size: 12px;">Không tìm thấy sản phẩm khớp</div>`;
@@ -633,7 +602,7 @@ function handleOrderSearch(query) {
     const groupEl = document.createElement("div");
     groupEl.className = "order-search-result-group";
 
-    const imgUrl = (typeof cleanString === "function" ? cleanString(prod.img) : prod.img) || "";
+    const imgUrl = cleanString(prod.img) || "";
     const hasImg = imgUrl && imgUrl !== "-" && imgUrl.startsWith("http");
     const imgHTML = hasImg 
       ? `<img src="${imgUrl}" class="order-search-thumb" alt="${prod.name}">` 
@@ -771,10 +740,7 @@ function addProductToOrder({ name, unit, price, costPrice = 0, img = "", isManua
 
   saveOrderDraft();
   renderOrderCart();
-
-  if (typeof showToast === "function") {
-    showToast(`✨ Đã thêm "${name} (${unit})" vào đơn!`);
-  }
+  showToast(`✨ Đã thêm "${name} (${unit})" vào đơn!`);
 }
 
 // Render giỏ hàng & tính toán tổng
@@ -814,8 +780,8 @@ function renderOrderCart() {
       ? `<span class="order-price-original">(${formatVND(item.originalPrice)})</span>` 
       : "";
 
-    const safeName = typeof escAttr === "function" ? escAttr(item.name || "") : String(item.name || "").replace(/"/g, '&quot;');
-    const safeUnit = typeof escAttr === "function" ? escAttr(item.unit || (item.isManual ? "Full 30ml" : "Món")) : "";
+    const safeName = escAttr(item.name || "");
+    const safeUnit = escAttr(item.unit || (item.isManual ? "Full 30ml" : "Món"));
 
     const nameHTML = item.isManual
       ? `<input type="text" class="order-item-name-manual" data-id="${item.id}" value="${safeName}" placeholder="Nhập tên sản phẩm..." title="Click để sửa tên sản phẩm">`
@@ -996,7 +962,7 @@ function renderOrderTotals() {
 
           const tag = document.createElement("span");
           tag.className = "order-promo-tag";
-          tag.innerHTML = `🎁 ${typeof escAttr === "function" ? escAttr(p.name) : p.name} (${p.type === "percent" ? `-${p.value}%` : `-${formatVND(p.value)}`}) [${typeLabel}] <span class="order-promo-tag-del" title="Bỏ chọn">✕</span>`;
+          tag.innerHTML = `🎁 ${escAttr(p.name)} (${p.type === "percent" ? `-${p.value}%` : `-${formatVND(p.value)}`}) [${typeLabel}] <span class="order-promo-tag-del" title="Bỏ chọn">✕</span>`;
           tag.querySelector(".order-promo-tag-del").addEventListener("click", () => {
             orderAppliedPromoIds = orderAppliedPromoIds.filter((x) => x !== id);
             renderOrderTotals();
@@ -1049,13 +1015,13 @@ function setupUnitPickerModal() {
     const customPrice = rawPrice ? parseInt(rawPrice, 10) : 0;
 
     if (!customName) {
-      if (typeof showToast === "function") showToast("⚠️ Vui lòng nhập tên dung tích tùy chỉnh!");
+      showToast("⚠️ Vui lòng nhập tên dung tích tùy chỉnh!");
       if (inputCustomName) inputCustomName.focus();
       return;
     }
 
     if (customPrice <= 0) {
-      if (typeof showToast === "function") showToast("⚠️ Vui lòng nhập đơn giá hợp lệ!");
+      showToast("⚠️ Vui lòng nhập đơn giá hợp lệ!");
       if (inputCustomPrice) inputCustomPrice.focus();
       return;
     }
@@ -1078,10 +1044,7 @@ function setupUnitPickerModal() {
     saveOrderDraft();
     renderOrderCart();
     closeModal();
-
-    if (typeof showToast === "function") {
-      showToast(`✨ Đã đổi sang "${item.unit}" (${formatVND(item.finalPrice)})!`);
-    }
+    showToast(`✨ Đã đổi sang "${item.unit}" (${formatVND(item.finalPrice)})!`);
   };
 
   if (btnApplyCustom) {
@@ -1135,7 +1098,7 @@ function openUnitPickerModal(item) {
 
   // Tìm sản phẩm trong kho allProducts
   if (typeof allProducts === "undefined" || !Array.isArray(allProducts)) {
-    if (typeof showToast === "function") showToast("⚠️ Chưa có dữ liệu kho sản phẩm!");
+    showToast("⚠️ Chưa có dữ liệu kho sản phẩm!");
     return;
   }
 
@@ -1180,10 +1143,7 @@ function openUnitPickerModal(item) {
         saveOrderDraft();
         renderOrderCart();
         modal.style.display = "none";
-
-        if (typeof showToast === "function") {
-          showToast(`✨ Đã đổi sang "${v.unit}" (${formatVND(item.finalPrice)})!`);
-        }
+        showToast(`✨ Đã đổi sang "${v.unit}" (${formatVND(item.finalPrice)})!`);
       });
 
       listEl.appendChild(btn);
@@ -1379,7 +1339,7 @@ function setupManualItemModal() {
       const qty = isNaN(rawQty) || rawQty < 1 ? 1 : rawQty;
 
       if (!name) {
-        if (typeof showToast === "function") showToast("⚠️ Vui lòng nhập tên sản phẩm!");
+        showToast("⚠️ Vui lòng nhập tên sản phẩm!");
         return;
       }
 
@@ -1424,16 +1384,14 @@ function openManualItemModal() {
 // --------------------------------------------------------------------------
 async function handleCreateInvoice() {
   if (orderItems.length === 0) {
-    if (typeof showToast === "function") showToast("⚠️ Vui lòng thêm ít nhất 1 sản phẩm vào đơn hàng!");
+    showToast("⚠️ Vui lòng thêm ít nhất 1 sản phẩm vào đơn hàng!");
     return;
   }
 
   // Kiểm tra tính hợp lệ của số điện thoại nếu đã nhập
   const phone = (orderCustomer.phone || "").trim();
   if (phone && !isValidPhoneNumber(phone)) {
-    if (typeof showToast === "function") {
-      showToast("⚠️ Số điện thoại không đúng định dạng (cần đúng 10 số hoặc mã quốc tế +...)!");
-    }
+    showToast("⚠️ Số điện thoại không đúng định dạng (cần đúng 10 số hoặc mã quốc tế +...)!");
     const inputPhone = document.getElementById("orderCustomerPhone");
     if (inputPhone) {
       inputPhone.focus();
@@ -1443,11 +1401,11 @@ async function handleCreateInvoice() {
   }
 
   if (typeof OrderCanvasEngine === "undefined" || !OrderCanvasEngine.generateInvoiceImage) {
-    if (typeof showToast === "function") showToast("❌ Lỗi: Chưa tải được engine tạo ảnh!");
+    showToast("❌ Lỗi: Chưa tải được engine tạo ảnh!");
     return;
   }
 
-  if (typeof showToast === "function") showToast("⏳ Đang tạo ảnh xác nhận đơn hàng...");
+  showToast("⏳ Đang tạo ảnh xác nhận đơn hàng...");
 
   const totalsRes = calculateOrderTotals();
 
@@ -1484,20 +1442,16 @@ async function handleCreateInvoice() {
     }
 
     if (copySuccess) {
-      if (typeof showToast === "function") {
-        showToast("✨ Đã tạo & copy ảnh xác nhận đơn vào bộ nhớ tạm!");
-      }
+      showToast("✨ Đã tạo & copy ảnh xác nhận đơn vào bộ nhớ tạm!");
     } else {
-      if (typeof showToast === "function") {
-        showToast("✨ Đã tạo ảnh xác nhận đơn hàng!");
-      }
+      showToast("✨ Đã tạo ảnh xác nhận đơn hàng!");
     }
 
     // 2. Mở Modal Xem Trước Ảnh
     openInvoicePreviewModal(result);
 
   } catch (err) {
-    if (typeof showToast === "function") showToast("❌ Lỗi khi xuất ảnh: " + err.message);
+    showToast("❌ Lỗi khi xuất ảnh: " + err.message);
   }
 }
 
@@ -1524,9 +1478,9 @@ function setupInvoicePreviewModal() {
           await navigator.clipboard.write([
             new ClipboardItem({ "image/png": currentInvoiceResult.blob })
           ]);
-          if (typeof showToast === "function") showToast("✨ Đã copy lại ảnh xác nhận đơn!");
+          showToast("✨ Đã copy lại ảnh xác nhận đơn!");
         } catch (e) {
-          if (typeof showToast === "function") showToast("❌ Trình duyệt chặn copy ảnh, vui lòng tải ảnh về.");
+          showToast("❌ Trình duyệt chặn copy ảnh, vui lòng tải ảnh về.");
         }
       }
     });
@@ -1625,8 +1579,8 @@ function setupPromoModal() {
         ? `<span class="order-promo-count">(${promo.productNames.size} chai)</span>`
         : "";
 
-      const safeId = typeof escAttr === "function" ? escAttr(promo.id) : promo.id;
-      const safeName = typeof escAttr === "function" ? escAttr(promo.name) : promo.name;
+      const safeId = escAttr(promo.id);
+      const safeName = escAttr(promo.name);
 
       itemEl.innerHTML = `
         <input type="checkbox" value="${safeId}" ${isChecked ? "checked" : ""}>

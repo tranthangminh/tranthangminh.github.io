@@ -382,7 +382,7 @@
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+        font-family: var(--font-family, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif) !important;
         color: var(--text-primary, #f8fafc) !important;
         user-select: none !important;
         -webkit-user-select: none !important;

@@ -36,6 +36,12 @@
       (document.head || document.documentElement).appendChild(s);
     }
 
+    // Hide MAX floating tools from full page screenshot
+    const floatingHost = document.getElementById('max-floating-tools-host');
+    if (floatingHost) {
+      floatingHost.style.setProperty('display', 'none', 'important');
+    }
+
     const scrollHeight = Math.max(
       html.scrollHeight || 0,
       body.scrollHeight || 0,
@@ -87,6 +93,7 @@
     for (const el of allElements) {
       if (!el) continue;
       if (el.id === 'max-capture-progress-hud' || el.closest('#max-capture-progress-hud')) continue;
+      if (el.id === 'max-floating-tools-host' || el.closest('#max-floating-tools-host')) continue;
 
       const computed = window.getComputedStyle(el);
       const position = computed.position;
@@ -171,6 +178,13 @@
 
     document.documentElement.style.scrollBehavior = htmlScroll || '';
     document.body.style.overflow = overflow || '';
+
+    // Restore MAX floating tools
+    var floatingHost = document.getElementById('max-floating-tools-host');
+    if (floatingHost) {
+      floatingHost.style.removeProperty('display');
+    }
+
     window.scrollTo(0, top || 0);
   };
 })();

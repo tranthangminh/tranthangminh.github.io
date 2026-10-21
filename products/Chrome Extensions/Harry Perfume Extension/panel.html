@@ -15,6 +15,11 @@
   <link rel="stylesheet" href="news/news-add.css">
   <link rel="stylesheet" href="order/order.css">
   <link rel="stylesheet" href="import/import.css">
+  <link rel="stylesheet" href="stats/stats.css">
+  <link rel="stylesheet" href="stats/stats-finance.css">
+  <link rel="stylesheet" href="stats/stats-sender.css">
+  <link rel="stylesheet" href="stats/stats-product.css">
+  <link rel="stylesheet" href="mini-tools/mini-tools.css">
 </head>
 <body>
   <!-- Toast thông báo -->
@@ -35,12 +40,13 @@
           <span id="progressLine2" class="progress-line2"></span>
         </div>
         <button id="btnRefresh" class="btn-refresh-icon" title="Làm mới dữ liệu" type="button">
-          <svg class="refresh-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path class="st0" d="M1,12C1,5.92,5.92,1,12,1c3.08.01,6.03,1.21,8.24,3.35l2.76,2.76"/>
-            <path class="st0" d="M23,1v6.11h-6.11"/>
-            <path class="st0" d="M23,12c0,6.08-4.92,11-11,11h0c-3.08-.01-6.03-1.21-8.24-3.35l-2.76-2.76"/>
-            <path class="st0" d="M1,23v-6.11h6.11"/>
-          </svg>
+          <span class="icon-mask refresh-svg" style="mask-image: url('svg/refresh.svg'); -webkit-mask-image: url('svg/refresh.svg');"></span>
+        </button>
+        <button id="btnThemeToggle" class="btn-theme-toggle" title="Chuyển sang giao diện Sáng (Light Mode)" type="button">
+          <!-- Biểu tượng Mặt trời cho Light Mode -->
+          <span class="icon-mask theme-svg theme-icon-sun" style="mask-image: url('svg/light-mode.svg'); -webkit-mask-image: url('svg/light-mode.svg');"></span>
+          <!-- Biểu tượng Mặt trăng cho Dark Mode -->
+          <span class="icon-mask theme-svg theme-icon-moon" style="mask-image: url('svg/dark-mode.svg'); -webkit-mask-image: url('svg/dark-mode.svg'); display: none;"></span>
         </button>
       </div>
     </div>
@@ -53,6 +59,8 @@
       </div>
       <div id="tabRowSub" class="tab-row-group tab-row-sub" style="display: none;">
         <button id="tabImport" class="tab-btn" type="button" style="display: none;">Nhập</button>
+        <button id="tabStats" class="tab-btn" type="button" style="display: none;">Thống Kê</button>
+        <button id="tabMiniTools" class="tab-btn" type="button" style="display: none;">Mini Tools</button>
       </div>
     </div>
   </div>
@@ -60,23 +68,83 @@
   <!-- Nội dung Tab 0: Nhập -->
   <div id="paneImport" class="tab-pane" style="display: none;">
     <div class="import-container">
-      <!-- Toolbar tìm kiếm & Nút Sửa -->
+      <!-- Toolbar tìm kiếm & Thêm mới -->
       <div class="import-toolbar">
         <div class="import-search-wrapper">
           <input type="text" id="importSearchBox" class="import-search-input" placeholder="Tìm nhập hàng (tên, ngày, người nhập, gửi)...">
           <button type="button" id="importSearchClear" class="import-search-clear" title="Xóa">&times;</button>
         </div>
-        <button type="button" id="btnImportEdit" class="btn-import-edit" title="Chế độ chỉnh sửa nhanh">
-          <span class="import-edit-icon">✏️</span>
-          <span class="import-edit-label" style="display: none;">Xong</span>
+        <button type="button" id="btnImportFilterToggle" class="btn-import-filter-toggle" title="Bộ lọc đơn nhập">
+          <span class="icon-mask filter-svg" style="mask-image: url('svg/filter.svg'); -webkit-mask-image: url('svg/filter.svg');"></span>
+          <span id="importFilterDot" class="import-filter-dot" style="display: none;"></span>
         </button>
-        <button type="button" id="btnImportCancelEdit" class="btn-import-cancel" title="Hủy bỏ chỉnh sửa" style="display: none;">✕</button>
+        <button type="button" id="btnOpenAddImportModal" class="btn-import-add" title="Thêm kiện hàng nhập mới">+ Thêm đơn</button>
+
+        <!-- Menu Dropdown Bộ Lọc Nhập Hàng -->
+        <div id="importFilterDropdown" class="import-filter-dropdown" style="display: none;">
+          <div class="import-filter-item active" data-filter="all">
+            <span class="filter-name">📋 Tất cả đơn</span>
+            <span class="filter-count" id="filterCountAll">0</span>
+          </div>
+          <div class="import-filter-divider"></div>
+          <div class="import-filter-header">Soát lỗi dữ liệu</div>
+          <div class="import-filter-item" data-filter="unpaid">
+            <span class="filter-name">⚠️ Chưa thanh toán</span>
+            <span class="filter-count" id="filterCountUnpaid">0</span>
+          </div>
+          <div class="import-filter-item" data-filter="missing_sender">
+            <span class="filter-name">👤 Thiếu người gửi</span>
+            <span class="filter-count" id="filterCountMissingSender">0</span>
+          </div>
+          <div class="import-filter-item" data-filter="missing_price">
+            <span class="filter-name">🏷️ Có tên thiếu giá</span>
+            <span class="filter-count" id="filterCountMissingPrice">0</span>
+          </div>
+          <div class="import-filter-item" data-filter="missing_fund">
+            <span class="filter-name">💳 Đã TT thiếu nguồn</span>
+            <span class="filter-count" id="filterCountMissingFund">0</span>
+          </div>
+          <div class="import-filter-item" data-filter="missing_qty">
+            <span class="filter-name">🔢 Thiếu số lượng (SL ≤ 0)</span>
+            <span class="filter-count" id="filterCountMissingQty">0</span>
+          </div>
+          <div class="import-filter-divider"></div>
+          <div class="import-filter-header">Trạng thái kiện hàng</div>
+          <div class="import-filter-item" data-filter="status_danhan">
+            <span class="filter-name">✅ Đã Nhận</span>
+            <span class="filter-count" id="filterCountDaNhan">0</span>
+          </div>
+          <div class="import-filter-item" data-filter="status_order">
+            <span class="filter-name">⏳ Order</span>
+            <span class="filter-count" id="filterCountOrder">0</span>
+          </div>
+          <div class="import-filter-item" data-filter="status_hoanhang">
+            <span class="filter-name">↩️ Hoàn Hàng</span>
+            <span class="filter-count" id="filterCountHoanHang">0</span>
+          </div>
+          <div class="import-filter-item" data-filter="status_hoigia">
+            <span class="filter-name">❓ Hỏi Giá</span>
+            <span class="filter-count" id="filterCountHoiGia">0</span>
+          </div>
+          <div class="import-filter-item" data-filter="status_chuaro">
+            <span class="filter-name">⚪ Chưa Rõ Trạng Thái</span>
+            <span class="filter-count" id="filterCountChuaRo">0</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Thống kê nhanh số mục và tổng tiền -->
+      <!-- Thống kê nhanh số mục & Nút mở Google Sheet -->
       <div class="import-summary-bar">
-        <span id="importSummaryCount">0 mục</span>
-        <span id="importSummaryTotal" class="import-summary-total">Tổng: 0đ</span>
+        <div class="import-summary-left">
+          <button type="button" id="btnOpenImportSheet" class="btn-open-import-sheet" title="Mở file Nhập (Google Sheet)">
+            <span>file Nhập</span>
+          </button>
+          <div id="importActiveFilterBadge" class="import-active-filter-badge" style="display: none;">
+            <span id="importActiveFilterText">⚠️ Chưa TT</span>
+            <button type="button" id="btnClearImportFilterBadge" class="btn-clear-import-filter-badge" title="Bỏ lọc">&times;</button>
+          </div>
+        </div>
+        <span id="importSummaryCount"><span class="import-count-current">0</span> / <span class="import-count-total">0</span> đơn</span>
       </div>
 
       <!-- Thanh trạng thái tải dữ liệu Nhập -->
@@ -87,6 +155,90 @@
 
       <!-- Danh sách thẻ cuộn -->
       <div id="importListContainer" class="import-list"></div>
+    </div>
+  </div>
+
+  <!-- Nội dung Tab Quản Trị: Thống Kê (Analytics) -->
+  <div id="paneStats" class="tab-pane" style="display: none;">
+    <div class="stats-container">
+      <!-- Menu con chọn phân hệ thống kê chia đều 3 cột (Icon Only) -->
+      <div class="stats-subnav">
+        <button type="button" class="stats-subnav-btn active" data-subtab="finance" title="Tổng Thành Tiền">
+          <img class="stats-subnav-icon" src="svg/tab-money.svg" alt="Tổng Thành Tiền" width="18" height="18">
+        </button>
+        <button type="button" class="stats-subnav-btn" data-subtab="sender" title="Người Gửi">
+          <img class="stats-subnav-icon" src="svg/tab-seller.svg" alt="Người Gửi" width="18" height="18">
+        </button>
+        <button type="button" class="stats-subnav-btn" data-subtab="product" title="Chai Trùng Tên">
+          <img class="stats-subnav-icon" src="svg/tab-perfume.svg" alt="Chai Trùng Tên" width="18" height="18">
+        </button>
+      </div>
+
+      <!-- 1. Phân hệ Thống kê Thành tiền theo Tháng/Năm -->
+      <div id="statsFinancePane" class="stats-subpane"></div>
+
+      <!-- 2. Phân hệ Thống kê theo Người gửi (Mở rộng Phase 2) -->
+      <div id="statsSenderPane" class="stats-subpane" style="display: none;"></div>
+
+      <!-- 3. Phân hệ Thống kê Lịch sử Giá chai trùng tên (Mở rộng Phase 3) -->
+      <div id="statsProductPane" class="stats-subpane" style="display: none;"></div>
+    </div>
+  </div>
+
+  <!-- Nội dung Tab Quản Trị: Mini Tools -->
+  <div id="paneMiniTools" class="tab-pane" style="display: none;">
+    <div class="mini-tools-container">
+      <!-- Nhóm 1: Tools -->
+      <div class="mini-tools-section">
+        <h3 class="mini-tools-section-title">Tools</h3>
+        <div class="mini-tools-grid">
+          <!-- Thẻ 1: Kiểm Tra Giá Vốn -->
+          <div class="mini-tool-card" id="cardToolCostChecker" role="button" tabindex="0" title="Mở cửa sổ Kiểm tra giá Vốn">
+            <div class="tool-card-icon">🏷️</div>
+            <div class="tool-card-info">
+              <h4 class="tool-card-title">Kiểm tra giá Vốn</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nhóm 2: Google Sheet -->
+      <div class="mini-tools-section">
+        <h3 class="mini-tools-section-title">Google Sheet</h3>
+        <div class="mini-tools-grid">
+          <!-- Thẻ 2: Chi Phí Vốn -->
+          <div class="mini-tool-card" data-url="https://docs.google.com/spreadsheets/d/1_30jh-aRa4V52dCjePiy85BWgJZguFjTyq3000swn3Q/edit?gid=777071924#gid=777071924" role="button" tabindex="0" title="Mở trang tính Chi Phí Vốn">
+            <div class="tool-card-icon">📗</div>
+            <div class="tool-card-info">
+              <h4 class="tool-card-title">Chi Phí Vốn</h4>
+            </div>
+          </div>
+
+          <!-- Thẻ 3: Tổng Kết Tháng -->
+          <div class="mini-tool-card" data-url="https://docs.google.com/spreadsheets/d/1CeADlE0B_40zVYUFX3z9xAFpvsFX1Mbj9Dxbvy8VP5U/edit?gid=812940301#gid=812940301" role="button" tabindex="0" title="Mở trang tính Tổng Kết Tháng">
+            <div class="tool-card-icon">📗</div>
+            <div class="tool-card-info">
+              <h4 class="tool-card-title">Tổng Kết Tháng</h4>
+            </div>
+          </div>
+
+          <!-- Thẻ 4: File Nhập -->
+          <div class="mini-tool-card" data-url="https://docs.google.com/spreadsheets/d/1jrlUYUTx2qlVw1URIbRCMLpxo6zA_HNXE7PeY86O3qA/edit" role="button" tabindex="0" title="Mở trang tính File Nhập">
+            <div class="tool-card-icon">📗</div>
+            <div class="tool-card-info">
+              <h4 class="tool-card-title">File Nhập</h4>
+            </div>
+          </div>
+
+          <!-- Thẻ 5: Gửi Khách Zalo -->
+          <div class="mini-tool-card" data-url="https://docs.google.com/spreadsheets/d/1K8kMtmAG0ZwNC9mr-tPQ3VkcAU7RzRWbBWlGu0y9Dzw/edit?gid=1199644754#gid=1199644754" role="button" tabindex="0" title="Mở trang tính Gửi Khách Zalo">
+            <div class="tool-card-icon">📗</div>
+            <div class="tool-card-info">
+              <h4 class="tool-card-title">Gửi Khách Zalo</h4>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -102,20 +254,10 @@
         <button id="btnClear" class="btn-clear" title="Xóa tìm kiếm" type="button">&times;</button>
       </div>
       <button id="btnFilterToggle" class="btn-filter-toggle" title="Bộ lọc giá" type="button">
-        <svg class="filter-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <line class="st0" x1="5" y1="1" x2="5" y2="23"/>
-          <polyline class="st0" points="9 15 5 23 1 15"/>
-          <line class="st0" x1="13" y1="1" x2="23" y2="1"/>
-          <line class="st0" x1="13" y1="6.5" x2="21" y2="6.5"/>
-          <line class="st0" x1="13" y1="12" x2="18" y2="12"/>
-          <line class="st0" x1="13" y1="23" x2="15" y2="23"/>
-          <line class="st0" x1="13" y1="17.5" x2="16" y2="17.5"/>
-        </svg>
+        <span class="icon-mask filter-svg" style="mask-image: url('svg/filter.svg'); -webkit-mask-image: url('svg/filter.svg');"></span>
       </button>
       <button id="btnTogglePrice" class="btn-toggle-price" title="Ẩn/Hiện giá" type="button">
-        <svg class="money-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21.56 24">
-          <path class="st0" d="M13.22,10.17c0,1.69-2.74,3.06-6.11,3.06s-6.11-1.37-6.11-3.06M13.22,10.17c0-1.69-2.74-3.06-6.11-3.06s-6.11,1.37-6.11,3.06M13.22,10.17v4.89M1,10.17v4.89M20.56,4.06c0-1.69-2.74-3.06-6.11-3.06-2.42,0-4.51.7-5.5,1.72M20.56,4.06c0,1.13-1.23,2.12-3.06,2.65M20.56,4.06v10.39c0,.9-1.23,1.69-3.06,2.12M20.56,9.56c0,.92-1.28,1.73-3.18,2.15M13.22,15.06c0,1.69-2.74,3.06-6.11,3.06s-6.11-1.37-6.11-3.06M13.22,15.06v4.89c0,1.69-2.74,3.06-6.11,3.06s-6.11-1.37-6.11-3.06v-4.89"/>
-        </svg>
+        <span class="icon-mask money-svg" style="mask-image: url('svg/money.svg'); -webkit-mask-image: url('svg/money.svg');"></span>
       </button>
       <button id="btnToggleCostPrice" class="btn-toggle-cost-price" title="Xem giá vốn (Quản trị)" type="button" style="display: none;">
         <span class="icon-mask cost-price-icon" style="mask-image: url('svg/cost-price.svg'); -webkit-mask-image: url('svg/cost-price.svg');"></span>
@@ -140,13 +282,13 @@
         </div>
         <div class="filter-genders-row">
           <button type="button" class="filter-gender-btn" data-gender="Nam">
-            <img src="svg/male.svg" class="filter-btn-icon" alt="Nam"> Nam
+            <span class="icon-mask filter-btn-icon" style="mask-image: url('svg/male.svg'); -webkit-mask-image: url('svg/male.svg');"></span> Nam
           </button>
           <button type="button" class="filter-gender-btn" data-gender="Nữ">
-            <img src="svg/female.svg" class="filter-btn-icon" alt="Nữ"> Nữ
+            <span class="icon-mask filter-btn-icon" style="mask-image: url('svg/female.svg'); -webkit-mask-image: url('svg/female.svg');"></span> Nữ
           </button>
           <button type="button" class="filter-gender-btn" data-gender="Unisex">
-            <img src="svg/unisex.svg" class="filter-btn-icon" alt="Unisex"> Unisex
+            <span class="icon-mask filter-btn-icon" style="mask-image: url('svg/unisex.svg'); -webkit-mask-image: url('svg/unisex.svg');"></span> Unisex
           </button>
         </div>
         <div class="filter-tags-row">
@@ -169,7 +311,7 @@
 
     <!-- Dòng hiển thị số lượng sản phẩm -->
     <div id="searchCountBar" class="search-count-bar" style="display: none;">
-      <span class="count-text">Hiển thị <span id="countCurrent">0</span> / <span id="countTotal">0</span> sản phẩm</span>
+      <span class="count-text"><span id="countCurrent">0</span> / <span id="countTotal">0</span> sản phẩm</span>
     </div>
 
     <div class="perfume-scroll-wrapper">
@@ -285,7 +427,7 @@
     <!-- Dải lịch sử xem gần đây -->
     <div id="recentBar" class="recent-bar" style="display: none;">
       <div class="recent-bar-label">
-        <img src="svg/recent.svg" class="recent-svg-icon" alt="Xem gần đây">
+        <span class="icon-mask recent-svg-icon" style="mask-image: url('svg/recent.svg'); -webkit-mask-image: url('svg/recent.svg');"></span>
         <span>Xem<br>gần đây</span>
       </div>
       <div id="recentList" class="recent-list"></div>
@@ -653,7 +795,90 @@
     </div>
   </div>
 
+  <!-- Modal Thêm Kiện Hàng Nhập Mới -->
+  <div id="modalAddImport" class="modal-overlay" style="display: none;">
+    <div class="modal-content modal-add-import-content">
+      <div class="modal-header">
+        <h4>📦 Thêm Kiện Hàng Nhập Mới</h4>
+        <button type="button" id="btnCloseAddImportModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body modal-add-import-body">
+        <!-- Thẻ kiện hàng nhập mới (Chuẩn giao diện .import-card) -->
+        <div id="addImportCard" class="import-card card-editable add-import-card theme-status-done theme-pay-paid">
+          <!-- Hàng 1: Tiêu đề 3 cột x 2 hàng (DÙNG CHUNG) -->
+          <div id="addImportCardHeader" class="import-card-row-top">
+            <!-- Cột 1: Ngày và Người gửi -->
+            <div class="import-top-col import-top-col-1">
+              <div class="import-top-cell">
+                <span>📅</span>
+                <select id="addImportNgay" class="import-top-val" data-field="ngay" title="Ngày nhập (DD/MM/YYYY)"></select>
+              </div>
+              <div class="import-top-cell">
+                <span>👤</span>
+                <span id="addImportNguoiGui" class="import-top-val is-placeholder" data-field="nguoi_gui" contenteditable="true" title="Người gửi / nơi bán">+ Người gửi</span>
+              </div>
+            </div>
+
+            <!-- Cột 2: Trạng thái và Đã thanh toán -->
+            <div class="import-top-col import-top-col-2">
+              <div class="import-top-cell">
+                <select id="addImportTinhTrang" class="import-badge badge-status-done" data-field="tinh_trang" title="Trạng thái kiện hàng"></select>
+              </div>
+              <div class="import-top-cell">
+                <select id="addImportDaThanhToan" class="import-badge badge-paid-yes" data-field="da_thanh_toan" title="Tình trạng thanh toán"></select>
+              </div>
+            </div>
+
+            <!-- Cột 3: Người nhập và Nguồn tiền -->
+            <div class="import-top-col import-top-col-3">
+              <div class="import-top-cell">
+                <select id="addImportNguoiNhap" class="import-badge badge-importer is-placeholder" data-field="nguoi_nhap" title="Người nhập"></select>
+              </div>
+              <div class="import-top-cell">
+                <select id="addImportNguonTien" class="import-badge badge-fund is-placeholder" data-field="nguon_tien" title="Nguồn tiền / Quỹ"></select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vùng sản phẩm: Danh sách món và nút thêm bên dưới món cuối cùng -->
+          <div class="add-import-products-wrap">
+            <div id="addImportProductsList" class="import-products-list add-import-products-list">
+              <!-- Các dòng sản phẩm sẽ được render động bằng JS -->
+            </div>
+
+            <!-- Nút thêm sản phẩm nằm ngay bên dưới sản phẩm cuối cùng -->
+            <div class="add-import-action-row">
+              <button type="button" id="btnAddImportProductRow" class="btn-add-product-row" title="Thêm một sản phẩm mới vào kiện hàng này">
+                <span>+ Thêm sản phẩm</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Footer thẻ: Ghi chú chung & Tóm tắt tổng kiện -->
+          <div class="import-card-footer add-import-card-footer">
+            <div id="addImportGhiChu" class="import-card-note is-placeholder" data-field="ghi_chu" contenteditable="true" title="Ghi chú">+ Thêm ghi chú...</div>
+            <div class="import-card-group-summary add-import-summary">
+              <span>Đơn hàng: <strong id="addImportItemsCount">1 món</strong></span>
+              <span class="import-group-total">💵 <strong id="addImportTotalAmount">0</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCancelAddImportModal" class="btn-secondary">Hủy</button>
+        <button type="button" id="btnSubmitAddImport" class="btn-primary">Lưu lên Google Sheet</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="common/formatters.js"></script>
   <script src="storage-helper.js"></script>
+  <script src="common/date-helper.js"></script>
+  <script src="common/toast.js"></script>
+  <script src="common/modal-controller.js"></script>
+  <script src="common/auth-helper.js"></script>
+  <script src="common/mini-window.js"></script>
+  <script src="common/product-search.js"></script>
   <script src="panel.js"></script>
   <script src="perfume/perfume-template.js"></script>
   <script src="perfume/perfume.js"></script>
@@ -667,5 +892,10 @@
   <script src="order/order-canvas.js"></script>
   <script src="order/order.js"></script>
   <script src="import/import.js"></script>
+  <script src="stats/stats-finance.js"></script>
+  <script src="stats/stats-sender.js"></script>
+  <script src="stats/stats-product.js"></script>
+  <script src="stats/stats.js"></script>
+  <script src="mini-tools/mini-tools.js"></script>
 </body>
 </html>

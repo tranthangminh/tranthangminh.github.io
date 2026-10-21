@@ -105,6 +105,12 @@
             },
             depthOfField: {
                 title: 'Depth of Field Simulator'
+            },
+            anhSangCuoiCung: {
+                title: 'Ánh Sáng Cuối Cùng'
+            },
+            flyCarVf3: {
+                title: 'Fly car - VF3 - vành die bar'
             }
         }
     };
@@ -209,6 +215,12 @@
             },
             depthOfField: {
                 title: 'Depth of Field Simulator'
+            },
+            anhSangCuoiCung: {
+                title: 'Ánh Sáng Cuối Cùng'
+            },
+            flyCarVf3: {
+                title: 'Fly car - VF3 - vành die bar'
             }
         }
     };

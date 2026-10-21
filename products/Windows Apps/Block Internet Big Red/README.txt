@@ -20,6 +20,9 @@ STEP 2: ACTIVATE (PATCH)
 
 -----------------------------------------------------
 * ADDITIONAL NOTES:
+- "Subscription suspended" badge: If your app shows this red
+  button, simply click your Avatar icon (top right) -> Sign Out.
+  The app will run completely clean in offline mode.
 - Update GenP: You can open the shortcut
   "GenP Releases - TheMythologist" to check and download
   the latest GenP version whenever Adobe releases new updates.
@@ -44,6 +47,9 @@ BƯỚC 2: KÍCH HOẠT BẢN QUYỀN (PATCH)
 
 -----------------------------------------------------
 * LƯU Ý THÊM:
+- Hiện nút "Subscription suspended": Nếu ứng dụng hiện nút
+  đỏ này, bạn chỉ cần bấm vào Avatar ở góc trên cùng bên phải
+  -> chọn Sign Out (Đăng xuất) là nút đỏ sẽ biến mất ngay.
 - Cập nhật GenP mới: Bạn có thể mở shortcut
   "GenP Releases - TheMythologist" để kiểm tra và tải
   các phiên bản GenP mới nhất khi có bản cập nhật.

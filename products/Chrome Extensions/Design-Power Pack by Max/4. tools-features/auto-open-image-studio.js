@@ -338,27 +338,6 @@
     document.body.classList.add('max-standalone-image-page');
     document.documentElement.classList.add('max-standalone-image-page');
 
-    // Ensure Outfit font-face stylesheet exists dynamically with valid extension URL
-    if (!document.getElementById('max-font-face-style')) {
-      try {
-        const fontStyle = document.createElement('style');
-        fontStyle.id = 'max-font-face-style';
-        const fontUrl = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL)
-          ? chrome.runtime.getURL('Outfit/Outfit-VariableFont_wght.ttf')
-          : 'Outfit/Outfit-VariableFont_wght.ttf';
-        fontStyle.textContent = `
-          @font-face {
-            font-family: 'Outfit';
-            src: url('${fontUrl}') format('truetype');
-            font-weight: 100 900;
-            font-style: normal;
-            font-display: swap;
-          }
-        `;
-        (document.head || document.documentElement).appendChild(fontStyle);
-      } catch (e) {}
-    }
-
     initThemeSync();
 
     // 1. Inject Modal DOM Container into body

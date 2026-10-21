@@ -166,17 +166,11 @@ function formatInputWithSuffix(inputEl) {
 }
 
 // Ràng buộc con trỏ và định dạng cho ô nhập khoảng giá
-const debouncedPriceFilterSearch = typeof debounce === "function"
-  ? debounce(() => {
-      if (typeof performSearch === "function") {
-        performSearch(searchBox.value);
-      }
-    }, 200)
-  : () => {
-      if (typeof performSearch === "function") {
-        performSearch(searchBox.value);
-      }
-    };
+const debouncedPriceFilterSearch = debounce(() => {
+  if (typeof performSearch === "function") {
+    performSearch(searchBox.value);
+  }
+}, 200);
 
 function setupPriceInputFormatting(inputEl) {
   if (!inputEl) return;

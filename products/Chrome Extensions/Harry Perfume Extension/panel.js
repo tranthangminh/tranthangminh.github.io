@@ -1,3 +1,14 @@
+// Khôi phục theme ngay lập tức từ localStorage để tránh chớp giật giao diện (0ms latency)
+try {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme) {
+    const t = JSON.parse(savedTheme);
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  }
+} catch (e) {}
+
 // DÁN LINK URL WEB APP BẠN NHẬN ĐƯỢC Ở BƯỚC 1 VÀO ĐÂY
 const API_URL = "https://script.google.com/macros/s/AKfycbz5_hZe3O6FrrF21tPhZX0oB9Hm9oelGcwUHXGcDfnraNQTjnr-cYEqnZMwe-4VnLJC/exec";
 
@@ -8,6 +19,7 @@ let currentProduct = null;
 const searchBox = document.getElementById("searchBox");
 const btnClear = document.getElementById("btnClear");
 const btnRefresh = document.getElementById("btnRefresh");
+const btnThemeToggle = document.getElementById("btnThemeToggle");
 const btnRetry = document.getElementById("btnRetry");
 const btnBack = document.getElementById("btnBack");
 
@@ -17,26 +29,7 @@ const errorText = document.getElementById("errorText");
 const searchResult = document.getElementById("searchResult");
 const detailView = document.getElementById("detailView");
 
-const toast = document.getElementById("toast");
-const toastMsg = document.getElementById("toastMsg");
-
-// Hàm chuẩn hóa chuỗi an toàn chống lỗi kiểu dữ liệu
-function cleanString(val) {
-  if (val === undefined || val === null) return "";
-  return String(val).trim();
-}
-
-// Hàm chuẩn hóa tiếng Việt không dấu (diacritics-insensitive)
-function removeAccents(str) {
-  const cleaned = cleanString(str);
-  if (!cleaned) return "";
-  return cleaned
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "d")
-    .toLowerCase();
-}
+// (Các hàm cleanString, removeAccents, escHtml, formatters, toast được nạp từ common/ - Single Source of Truth)
 
 // Hàm tính tổng số lượng tồn kho (Fullbox 1->5 & Gốc 1->5)
 function getProductTotalStock(prod) {
@@ -442,30 +435,7 @@ async function copyImage(imgUrl) {
   }
 }
 
-// Hàm hiển thị Toast thông báo (Hỗ trợ tự động ẩn hoặc duy trì tiến trình)
-function showToast(message, autoHide = true, duration = 2000) {
-  if (toastTimer) {
-    clearTimeout(toastTimer);
-    toastTimer = null;
-  }
-  toastMsg.innerText = message;
-  toast.classList.add("show");
-  
-  if (autoHide) {
-    toastTimer = setTimeout(() => {
-      toast.classList.remove("show");
-      toastTimer = null;
-    }, duration);
-  }
-}
-
-function hideToast() {
-  if (toastTimer) {
-    clearTimeout(toastTimer);
-    toastTimer = null;
-  }
-  toast.classList.remove("show");
-}
+// (showToast và hideToast được nạp từ common/toast.js - Single Source of Truth)
 
 // Secret Admin & Modal Đăng nhập / Đăng xuất
 const btnSecretAdmin = document.getElementById("btnSecretAdmin");
@@ -482,12 +452,16 @@ const btnCancelLogout = document.getElementById("btnCancelLogout");
 const btnConfirmLogout = document.getElementById("btnConfirmLogout");
 
 const tabImport = document.getElementById("tabImport");
+const tabStats = document.getElementById("tabStats");
+const tabMiniTools = document.getElementById("tabMiniTools");
 const tabPerfume = document.getElementById("tabPerfume");
 const tabNews = document.getElementById("tabNews");
 const tabOrder = document.getElementById("tabOrder");
 const tabRowSub = document.getElementById("tabRowSub");
 
 const paneImport = document.getElementById("paneImport");
+const paneStats = document.getElementById("paneStats");
+const paneMiniTools = document.getElementById("paneMiniTools");
 const panePerfume = document.getElementById("panePerfume");
 const paneNews = document.getElementById("paneNews");
 const paneOrder = document.getElementById("paneOrder");
@@ -495,15 +469,19 @@ const paneOrder = document.getElementById("paneOrder");
 // Kiểm tra trạng thái Đăng nhập Admin
 async function checkAdminLoginStatus() {
   try {
-    const isLoggedIn = await StorageHelper.get("isAdminLoggedIn", false);
+    const isLoggedIn = await checkIsAdminLoggedIn();
     const btnToggleCostPrice = document.getElementById("btnToggleCostPrice");
     if (isLoggedIn) {
       if (tabRowSub) tabRowSub.style.display = "flex";
       if (tabImport) tabImport.style.display = "block";
+      if (tabStats) tabStats.style.display = "block";
+      if (tabMiniTools) tabMiniTools.style.display = "block";
       if (btnToggleCostPrice) btnToggleCostPrice.style.display = "flex";
     } else {
       if (tabRowSub) tabRowSub.style.display = "none";
       if (tabImport) tabImport.style.display = "none";
+      if (tabStats) tabStats.style.display = "none";
+      if (tabMiniTools) tabMiniTools.style.display = "none";
       if (btnToggleCostPrice) btnToggleCostPrice.style.display = "none";
     }
   } catch (e) {
@@ -515,14 +493,14 @@ async function checkAdminLoginStatus() {
 if (btnSecretAdmin) {
   btnSecretAdmin.addEventListener("click", async (e) => {
     if (e) e.preventDefault();
-    const isLoggedIn = await StorageHelper.get("isAdminLoggedIn", false);
+    const isLoggedIn = await checkIsAdminLoggedIn();
     if (isLoggedIn) {
-      if (logoutModal) logoutModal.style.display = "flex";
+      openModal(logoutModal);
     } else if (loginModal) {
       if (loginUsername) loginUsername.value = "";
       if (loginPassword) loginPassword.value = "";
       if (loginErrorMsg) loginErrorMsg.style.display = "none";
-      loginModal.style.display = "flex";
+      openModal(loginModal);
       if (loginUsername) loginUsername.focus();
     }
   });
@@ -531,7 +509,7 @@ if (btnSecretAdmin) {
 // Đóng modal đăng nhập
 if (btnCloseLoginModal && loginModal) {
   btnCloseLoginModal.addEventListener("click", () => {
-    loginModal.style.display = "none";
+    closeModal(loginModal);
   });
 }
 
@@ -542,9 +520,14 @@ if (loginForm) {
     const user = loginUsername ? loginUsername.value.trim() : "";
     const pass = loginPassword ? loginPassword.value.trim() : "";
 
-    if (user === "harryparfym" && pass === "Skilllioned88@") {
-      await StorageHelper.set("isAdminLoggedIn", true);
-      if (loginModal) loginModal.style.display = "none";
+    const cleanUser = user.toLowerCase();
+    const unaccentedUser = removeAccents(cleanUser);
+    const validUsers = ["dương", "duong", "quân", "quan", "minh"];
+    const isValidUser = validUsers.includes(cleanUser) || validUsers.includes(unaccentedUser);
+
+    if (isValidUser && pass === "Skilllioned88@") {
+      await setAdminLoginSession(user);
+      closeModal(loginModal);
       const btnToggleCostPrice = document.getElementById("btnToggleCostPrice");
       if (btnToggleCostPrice) btnToggleCostPrice.style.display = "flex";
       if (tabRowSub) tabRowSub.style.display = "flex";
@@ -552,10 +535,16 @@ if (loginForm) {
         tabImport.style.display = "block";
         tabImport.click();
       }
+      if (tabStats) {
+        tabStats.style.display = "block";
+      }
+      if (tabMiniTools) {
+        tabMiniTools.style.display = "block";
+      }
       if (typeof window.fetchImportData === "function") {
         window.fetchImportData(false);
       }
-      showToast("✨ Đăng nhập Quản trị thành công!");
+      showToast(`✨ Chào mừng ${user} đăng nhập Quản trị!`);
     } else {
       if (loginErrorMsg) loginErrorMsg.style.display = "block";
     }
@@ -566,12 +555,12 @@ if (loginForm) {
 if (logoutModal) {
   if (btnCloseLogoutModal) {
     btnCloseLogoutModal.addEventListener("click", () => {
-      logoutModal.style.display = "none";
+      closeModal(logoutModal);
     });
   }
   if (btnCancelLogout) {
     btnCancelLogout.addEventListener("click", () => {
-      logoutModal.style.display = "none";
+      closeModal(logoutModal);
     });
   }
 }
@@ -579,10 +568,12 @@ if (logoutModal) {
 // Xác nhận Đăng xuất
 if (btnConfirmLogout) {
   btnConfirmLogout.addEventListener("click", async () => {
-    await StorageHelper.set("isAdminLoggedIn", false);
-    if (logoutModal) logoutModal.style.display = "none";
+    await clearAdminLoginSession();
+    closeModal(logoutModal);
     if (tabRowSub) tabRowSub.style.display = "none";
     if (tabImport) tabImport.style.display = "none";
+    if (tabStats) tabStats.style.display = "none";
+    if (tabMiniTools) tabMiniTools.style.display = "none";
     const btnToggleCostPrice = document.getElementById("btnToggleCostPrice");
     if (btnToggleCostPrice) {
       btnToggleCostPrice.style.display = "none";
@@ -597,10 +588,14 @@ if (btnConfirmLogout) {
     if (typeof window.clearImportData === "function") {
       window.clearImportData();
     }
+    if (typeof window.clearStatsData === "function") {
+      window.clearStatsData();
+    }
     if (typeof StorageHelper !== "undefined") {
       await StorageHelper.remove("cachedImportData");
     }
-    if (tabPerfume && tabImport && tabImport.classList.contains("active")) {
+    const isSubTabActive = (tabImport && tabImport.classList.contains("active")) || (tabStats && tabStats.classList.contains("active")) || (tabMiniTools && tabMiniTools.classList.contains("active"));
+    if (tabPerfume && isSubTabActive) {
       tabPerfume.click();
     }
     if (typeof StorageHelper !== "undefined") {
@@ -612,10 +607,10 @@ if (btnConfirmLogout) {
 
 // Điều hướng Tab
 function switchTab(activeTab, activePane) {
-  [tabImport, tabPerfume, tabNews, tabOrder].forEach(t => {
+  [tabImport, tabStats, tabMiniTools, tabPerfume, tabNews, tabOrder].forEach(t => {
     if (t) t.classList.remove("active");
   });
-  [paneImport, panePerfume, paneNews, paneOrder].forEach(p => {
+  [paneImport, paneStats, paneMiniTools, panePerfume, paneNews, paneOrder].forEach(p => {
     if (p) p.style.display = "none";
   });
   if (activeTab) activeTab.classList.add("active");
@@ -633,6 +628,27 @@ if (tabImport) {
     }
     if (typeof window.fetchImportData === "function" && typeof window.hasImportData === "function" && window.hasImportData() === 0) {
       window.fetchImportData(false);
+    }
+  });
+}
+
+if (tabStats) {
+  tabStats.addEventListener("click", () => {
+    switchTab(tabStats, paneStats);
+    if (typeof window.refreshStatsView === "function") {
+      window.refreshStatsView();
+    }
+    if (typeof window.fetchImportData === "function" && typeof window.hasImportData === "function" && window.hasImportData() === 0) {
+      window.fetchImportData(false);
+    }
+  });
+}
+
+if (tabMiniTools) {
+  tabMiniTools.addEventListener("click", () => {
+    switchTab(tabMiniTools, paneMiniTools);
+    if (typeof window.refreshMiniToolsView === "function") {
+      window.refreshMiniToolsView();
     }
   });
 }
@@ -664,18 +680,6 @@ if (tabOrder) {
 
 btnRefresh.addEventListener("click", handleRefreshButtonClick);
 btnRetry.addEventListener("click", () => fetchSheetData());
-
-// Hỗ trợ phím Escape đóng nhanh tất cả modal đang mở (Modal Accessibility)
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    const activeModals = document.querySelectorAll(".modal-overlay");
-    activeModals.forEach((modal) => {
-      if (modal.style.display !== "none") {
-        modal.style.display = "none";
-      }
-    });
-  }
-});
 
 // Hàm đọc cache sản phẩm
 async function loadCachedProducts() {
@@ -729,8 +733,70 @@ async function fetchStockOnly() {
   }
 }
 
+// ============================================================================
+// BỘ ĐIỀU KHIỂN GIAO DIỆN SÁNG / TỐI (THEME CONTROLLER)
+// ============================================================================
+let currentTheme = "dark";
+
+function applyThemeUI(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute("data-theme", theme);
+  if (document.body) {
+    document.body.setAttribute("data-theme", theme);
+  }
+
+  const btnTheme = document.getElementById("btnThemeToggle");
+  if (!btnTheme) return;
+
+  const sunIcon = btnTheme.querySelector(".theme-icon-sun");
+  const moonIcon = btnTheme.querySelector(".theme-icon-moon");
+
+  if (theme === "light") {
+    // Đang là giao diện Sáng -> Hiển thị biểu tượng Mặt Trăng để bấm chuyển sang Tối
+    if (sunIcon) sunIcon.style.display = "none";
+    if (moonIcon) moonIcon.style.display = "block";
+    btnTheme.title = "Chuyển sang giao diện Tối (Dark Mode)";
+  } else {
+    // Đang là giao diện Tối -> Hiển thị biểu tượng Mặt Trời để bấm chuyển sang Sáng
+    if (sunIcon) sunIcon.style.display = "block";
+    if (moonIcon) moonIcon.style.display = "none";
+    btnTheme.title = "Chuyển sang giao diện Sáng (Light Mode)";
+  }
+}
+
+async function initTheme() {
+  const btnTheme = document.getElementById("btnThemeToggle");
+  if (!btnTheme) return;
+
+  if (typeof StorageHelper !== "undefined") {
+    currentTheme = await StorageHelper.get("theme", "dark");
+  } else {
+    try {
+      const saved = localStorage.getItem("theme");
+      if (saved) currentTheme = JSON.parse(saved);
+    } catch (e) {}
+  }
+
+  applyThemeUI(currentTheme);
+
+  btnTheme.addEventListener("click", async () => {
+    const nextTheme = currentTheme === "light" ? "dark" : "light";
+    applyThemeUI(nextTheme);
+
+    if (typeof StorageHelper !== "undefined") {
+      await StorageHelper.set("theme", nextTheme);
+    } else {
+      try {
+        localStorage.setItem("theme", JSON.stringify(nextTheme));
+      } catch (e) {}
+    }
+    showToast(nextTheme === "light" ? "☀️ Đã bật giao diện Sáng" : "🌙 Đã bật giao diện Tối");
+  });
+}
+
 // Kích hoạt đồng bộ dữ liệu
 window.addEventListener("DOMContentLoaded", async () => {
+  await initTheme();
   await checkAdminLoginStatus();
   const hasCache = await loadCachedProducts();
   if (hasCache && allProducts.length > 0) {
@@ -746,7 +812,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       const lastTabId = await StorageHelper.get("lastActiveTabId", "tabPerfume");
       const isAdmin = await StorageHelper.get("isAdminLoggedIn", false);
       let targetTabId = lastTabId;
-      if (targetTabId === "tabImport" && !isAdmin) {
+      if ((targetTabId === "tabImport" || targetTabId === "tabStats" || targetTabId === "tabMiniTools") && !isAdmin) {
         targetTabId = "tabPerfume";
       }
       const tabEl = document.getElementById(targetTabId);

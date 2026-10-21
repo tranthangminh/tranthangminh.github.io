@@ -1,0 +1,522 @@
+/* ==========================================================================
+   HARRY PERFUME EXTENSION - PRODUCT STATS (THỐNG KÊ LỊCH SỬ SẢN PHẨM)
+   Quản lý danh sách chai nước hoa đã nhập & truy xuất chi tiết lịch sử từng lần nhập
+   ========================================================================== */
+
+.product-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  gap: 8px;
+  overflow: hidden;
+}
+
+/* Hàng thanh tìm kiếm sản phẩm kèm nút Filter sắp xếp */
+.product-search-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.product-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+}
+
+.product-container > .product-search-wrapper {
+  flex: none;
+  width: 100%;
+  height: 32px;
+}
+
+.product-search-input {
+  width: 100%;
+  height: 32px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: "Nunito", sans-serif;
+  padding: 4px 30px 4px 10px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all var(--transition, 0.2s) ease;
+}
+
+.product-search-input:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.product-search-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.product-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: none;
+}
+
+.product-search-clear:hover {
+  color: var(--gold-primary);
+}
+
+/* Nút Filter sắp xếp sản phẩm */
+.btn-product-sort {
+  width: 32px;
+  height: 32px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition, 0.2s) ease;
+}
+
+.btn-product-sort:hover,
+.btn-product-sort.active {
+  border-color: var(--gold-primary);
+  background-color: rgba(229, 193, 88, 0.1);
+  box-shadow: 0 0 6px var(--gold-glow);
+}
+
+.btn-product-sort .filter-svg {
+  width: 14px;
+  height: 14px;
+  background-color: var(--text-secondary);
+  transition: background-color 0.2s ease;
+}
+
+.btn-product-sort:hover .filter-svg,
+.btn-product-sort.active .filter-svg {
+  background-color: var(--gold-primary);
+}
+
+/* Menu Dropdown tiêu chí sắp xếp */
+.product-sort-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 100;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: var(--shadow-elevation);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+}
+
+.product-sort-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.product-sort-item:hover {
+  color: var(--text-primary);
+  background-color: rgba(229, 193, 88, 0.08);
+}
+
+.product-sort-item.active {
+  color: var(--gold-primary);
+  font-weight: 700;
+  background-color: rgba(229, 193, 88, 0.15);
+}
+
+/* Header tổng kết danh sách sản phẩm */
+.product-summary-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 2px 4px;
+  flex-shrink: 0;
+}
+
+/* Danh sách thẻ chai nước hoa */
+.product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+  padding-bottom: 10px;
+}
+
+.product-card {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  gap: 10px;
+  cursor: pointer;
+  transition: all var(--transition, 0.2s) ease;
+}
+
+.product-card:hover {
+  border-color: var(--gold-primary);
+  background-color: rgba(229, 193, 88, 0.05);
+  transform: translateY(-1px);
+}
+
+.product-card-thumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  object-fit: contain;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  padding: 2px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.product-card-avatar-fallback {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.product-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.product-card-name {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-card-sub {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.product-card-sub .badge-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: rgba(229, 193, 88, 0.12);
+  color: var(--gold-primary);
+  font-weight: 700;
+  font-size: 9.5px;
+}
+
+.product-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.product-card-price-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.product-card-price {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  letter-spacing: -0.2px;
+}
+
+.product-card-arrow {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.product-card:hover .product-card-arrow {
+  color: var(--gold-primary);
+  transform: translateX(2px);
+}
+
+.product-card-date {
+  font-size: 9.5px;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   CHI TIẾT LỊCH SỬ SẢN PHẨM (PRODUCT DETAIL VIEW)
+   ========================================================================== */
+
+.product-detail-header-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.product-detail-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-product-back {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-product-back:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+}
+
+.product-detail-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.product-detail-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  object-fit: contain;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  padding: 1px;
+  flex-shrink: 0;
+}
+
+.product-detail-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-detail-stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.product-detail-stat-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.product-detail-stat-item strong {
+  color: var(--text-primary);
+}
+
+.product-detail-stat-item.highlight strong {
+  color: var(--gold-primary);
+  font-weight: 800;
+}
+
+/* Danh sách lịch sử các lần nhập */
+.product-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+  padding-bottom: 12px;
+}
+
+.product-history-row {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  gap: 5px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.product-history-row:hover {
+  border-color: rgba(229, 193, 88, 0.6);
+  background-color: rgba(229, 193, 88, 0.03);
+}
+
+.product-history-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.product-history-sender {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-history-price {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  flex-shrink: 0;
+  letter-spacing: -0.2px;
+}
+
+.product-history-row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  font-size: 10px;
+}
+
+.product-history-tags {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.product-history-date {
+  color: var(--text-secondary);
+  font-size: 10.5px;
+}
+
+.product-history-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.product-history-badge.capacity {
+  background: rgba(229, 193, 88, 0.15);
+  color: var(--gold-primary);
+  border: 1px solid rgba(229, 193, 88, 0.3);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.product-history-badge.qty {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.product-history-note {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-style: italic;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-history-total-sub {
+  color: var(--text-secondary);
+  font-size: 9.5px;
+  flex-shrink: 0;
+}

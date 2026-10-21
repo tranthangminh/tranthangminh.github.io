@@ -1,47 +1,108 @@
-/* ==========================================================================
-   HARRY PERFUME EXTENSION - STREAMLINED THEME TOKENS (~22 CORE VARIABLES)
-   ========================================================================== */
+/* Color Systems & CSS Variables for Dark/Light Themes */
+:root,
+[data-theme="dark"] {
+  /* Dark Theme (Default) */
+  --bg-primary: #000000;
+  --bg-secondary: #282828;
+  --bg-card: #1c1c1c;
+  --bg-input: #0f0f0f;
+  --bg-hover: rgba(255, 255, 255, 0.05);
 
-:root {
-  /* ------------------------------------------------------------------------
-     1. BẢNG MÀU 7 SẮC CẦU VỒNG (RAINBOW ACCENT PALETTE - 7 MÀU NỔI BẬT)
-     ------------------------------------------------------------------------ */
-  --c-red:          #ef4444; /* Đỏ: Lỗi, Hủy, Thất bại, Xóa */
-  --c-orange:       #f97316; /* Cam: Cảnh báo, Giá Tester */
-  --c-yellow:       #e5c158; /* Vàng: Thương hiệu Gold, Fullbox */
-  --c-green:        #34d399; /* Lục: Thành công, Còn hàng */
-  --c-cyan:         #06b6d4; /* Lam: Điểm nhấn phụ */
-  --c-blue:         #60a5fa; /* Chàm: Tin nhanh Xanh, Edit */
-  --c-purple:       #c084fc; /* Tím: Tin nhanh Custom */
-
-  /* Mức nền trong suốt 12% tương ứng cho các thẻ badge cầu vồng */
-  --c-red-bg:       rgba(239, 68, 68, 0.12);
-  --c-orange-bg:    rgba(249, 115, 22, 0.12);
-  --c-yellow-bg:    rgba(229, 193, 88, 0.12);
-  --c-green-bg:     rgba(52, 211, 153, 0.12);
-  --c-cyan-bg:      rgba(6, 182, 212, 0.12);
-  --c-blue-bg:      rgba(96, 165, 250, 0.12);
-  --c-purple-bg:    rgba(192, 132, 252, 0.12);
-
-  /* ------------------------------------------------------------------------
-     2. NỀN, CHỮ & VIỀN TRUNG TÍNH (NEUTRAL BASE TOKENS)
-     ------------------------------------------------------------------------ */
-  --bg-primary:     #000000;
-  --bg-secondary:   #282828;
-  --bg-card:        #1c1c1c;
-  --bg-input:       #0f0f0f;
-
-  --text-primary:   #f8f8f8;
+  --text-primary: #f8f8f8;
   --text-secondary: #cccccc;
-  --text-dark:      #121214;
+  --text-dark: #121214;
 
-  --border-color:   #555555;
+  --border-color: #555555;
 
-  /* ------------------------------------------------------------------------
-     3. THƯƠNG HIỆU HARRY PERFUME (GOLD SHORTCUTS)
-     ------------------------------------------------------------------------ */
-  --gold-primary:   var(--c-yellow);
-  --gold-light:     #f3d88c;
-  --gold-glow:      rgba(229, 193, 88, 0.25);
-  --transition:     0.25s ease;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  --shadow-elevation: var(--shadow-md);
+
+  /* Thương hiệu Harry Perfume Gold */
+  --gold-primary: var(--c-yellow);
+  --gold-light: #f3d88c;
+  --gold-glow: rgba(229, 193, 88, 0.25);
+  --gold-text: #121214;
+  --transition: 0.25s ease;
+  --transition-speed: 0.25s;
+
+  /* Bảng màu 7 sắc cầu vồng */
+  --c-red: #ef4444;
+  --c-orange: #f97316;
+  --c-yellow: #e5c158;
+  --c-green: #34d399;
+  --c-cyan: #06b6d4;
+  --c-blue: #60a5fa;
+  --c-purple: #c084fc;
+
+  /* Nền badge trong suốt tương ứng */
+  --c-red-bg: rgba(239, 68, 68, 0.12);
+  --c-orange-bg: rgba(249, 115, 22, 0.12);
+  --c-yellow-bg: rgba(229, 193, 88, 0.12);
+  --c-green-bg: rgba(52, 211, 153, 0.12);
+  --c-cyan-bg: rgba(6, 182, 212, 0.12);
+  --c-blue-bg: rgba(96, 165, 250, 0.12);
+  --c-purple-bg: rgba(192, 132, 252, 0.12);
+}
+
+/* Base class for all SVG Mask Icons (MAX-RULES 6.6 & RULE-chrome-extension 1.4) */
+.icon-mask {
+  display: inline-block;
+  vertical-align: middle;
+  background-color: currentColor;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  flex-shrink: 0;
+  pointer-events: none !important;
+  border-radius: 0 !important;
+}
+
+.light-theme,
+[data-theme="light"] {
+  /* Light Theme - High Contrast & Eye Comfort */
+  --bg-primary: #e9edf2;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #f1f4f8;
+  --bg-hover: rgba(0, 0, 0, 0.05);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-dark: #0f172a;
+
+  --border-color: #cbd5e1;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+  --shadow-elevation: var(--shadow-md);
+
+  /* Thương hiệu Harry Perfume Gold trên nền sáng */
+  --gold-primary: #b8860b;
+  --gold-light: #d4af37;
+  --gold-glow: rgba(184, 134, 11, 0.2);
+  --gold-text: #ffffff;
+
+  /* Bảng màu 7 sắc cầu vồng */
+  --c-red: #dc2626;
+  --c-orange: #ea580c;
+  --c-yellow: #b8860b;
+  --c-green: #059669;
+  --c-cyan: #0891b2;
+  --c-blue: #2563eb;
+  --c-purple: #9333ea;
+
+  /* Nền badge trong suốt trên nền sáng */
+  --c-red-bg: rgba(220, 38, 38, 0.1);
+  --c-orange-bg: rgba(234, 88, 12, 0.1);
+  --c-yellow-bg: rgba(184, 134, 11, 0.12);
+  --c-green-bg: rgba(5, 150, 105, 0.1);
+  --c-cyan-bg: rgba(8, 145, 178, 0.1);
+  --c-blue-bg: rgba(37, 99, 235, 0.1);
+  --c-purple-bg: rgba(147, 51, 234, 0.1);
 }

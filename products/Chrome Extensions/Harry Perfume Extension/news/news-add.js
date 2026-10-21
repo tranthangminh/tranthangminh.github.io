@@ -33,7 +33,7 @@ function openAddCardModal() {
   imgUploadPreviewsList.innerHTML = "";
   imgUploadPreviewContainer.style.display = "none";
   inputCardContent.value = "";
-  addCardModal.style.display = "flex";
+  openModal(addCardModal);
   inputCardTitle.focus();
 }
 
@@ -87,7 +87,7 @@ function openEditCardModal(newsItem) {
     imgUploadPreviewContainer.style.display = "none";
   }
   
-  addCardModal.style.display = "flex";
+  openModal(addCardModal);
   inputCardTitle.focus();
 }
 
@@ -112,7 +112,7 @@ async function updateCustomNews(id, title, content, img) {
 
 // Logic đóng modal
 function closeAddCardModal() {
-  addCardModal.style.display = "none";
+  closeModal(addCardModal);
 }
 
 // Thêm thẻ tự định nghĩa mới
@@ -212,11 +212,6 @@ btnRemoveUploadedImg.addEventListener("click", () => {
 // Gắn sự kiện cho các nút Modal
 btnModalClose.addEventListener("click", closeAddCardModal);
 btnModalCancel.addEventListener("click", closeAddCardModal);
-addCardModal.addEventListener("click", (e) => {
-  if (e.target === addCardModal) {
-    closeAddCardModal();
-  }
-});
 
 btnModalSave.addEventListener("click", async () => {
   const title = inputCardTitle.value.trim();

@@ -168,6 +168,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.action === 'area_cancelled') {
     const tabId = sender.tab ? sender.tab.id : null;
+    if (tabId) {
+      chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          const el = document.getElementById('max-floating-tools-host');
+          if (el) el.style.removeProperty('display');
+        }
+      }).catch(() => {});
+    }
     if (tabId && chrome.debugger) {
       try {
         chrome.debugger.detach({ tabId }, () => {
@@ -261,6 +270,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       }
 
+      // Restore floating tools on tab now that screen capture is complete
+      if (tabId) {
+        chrome.scripting.executeScript({
+          target: { tabId },
+          func: () => {
+            const el = document.getElementById('max-floating-tools-host');
+            if (el) el.style.removeProperty('display');
+          }
+        }).catch(() => {});
+      }
+
       if (tabId && dataUrl) {
         const maxW = saved.maxCaptureWidth || 0;
         const maxH = saved.maxCaptureHeight !== undefined ? saved.maxCaptureHeight : 16000;
@@ -344,6 +364,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // Selection Overlay Injection Script
 function createSelectionOverlay() {
   if (document.getElementById('max-capture-overlay')) return;
+
+  const floatingHost = document.getElementById('max-floating-tools-host');
+  if (floatingHost) floatingHost.style.setProperty('display', 'none', 'important');
 
   const docEl = document.documentElement || document.body;
   const originalOverflow = document.body ? document.body.style.overflow : '';
@@ -483,12 +506,15 @@ function createSelectionOverlay() {
           coords: { x, y, w, h, dpr: window.devicePixelRatio || 1 }
         });
       }, 80);
+    } else {
+      if (floatingHost) floatingHost.style.removeProperty('display');
     }
   };
 
   const onKeyDown = (e) => {
     if (e.key === 'Escape') {
       cleanup();
+      if (floatingHost) floatingHost.style.removeProperty('display');
       try {
         chrome.runtime.sendMessage({ action: 'area_cancelled' });
       } catch(err) {

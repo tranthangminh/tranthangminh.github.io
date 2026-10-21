@@ -1,0 +1,594 @@
+/* ==========================================================================
+   HARRY PERFUME EXTENSION - COST CHECKER TOOL STYLES
+   Bố cục dạng bảng tính Excel thống nhất, thanh cuộn chung, sáng dòng khi hover
+   ========================================================================== */
+
+/* Font Nunito Variable dùng chung toàn bộ App */
+@font-face {
+  font-family: 'Nunito';
+  src: url('../Nunito/Nunito-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('../Nunito/Nunito-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Nunito", sans-serif !important;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Nunito", sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.cost-checker-app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-primary);
+  position: relative;
+}
+
+/* 1. Header Topbar */
+.checker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.checker-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checker-logo-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.checker-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  letter-spacing: -0.2px;
+}
+
+.checker-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.db-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #f59e0b;
+  transition: background-color 0.25s ease;
+}
+
+.status-dot.ready {
+  background-color: var(--c-green, #10b981);
+  box-shadow: 0 0 6px var(--c-green, #10b981);
+}
+
+.btn-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  width: 28px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-topbar:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  background-color: var(--bg-hover);
+}
+
+/* 2. Toolbar Thao Tác Nhanh */
+.checker-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.counter-label.matched-count {
+  color: var(--c-green, #10b981);
+}
+
+.counter-label.cost-count {
+  color: var(--gold-primary, #e5c158);
+  transition: color 0.2s ease;
+}
+
+.counter-label.cost-count.mismatch {
+  color: var(--c-red, #ef4444);
+}
+
+.counter-label.cost-count.all-matched {
+  color: var(--c-green, #10b981);
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-action {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: "Nunito", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+  color: var(--text-primary);
+  border-color: var(--gold-primary);
+  background-color: var(--bg-hover);
+}
+
+.btn-action.btn-toggle-preview.active {
+  background-color: var(--c-yellow-bg, rgba(229, 193, 88, 0.15));
+  color: var(--gold-primary, #e5c158);
+  border-color: var(--gold-primary, #e5c158);
+  box-shadow: 0 0 8px var(--gold-glow, rgba(229, 193, 88, 0.25));
+}
+
+.btn-action.btn-clear:hover {
+  border-color: var(--c-red, #ef4444);
+  color: var(--c-red, #ef4444);
+}
+
+/* 3. Main Spreadsheet Container (Excel View) */
+.spreadsheet-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: scroll;
+  overflow-x: auto;
+  background-color: var(--bg-primary);
+  position: relative;
+}
+
+.excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+  font-family: "Nunito", sans-serif;
+}
+
+/* Cố định Header theo phong cách Excel */
+.excel-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  letter-spacing: 0.3px;
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Phân chia độ rộng các cột Excel */
+.th-num {
+  width: 38px;
+  text-align: center;
+  color: var(--text-secondary) !important;
+}
+
+.th-output {
+  width: 31%;
+  text-align: left;
+}
+
+.th-thumb {
+  width: 52px;
+  text-align: center;
+  font-size: 11px;
+}
+
+.th-input {
+  width: 28%;
+  text-align: left;
+}
+
+.th-recheck {
+  width: 13%;
+  text-align: right;
+}
+
+.th-cost {
+  width: 13%;
+  text-align: right;
+}
+
+.th-merge {
+  width: 13%;
+  text-align: right;
+}
+
+/* Bố cục bên trong Header (Tiêu đề + Nút thao tác nhanh) */
+.excel-table thead th .th-title {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.excel-table thead th {
+  height: 34px;
+}
+
+.th-output,
+.th-thumb,
+.th-input,
+.th-recheck,
+.th-cost,
+.th-merge {
+  position: relative;
+}
+
+.th-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.btn-th-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 6px;
+  font-family: "Nunito", sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.btn-th-action:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  background-color: var(--bg-hover);
+}
+
+.btn-th-action.btn-th-clear {
+  padding: 0 5px;
+  font-size: 11px;
+}
+
+.btn-th-action.btn-th-clear:hover {
+  border-color: var(--c-red, #ef4444);
+  color: var(--c-red, #ef4444);
+}
+
+/* 4. Định dạng Từng Ô (Excel Cells) với Word Wrap */
+.excel-table tbody td {
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  min-height: 38px;
+  vertical-align: middle;
+  background-color: var(--bg-card);
+  transition: background-color 0.12s ease;
+}
+
+.excel-table tbody td.td-num {
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  user-select: none;
+}
+
+.excel-table tbody td.td-output {
+  color: var(--text-primary);
+  font-weight: 400; /* Không dùng bold */
+  font-size: 12.5px;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+  padding: 6px 10px;
+}
+
+/* Khi tên khớp 100% với tên input thì đổi chữ sang màu xanh */
+.excel-table tbody td.td-output.match-100 {
+  color: var(--c-green, #10b981) !important;
+  font-weight: 500;
+}
+
+.excel-table tbody td.td-thumb {
+  width: 52px;
+  text-align: center;
+  padding: 2px;
+  vertical-align: middle;
+}
+
+/* Ảnh chai nước hoa không cần khung nhỏ bên trong, nằm trực tiếp vào ô */
+.excel-thumb-img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: block;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+.excel-table tbody td.td-input,
+.excel-table tbody td.td-recheck {
+  padding: 0;
+  vertical-align: middle;
+  height: 100%;
+}
+
+.excel-table tbody td.td-recheck {
+  text-align: right;
+}
+
+.excel-table tbody td.td-cost,
+.excel-table tbody td.td-merge {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 500; /* Không dùng bold */
+  color: var(--gold-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  vertical-align: middle;
+  padding: 6px 10px;
+}
+
+/* Cột Merge: Dùng text màu trắng khi lấy từ Giá Recheck */
+.excel-table tbody td.td-merge.merge-recheck {
+  color: #ffffff !important;
+}
+
+/* Khi ở giao diện sáng: Text màu trắng tự động chuyển sang màu chữ tương phản cao */
+.light-theme .excel-table tbody td.td-merge.merge-recheck {
+  color: var(--text-primary) !important;
+  font-weight: 600;
+}
+
+/* Khung Flex căn giữa dọc hoàn hảo cho các ô Input/Recheck */
+.cell-flex-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 38px;
+  box-sizing: border-box;
+}
+
+/* Ô nhập liệu textarea hỗ trợ word-wrap và luôn căn giữa dòng */
+.excel-cell-textarea {
+  width: 100%;
+  height: auto;
+  min-height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: "Nunito", sans-serif;
+  font-size: 12.5px;
+  font-weight: 400; /* Không dùng bold */
+  outline: none;
+  padding: 4px 8px;
+  resize: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
+  box-sizing: border-box;
+  display: block;
+  overflow: hidden;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.excel-cell-textarea.input-cost {
+  text-align: right;
+  font-weight: 400; /* Không dùng bold */
+  font-variant-numeric: tabular-nums;
+}
+
+.excel-cell-textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.45;
+  font-weight: 400;
+}
+
+.excel-cell-textarea:focus {
+  background-color: var(--bg-primary);
+  box-shadow: inset 0 0 0 2px var(--gold-primary);
+  border-radius: 1px;
+}
+
+/* 5. HIỆU ỨNG SÁNG DÒNG KHI HOVER (ROW HOVER ILLUMINATION - Màu rõ rệt) */
+.excel-table tbody tr.excel-row {
+  transition: background-color 0.12s ease;
+}
+
+.excel-table tbody tr.excel-row:hover td {
+  background-color: rgba(229, 193, 88, 0.22) !important;
+}
+
+.excel-table tbody tr.excel-row:hover td.td-num {
+  color: var(--gold-primary) !important;
+  font-weight: 800;
+  background-color: rgba(229, 193, 88, 0.35) !important;
+}
+
+/* 6. Trạng thái đối chiếu giá vốn & cột merge */
+.td-cost.cell-mismatch,
+.td-merge.cell-mismatch {
+  color: var(--c-red, #ef4444) !important;
+  font-weight: 700;
+}
+
+.td-cost.cell-match,
+.td-merge.cell-match {
+  color: var(--c-green, #10b981) !important;
+}
+
+/* 7. Preview Ảnh Chai 128x128 Cố Định Phía Trên/Dưới Dòng */
+.cursor-image-preview {
+  position: fixed;
+  width: 128px;
+  height: 128px;
+  z-index: 99999;
+  pointer-events: none;
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--gold-primary);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
+  padding: 6px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  animation: previewFadeIn 0.12s ease-out;
+}
+
+.cursor-image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+@keyframes previewFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 7. Toast Thông Báo */
+.checker-toast {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1e293b;
+  color: #f8fafc;
+  border: 1px solid var(--gold-primary);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  animation: toastFadeIn 0.2s ease-out;
+  pointer-events: none;
+}
+
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Thanh cuộn chuẩn */
+.spreadsheet-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.spreadsheet-container::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+.spreadsheet-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.spreadsheet-container::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}

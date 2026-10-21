@@ -675,15 +675,26 @@ Nhằm tạo nên diện mạo trực quan, chuyên nghiệp, cân đối và nh
 ### 3. Quy Chuẩn Nhóm Web Apps Sưu Tầm Bên Ngoài (Curated External Web Tools)
 - **Thứ tự hiển thị (Order Hierarchy):**
   - Web App tự làm luôn nằm trước (Badge `01`, `02`, `03`...).
-  - Web App sưu tầm bên ngoài luôn nằm **SAU** toàn bộ Web App tự làm (hiện tại là `04` đến `08`). Khi có Web App tự làm mới, chèn vào trước nhóm sưu tầm và đẩy số thứ tự của nhóm sưu tầm lùi về sau.
-- **Quy cách Thẻ Card & Tên miền rút gọn:**
-  - `product-card-title`: Tên chính thức của trang web.
-  - `product-card-tag`: Tên miền (Domain) rút gọn, lược bỏ `https://` và dấu `/` cuối (ví dụ: `tiermaker.com`, `grainrad.com`, `destroy.spritefusion.com`, `bookofshapes.com`, `jherr.github.io/depth-of-field`).
-  - Thẻ `<a>` bắt buộc có `target="_blank" rel="noopener noreferrer"`.
-  - Chân thẻ (`.product-card-footer`) chỉ giữ mũi tên `.product-card-arrow`.
-- **Kiến trúc tài nguyên (Zero Bloatware):**
-  - Tuyệt đối không tạo file code `.html`/`.js`/`.css` cho web ngoài.
-  - Toàn bộ ảnh đại diện (Share Image / Open Graph) lưu tại thư mục riêng `products/web-apps/curated/`.
+  - Web App sưu tầm bên ngoài luôn nằm **SAU** toàn bộ Web App tự làm (hiện tại từ `04` trở đi). Khi có Web App tự làm mới, chèn vào trước nhóm sưu tầm và đẩy số thứ tự của nhóm sưu tầm lùi về sau.
+  - Nhóm sưu tầm được sắp xếp theo thứ tự bảng chữ cái **A-Z của Phân loại (Category)** (`Fun` $\rightarrow$ `Learn` $\rightarrow$ `Multimedia Generator` $\rightarrow$ `PC Games` $\rightarrow$ `Web Games`...).
+- **Quy cách Thẻ Card & Phân loại (UI Standards):**
+  - `product-card-title`: Tên chính thức của trang web (UPPERCASE).
+  - `product-card-link`: Tên miền (Domain) rút gọn, lược bỏ `https://` và dấu `/` cuối (ví dụ: `tiermaker.com`, `grainrad.com`, `xe-bay-ha-noi.vercel.app`). **Bắt buộc viết thường (lowercase)**, không dùng in hoa.
+  - `product-category-pill`: Thẻ phân loại nhóm dạng **viên thuốc (pill badge)** bo tròn `border-radius: 9999px`, nền tự động phân bổ theo **dải quang phổ cầu vồng HSL (từ Đỏ ~5° đến Tím ~285°)** dựa trên số lượng nhóm, chữ màu **trắng**, in hoa **UPPERCASE** (`FUN`, `LEARN`, `PC GAMES`...). Nằm ở góc trái chân thẻ (`.product-card-footer`), cùng vị trí với nút truy cập của các app in-house để bảo đảm cân đối bố cục. Khi thêm hoặc bớt nhóm, dải màu tự động chia đều lại từ đầu đến cuối.
+  - Thẻ `<a>` bao ngoài có `target="_blank" rel="noopener noreferrer"`.
+- **Kiến trúc tổ chức thư mục & File Redirect (`products/web-apps/curated/`):**
+  - Lưu theo từng thư mục nhóm phân loại đặt tên tiếng Anh (A-Z):
+    ```text
+    products/web-apps/curated/
+    ├── sync.bat / sync.js                  # Script tự động quét, fetch ảnh và render thẻ card
+    └── [Category_Name]/                    # Tên phân loại (ví dụ: Fun, Learn, Web Games...)
+        ├── [App_Name].url                  # File shortcut liên kết gốc
+        ├── [App_Name].html                 # File redirect trung gian tối giản, chuẩn SEO (title là tên app)
+        └── [App_Name].png                  # Ảnh Share Image / Preview OpenGraph chính thức
+    ```
+- **Cơ chế đồng bộ tự động 1-Click (`sync.bat`):**
+  - Khi thêm web app mới, chỉ cần thả file link `.url` vào đúng folder phân loại (hoặc tạo folder phân loại mới).
+  - Chạy `sync.bat`: Script tự động tải ảnh `og:image` nếu chưa có, sinh file `.html` redirect và tự động chèn/cập nhật thẻ vào `products.html`, `index.html` và `sitemap.xml`.
 
 ### 4. Quy Chuẩn Bố Cục Lưới Web Apps (Responsive Grid System)
 - **Khóa cứng tỷ lệ vuông 1:1:** Thẻ sản phẩm Web Apps luôn giữ `aspect-ratio: 1 / 1` trên mọi kích thước màn hình.

@@ -104,10 +104,8 @@ const OrderCanvasEngine = {
     const paddingX = 18;
     const tableW = baseWidth - paddingX * 2; // 444px
 
-    // Lấy màu text primary từ CSS theme
-    const textPrimaryColor = (typeof window !== "undefined" && window.getComputedStyle)
-      ? getComputedStyle(document.documentElement).getPropertyValue("--text-primary").trim() || "#f8f8f8"
-      : "#f8f8f8";
+    // Màu chữ chính trên ảnh hóa đơn (luôn cố định #f8f8f8 trên nền Dark Luxury #121214)
+    const textPrimaryColor = "#f8f8f8";
 
     // Tải trước logo thương hiệu vector siêu nét
     const logoImg = await this.loadLogoImage(textPrimaryColor);

@@ -63,7 +63,7 @@ body {
   background: var(--bg-secondary);
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-elevation);
 }
 
 /* Nút bí mật Admin */
@@ -97,7 +97,7 @@ body {
   text-align: left;
 }
 
-/* Quy tắc CSS Masking chuẩn (Mục 5 - MAX-RULES) */
+/* Quy tắc CSS Masking chuẩn (Mục 6.6 - MAX-RULES & Mục 1.4 - RULE-chrome-extension) */
 .icon-mask {
   display: inline-block;
   background-color: currentColor;
@@ -108,6 +108,8 @@ body {
   -webkit-mask-position: center;
   mask-position: center;
   flex-shrink: 0;
+  pointer-events: none !important;
+  border-radius: 0 !important;
 }
 
 .brand-title-logo {
@@ -182,15 +184,8 @@ body {
   width: 18px;
   height: 18px;
   display: block;
-}
-
-.btn-refresh-icon .refresh-svg .st0 {
-  fill: none;
-  stroke: var(--text-secondary);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2px;
-  transition: stroke var(--transition);
+  background-color: var(--text-secondary);
+  transition: background-color var(--transition);
 }
 
 .btn-refresh-icon:hover {
@@ -199,11 +194,51 @@ body {
   border-color: rgba(229, 193, 88, 0.25);
 }
 
-.btn-refresh-icon:hover .refresh-svg .st0 {
-  stroke: var(--gold-primary);
+.btn-refresh-icon:hover .refresh-svg {
+  background-color: var(--gold-primary);
 }
 
 .btn-refresh-icon:active {
+  transform: scale(0.92);
+}
+
+/* Nút chuyển đổi Theme (Sáng / Tối) góc trên bên phải */
+.btn-theme-toggle {
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  opacity: 0.85;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.btn-theme-toggle .theme-svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  background-color: var(--text-secondary);
+  transition: background-color var(--transition), transform 0.2s ease;
+}
+
+.btn-theme-toggle:hover {
+  opacity: 1;
+  background: var(--c-yellow-bg);
+  border-color: rgba(229, 193, 88, 0.25);
+}
+
+.btn-theme-toggle:hover .theme-svg {
+  background-color: var(--gold-primary);
+}
+
+.btn-theme-toggle:active {
   transform: scale(0.92);
 }
 
@@ -216,10 +251,7 @@ body {
 
 .btn-refresh-icon.is-refreshing .refresh-svg {
   animation: spin 1s infinite linear;
-}
-
-.btn-refresh-icon.is-refreshing .refresh-svg .st0 {
-  stroke: var(--gold-primary);
+  background-color: var(--gold-primary);
 }
 
 /* Khi làm mới thất bại (refresh-failed) - Nút chuyển sang màu ĐỎ */
@@ -230,8 +262,8 @@ body {
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.25);
 }
 
-.btn-refresh-icon.refresh-failed .refresh-svg .st0 {
-  stroke: var(--c-red) !important;
+.btn-refresh-icon.refresh-failed .refresh-svg {
+  background-color: var(--c-red) !important;
 }
 
 .btn-refresh-icon.refresh-failed:hover {
@@ -433,7 +465,7 @@ body {
 }
 
 .tab-btn:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -465,7 +497,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 15px;
+  padding: 0 !important;
   box-sizing: border-box;
 }
 
@@ -476,7 +508,7 @@ body {
   width: 100%;
   max-width: 300px;
   padding: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   box-sizing: border-box;
 }
 

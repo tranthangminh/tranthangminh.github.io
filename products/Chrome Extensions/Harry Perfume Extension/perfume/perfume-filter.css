@@ -23,15 +23,8 @@
   width: 17px;
   height: 17px;
   display: block;
-}
-
-.btn-filter-toggle .filter-svg .st0 {
-  fill: none;
-  stroke: var(--text-secondary);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2px;
-  transition: stroke var(--transition-speed) ease;
+  background-color: currentColor;
+  transition: background-color var(--transition-speed) ease;
 }
 
 .btn-filter-toggle:hover {
@@ -40,19 +33,11 @@
   color: var(--gold-primary);
 }
 
-.btn-filter-toggle:hover .filter-svg .st0 {
-  stroke: var(--gold-primary);
-}
-
 .btn-filter-toggle.active {
   background: rgba(229, 193, 88, 0.12);
   border-color: var(--gold-primary);
   color: var(--gold-primary);
   box-shadow: 0 0 10px var(--gold-glow);
-}
-
-.btn-filter-toggle.active .filter-svg .st0 {
-  stroke: var(--gold-primary);
 }
 
 /* Panel Bộ Lọc - Tông màu sáng nổi bật */
@@ -122,7 +107,7 @@
  {
   background: var(--gold-primary);
   border-color: var(--gold-primary);
-  color: var(--bg-primary);
+  color: var(--gold-text, #ffffff);
 }
 
 /* Dòng nhập khoảng giá */

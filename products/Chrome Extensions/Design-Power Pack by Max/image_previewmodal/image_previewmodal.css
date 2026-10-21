@@ -18,7 +18,7 @@
   font-family: var(--font-family) !important;
 }
 
-/* Enforce Outfit font on all modal children, buttons, form controls, and popovers */
+/* Enforce standard font on all modal children, buttons, form controls, and popovers */
 #image-preview-modal,
 #image-preview-modal *,
 #image-preview-modal button,

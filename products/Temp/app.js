@@ -1,110 +1,134 @@
 /**
- * Product Name Matcher - Client-side Fuzzy Keyword Matcher
- * Thuật toán tách từ khóa đối chiếu tên sản phẩm
+ * APP.JS - Controller chính điều phối ứng dụng
  */
-
 (function () {
     // DOM Elements
     const masterInput = document.getElementById('masterInput');
+    const masterVolInput = document.getElementById('masterVolInput');
     const rawInput = document.getElementById('rawInput');
     const minWordsInput = document.getElementById('minWordsInput');
     const autoMatchCheckbox = document.getElementById('autoMatchCheckbox');
-    
-    const masterCount = document.getElementById('masterCount');
-    const rawCount = document.getElementById('rawCount');
-    
+
     const btnRunMatch = document.getElementById('btnRunMatch');
     const btnLoadSample = document.getElementById('btnLoadSample');
     const btnClearAll = document.getElementById('btnClearAll');
-    
+
     const btnPasteMaster = document.getElementById('btnPasteMaster');
     const btnClearMaster = document.getElementById('btnClearMaster');
     const btnPasteRaw = document.getElementById('btnPasteRaw');
     const btnClearRaw = document.getElementById('btnClearRaw');
-    
+
     const btnCopyResultColumn = document.getElementById('btnCopyResultColumn');
+    const btnCopyClassifyColumn = document.getElementById('btnCopyClassifyColumn');
     const btnCopyFullTable = document.getElementById('btnCopyFullTable');
     const filterSelect = document.getElementById('filterSelect');
-    
-    const resultTableBody = document.getElementById('resultTableBody');
-    const statTotal = document.getElementById('statTotal');
-    const statMatched = document.getElementById('statMatched');
-    const statUnmatched = document.getElementById('statUnmatched');
-    const toast = document.getElementById('toast');
 
     // State
     let currentResults = [];
     let debounceTimer = null;
 
-    // Dữ liệu mẫu thực tế
-    const SAMPLE_MASTER = [
-        "Prada Luna Rossa Carbon EDT 100ml",
-        "Prada Luna Rossa Black EDP 100ml",
-        "Prada Luna Rossa Ocean EDT 100ml",
-        "Dior Sauvage EDT 100ml",
-        "Dior Sauvage EDP 100ml",
-        "Bleu De Chanel EDP 100ml",
-        "Bleu De Chanel Parfum 100ml",
-        "Versace Eros EDT 100ml",
-        "Armaf Club De Nuit Intense Man EDT 105ml",
-        "YSL Y EDP 100ml"
-    ].join('\n');
-
-    const SAMPLE_RAW = [
-        "Prada Carbon Luna Rossa EDT 100ml Tester",
-        "dior sauvage edt 100ml tester chính hãng",
-        "Bleu De Chanel EDP 100ml fullbox",
-        "prada luna ocean 100ml edt",
-        "ysl y edp",
-        "Nước hoa Gucci Flora Gorgeous Gardenia 100ml",
-        "100ml",
-        "Versace Eros 100ml nam tính"
-    ].join('\n');
-
-    // Khởi tạo
     init();
 
     function init() {
         bindEvents();
-        updateLineCounts();
+        restoreState();
+    }
+
+    function restoreState() {
+        const saved = window.AppStorage.loadSavedState();
+        if (saved.master !== null) masterInput.value = saved.master;
+        if (saved.masterVol !== null) masterVolInput.value = saved.masterVol;
+        if (saved.raw !== null) rawInput.value = saved.raw;
+        if (saved.minWords !== null) minWordsInput.value = saved.minWords;
+        if (saved.autoMatch !== null) autoMatchCheckbox.checked = saved.autoMatch;
+
+        window.AppUI.updateLineCounts(masterInput.value, rawInput.value);
+
+        if (saved.hasData) {
+            runMatching();
+        }
+    }
+
+    function persistState() {
+        window.AppStorage.saveState({
+            master: masterInput.value,
+            masterVol: masterVolInput.value,
+            raw: rawInput.value,
+            minWords: minWordsInput.value,
+            autoMatch: autoMatchCheckbox.checked
+        });
+    }
+
+    function handleMasterPasteText(text) {
+        if (text.includes('\t')) {
+            const lines = text.split('\n');
+            const names = [];
+            const vols = [];
+            lines.forEach(l => {
+                const parts = l.split('\t');
+                names.push(parts[0] ? parts[0].trim() : '');
+                vols.push(parts[1] ? parts[1].trim() : '');
+            });
+            masterInput.value = names.join('\n');
+            masterVolInput.value = vols.join('\n');
+        } else {
+            masterInput.value = text;
+        }
     }
 
     function bindEvents() {
         btnRunMatch.addEventListener('click', runMatching);
-        
+
         btnLoadSample.addEventListener('click', () => {
-            masterInput.value = SAMPLE_MASTER;
-            rawInput.value = SAMPLE_RAW;
-            updateLineCounts();
+            masterInput.value = window.AppConfig.SAMPLE_MASTER;
+            masterVolInput.value = window.AppConfig.SAMPLE_MASTER_VOL;
+            rawInput.value = window.AppConfig.SAMPLE_RAW;
+            persistState();
+            window.AppUI.updateLineCounts(masterInput.value, rawInput.value);
             runMatching();
-            showToast("Đã nạp dữ liệu mẫu thành công!");
+            window.AppUI.showToast("Đã nạp dữ liệu mẫu và tự động lưu!");
         });
 
         btnClearAll.addEventListener('click', () => {
             masterInput.value = '';
+            masterVolInput.value = '';
             rawInput.value = '';
-            updateLineCounts();
+            window.AppStorage.clearState();
+            window.AppUI.updateLineCounts('', '');
             runMatching();
-            showToast("Đã xóa trắng dữ liệu!");
+            window.AppUI.showToast("Đã xóa trắng toàn bộ dữ liệu!");
         });
 
         btnPasteMaster.addEventListener('click', async () => {
             try {
                 const text = await navigator.clipboard.readText();
                 if (text) {
-                    masterInput.value = text;
-                    updateLineCounts();
+                    handleMasterPasteText(text);
+                    persistState();
+                    window.AppUI.updateLineCounts(masterInput.value, rawInput.value);
                     if (autoMatchCheckbox.checked) runMatching();
-                    showToast("Đã dán dữ liệu Master Data!");
+                    window.AppUI.showToast("Đã dán và tự động lưu Master Data!");
                 }
             } catch (e) {
                 alert("Vui lòng cho phép quyền truy cập Clipboard hoặc dùng phím Ctrl + V!");
             }
         });
 
+        masterInput.addEventListener('paste', (e) => {
+            const clipboardData = e.clipboardData || window.clipboardData;
+            const text = clipboardData ? clipboardData.getData('text') : '';
+            if (text && text.includes('\t')) {
+                e.preventDefault();
+                handleMasterPasteText(text);
+                onInputChange();
+            }
+        });
+
         btnClearMaster.addEventListener('click', () => {
             masterInput.value = '';
-            updateLineCounts();
+            masterVolInput.value = '';
+            persistState();
+            window.AppUI.updateLineCounts(masterInput.value, rawInput.value);
             if (autoMatchCheckbox.checked) runMatching();
         });
 
@@ -113,9 +137,10 @@
                 const text = await navigator.clipboard.readText();
                 if (text) {
                     rawInput.value = text;
-                    updateLineCounts();
+                    persistState();
+                    window.AppUI.updateLineCounts(masterInput.value, rawInput.value);
                     if (autoMatchCheckbox.checked) runMatching();
-                    showToast("Đã dán dữ liệu Tên Chưa Chuẩn!");
+                    window.AppUI.showToast("Đã dán và tự động lưu Tên Chưa Chuẩn!");
                 }
             } catch (e) {
                 alert("Vui lòng cho phép quyền truy cập Clipboard hoặc dùng phím Ctrl + V!");
@@ -124,85 +149,57 @@
 
         btnClearRaw.addEventListener('click', () => {
             rawInput.value = '';
-            updateLineCounts();
+            persistState();
+            window.AppUI.updateLineCounts(masterInput.value, rawInput.value);
             if (autoMatchCheckbox.checked) runMatching();
         });
 
         masterInput.addEventListener('input', onInputChange);
+        masterVolInput.addEventListener('input', onInputChange);
         rawInput.addEventListener('input', onInputChange);
-        minWordsInput.addEventListener('change', runMatching);
-        filterSelect.addEventListener('change', renderTable);
+
+        minWordsInput.addEventListener('change', () => {
+            persistState();
+            runMatching();
+        });
+
+        autoMatchCheckbox.addEventListener('change', persistState);
+        filterSelect.addEventListener('change', () => {
+            window.AppUI.renderResults(currentResults, filterSelect.value);
+        });
 
         btnCopyResultColumn.addEventListener('click', copyResultColumn);
+        btnCopyClassifyColumn.addEventListener('click', copyClassifyColumn);
         btnCopyFullTable.addEventListener('click', copyFullTable);
     }
 
     function onInputChange() {
-        updateLineCounts();
+        persistState();
+        window.AppUI.updateLineCounts(masterInput.value, rawInput.value);
         if (autoMatchCheckbox.checked) {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(runMatching, 300);
         }
     }
 
-    function updateLineCounts() {
-        const masterLines = getNonEmptyLines(masterInput.value);
-        const rawLines = getNonEmptyLines(rawInput.value);
-        masterCount.textContent = `${masterLines.length} tên`;
-        rawCount.textContent = `${rawLines.length} tên`;
-    }
-
-    function getNonEmptyLines(text) {
-        if (!text) return [];
-        return text.split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-    }
-
-    /**
-     * Tách chuỗi thành mảng từ khóa sạch
-     */
-    function tokenize(text) {
-        if (!text) return [];
-        const cleaned = text
-            .normalize('NFC')
-            .toLowerCase()
-            .replace(/[,\.\-_/\\()+=\[\]:;!?"'~`*]/g, ' ')
-            .trim();
-        return cleaned.split(/\s+/).filter(w => w.length > 0);
-    }
-
-    /**
-     * Thuật toán khớp từ khóa
-     */
     function runMatching() {
-        const masterLines = getNonEmptyLines(masterInput.value);
-        const rawLines = rawInput.value.split('\n'); // Giữ nguyên dòng kể cả dòng trống để tương ứng STT
-        const minWords = parseInt(minWordsInput.value, 10) || 2;
+        const masterLines = window.AppMatcher.getNonEmptyLines(masterInput.value);
+        const masterVolLines = masterVolInput.value.split('\n').map(l => l.trim());
+        const rawLines = rawInput.value.split('\n');
+        const minWords = parseInt(minWordsInput.value, 10) || window.AppConfig.DEFAULT_MIN_WORDS;
 
-        // Tiền xử lý Master Data thành Set các từ
-        const masterItems = masterLines.map(original => {
-            const tokens = tokenize(original);
-            return {
-                original,
-                tokensSet: new Set(tokens),
-                tokensList: tokens
-            };
-        });
-
+        const masterItems = window.AppMatcher.processMasterList(masterLines, masterVolLines);
         currentResults = [];
-        let matchedCount = 0;
-        let unmatchedCount = 0;
 
         for (let i = 0; i < rawLines.length; i++) {
             const rawOriginal = rawLines[i].trim();
 
             if (!rawOriginal) {
-                // Dòng trống
                 currentResults.push({
                     index: i + 1,
                     raw: "",
                     matched: "",
+                    parsed: { type: '', volume: '', combo: '' },
                     commonWords: [],
                     matchCount: 0,
                     status: 'empty'
@@ -210,215 +207,74 @@
                 continue;
             }
 
-            const rawTokensList = tokenize(rawOriginal);
-            const rawTokensSet = new Set(rawTokensList);
+            // 1. Bóc tách loại & dung tích từ chuỗi nhập hàng
+            const parsed = window.AppParser.extractTypeAndVolume(rawOriginal);
 
-            if (rawTokensSet.size === 0 || masterItems.length === 0) {
-                currentResults.push({
-                    index: i + 1,
-                    raw: rawOriginal,
-                    matched: "",
-                    commonWords: [],
-                    matchCount: 0,
-                    status: 'unmatched'
-                });
-                unmatchedCount++;
-                continue;
-            }
+            // 2. Tìm kiếm đối chiếu với Master Data
+            const searchTokens = window.AppMatcher.tokenize(parsed.cleanName.length > 0 ? parsed.cleanName : rawOriginal);
+            const matchRes = window.AppMatcher.findBestMatch(searchTokens, masterItems, minWords);
 
-            let maxMatch = 0;
-            let bestJaccard = 0;
-            let bestItem = null;
-            let bestMatchedWords = [];
-
-            for (let j = 0; j < masterItems.length; j++) {
-                const mItem = masterItems[j];
-                const matchedWords = [];
-
-                rawTokensSet.forEach(word => {
-                    if (mItem.tokensSet.has(word)) {
-                        matchedWords.push(word);
-                    }
-                });
-
-                const count = matchedWords.length;
-                if (count > maxMatch) {
-                    maxMatch = count;
-                    bestJaccard = count / (rawTokensSet.size + mItem.tokensSet.size - count);
-                    bestItem = mItem;
-                    bestMatchedWords = matchedWords;
-                } else if (count === maxMatch && count > 0) {
-                    // Tie-breaker: ưu tiên tên có độ bao phủ và ngắn gọn hơn
-                    const jaccard = count / (rawTokensSet.size + mItem.tokensSet.size - count);
-                    if (jaccard > bestJaccard) {
-                        bestJaccard = jaccard;
-                        bestItem = mItem;
-                        bestMatchedWords = matchedWords;
+            // 3. FALLBACK DUNG TÍCH VÀ LOẠI KHI KHỚP THÀNH CÔNG VỚI MASTER DATA
+            if (matchRes.isSuccess && matchRes.standardVolume) {
+                // Nếu bên nhập hàng CHƯA CÓ số dung tích -> tự động bốc số chuẩn từ Master
+                if (!parsed.volume) {
+                    parsed.volume = `${matchRes.standardVolume}ml`;
+                }
+                // Nếu bên nhập hàng CHƯA CÓ loại -> tự gán mặc định theo dung tích chuẩn
+                if (!parsed.type) {
+                    if (matchRes.standardVolume >= 30) {
+                        parsed.type = 'Full';
+                    } else if ([5, 10, 20].includes(matchRes.standardVolume)) {
+                        parsed.type = 'Chiết';
                     }
                 }
+                // Ghép lại chuỗi combo hoàn chỉnh
+                parsed.combo = [parsed.type, parsed.volume].filter(Boolean).join(' ');
             }
 
-            // Kiểm tra ngưỡng tối thiểu
-            const requiredMin = Math.min(minWords, rawTokensSet.size);
-            if (bestItem && maxMatch >= requiredMin) {
-                currentResults.push({
-                    index: i + 1,
-                    raw: rawOriginal,
-                    matched: bestItem.original,
-                    commonWords: bestMatchedWords,
-                    matchCount: maxMatch,
-                    status: 'matched'
-                });
-                matchedCount++;
-            } else {
-                currentResults.push({
-                    index: i + 1,
-                    raw: rawOriginal,
-                    matched: "",
-                    commonWords: bestMatchedWords,
-                    matchCount: maxMatch,
-                    status: 'unmatched'
-                });
-                unmatchedCount++;
-            }
+            currentResults.push({
+                index: i + 1,
+                raw: rawOriginal,
+                matched: matchRes.matchedName,
+                parsed: parsed,
+                commonWords: matchRes.commonWords,
+                matchCount: matchRes.matchCount,
+                status: matchRes.isSuccess ? 'matched' : 'unmatched'
+            });
         }
 
-        // Cập nhật thống kê
-        statTotal.textContent = currentResults.filter(r => r.raw !== "").length;
-        statMatched.textContent = matchedCount;
-        statUnmatched.textContent = unmatchedCount;
-
-        renderTable();
+        window.AppUI.renderResults(currentResults, filterSelect.value);
     }
 
-    /**
-     * Render bảng kết quả
-     */
-    function renderTable() {
-        const filter = filterSelect.value;
-        const filtered = currentResults.filter(r => {
-            if (filter === 'matched') return r.status === 'matched';
-            if (filter === 'unmatched') return r.status === 'unmatched';
-            return true;
-        });
-
-        if (filtered.length === 0) {
-            resultTableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="empty-state">
-                        ${currentResults.length === 0 ? 'Chưa có dữ liệu.' : 'Không có dòng nào thỏa mãn bộ lọc hiện tại.'}
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        let html = '';
-        filtered.forEach(item => {
-            if (item.status === 'empty') return;
-
-            const isMatched = item.status === 'matched';
-            const matchedClass = isMatched ? 'matched-text' : 'empty-text';
-            const matchedDisplay = isMatched ? escapeHtml(item.matched) : '— Để trống —';
-
-            const tokenTags = item.commonWords.length > 0
-                ? item.commonWords.map(w => `<span class="token-tag">${escapeHtml(w)}</span>`).join('')
-                : '<span style="color: var(--text-muted); font-size: 11px;">0 từ</span>';
-
-            const badge = isMatched
-                ? `<span class="badge badge-success">✓ Khớp (${item.matchCount} từ)</span>`
-                : `<span class="badge badge-empty">✕ Không đạt</span>`;
-
-            html += `
-                <tr>
-                    <td class="col-stt">${item.index}</td>
-                    <td class="col-raw">${escapeHtml(item.raw)}</td>
-                    <td class="col-matched ${matchedClass}">${matchedDisplay}</td>
-                    <td class="col-tokens">${tokenTags}</td>
-                    <td class="col-status">${badge}</td>
-                </tr>
-            `;
-        });
-
-        resultTableBody.innerHTML = html;
-    }
-
-    /**
-     * Copy cột kết quả (để paste vào ô B2 trên Google Sheet)
-     */
     function copyResultColumn() {
         if (currentResults.length === 0) {
             alert("Chưa có kết quả để copy!");
             return;
         }
-
-        // Tạo mảng chỉ chứa các tên chuẩn (hoặc chuỗi rỗng nếu không khớp), tương ứng theo từng dòng
         const lines = currentResults.map(r => r.matched || "");
-        const content = lines.join('\n');
-
-        copyToClipboard(content, `Đã copy ${lines.length} dòng! Bây giờ hãy chọn ô B2 trên Google Sheet và bấm Ctrl + V.`);
+        window.AppUI.copyToClipboard(lines.join('\n'), `Đã copy ${lines.length} dòng Tên Chuẩn! Chọn ô B2 trên Google Sheet và bấm Ctrl + V.`);
     }
 
-    /**
-     * Copy toàn bộ bảng (TSV để paste vào Excel)
-     */
+    function copyClassifyColumn() {
+        if (currentResults.length === 0) {
+            alert("Chưa có kết quả để copy!");
+            return;
+        }
+        const lines = currentResults.map(r => (r.parsed ? r.parsed.combo : '') || "");
+        window.AppUI.copyToClipboard(lines.join('\n'), `Đã copy ${lines.length} dòng Phân Loại & Dung Tích! Chọn cột tương ứng trên Google Sheet và bấm Ctrl + V.`);
+    }
+
     function copyFullTable() {
         if (currentResults.length === 0) {
             alert("Chưa có kết quả để copy!");
             return;
         }
-
-        const lines = ["STT\tTên Đầu Vào\tTên Chuẩn Khớp Nhất\tSố Từ Khớp\tTrạng Thái"];
+        const lines = ["STT\tTên Đầu Vào\tTên Chuẩn Khớp Nhất\tPhân Loại & Dung Tích\tSố Từ Khớp\tTrạng Thái"];
         currentResults.forEach(r => {
             if (r.status !== 'empty') {
-                lines.push(`${r.index}\t${r.raw}\t${r.matched}\t${r.matchCount}\t${r.status === 'matched' ? 'Đã khớp' : 'Để trống'}`);
+                lines.push(`${r.index}\t${r.raw}\t${r.matched}\t${r.parsed ? r.parsed.combo : ''}\t${r.matchCount}\t${r.status === 'matched' ? 'Đã khớp' : 'Để trống'}`);
             }
         });
-
-        copyToClipboard(lines.join('\n'), "Đã copy toàn bộ bảng (TSV) vào clipboard!");
-    }
-
-    function copyToClipboard(text, successMessage) {
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast(successMessage);
-            }).catch(() => fallbackCopy(text, successMessage));
-        } else {
-            fallbackCopy(text, successMessage);
-        }
-    }
-
-    function fallbackCopy(text, successMessage) {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-            document.execCommand('copy');
-            showToast(successMessage);
-        } catch (err) {
-            alert("Không thể copy tự động, vui lòng copy thủ công!");
-        }
-        document.body.removeChild(ta);
-    }
-
-    function showToast(msg) {
-        toast.textContent = msg;
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3500);
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+        window.AppUI.copyToClipboard(lines.join('\n'), "Đã copy toàn bộ bảng (TSV) vào clipboard!");
     }
 })();

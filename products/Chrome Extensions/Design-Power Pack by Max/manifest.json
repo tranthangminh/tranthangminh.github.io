@@ -61,7 +61,8 @@
         "4. tools-features/video-sound-controller.js",
         "4. tools-features/video-controller.js",
         "4. tools-features/sound-controller.js",
-        "4. tools-features/auto-open-image-studio.js"
+        "4. tools-features/auto-open-image-studio.js",
+        "4. tools-features/floating-tools.js"
       ],
       "css": [
         "theme.css",
@@ -86,7 +87,6 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "Outfit/*",
         "svg/*",
         "theme.css",
         "common/*",

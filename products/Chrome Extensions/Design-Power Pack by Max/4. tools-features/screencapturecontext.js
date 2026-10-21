@@ -98,31 +98,51 @@ async function performVisibleCaptureDirectly(tab) {
   const fmt = formatMap[fmtKey] || formatMap.jpg;
   const folder = saved.downloadLocation === 'subfolder' ? `${(saved.subfolderName || 'MAX Downloads').replace(/[/\\]+$/, '')}/` : '';
 
+  // Temporarily hide floating tools before capturing
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: () => {
+      const el = document.getElementById('max-floating-tools-host');
+      if (el) el.style.setProperty('display', 'none', 'important');
+    }
+  }).catch(() => {});
+
   let dataUrl = null;
 
-  if (scale > 1 && chrome.debugger) {
-    try {
-      await new Promise(r => chrome.debugger.attach({ tabId: tab.id }, '1.3', r));
-      const res = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => window.devicePixelRatio || 1 });
-      const dpr = res?.[0]?.result || 1;
+  try {
+    if (scale > 1 && chrome.debugger) {
+      try {
+        await new Promise(r => chrome.debugger.attach({ tabId: tab.id }, '1.3', r));
+        const res = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => window.devicePixelRatio || 1 });
+        const dpr = res?.[0]?.result || 1;
 
-      await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Emulation.setDeviceMetricsOverride', {
-        width: 0, height: 0, deviceScaleFactor: dpr * scale, mobile: false
-      }, r));
-      await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Emulation.setDeviceMetricsOverride', {
+          width: 0, height: 0, deviceScaleFactor: dpr * scale, mobile: false
+        }, r));
+        await new Promise(r => setTimeout(r, 200));
 
-      const cdpFmt = fmt.mime === 'image/jpeg' ? 'jpeg' : 'png';
-      const cdpRes = await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Page.captureScreenshot', { format: cdpFmt, fromSurface: true, quality: 100 }, (d) => r(d?.data)));
-      if (cdpRes) dataUrl = (fmt.mime === 'image/jpeg' ? 'data:image/jpeg;base64,' : 'data:image/png;base64,') + cdpRes;
+        const cdpFmt = fmt.mime === 'image/jpeg' ? 'jpeg' : 'png';
+        const cdpRes = await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Page.captureScreenshot', { format: cdpFmt, fromSurface: true, quality: 100 }, (d) => r(d?.data)));
+        if (cdpRes) dataUrl = (fmt.mime === 'image/jpeg' ? 'data:image/jpeg;base64,' : 'data:image/png;base64,') + cdpRes;
 
-      await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Emulation.clearDeviceMetricsOverride', {}, r));
-      await new Promise(r => chrome.debugger.detach({ tabId: tab.id }, r));
-    } catch {
-      try { chrome.debugger.detach({ tabId: tab.id }, () => {}); } catch {}
+        await new Promise(r => chrome.debugger.sendCommand({ tabId: tab.id }, 'Emulation.clearDeviceMetricsOverride', {}, r));
+        await new Promise(r => chrome.debugger.detach({ tabId: tab.id }, r));
+      } catch {
+        try { chrome.debugger.detach({ tabId: tab.id }, () => {}); } catch {}
+      }
     }
+
+    if (!dataUrl) dataUrl = await safeCaptureVisibleTab(tab.windowId, { format: fmt.chromeFormat });
+  } finally {
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        const el = document.getElementById('max-floating-tools-host');
+        if (el) el.style.removeProperty('display');
+      }
+    }).catch(() => {});
   }
 
-  if (!dataUrl) dataUrl = await safeCaptureVisibleTab(tab.windowId, { format: fmt.chromeFormat });
   if (!dataUrl) return;
 
   dataUrl = await convertDataUrlFormatBg(dataUrl, fmt.mime);
@@ -247,7 +267,7 @@ async function updateWebProgressHUDBg(tabId, pct, text) {
         if (!hud) {
           hud = document.createElement('div');
           hud.id = 'max-capture-progress-hud';
-          hud.style.cssText = 'position:fixed!important;bottom:24px!important;left:50%!important;transform:translateX(-50%)!important;z-index:2147483647!important;background:#0f172a!important;border:1px solid #00f2fe!important;box-shadow:0 12px 36px rgba(0,0,0,0.6)!important;color:#f8fafc!important;padding:12px 22px!important;border-radius:14px!important;font-family:sans-serif!important;min-width:220px!important;pointer-events:none!important;';
+          hud.style.cssText = 'position:fixed!important;bottom:24px!important;left:50%!important;transform:translateX(-50%)!important;z-index:2147483647!important;background:#0f172a!important;border:1px solid #00f2fe!important;box-shadow:0 12px 36px rgba(0,0,0,0.6)!important;color:#f8fafc!important;padding:12px 22px!important;border-radius:14px!important;font-family:system-ui,-apple-system,sans-serif!important;min-width:220px!important;pointer-events:none!important;';
           hud.innerHTML = '<div id="max-hud-text" style="font-size:12px!important;font-weight:600!important;text-align:center!important;margin-bottom:6px!important;">Connecting...</div><div style="width:100%!important;height:6px!important;background:rgba(255,255,255,0.12)!important;border-radius:3px!important;overflow:hidden!important;"><div id="max-hud-bar" style="width:0%!important;height:100%!important;background:#00f2fe!important;transition:width 0.15s ease!important;"></div></div>';
           (document.body || document.documentElement).appendChild(hud);
         }

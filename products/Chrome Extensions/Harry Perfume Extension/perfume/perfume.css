@@ -79,15 +79,8 @@
   width: 17px;
   height: 17px;
   display: block;
-}
-
-.btn-toggle-price .money-svg .st0 {
-  fill: none;
-  stroke: var(--text-dark);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2px;
-  transition: stroke var(--transition-speed) ease;
+  background-color: var(--text-dark);
+  transition: background-color var(--transition-speed) ease;
 }
 
 .btn-toggle-price:hover {
@@ -104,8 +97,8 @@
   filter: none;
 }
 
-.btn-toggle-price.prices-off .money-svg .st0 {
-  stroke: var(--text-secondary);
+.btn-toggle-price.prices-off .money-svg {
+  background-color: var(--text-secondary);
 }
 
 .btn-toggle-price.prices-off:hover {
@@ -115,8 +108,8 @@
   filter: none;
 }
 
-.btn-toggle-price.prices-off:hover .money-svg .st0 {
-  stroke: var(--gold-primary);
+.btn-toggle-price.prices-off:hover .money-svg {
+  background-color: var(--gold-primary);
 }
 
 /* Ẩn hàng giá khi toggle off */

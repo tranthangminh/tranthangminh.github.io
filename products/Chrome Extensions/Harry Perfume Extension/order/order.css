@@ -163,6 +163,7 @@
 }
 
 .order-item-card {
+  flex-shrink: 0;
   background: var(--bg-card);
   border: 0px solid var(--border-color);
   border-radius: 7px;

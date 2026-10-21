@@ -503,32 +503,43 @@ document.addEventListener('DOMContentLoaded', () => {
   - Thẻ phân loại (`product-card-tag`) cố định là `Web App` (sử dụng `data-i18n="productsCatalog.tags.webApp"`).
 - **Web App Sưu Tầm (Curated External):**
   - Luôn nằm **SAU** toàn bộ các Web App do chính chủ phát triển (Badge `04`, `05`, `06`...).
+  - **Quy tắc sắp xếp theo nhóm phân loại:** Sắp xếp theo thứ tự bảng chữ cái **A-Z của Tên Phân Loại (Category)** (`Fun` $\rightarrow$ `Learn` $\rightarrow$ `Multimedia Generator` $\rightarrow$ `PC Games` $\rightarrow$ `Web Games`...).
   - **Quy tắc tráo vị trí khi có app mới:** Khi tác giả phát triển thêm một Web App tự làm mới (ví dụ Web App số `04`), Web App mới này bắt buộc phải được chèn vào trước nhóm sưu tầm. Toàn bộ các Web App sưu tầm sẽ tự động dịch chuyển số Badge lùi về sau (`05`, `06`, `07`...).
 
-## 2. Kiến Trúc Lưu Trữ & Triệt Tiêu Mã Thừa (Zero Bloatware Architecture)
-- **Tuyệt đối KHÔNG tạo file code:** Không tạo các file `.html`, `.js`, `.css`, trang iframe hay trang redirect trung gian cho các web app sưu tầm. Việc mở web ngoài được thực hiện trực tiếp từ thẻ liên kết `<a>` trên trang danh mục (`products.html`).
-- **Thư mục tài nguyên ảnh riêng biệt:**
-  - Toàn bộ ảnh xem trước (Preview / Thumbnail / Share Image) của web app sưu tầm bắt buộc phải được lưu tập trung trong thư mục con:
+## 2. Kiến Trúc Thư Mục Phân Loại & Tự Động Hóa 1-Click (`sync.bat`)
+- **Tổ chức theo thư mục nhóm phân loại (Category Subfolders):**
+  - Toàn bộ web app sưu tầm được lưu tại `products/web-apps/curated/` theo từng thư mục phân loại:
     ```text
     products/web-apps/curated/
-    ├── [app-slug].png (hoặc .jpg / .svg)
+    ├── sync.bat / sync.js                  # Script tự động đồng bộ 1-click
+    └── [Category_Name]/                    # Tên nhóm phân loại (A-Z)
+        ├── [App_Name].url                  # File shortcut InternetShortcut chứa URL đích
+        ├── [App_Name].html                 # File chuyển hướng chuẩn SEO, title là tên app tối giản
+        └── [App_Name].png                  # Ảnh Share Image / Open Graph Preview chính thức
     ```
-  - Cấm lưu lẫn lộn ảnh của web sưu tầm ra thư mục gốc `products/web-apps/` để giữ gìn sự trong sạch của cây thư mục mã nguồn chính.
+- **Quy tắc File Redirect (`[App_Name].html`):**
+  - Nhẹ < 1KB, chuyển hướng tức thì 0 giây qua `meta http-equiv="refresh"` và `window.location.replace`.
+  - Thẻ `<title>` và thẻ `<a>` đặt đúng tên Web App (ví dụ: `<title>TierMaker</title>`). Tuyệt đối không thêm chữ thừa ("Đang chuyển hướng"...) để tránh phát sinh bảo trì song ngữ i18n.
+- **Cơ chế tự động hóa 1-Click (`sync.bat`):**
+  - Khi thêm web app mới, chỉ cần kéo thả link `.url` vào đúng folder nhóm (hoặc tạo folder nhóm mới).
+  - Nhấp đúp chuột chạy `sync.bat`: Script tự động tải ảnh `og:image` nếu chưa có, sinh file `.html` redirect và tự động chèn/cập nhật thẻ vào `products.html`, `index.html` và `sitemap.xml`.
 
-## 3. Quy Chuẩn Thẻ Card & Tên Miền Rút Gọn
-- **Thuộc tính thẻ liên kết:** Thẻ bao ngoài `<a class="product-card" ...>` bắt buộc phải có thuộc tính `target="_blank" rel="noopener noreferrer"` để mở tab mới an toàn và không điều hướng rời khỏi portfolio.
-- **Tiêu đề (`product-card-title`):** Là tên thương hiệu hoặc tiêu đề chính thức của trang web đó (ví dụ: `TierMaker`, `Grainrad`, `Sprite Fusion: Destroy`...).
-- **Thẻ định danh tên miền (`product-card-tag`):**
-  - Phải là địa chỉ tên miền (Domain) trực tiếp của trang web đó.
-  - Bắt buộc lược bỏ giao thức (`https://`, `http://`) và dấu gạch chéo ở cuối (`/`).
-  - Ví dụ: `https://tiermaker.com/` ➔ `tiermaker.com`, `https://jherr.github.io/depth-of-field/` ➔ `jherr.github.io/depth-of-field`.
-  - Không gắn thuộc tính `data-i18n` lên `product-card-tag` này vì địa chỉ tên miền là định danh toàn cầu cố định.
+## 3. Quy Chuẩn Thẻ Card, Đường Link Chữ Thường & Viên Thuốc Phân Loại
+- **Thuộc tính thẻ liên kết:** Thẻ bao ngoài `<a class="product-card" ...>` bắt buộc phải có thuộc tính `target="_blank" rel="noopener noreferrer"` để mở tab mới an toàn.
+- **Tiêu đề (`product-card-title`):** Là tên thương hiệu hoặc tiêu đề chính thức của trang web đó (UPPERCASE).
+- **Đường link web (`product-card-link`):**
+  - Đặt ngay dưới tiêu đề.
+  - Là địa chỉ tên miền (Domain) trực tiếp rút gọn, lược bỏ `https://` và dấu `/` cuối (ví dụ: `tiermaker.com`, `xe-bay-ha-noi.vercel.app`).
+  - **Bắt buộc viết thường hoàn toàn (lowercase)**, không dùng in hoa.
+- **Thẻ phân loại dạng viên thuốc (`product-category-pill`):**
+  - Đặt ở góc trái chân thẻ (`.product-card-footer`), cùng vị trí với nút truy cập/download của các app in-house để đảm bảo tính cân bằng thị giác.
+  - Kiểu dáng: **Thẻ viên thuốc (pill badge)** bo tròn `border-radius: 9999px`.
+  - Màu sắc: **Tự động phân bổ theo dải quang phổ cầu vồng (Rainbow Spectrum HSL từ Đỏ ~5° đến Tím ~285°)** dựa trên tổng số nhóm phân loại phát hiện được. Nhóm đầu tiên luôn bắt đầu bằng sắc Đỏ, nhóm cuối cùng kết thúc bằng sắc Tím, các nhóm ở giữa được chia đều bước nhảy màu quang phổ tự động. Chữ luôn là màu **trắng**, in hoa **UPPERCASE** (`FUN`, `LEARN`, `PC GAMES`...). Khi thêm hoặc bớt nhóm, dải màu tự động co giãn và phân bổ lại đều đặn.
+  - Mũi tên `.product-card-arrow` giữ ở góc phải chân thẻ.
 - **Ảnh xem trước (`product-card-media`):**
-  - Ưu tiên sử dụng chính ảnh Share Image (Open Graph `og:image` hoặc Twitter Card Image) chính chủ của tác giả trang web đó tải về máy.
-  - Tải về lưu local tại `products/web-apps/curated/` để đảm bảo tốc độ và tránh lỗi hotlink 403.
+  - Sử dụng ảnh Share Image (Open Graph `og:image` hoặc Twitter Card Image) chính chủ tải về local tại thư mục nhóm tương ứng.
 - **Chân thẻ (`product-card-footer`):**
-  - Chỉ giữ lại biểu tượng mũi tên `.product-card-arrow` hướng sang phải.
-  - Không gắn các nút đếm số lượt truy cập nội bộ (`product-download-btn--web-app`) vì đây là liên kết ngoài, hệ thống đo lường không can thiệp vào máy chủ bên thứ ba.
+  - Gồm thẻ viên thuốc `.product-category-pill` bên trái và mũi tên `.product-card-arrow` bên phải. Không gắn nút đếm lượt truy cập nội bộ vì là liên kết ngoài.
 
 ## 4. Quy Chuẩn Đăng Ký Từ Điển Song Ngữ (`products-i18n.js`)
 - Mọi Web App sưu tầm khi thêm vào thẻ card đều phải đăng ký khóa dịch trong `products-i18n.js` ở cả hai khối `vi` và `en` dưới nhóm `productsCatalog` (tối thiểu gồm trường `title`).

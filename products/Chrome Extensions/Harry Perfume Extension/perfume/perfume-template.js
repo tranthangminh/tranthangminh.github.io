@@ -1,12 +1,5 @@
 // Logic định dạng dung tích và ghép mẫu văn bản tư vấn nước hoa tự động (Perfume Template Logic)
-
-// Hàm chuẩn hóa giá trị dung tích (VD: 100 -> 100ml)
-function formatDungTichValue(val) {
-  let s = cleanString(val);
-  if (!s || s === "-") return "";
-  s = s.replace(/ml$/i, "").trim();
-  return s ? s + "ml" : "";
-}
+// (Hàm formatDungTichValue được nạp từ common/formatters.js - Single Source of Truth)
 
 // Hàm lấy tên dung tích đầy đủ theo loại (Fullbox, Tester, Mẫu thử, Gốc)
 function getDungTichText(type, rawDungTich) {

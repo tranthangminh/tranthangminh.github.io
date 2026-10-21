@@ -188,13 +188,15 @@ if (typeof document !== 'undefined') {
     const screenCaptureContextToggle = document.getElementById('setting-screencapture-context');
     const videoSpeedControllerToggle = document.getElementById('setting-video-speed-controller');
     const directImageStudioToggle = document.getElementById('setting-direct-image-studio');
+    const floatingToolsToggle = document.getElementById('setting-floating-tools');
 
     const masterToggles = [
       { element: saveAsTypeToggle, key: 'saveAsFileTypeEnabled' },
       { element: searchImageMasterToggle, key: 'searchImageMasterEnabled' },
       { element: screenCaptureContextToggle, key: 'screenCaptureContextEnabled' },
       { element: videoSpeedControllerToggle, key: 'videoSpeedControllerEnabled' },
-      { element: directImageStudioToggle, key: 'directImageStudioEnabled' }
+      { element: directImageStudioToggle, key: 'directImageStudioEnabled' },
+      { element: floatingToolsToggle, key: 'floatingToolsEnabled' }
     ];
 
     const chips = Array.from(document.querySelectorAll('.context-option-chip'));

@@ -10,6 +10,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 0 !important;
   z-index: 10000;
   animation: fadeIn 0.2s ease-out;
 }
@@ -20,7 +21,7 @@
   border-radius: 12px;
   width: 90%;
   max-width: 320px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   padding: 16px;
   display: flex;
   flex-direction: column;

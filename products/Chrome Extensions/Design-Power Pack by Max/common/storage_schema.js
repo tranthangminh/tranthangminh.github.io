@@ -16,6 +16,8 @@ const DEFAULT_SETTINGS = Object.freeze({
   maxCaptureHeight: 16000,              // Default 16000px limit
   lastCaptureMode: 'visible',            // 'area' | 'visible' | 'full' | 'record'
   enableContextMenuTools: true,
+  enableFloatingTools: true,
+  floatingToolsPosY: 50,
   videoSpeedControllerEnabled: true,
   hideHudState: false
 });

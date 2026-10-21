@@ -3,22 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chuẩn Hóa Tên Sản Phẩm - Fuzzy Keyword Matcher</title>
+    <title>Chuẩn Hóa Tên & Bóc Tách Dung Tích Nước Hoa</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./base.css">
+    <link rel="stylesheet" href="./layout.css">
+    <link rel="stylesheet" href="./table.css">
 </head>
 <body>
     <div class="app-container">
         <!-- HEADER -->
         <header class="app-header">
             <div class="header-left">
-                <div class="logo-badge">🔍 Matcher</div>
+                <div class="logo-badge">🔍 Matcher Pro</div>
                 <div>
-                    <h1 class="app-title">Công Cụ Chuẩn Hóa Tên Sản Phẩm</h1>
-                    <p class="app-subtitle">Tách từ khóa đối chiếu tên chưa chuẩn với Master Data - 100% Offline trên trình duyệt</p>
+                    <h1 class="app-title">Chuẩn Hóa Tên & Bóc Tách Phân Loại - Dung Tích</h1>
+                    <p class="app-subtitle">Tách từ khóa tìm tên chuẩn, tự động trích xuất Loại & Dung tích • <span style="color: #34d399; font-weight: 500;">💾 Tự động lưu dữ liệu</span></p>
                 </div>
             </div>
             <div class="header-actions">
@@ -59,18 +61,23 @@
                     <div class="panel-title-wrap">
                         <span class="panel-icon">📊</span>
                         <div>
-                            <h2 class="panel-title">Tên Chuẩn (Master Data)</h2>
-                            <span class="panel-desc">Copy cột G từ tab <b>📊Master Data</b> dán vào đây</span>
+                            <h2 class="panel-title">Tên & Dung Tích Chuẩn (Master Data)</h2>
+                            <span class="panel-desc">Cột 1: Tên Chuẩn • Cột 2: Dung tích chuẩn (chỉ số, vd: 100)</span>
                         </div>
                     </div>
                     <div class="panel-meta">
                         <span class="counter-badge" id="masterCount">0 tên</span>
-                        <button class="btn-icon" id="btnPasteMaster" title="Dán nhanh từ Clipboard">📋 Dán</button>
+                        <button class="btn-icon" id="btnPasteMaster" title="Dán nhanh từ Clipboard (tự tách 2 cột nếu copy từ Sheet)">📋 Dán</button>
                         <button class="btn-icon" id="btnClearMaster" title="Xóa cột này">✕</button>
                     </div>
                 </div>
-                <div class="textarea-wrap">
-                    <textarea id="masterInput" placeholder="Dán danh sách tên chuẩn vào đây, mỗi tên một dòng...&#10;Ví dụ:&#10;Prada Luna Rossa Carbon EDT 100ml&#10;Prada Luna Rossa Black EDP 100ml&#10;Dior Sauvage EDT 100ml&#10;Bleu De Chanel EDP 100ml" spellcheck="false"></textarea>
+                <div class="master-inputs-split">
+                    <div class="textarea-wrap master-name-wrap">
+                        <textarea id="masterInput" placeholder="Cột 1: Tên chuẩn (dán từ Sheet)...&#10;Prada Luna Rossa Carbon EDT&#10;Dior Sauvage EDT&#10;Bleu De Chanel EDP&#10;YSL Y EDP" spellcheck="false"></textarea>
+                    </div>
+                    <div class="textarea-wrap master-vol-wrap">
+                        <textarea id="masterVolInput" placeholder="Cột 2: Số ml...&#10;100&#10;100&#10;100&#10;100" spellcheck="false"></textarea>
+                    </div>
                 </div>
             </section>
 
@@ -81,7 +88,7 @@
                         <span class="panel-icon">🔄</span>
                         <div>
                             <h2 class="panel-title">Tên Chưa Chuẩn (Nhập Hàng)</h2>
-                            <span class="panel-desc">Copy cột G từ tab <b>🔄Nhập hàng</b> dán vào đây</span>
+                            <span class="panel-desc">Dán cột G từ <b>🔄Nhập hàng</b> (chứa tên ghi đại, dung tích, loại)</span>
                         </div>
                     </div>
                     <div class="panel-meta">
@@ -91,7 +98,7 @@
                     </div>
                 </div>
                 <div class="textarea-wrap">
-                    <textarea id="rawInput" placeholder="Dán danh sách tên nhập ghi đại đại vào đây, mỗi tên một dòng...&#10;Ví dụ:&#10;Prada Carbon Luna Rossa EDT 100ml Tester&#10;dior sauvage edt 100ml tester chính hãng&#10;chanel bleu edp 100ml nguyên seal&#10;1 chai nước hoa lạ hoắc 50ml" spellcheck="false"></textarea>
+                    <textarea id="rawInput" placeholder="Dán danh sách tên nhập ghi đại vào đây...&#10;Ví dụ:&#10;Prada Carbon Luna Rossa EDT 100ml Tester&#10;dior sauvage chiết 10ml&#10;bleu chanel 10&#10;versace eros mini 5&#10;ysl y edp gốc 30/75ml nobox" spellcheck="false"></textarea>
                 </div>
             </section>
         </main>
@@ -100,7 +107,7 @@
         <section class="results-section">
             <div class="results-header">
                 <div class="results-title-group">
-                    <h2 class="results-title">Kết Quả Đối Chiếu</h2>
+                    <h2 class="results-title">Kết Quả Đối Chiếu & Bóc Tách</h2>
                     <div class="stats-group">
                         <span class="stat-pill stat-total">Tổng: <strong id="statTotal">0</strong></span>
                         <span class="stat-pill stat-matched">Đã khớp: <strong id="statMatched">0</strong></span>
@@ -111,14 +118,17 @@
                     <div class="filter-group">
                         <select id="filterSelect" class="select-control">
                             <option value="all">Hiển thị: Tất cả dòng</option>
-                            <option value="matched">Chỉ xem dòng ĐÃ KHỚP</option>
-                            <option value="unmatched">Chỉ xem dòng ĐỂ TRỐNG</option>
+                            <option value="matched">Chỉ xem dòng ĐÃ KHỚP TÊN</option>
+                            <option value="unmatched">Chỉ xem dòng CHƯA KHỚP</option>
                         </select>
                     </div>
-                    <button class="btn btn-success" id="btnCopyResultColumn" title="Copy đúng 1 cột kết quả để dán thẳng vào ô B2 trên Google Sheet">
-                        <span>📋 Copy Cột Kết Quả (để dán vào Sheet)</span>
+                    <button class="btn btn-success" id="btnCopyResultColumn" title="Copy cột Tên Chuẩn để dán vào ô B2 trên Google Sheet">
+                        <span>📋 Copy Cột Tên Chuẩn</span>
                     </button>
-                    <button class="btn btn-secondary" id="btnCopyFullTable" title="Copy bảng 3 cột">
+                    <button class="btn btn-primary" id="btnCopyClassifyColumn" title="Copy cột Phân Loại & Dung Tích (ví dụ: Full 100ml, Tester 75ml...)">
+                        <span>🏷️ Copy Cột Loại & Dung Tích</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btnCopyFullTable" title="Copy toàn bộ bảng (TSV để paste vào Excel)">
                         <span>📑 Copy Toàn Bảng</span>
                     </button>
                 </div>
@@ -131,14 +141,15 @@
                         <tr>
                             <th class="col-stt">STT</th>
                             <th class="col-raw">Tên Chưa Chuẩn (Đầu vào)</th>
-                            <th class="col-matched">Tên Chuẩn Khớp Nhất (Kết quả điền cột B)</th>
-                            <th class="col-tokens">Từ Khóa Trùng Khớp</th>
+                            <th class="col-matched">Tên Chuẩn Khớp Nhất</th>
+                            <th class="col-type-vol">Phân Loại & Dung Tích</th>
+                            <th class="col-tokens">Từ Khóa Trùng</th>
                             <th class="col-status">Trạng Thái</th>
                         </tr>
                     </thead>
                     <tbody id="resultTableBody">
                         <tr>
-                            <td colspan="5" class="empty-state">
+                            <td colspan="6" class="empty-state">
                                 Chưa có dữ liệu. Hãy dán danh sách tên vào 2 ô phía trên hoặc bấm nút <b>"🧪 Nạp dữ liệu mẫu"</b> để dùng thử!
                             </td>
                         </tr>
@@ -151,6 +162,12 @@
         <div id="toast" class="toast">Đã copy vào clipboard!</div>
     </div>
 
+    <!-- SCRIPTS (THEO THỨ TỰ PHỤ THUỘC) -->
+    <script src="./config.js"></script>
+    <script src="./parser.js"></script>
+    <script src="./matcher.js"></script>
+    <script src="./storage.js"></script>
+    <script src="./ui.js"></script>
     <script src="./app.js"></script>
 </body>
 </html>

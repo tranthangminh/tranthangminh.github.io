@@ -1,0 +1,514 @@
+/* ==========================================================================
+   HARRY PERFUME EXTENSION - SENDER STATS (THỐNG KÊ THEO NGƯỜI GỬI)
+   ========================================================================== */
+
+.sender-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  gap: 8px;
+  overflow: hidden;
+}
+
+/* Hàng thanh tìm kiếm người gửi kèm nút Filter sắp xếp */
+.sender-search-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sender-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+}
+
+/* Phòng thủ: nếu sender-search-wrapper nằm trực tiếp dưới sender-container */
+.sender-container > .sender-search-wrapper {
+  flex: none;
+  width: 100%;
+  height: 32px;
+}
+
+.sender-search-input {
+  width: 100%;
+  height: 32px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: "Nunito", sans-serif;
+  padding: 4px 30px 4px 10px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all var(--transition, 0.2s) ease;
+}
+
+.sender-search-input:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.sender-search-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.sender-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: none;
+}
+
+.sender-search-clear:hover {
+  color: var(--gold-primary);
+}
+
+/* Nút Filter sắp xếp người gửi (Reuse icon từ Tab Nước hoa) */
+.btn-sender-sort {
+  width: 32px;
+  height: 32px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition, 0.2s) ease;
+}
+
+.btn-sender-sort:hover,
+.btn-sender-sort.active {
+  border-color: var(--gold-primary);
+  background-color: rgba(229, 193, 88, 0.1);
+  box-shadow: 0 0 6px var(--gold-glow);
+}
+
+.btn-sender-sort .filter-svg {
+  width: 14px;
+  height: 14px;
+  background-color: var(--text-secondary);
+  transition: background-color 0.2s ease;
+}
+
+.btn-sender-sort:hover .filter-svg,
+.btn-sender-sort.active .filter-svg {
+  background-color: var(--gold-primary);
+}
+
+/* Menu Dropdown tiêu chí sắp xếp */
+.sender-sort-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 100;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: var(--shadow-elevation);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 170px;
+}
+
+.sender-sort-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.sender-sort-item:hover {
+  color: var(--text-primary);
+  background-color: rgba(229, 193, 88, 0.08);
+}
+
+.sender-sort-item.active {
+  color: var(--gold-primary);
+  font-weight: 700;
+  background-color: rgba(229, 193, 88, 0.15);
+}
+
+/* Header tổng kết danh sách người gửi */
+.sender-summary-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 2px 4px;
+  flex-shrink: 0;
+}
+
+/* Danh sách thẻ người gửi */
+.sender-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.sender-card {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  gap: 10px;
+  cursor: pointer;
+  transition: all var(--transition, 0.2s) ease;
+}
+
+.sender-card:hover {
+  border-color: var(--gold-primary);
+  background-color: rgba(229, 193, 88, 0.05);
+  transform: translateY(-1px);
+}
+
+.sender-card-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.sender-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sender-card-name {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sender-card-sub {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.sender-card-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.sender-card-total {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  letter-spacing: -0.2px;
+}
+
+.sender-card-arrow {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.sender-card:hover .sender-card-arrow {
+  color: var(--gold-primary);
+  transform: translateX(2px);
+}
+
+/* ==========================================================================
+   CHI TIẾT NGƯỜI GỬI (SENDER DETAIL VIEW)
+   ========================================================================== */
+
+.sender-detail-header-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sender-detail-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-sender-back {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-sender-back:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+}
+
+.sender-detail-title-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.sender-detail-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sender-detail-stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sender-detail-stat-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sender-detail-stat-item strong {
+  color: var(--text-primary);
+}
+
+.sender-detail-stat-item.highlight strong {
+  color: var(--gold-primary);
+  font-weight: 800;
+}
+
+/* Danh sách chai của người gửi */
+.sender-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+  padding-bottom: 12px;
+}
+
+/* Từng dòng sản phẩm: Ảnh + Hàng trên (Tên + Dung tích) + Hàng dưới (Thẻ + Giá) */
+.sender-item-row {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  gap: 10px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sender-item-row:hover {
+  border-color: rgba(229, 193, 88, 0.6);
+  background-color: rgba(229, 193, 88, 0.03);
+}
+
+/* Ảnh thumbnail chai nước hoa (khớp 100%) */
+.sender-item-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: contain;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  padding: 2px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.sender-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Hàng trên: Tên chai và Dung tích trôi cùng dòng chữ */
+.sender-item-row-top {
+  display: block;
+  line-height: 1.4;
+  width: 100%;
+}
+
+.sender-item-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: inline;
+  word-break: break-word;
+}
+
+/* Hàng dưới: Các thẻ bên trái và Giá tiền bên phải */
+.sender-item-row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.sender-item-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sender-item-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.sender-item-badge.capacity {
+  background: rgba(229, 193, 88, 0.15);
+  color: var(--gold-primary);
+  border: 1px solid rgba(229, 193, 88, 0.3);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  min-width: 48px;
+  text-align: center;
+  box-sizing: border-box;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 6px;
+  margin-top: -2px;
+}
+
+.sender-item-badge.qty {
+  background-color: rgba(52, 199, 89, 0.12);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+  color: var(--c-green);
+  font-weight: 700;
+}
+
+.sender-item-badge.status-done {
+  background-color: rgba(52, 199, 89, 0.12);
+  color: var(--c-green);
+  border: 1px solid rgba(52, 199, 89, 0.25);
+}
+
+.sender-item-badge.status-pending {
+  background-color: rgba(255, 159, 10, 0.12);
+  color: var(--c-yellow);
+  border: 1px solid rgba(255, 159, 10, 0.25);
+}
+
+.sender-item-badge.status-return {
+  background-color: rgba(255, 69, 58, 0.12);
+  color: var(--c-red);
+  border: 1px solid rgba(255, 69, 58, 0.25);
+}
+
+.sender-item-badge.status-inquiry {
+  background-color: rgba(175, 82, 222, 0.12);
+  color: var(--c-purple);
+  border: 1px solid rgba(175, 82, 222, 0.25);
+}
+
+.sender-item-badge.status-default {
+  background-color: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.sender-item-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.sender-item-price {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}

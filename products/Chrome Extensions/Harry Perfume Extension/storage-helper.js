@@ -5,39 +5,8 @@ const DEFAULT_SETTINGS = Object.freeze({
   lastPayloadSizeBytes: 0
 });
 
-// Helper chuyển đổi dung lượng byte sang KB/MB/GB (Quy chuẩn Common Utils)
-function formatBytes(bytes) {
-  if (!bytes || isNaN(bytes) || bytes <= 0) return '0 KB';
-  if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(2)} GB`;
-  if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(1)} MB`;
-  return `${(bytes / 1024).toFixed(0)} KB`;
-}
-
-// Helper escAttr làm sạch chuỗi chống XSS/Injection khi render thuộc tính và nội dung HTML
-function escAttr(val) {
-  if (val === null || val === undefined) return '';
-  return String(val)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-// Helper debounce trì hoãn xử lý cho input/search/drag
-function debounce(fn, delay = 200) {
-  let timer = null;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
-}
-
 if (typeof window !== "undefined") {
   window.DEFAULT_SETTINGS = DEFAULT_SETTINGS;
-  window.formatBytes = formatBytes;
-  window.escAttr = escAttr;
-  window.debounce = debounce;
 }
 
 // StorageHelper: Wrapper giúp đọc/ghi dữ liệu qua chrome.storage.local

@@ -1,0 +1,257 @@
+/* RESULTS SECTION & TABLE STYLES */
+.results-section {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: var(--shadow-lg);
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.results-title-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.results-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.stats-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-pill {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 14px;
+    background: var(--bg-surface-elevated);
+    color: var(--text-secondary);
+}
+
+.stat-pill strong {
+    color: var(--text-primary);
+}
+
+.stat-matched strong {
+    color: var(--success);
+}
+
+.stat-unmatched strong {
+    color: #f87171;
+}
+
+.results-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.select-control {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.select-control:focus {
+    outline: none;
+    border-color: var(--border-focus);
+}
+
+/* TABLE CONTAINER & CELLS */
+.table-container {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+}
+
+.result-table thead {
+    background-color: #0b1120;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.result-table th {
+    padding: 12px 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.result-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+    vertical-align: middle;
+}
+
+.result-table tbody tr:hover {
+    background-color: rgba(51, 65, 85, 0.35);
+}
+
+/* COLUMN WIDTHS */
+.col-stt {
+    width: 50px;
+    text-align: center;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.col-raw {
+    width: 25%;
+    color: var(--text-secondary);
+}
+
+.col-matched {
+    width: 28%;
+    font-weight: 500;
+}
+
+.col-matched.matched-text {
+    color: #67e8f9;
+}
+
+.col-matched.empty-text {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.col-type-vol {
+    width: 17%;
+}
+
+.col-tokens {
+    width: 18%;
+}
+
+.col-status {
+    width: 12%;
+    text-align: center;
+}
+
+/* TYPE & VOLUME BADGES */
+.type-vol-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    background: rgba(147, 51, 234, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(147, 51, 234, 0.3);
+}
+
+.type-vol-badge.badge-goc {
+    background: var(--warning-bg);
+    color: #fcd34d;
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.type-vol-badge.badge-tester {
+    background: rgba(14, 165, 233, 0.15);
+    color: #38bdf8;
+    border-color: rgba(14, 165, 233, 0.35);
+}
+
+.type-vol-badge.badge-chiet {
+    background: rgba(236, 72, 153, 0.15);
+    color: #f472b6;
+    border-color: rgba(236, 72, 153, 0.35);
+}
+
+.type-vol-badge.badge-mini {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+.type-vol-badge.badge-full {
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    border-color: rgba(99, 102, 241, 0.35);
+}
+
+.type-vol-badge.badge-refill {
+    background: rgba(20, 184, 166, 0.15);
+    color: #2dd4bf;
+    border-color: rgba(20, 184, 166, 0.35);
+}
+
+.type-vol-badge.badge-nobox {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.35);
+}
+
+/* MATCHED TOKEN TAGS & STATUS BADGES */
+.token-tag {
+    display: inline-block;
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    padding: 1px 6px;
+    margin: 2px 2px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-success {
+    background: var(--success-bg);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-empty {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 16px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
