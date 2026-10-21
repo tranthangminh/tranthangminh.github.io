@@ -9,12 +9,6 @@ const PRODUCTS_HTML = path.join(ROOT_DIR, 'products.html');
 const INDEX_HTML = path.join(ROOT_DIR, 'index.html');
 const SITEMAP_XML = path.join(ROOT_DIR, 'sitemap.xml');
 
-// Danh sách bí danh tiêu đề hiển thị đẹp nếu tên file khác tên mong muốn
-const TITLE_MAP = {
-  'Grainrad': 'Glitch Art Generator',
-  'Depth Of Field Simulator': 'Depth of Field Simulator'
-};
-
 // Hàm cào ảnh OpenGraph từ URL nếu chưa có ảnh
 async function fetchOgImage(targetUrl) {
   return new Promise((resolve) => {
@@ -210,7 +204,7 @@ async function main() {
       items.push({
         category: cat,
         appName,
-        displayTitle: TITLE_MAP[appName] || appName,
+        displayTitle: appName,
         targetUrl,
         domain,
         htmlRelativePath: `products/web-apps/curated/${encodeURIComponent(cat)}/${encodeURIComponent(appName)}.html`,
@@ -221,6 +215,29 @@ async function main() {
   }
 
   console.log(`\n[+] Tong so web apps hop le: ${items.length}`);
+
+  // Bảng màu cầu vồng tự động phân bổ đều từ Đỏ (~5°) tới Tím (~285°)
+  const uniqueCats = Array.from(new Set(items.map(it => it.category)));
+  const totalCats = uniqueCats.length;
+  const categoryColorMap = {};
+
+  uniqueCats.forEach((cat, idx) => {
+    let hue = 5;
+    if (totalCats > 1) {
+      hue = Math.round(5 + (idx * (285 - 5)) / (totalCats - 1));
+    }
+    let lightness = 48;
+    if (hue >= 40 && hue <= 85) {
+      lightness = 38; // Vàng / hổ phách / chanh đậm để chữ trắng tương phản tuyệt đối
+    } else if (hue > 85 && hue <= 165) {
+      lightness = 38; // Xanh lục đậm
+    } else if (hue > 165 && hue <= 200) {
+      lightness = 42; // Xanh lam ngọc
+    }
+    const color = `hsl(${hue}, 82%, ${lightness}%)`;
+    const glow = `hsla(${hue}, 82%, ${lightness}%, 0.45)`;
+    categoryColorMap[cat] = { color, glow };
+  });
 
   // 2. Cập nhật products.html
   if (fs.existsSync(PRODUCTS_HTML)) {
@@ -240,29 +257,6 @@ async function main() {
       const cardRegex = /<a class="product-card"[\s\S]*?<\/a>/gi;
       const cards = currentGridContent.match(cardRegex) || [];
       const inHouseCards = cards.slice(0, 3);
-
-      // Bảng màu cầu vồng tự động phân bổ đều từ Đỏ (~5°) tới Tím (~285°)
-      const uniqueCats = Array.from(new Set(items.map(it => it.category)));
-      const totalCats = uniqueCats.length;
-      const categoryColorMap = {};
-
-      uniqueCats.forEach((cat, idx) => {
-        let hue = 5;
-        if (totalCats > 1) {
-          hue = Math.round(5 + (idx * (285 - 5)) / (totalCats - 1));
-        }
-        let lightness = 48;
-        if (hue >= 40 && hue <= 85) {
-          lightness = 38; // Vàng / hổ phách / chanh đậm để chữ trắng tương phản tuyệt đối
-        } else if (hue > 85 && hue <= 165) {
-          lightness = 38; // Xanh lục đậm
-        } else if (hue > 165 && hue <= 200) {
-          lightness = 42; // Xanh lam ngọc
-        }
-        const color = `hsl(${hue}, 82%, ${lightness}%)`;
-        const glow = `hsla(${hue}, 82%, ${lightness}%, 0.45)`;
-        categoryColorMap[cat] = { color, glow };
-      });
 
       // Tạo các card curated mới (bắt đầu từ số 04)
       let index = 4;
@@ -304,23 +298,61 @@ async function main() {
     console.log('[+] Dang cap nhat index.html...');
     let indexHtml = fs.readFileSync(INDEX_HTML, 'utf8');
 
-    const oldPathMap = {
-      'destroy-spritefusion.png': 'Web%20Games/Destroy%20Any%20Website.png',
-      'depth-of-field.png': 'Learn/Depth%20Of%20Field%20Simulator.png',
-      'tiermaker.png': 'Fun/TierMaker.png',
-      'grainrad.png': 'Multimedia%20Generator/Grainrad.png',
-      'book-of-shapes.png': 'Multimedia%20Generator/Book%20of%20Shapes.png'
-    };
+    const gridRegex = /(<div class="webapps-showcase-grid">)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>)/i;
+    const gridMatch = indexHtml.match(gridRegex);
 
-    for (const [oldName, newRel] of Object.entries(oldPathMap)) {
-      indexHtml = indexHtml.replace(
-        new RegExp(`products/web-apps/curated/${oldName}`, 'g'),
-        `products/web-apps/curated/${newRel}`
-      );
+    if (gridMatch) {
+      const beforeGrid = gridMatch[1];
+      const currentGridContent = gridMatch[2];
+      const afterGrid = gridMatch[3];
+
+      // 3 button in-house đầu tiên (Lucky Wheel, 52 Cards Tracker, Dice Roller 3D)
+      const inHouseBtnsHtml = `
+                <a class="product-item-btn" href="products/web-apps/lucky-wheel.html">
+                    <img src="products/web-apps/lucky-wheel.png" alt="Biểu tượng ứng dụng Lucky Wheel" width="30" height="30" class="product-item-btn-icon" loading="lazy">
+                    <div class="product-item-btn-content">
+                        <span class="product-item-btn-text">Lucky Wheel</span>
+                        <span class="product-item-btn-tag" style="--tag-color: var(--accent-primary);" data-i18n="productsCatalog.tags.webApp">Web App</span>
+                    </div>
+                </a>
+
+                <a class="product-item-btn" href="products/web-apps/52-cards-tracker.html">
+                    <img src="products/web-apps/52-cards-tracker.png" alt="Biểu tượng ứng dụng 52 Cards Tracker" width="30" height="30" class="product-item-btn-icon" loading="lazy">
+                    <div class="product-item-btn-content">
+                        <span class="product-item-btn-text">52 Cards Tracker</span>
+                        <span class="product-item-btn-tag" style="--tag-color: var(--accent-primary);" data-i18n="productsCatalog.tags.webApp">Web App</span>
+                    </div>
+                </a>
+
+                <a class="product-item-btn" href="products/web-apps/dice-roller.html">
+                    <img src="products/web-apps/dice-roller.svg" alt="Biểu tượng ứng dụng Dice Roller 3D" width="30" height="30" class="product-item-btn-icon" loading="lazy">
+                    <div class="product-item-btn-content">
+                        <span class="product-item-btn-text">Dice Roller 3D</span>
+                        <span class="product-item-btn-tag" style="--tag-color: var(--accent-primary);" data-i18n="productsCatalog.tags.webApp">Web App</span>
+                    </div>
+                </a>`;
+
+      // Tạo các button web app sưu tầm theo thứ tự đồng bộ kèm tag phân loại cầu vồng
+      const curatedBtnsHtml = items.map(item => {
+        const catTheme = categoryColorMap[item.category] || { color: 'var(--accent-primary)', glow: 'rgba(229, 9, 20, 0.35)' };
+        return `
+                <a class="product-item-btn" href="${item.targetUrl}" target="_blank" rel="noopener noreferrer">
+                    <img src="${item.imgRelativePath}" alt="Biểu tượng tiện ích ${item.displayTitle}" width="30" height="30" class="product-item-btn-icon" loading="lazy">
+                    <div class="product-item-btn-content">
+                        <span class="product-item-btn-text">${item.displayTitle}</span>
+                        <span class="product-item-btn-tag" style="--tag-color: ${catTheme.color};">${item.category}</span>
+                    </div>
+                </a>`;
+      }).join('\n');
+
+      const newGridContent = '\n' + inHouseBtnsHtml.trim() + '\n' + curatedBtnsHtml + '\n            ';
+      indexHtml = indexHtml.replace(gridRegex, `${beforeGrid}${newGridContent}${afterGrid}`);
+
+      fs.writeFileSync(INDEX_HTML, indexHtml, 'utf8');
+      console.log('    [OK] Da cap nhat index.html voi toan bo danh sach web apps!');
+    } else {
+      console.warn('    [!] Khong tim thay .webapps-showcase-grid trong index.html');
     }
-
-    fs.writeFileSync(INDEX_HTML, indexHtml, 'utf8');
-    console.log('    [OK] Da cap nhat index.html thanh cong!');
   }
 
   // 4. Cập nhật sitemap.xml

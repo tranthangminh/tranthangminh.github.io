@@ -1551,6 +1551,40 @@ a.skill-capsule-card:hover {
     gap: 10px 40px;
 }
 
+.webapps-showcase-grid .product-item-btn {
+    align-items: center;
+    min-height: 58px;
+}
+
+.webapps-showcase-grid .product-item-btn-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+
+.webapps-showcase-grid .product-item-btn-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    background: var(--tag-color, var(--accent-primary));
+    color: #ffffff;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
 @media (max-width: 1024px) and (min-width: 769px) {
     .webapps-showcase-grid {
         gap: 10px 20px;

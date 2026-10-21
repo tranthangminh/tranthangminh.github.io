@@ -96,6 +96,66 @@
   color: var(--text-secondary);
 }
 
+.edit-save-group .toggle-drawings-btn {
+  flex: 1;
+  min-height: 32px;
+  height: 32px;
+  padding: 2px 4px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  white-space: normal !important;
+  word-break: normal;
+  border-radius: var(--border-radius-sm, 6px);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.edit-save-group .toggle-drawings-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.edit-save-group .toggle-drawings-btn:hover .icon-mask {
+  background-color: var(--text-primary) !important;
+}
+
+/* Web Draw Mode Toolbar State */
+#modal-edit-toolbar.web-draw-mode {
+  position: fixed !important;
+  top: 16px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 2147483646 !important;
+}
+
+.web-draw-mode .copy-btn,
+.web-draw-mode .save-btn,
+#modal-edit-toolbar.web-draw-mode .copy-btn,
+#modal-edit-toolbar.web-draw-mode .save-btn {
+  display: none !important;
+}
+
+.web-draw-mode .toggle-drawings-btn,
+#modal-edit-toolbar.web-draw-mode .toggle-drawings-btn {
+  display: inline-flex !important;
+}
+
+.web-draw-mode .modal-info-wrapper,
+.web-draw-mode .modal-hud-controls,
+.web-draw-mode #modal-hide-hud-btn,
+.web-draw-mode #modal-image-preview {
+  display: none !important;
+}
+
 .edit-save-group .copy-btn:hover {
   background: var(--bg-tertiary);
   border-color: var(--border-hover);

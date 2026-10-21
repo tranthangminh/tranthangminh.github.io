@@ -95,7 +95,7 @@
                 title: 'TierMaker'
             },
             grainrad: {
-                title: 'Glitch Art Generator'
+                title: 'Grainrad'
             },
             spriteFusionDestroy: {
                 title: 'Destroy Any Website'
@@ -205,7 +205,7 @@
                 title: 'TierMaker'
             },
             grainrad: {
-                title: 'Glitch Art Generator'
+                title: 'Grainrad'
             },
             spriteFusionDestroy: {
                 title: 'Destroy Any Website'

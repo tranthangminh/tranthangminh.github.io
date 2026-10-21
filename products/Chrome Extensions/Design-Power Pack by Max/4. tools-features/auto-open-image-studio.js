@@ -150,6 +150,9 @@
             <button id="edit-save-btn" class="edit-btn save-btn">
               <span class="icon-mask" style="mask-image: url('${getIconUrl('download.svg')}'); -webkit-mask-image: url('${getIconUrl('download.svg')}');"></span> <span data-i18n-html="editor.downloadEdited">Download<br>Edited</span>
             </button>
+            <button id="edit-toggle-drawings-btn" class="edit-btn toggle-drawings-btn" title="Hide Drawings" data-i18n-title="editor.hideDrawings">
+              <span class="icon-mask" style="mask-image: url('${getIconUrl('hide.svg')}'); -webkit-mask-image: url('${getIconUrl('hide.svg')}');"></span> <span class="toggle-drawings-text" data-i18n-html="editor.hideDrawingsHtml">Hide<br>Drawings</span>
+            </button>
             <button id="edit-close-modal-btn" class="btn btn-icon edit-close-btn modal-close-btn" title="Close (Esc)" data-i18n-title="editor.close">
               <span class="icon-mask" style="mask-image: url('${getIconUrl('close.svg')}'); -webkit-mask-image: url('${getIconUrl('close.svg')}');"></span>
             </button>

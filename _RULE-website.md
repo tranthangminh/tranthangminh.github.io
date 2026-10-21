@@ -694,7 +694,7 @@ Nhằm tạo nên diện mạo trực quan, chuyên nghiệp, cân đối và nh
     ```
 - **Cơ chế đồng bộ tự động 1-Click (`sync.bat`):**
   - Khi thêm web app mới, chỉ cần thả file link `.url` vào đúng folder phân loại (hoặc tạo folder phân loại mới).
-  - Chạy `sync.bat`: Script tự động tải ảnh `og:image` nếu chưa có, sinh file `.html` redirect và tự động chèn/cập nhật thẻ vào `products.html`, `index.html` và `sitemap.xml`.
+  - Chạy `sync.bat`: Script tự động tải ảnh `og:image` nếu chưa có, sinh file `.html` redirect và tự động chèn/cập nhật thẻ vào `products.html`, `index.html` (kèm tag phân loại mini màu cầu vồng đồng bộ ngay dưới tên app) và `sitemap.xml`.
 
 ### 4. Quy Chuẩn Bố Cục Lưới Web Apps (Responsive Grid System)
 - **Khóa cứng tỷ lệ vuông 1:1:** Thẻ sản phẩm Web Apps luôn giữ `aspect-ratio: 1 / 1` trên mọi kích thước màn hình.

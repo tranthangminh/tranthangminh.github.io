@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
   - Thẻ `<title>` và thẻ `<a>` đặt đúng tên Web App (ví dụ: `<title>TierMaker</title>`). Tuyệt đối không thêm chữ thừa ("Đang chuyển hướng"...) để tránh phát sinh bảo trì song ngữ i18n.
 - **Cơ chế tự động hóa 1-Click (`sync.bat`):**
   - Khi thêm web app mới, chỉ cần kéo thả link `.url` vào đúng folder nhóm (hoặc tạo folder nhóm mới).
-  - Nhấp đúp chuột chạy `sync.bat`: Script tự động tải ảnh `og:image` nếu chưa có, sinh file `.html` redirect và tự động chèn/cập nhật thẻ vào `products.html`, `index.html` và `sitemap.xml`.
+  - Nhấp đúp chuột chạy `sync.bat`: Script tự động tải ảnh `og:image` nếu chưa có, sinh file `.html` redirect và tự động chèn/cập nhật thẻ vào `products.html`, `index.html` (kèm tag phân loại mini màu cầu vồng đồng bộ ngay dưới tên app) và `sitemap.xml`.
 
 ## 3. Quy Chuẩn Thẻ Card, Đường Link Chữ Thường & Viên Thuốc Phân Loại
 - **Thuộc tính thẻ liên kết:** Thẻ bao ngoài `<a class="product-card" ...>` bắt buộc phải có thuộc tính `target="_blank" rel="noopener noreferrer"` để mở tab mới an toàn.

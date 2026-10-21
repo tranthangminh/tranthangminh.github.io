@@ -62,7 +62,8 @@
         "4. tools-features/video-controller.js",
         "4. tools-features/sound-controller.js",
         "4. tools-features/auto-open-image-studio.js",
-        "4. tools-features/floating-tools.js"
+        "4. tools-features/floating-tools.js",
+        "4. tools-features/floating-tools-web-draw.js"
       ],
       "css": [
         "theme.css",

@@ -264,6 +264,9 @@
         <button class="action-btn" data-action="recorder" data-title="Screen Recorder" title="Screen Recorder">
           <span class="icon-mask" style="mask-image: url('${getIconUrl('rec-screen.svg')}'); -webkit-mask-image: url('${getIconUrl('rec-screen.svg')}');"></span>
         </button>
+        <button class="action-btn" data-action="draw" data-title="Draw on Web" title="Draw on Web">
+          <span class="icon-mask" style="mask-image: url('${getIconUrl('brush.svg')}'); -webkit-mask-image: url('${getIconUrl('brush.svg')}');"></span>
+        </button>
       </div>
     `;
 
@@ -356,6 +359,10 @@
         safeSendMessage({ action: 'trigger_capture_full' });
       } else if (action === 'recorder') {
         safeSendMessage({ action: 'trigger_screen_recorder' });
+      } else if (action === 'draw') {
+        if (window.__maxWebDraw && typeof window.__maxWebDraw.toggle === 'function') {
+          window.__maxWebDraw.toggle();
+        }
       }
     });
 
