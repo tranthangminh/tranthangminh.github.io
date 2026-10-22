@@ -4,6 +4,17 @@ function renderCompositeCanvas() {
   if (!editCtx || !editCanvas) return;
   editCtx.clearRect(0, 0, editCanvas.width, editCanvas.height);
 
+  if (window.isDrawingsHidden) {
+    if (window.updateVectorUiOverlay) window.updateVectorUiOverlay();
+    return;
+  }
+
+  editCtx.save();
+  if (window.isWebDrawMode) {
+    const scale = editCanvas.width / window.innerWidth;
+    editCtx.translate(-window.scrollX * scale, -window.scrollY * scale);
+  }
+
   editorObjects.forEach(obj => {
     if (obj.type === 'brush') {
       renderSingleBrushObjectOnCanvas(obj);
@@ -36,6 +47,13 @@ function renderCompositeCanvas() {
     editCtx.stroke();
     editCtx.restore();
   }
+
+  // Render Live Shape Dragging Preview
+  if (window.isDrawingShape && window.currentShapeObj) {
+    renderSingleShapeObjectOnCanvas(window.currentShapeObj);
+  }
+
+  editCtx.restore();
 
   if (window.updateVectorUiOverlay) window.updateVectorUiOverlay();
 }
@@ -182,7 +200,7 @@ function renderSingleTextObjectOnCanvas(obj) {
   editCtx.textBaseline = 'middle';
 
   // 3. Render Translucent Cyan Selection Highlight if active (Ctrl+A or Double-click)
-  if (editorMode === 'idle' && selectedTextObj && selectedTextObj.id === obj.id && !isPlaceholder) {
+  if ((editorMode === 'idle' || editorMode === 'text') && selectedTextObj && selectedTextObj.id === obj.id && !isPlaceholder) {
     const sStart = Math.min(selectedTextObj.selectionStart ?? 0, selectedTextObj.selectionEnd ?? 0);
     const sEnd = Math.max(selectedTextObj.selectionStart ?? 0, selectedTextObj.selectionEnd ?? 0);
 
@@ -258,7 +276,7 @@ function renderSingleTextObjectOnCanvas(obj) {
   });
 
   // Render Blinking Caret Line if in Inline Editing Mode
-  if (editorMode === 'idle' && selectedTextObj && selectedTextObj.id === obj.id && selectedTextObj.isEditingText) {
+  if ((editorMode === 'idle' || editorMode === 'text') && selectedTextObj && selectedTextObj.id === obj.id && selectedTextObj.isEditingText) {
     const textStr = obj.text || '';
     const targetIdx = Math.min(textStr.length, Math.max(0, obj.cursorIndex ?? textStr.length));
     const linesArr = textStr.split('\n');
@@ -314,7 +332,7 @@ let caretAnimFrame = null;
 function startCaretBlink() {
   if (caretAnimFrame) return;
   const loop = () => {
-    if (isEditMode && editorMode === 'idle' && selectedTextObj) {
+    if (isEditMode && (editorMode === 'idle' || editorMode === 'text') && selectedTextObj) {
       renderCompositeCanvas();
       caretAnimFrame = requestAnimationFrame(loop);
     } else {
@@ -328,6 +346,16 @@ window.startCaretBlink = startCaretBlink;
 function syncCanvasOverlayPosition() {
   const modalImg = document.getElementById('modal-image-preview');
   if (!modalImg || !editCanvas || !isEditMode) return;
+
+  if (window.isWebDrawMode) {
+    editCanvas.style.position = 'fixed';
+    editCanvas.style.left = '0px';
+    editCanvas.style.top = '0px';
+    editCanvas.style.width = '100vw';
+    editCanvas.style.height = '100vh';
+    editCanvas.style.transform = 'none';
+    return;
+  }
 
   editCanvas.style.left = `${modalImg.offsetLeft}px`;
   editCanvas.style.top = `${modalImg.offsetTop}px`;

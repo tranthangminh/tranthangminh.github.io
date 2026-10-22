@@ -119,11 +119,6 @@ window.activateIdleMode = activateIdleMode;
 let currentShapeType = 'rect'; // 'rect' | 'ellipse'
 window.currentShapeType = currentShapeType;
 
-let isDrawingShape = false;
-let shapeStartX = 0;
-let shapeStartY = 0;
-let currentShapeObj = null;
-
 function updateShapeToolBtnIcon(shapeType) {
   const shapeBtn = document.getElementById('edit-shape-tool-btn');
   if (!shapeBtn) return;
@@ -175,7 +170,10 @@ function activateBrushMode(showOptions = false) {
 window.activateBrushMode = activateBrushMode;
 
 function activateTextMode() {
-  if (selectedTextObj) selectedTextObj.isEditingText = false;
+  if (selectedTextObj && selectedTextObj.isEditingText) {
+    setEditorMode('text');
+    return;
+  }
   if (window.cleanupEmptyTextObjects) window.cleanupEmptyTextObjects();
   setEditorMode('text');
   createNewTextObject();
@@ -444,6 +442,10 @@ window.syncEditorToolbarWithState = syncEditorToolbarWithState;
 
   // Window Resize Sync Listener
   window.addEventListener('resize', () => {
+    if (window.isWebDrawMode) {
+      // Handled dedicatedly by floating-tools-web-draw.js with rAF debouncing
+      return;
+    }
     if (isEditMode) {
       syncCanvasOverlayPosition();
       renderCompositeCanvas();

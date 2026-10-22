@@ -551,8 +551,12 @@ function positionVectorColorPopover(popover) {
   const renderRect = getImageRenderedRect(modalImg);
   const modalRect = modalImg.parentNode.getBoundingClientRect();
 
-  const screenX = (renderRect.left - modalRect.left) + (selectedObj.x / editCanvas.width) * renderRect.width;
-  const screenY = (renderRect.top - modalRect.top) + (selectedObj.y / editCanvas.height) * renderRect.height;
+  let screenX = (renderRect.left - modalRect.left) + (selectedObj.x / editCanvas.width) * renderRect.width;
+  let screenY = (renderRect.top - modalRect.top) + (selectedObj.y / editCanvas.height) * renderRect.height;
+  if (window.isWebDrawMode) {
+    screenX -= window.scrollX;
+    screenY -= window.scrollY;
+  }
   const bounds = selectedObj.type === 'brush'
     ? getBrushObjectBounds(selectedObj)
     : (selectedObj.type === 'shape'

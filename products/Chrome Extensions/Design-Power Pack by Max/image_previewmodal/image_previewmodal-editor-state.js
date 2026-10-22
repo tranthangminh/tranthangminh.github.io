@@ -62,6 +62,11 @@ let dragStartHeight = 40;
 let dragStartFontSize = 28;
 let dragStartPoints = null;
 
+let isDrawingShape = false;
+let shapeStartX = 0;
+let shapeStartY = 0;
+let currentShapeObj = null;
+
 // Preset Color Swatches Palette (35 colors)
 const PRESET_COLORS = [
   '#000000', '#27272a', '#52525b', '#71717a', '#a1a1aa', '#e4e4e7', '#ffffff',
@@ -120,6 +125,10 @@ Object.defineProperty(window, 'dragStartWidth', { get: () => dragStartWidth, set
 Object.defineProperty(window, 'dragStartHeight', { get: () => dragStartHeight, set: (v) => { dragStartHeight = v; }, configurable: true });
 Object.defineProperty(window, 'dragStartFontSize', { get: () => dragStartFontSize, set: (v) => { dragStartFontSize = v; }, configurable: true });
 Object.defineProperty(window, 'dragStartPoints', { get: () => dragStartPoints, set: (v) => { dragStartPoints = v; }, configurable: true });
+Object.defineProperty(window, 'isDrawingShape', { get: () => isDrawingShape, set: (v) => { isDrawingShape = v; }, configurable: true });
+Object.defineProperty(window, 'shapeStartX', { get: () => shapeStartX, set: (v) => { shapeStartX = v; }, configurable: true });
+Object.defineProperty(window, 'shapeStartY', { get: () => shapeStartY, set: (v) => { shapeStartY = v; }, configurable: true });
+Object.defineProperty(window, 'currentShapeObj', { get: () => currentShapeObj, set: (v) => { currentShapeObj = v; }, configurable: true });
 
 // Compatibility Getters & Setters
 Object.defineProperty(window, 'textObjects', {

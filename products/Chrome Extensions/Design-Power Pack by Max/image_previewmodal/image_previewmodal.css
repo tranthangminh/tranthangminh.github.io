@@ -203,8 +203,8 @@
   display: flex !important;
 }
 
-/* In Hide HUD mode, keep edit-toolbar visible at top-right corner showing ONLY edit-close-modal-btn */
-.hud-hidden .edit-toolbar:not(.hidden) {
+/* In Hide HUD mode, keep edit-toolbar visible at top-right corner showing ONLY edit-close-modal-btn (only in image preview, never in web-draw-mode) */
+.hud-hidden:not(.web-draw-mode) .edit-toolbar:not(.hidden) {
   top: 12px !important;
   right: 16px !important;
   left: auto !important;
@@ -213,28 +213,28 @@
   gap: 0 !important;
 }
 
-.hud-hidden .edit-toolbar:not(.hidden) .edit-toolbar-row:not(.edit-toolbar-row-2),
-.hud-hidden .edit-toolbar:not(.hidden) #edit-stop-brush-btn,
-.hud-hidden .edit-toolbar:not(.hidden) #edit-copy-btn,
-.hud-hidden .edit-toolbar:not(.hidden) #edit-save-btn {
+.hud-hidden:not(.web-draw-mode) .edit-toolbar:not(.hidden) .edit-toolbar-row:not(.edit-toolbar-row-2),
+.hud-hidden:not(.web-draw-mode) .edit-toolbar:not(.hidden) #edit-stop-brush-btn,
+.hud-hidden:not(.web-draw-mode) .edit-toolbar:not(.hidden) #edit-copy-btn,
+.hud-hidden:not(.web-draw-mode) .edit-toolbar:not(.hidden) #edit-save-btn {
   display: none !important;
 }
 
-.hud-hidden .edit-toolbar:not(.hidden) .edit-toolbar-row-2 {
+.hud-hidden:not(.web-draw-mode) .edit-toolbar:not(.hidden) .edit-toolbar-row-2 {
   border-top: none !important;
   padding-top: 0 !important;
   justify-content: center !important;
   gap: 0 !important;
 }
 
-.hud-hidden .edit-toolbar:not(.hidden) .edit-save-group {
+.hud-hidden:not(.web-draw-mode) .edit-toolbar:not(.hidden) .edit-save-group {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 0 !important;
 }
 
-.hud-hidden .edit-toolbar:not(.hidden) #edit-close-modal-btn {
+.hud-hidden:not(.web-draw-mode) .edit-toolbar:not(.hidden) #edit-close-modal-btn {
   display: flex !important;
   opacity: 1 !important;
   visibility: visible !important;

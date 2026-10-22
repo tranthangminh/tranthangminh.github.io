@@ -83,7 +83,7 @@ function handleCanvasMouseDown(e) {
 
   const pos = getCanvasCoordinates(e);
 
-  if (editorMode === 'idle') {
+  if (editorMode === 'idle' || editorMode === 'text') {
     const selectedObj = getSelectedObject();
     if (selectedObj) {
       const bounds = selectedObj.type === 'brush'
@@ -172,6 +172,10 @@ function handleCanvasMouseDown(e) {
       renderCompositeCanvas();
       if (hitObj.type !== 'brush') startCaretBlink();
     } else {
+      if (editorMode === 'text') {
+        createNewTextObject(e);
+        return;
+      }
       deselectAllObjects();
       if (typeof window.startPanDrag === 'function') {
         window.startPanDrag(e);
@@ -215,6 +219,7 @@ function handleCanvasMouseDown(e) {
 
     deselectAllObjects();
     isDrawingShape = true;
+    window.isDrawingShape = true;
     shapeStartX = pos.x;
     shapeStartY = pos.y;
 
@@ -238,6 +243,7 @@ function handleCanvasMouseDown(e) {
       rotation: 0,
       scale: 1
     };
+    window.currentShapeObj = currentShapeObj;
     startGlobalWindowDrag(e);
     return;
   }
@@ -305,7 +311,8 @@ function finishPolygonalDrawing() {
     sizeMode: brushSizeMode || 'absolute',
     strokeWidth: strokeW,
     rotation: 0,
-    scale: 1
+    scale: 1,
+    anchorContentLeft: (typeof getCurrentContentAnchor === 'function') ? getCurrentContentAnchor() : 0
   };
 
   editorObjects.push(newObj);
@@ -353,13 +360,10 @@ function handleCanvasMouseMove(e) {
     currentShapeObj.height = Math.abs(h);
 
     renderCompositeCanvas();
-    if (window.renderSingleShapeObjectOnCanvas) {
-      window.renderSingleShapeObjectOnCanvas(currentShapeObj);
-    }
     return;
   }
 
-  if (editorMode === 'idle') {
+  if (editorMode === 'idle' || editorMode === 'text') {
     const activeObj = getSelectedObject();
 
     if (isRotatingText && activeObj) {
@@ -460,7 +464,7 @@ function handleCanvasMouseMove(e) {
       if (hitObj) {
         editCanvas.style.cursor = 'move';
       } else {
-        editCanvas.style.cursor = 'default';
+        editCanvas.style.cursor = (editorMode === 'text') ? 'text' : 'default';
       }
     }
     return;
@@ -488,8 +492,10 @@ window.handleCanvasMouseMove = handleCanvasMouseMove;
 function handleCanvasMouseUp() {
   if (isDrawingShape && currentShapeObj) {
     isDrawingShape = false;
+    window.isDrawingShape = false;
     if (currentShapeObj.width > 4 || currentShapeObj.height > 4) {
       markSessionDirty();
+      currentShapeObj.anchorContentLeft = (typeof getCurrentContentAnchor === 'function') ? getCurrentContentAnchor() : 0;
       editorObjects.push(currentShapeObj);
       selectedBrushObj = currentShapeObj;
       selectedTextObj = null;
@@ -498,6 +504,7 @@ function handleCanvasMouseUp() {
       saveUndoState();
     }
     currentShapeObj = null;
+    window.currentShapeObj = null;
     return;
   }
 
@@ -535,7 +542,8 @@ function handleCanvasMouseUp() {
         sizeMode: brushSizeMode,
         strokeWidth: actualStrokeWidth,
         rotation: 0,
-        scale: 1
+        scale: 1,
+        anchorContentLeft: (typeof getCurrentContentAnchor === 'function') ? getCurrentContentAnchor() : 0
       };
 
       markSessionDirty();
@@ -562,7 +570,25 @@ function createNewTextObject(e = null) {
   let canvasY = editCanvas.height / 2;
 
   let initialFontSize = 32;
-  if (modalImg) {
+  if (e && (e.clientX !== undefined || e.x !== undefined)) {
+    const pos = (typeof getCanvasCoordinates === 'function')
+      ? getCanvasCoordinates(e)
+      : { x: (e.clientX || e.x), y: (e.clientY || e.y) };
+    canvasX = pos.x;
+    canvasY = pos.y;
+    if (modalImg) {
+      const renderRect = getImageRenderedRect(modalImg);
+      if (renderRect.width > 0) {
+        const scaleRatio = editCanvas.width / renderRect.width;
+        initialFontSize = Math.round(35 * scaleRatio);
+      }
+    }
+  } else if (window.isWebDrawMode) {
+    const scale = editCanvas ? (editCanvas.width / window.innerWidth) : 1;
+    canvasX = (window.innerWidth / 2) * scale + window.scrollX * scale;
+    canvasY = (window.innerHeight / 2) * scale + window.scrollY * scale;
+    initialFontSize = Math.round(35 * scale);
+  } else if (modalImg) {
     const renderRect = getImageRenderedRect(modalImg);
     if (renderRect.width > 0) {
       const scaleRatio = editCanvas.width / renderRect.width;
@@ -599,7 +625,8 @@ function createNewTextObject(e = null) {
     isEditingText: true,
     cursorIndex: 0,
     selectionStart: 0,
-    selectionEnd: 0
+    selectionEnd: 0,
+    anchorContentLeft: (typeof getCurrentContentAnchor === 'function') ? getCurrentContentAnchor() : 0
   };
 
   markSessionDirty();
@@ -607,16 +634,20 @@ function createNewTextObject(e = null) {
   selectedTextObj = newObj;
   selectedBrushObj = null;
 
-  editorMode = 'idle';
+  editorMode = 'text';
   const brushToolBtn = document.getElementById('edit-brush-tool-btn');
   const idleModeBtn = document.getElementById('edit-idle-mode-btn');
   const textToolBtn = document.getElementById('edit-text-tool-btn');
+  const shapeToolBtn = document.getElementById('edit-shape-tool-btn');
   const brushPanel = document.getElementById('edit-brush-panel');
+  const shapePanel = document.getElementById('edit-shape-panel');
 
-  if (idleModeBtn) idleModeBtn.classList.add('active');
+  if (idleModeBtn) idleModeBtn.classList.remove('active');
   if (brushToolBtn) brushToolBtn.classList.remove('active');
-  if (textToolBtn) textToolBtn.classList.remove('active');
+  if (shapeToolBtn) shapeToolBtn.classList.remove('active');
+  if (textToolBtn) textToolBtn.classList.add('active');
   if (brushPanel) brushPanel.classList.add('hidden');
+  if (shapePanel) shapePanel.classList.add('hidden');
 
   startObjectSession();
   renderCompositeCanvas();
@@ -639,6 +670,11 @@ function drawSegment(x1, y1, x2, y2, renderRect) {
   currentStrokeCanvasSize = strokeWidth;
 
   const style = hexToRgba(brushColor, brushOpacity);
+  editCtx.save();
+  if (window.isWebDrawMode) {
+    const scale = editCanvas.width / window.innerWidth;
+    editCtx.translate(-window.scrollX * scale, -window.scrollY * scale);
+  }
   editCtx.beginPath();
   editCtx.moveTo(x1, y1);
   editCtx.lineTo(x2, y2);
@@ -647,6 +683,7 @@ function drawSegment(x1, y1, x2, y2, renderRect) {
   editCtx.lineCap = 'round';
   editCtx.lineJoin = 'round';
   editCtx.stroke();
+  editCtx.restore();
 }
 window.drawSegment = drawSegment;
 
@@ -705,12 +742,20 @@ function handleGlobalWindowMouseUp(e) {
         commitObjectScaleTransform(activeObj);
       }
     }
+    if (isDraggingText && dragTextObj) {
+      if (typeof getCurrentContentAnchor === 'function') {
+        dragTextObj.anchorContentLeft = getCurrentContentAnchor();
+      }
+    }
     isDraggingText = false;
     isRotatingText = false;
     isScalingText = false;
     dragTextObj = null;
     renderCompositeCanvas();
     saveUndoState();
+  }
+  if (isDrawingShape && currentShapeObj) {
+    handleCanvasMouseUp();
   }
   window.removeEventListener('mousemove', handleGlobalWindowMouseMove, true);
   window.removeEventListener('mouseup', handleGlobalWindowMouseUp, true);
@@ -719,12 +764,14 @@ window.handleGlobalWindowMouseUp = handleGlobalWindowMouseUp;
 
 // Native Image Context Menu Pass-Through (Allows full Chrome native <img> right-click context menu)
 function disableDrawingLayerPointerEvents() {
+  if (window.isWebDrawMode) return;
   if (editCanvas) editCanvas.style.pointerEvents = 'none';
   const svgOverlay = document.getElementById('edit-ui-vector-overlay');
   if (svgOverlay) svgOverlay.style.pointerEvents = 'none';
 }
 
 function restoreDrawingLayerPointerEvents() {
+  if (window.isWebDrawMode) return;
   if (editCanvas) editCanvas.style.pointerEvents = 'auto';
   const svgOverlay = document.getElementById('edit-ui-vector-overlay');
   if (svgOverlay) svgOverlay.style.pointerEvents = '';

@@ -1,11 +1,20 @@
 // Preview Modal Image Editor - SVG Overlay & Controls Module (image_previewmodal-editor-overlay.js)
 
+function getOverlayIconUrl(name) {
+  try {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.runtime.getURL) {
+      return chrome.runtime.getURL(`svg/${name}`);
+    }
+  } catch (e) {}
+  return `svg/${name}`;
+}
+
 function updateVectorUiOverlay() {
   const selectedObj = getSelectedObject();
   const modalImg = document.getElementById('modal-image-preview');
   let svg = document.getElementById('edit-ui-vector-overlay');
 
-  if (!selectedObj || !modalImg || !editCanvas) {
+  if (!selectedObj || !modalImg || !editCanvas || window.isDrawingsHidden) {
     if (svg) svg.style.display = 'none';
     if (window.popoverTargetMode !== 'brushTool' && window.closeVectorColorPopover) {
       window.closeVectorColorPopover();
@@ -16,8 +25,13 @@ function updateVectorUiOverlay() {
   const renderRect = getImageRenderedRect(modalImg);
   const modalRect = modalImg.parentNode.getBoundingClientRect();
 
-  const screenX = (renderRect.left - modalRect.left) + (selectedObj.x / editCanvas.width) * renderRect.width;
-  const screenY = (renderRect.top - modalRect.top) + (selectedObj.y / editCanvas.height) * renderRect.height;
+  let screenX = (renderRect.left - modalRect.left) + (selectedObj.x / editCanvas.width) * renderRect.width;
+  let screenY = (renderRect.top - modalRect.top) + (selectedObj.y / editCanvas.height) * renderRect.height;
+
+  if (window.isWebDrawMode) {
+    screenX -= window.scrollX;
+    screenY -= window.scrollY;
+  }
 
   const bounds = selectedObj.type === 'brush'
     ? getBrushObjectBounds(selectedObj)
@@ -37,22 +51,13 @@ function updateVectorUiOverlay() {
     svg = document.createElementNS(svgNS, 'svg');
     svg.id = 'edit-ui-vector-overlay';
 
-    const getSvgIconUrl = (name) => {
-      try {
-        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.runtime.getURL) {
-          return chrome.runtime.getURL(`svg/${name}`);
-        }
-      } catch (e) {}
-      return `svg/${name}`;
-    };
-
     svg.innerHTML = `
       <defs>
         <mask id="vector-stroke-mask">
-          <image href="${getSvgIconUrl('stroke.svg')}" width="18" height="18" x="-9" y="-9" style="filter: brightness(0) invert(1);" />
+          <image href="${getOverlayIconUrl('stroke.svg')}" width="18" height="18" x="-9" y="-9" style="filter: brightness(0) invert(1);" />
         </mask>
         <mask id="vector-text-color-mask">
-          <image href="${getSvgIconUrl('text-color.svg')}" width="16" height="16" x="-8" y="-8" style="filter: brightness(0) invert(1);" />
+          <image href="${getOverlayIconUrl('text-color.svg')}" width="16" height="16" x="-8" y="-8" style="filter: brightness(0) invert(1);" />
         </mask>
       </defs>
 
@@ -63,12 +68,12 @@ function updateVectorUiOverlay() {
 
         <g id="vector-rotate-handle" class="vector-handle" style="cursor: grab;" title="${t('editor.rotateObject', 'Rotate Object')}">
           <circle r="12" />
-          <image id="vector-rotate-icon" href="${getSvgIconUrl('rotate.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          <image id="vector-rotate-icon" href="${getOverlayIconUrl('rotate.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
 
         <g id="vector-scale-handle" class="vector-handle" style="cursor: nwse-resize;" title="${t('editor.scaleObject', 'Scale Object')}">
           <circle r="12" />
-          <image id="vector-scale-icon" href="${getSvgIconUrl('scale.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          <image id="vector-scale-icon" href="${getOverlayIconUrl('scale.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
       </g>
 
@@ -95,22 +100,22 @@ function updateVectorUiOverlay() {
 
         <g id="vector-align-btn" class="vector-toolbar-btn" title="${t('editor.align', 'Text Alignment')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <image id="vector-align-icon" href="${getSvgIconUrl('align-left.svg')}" width="16" height="16" x="-8" y="-8" style="filter: invert(1);" />
+          <image id="vector-align-icon" href="${getOverlayIconUrl('align-left.svg')}" width="16" height="16" x="-8" y="-8" style="filter: invert(1);" />
         </g>
 
         <g id="vector-bold-btn" class="vector-toolbar-btn" title="${t('editor.bold', 'Toggle Bold')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <image href="${getSvgIconUrl('text-bold.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          <image href="${getOverlayIconUrl('text-bold.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
 
         <g id="vector-italic-btn" class="vector-toolbar-btn" title="${t('editor.italic', 'Toggle Italic')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <image href="${getSvgIconUrl('text-italic.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          <image href="${getOverlayIconUrl('text-italic.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
 
         <g id="vector-underline-btn" class="vector-toolbar-btn" title="${t('editor.underline', 'Toggle Underline')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <image href="${getSvgIconUrl('text-underline.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          <image href="${getOverlayIconUrl('text-underline.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
 
         <g id="vector-brush-size-btn" class="vector-toolbar-btn hidden" title="${t('editor.brushSize', 'Brush Size (Click to type or cycle presets)')}">
@@ -131,7 +136,7 @@ function updateVectorUiOverlay() {
         <!-- Standalone Delete Button on the Same Horizontal Row -->
         <g id="vector-delete-handle" class="vector-handle" title="${t('editor.deleteObject', 'Delete Object')}">
           <circle r="14" />
-          <image href="${getSvgIconUrl('close.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          <image href="${getOverlayIconUrl('close.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
         </g>
       </g>
     `;
@@ -164,7 +169,7 @@ function updateVectorUiOverlay() {
           saveEditorSettingsToStorage({ textAlign: nextAlign });
         }
         const alignIcon = svg.querySelector('#vector-align-icon');
-        if (alignIcon) alignIcon.setAttribute('href', getSvgIconUrl(`align-${nextAlign}.svg`));
+        if (alignIcon) alignIcon.setAttribute('href', getOverlayIconUrl(`align-${nextAlign}.svg`));
         renderCompositeCanvas();
       });
     }
@@ -581,12 +586,7 @@ window.openInlineVectorSidesInput = openInlineVectorSidesInput;
 
   const alignIcon = svg.querySelector('#vector-align-icon');
   if (alignIcon && selectedObj.type !== 'brush') {
-    let alignSvgUrl = `svg/align-${selectedObj.align || 'left'}.svg`;
-    try {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.runtime.getURL) {
-        alignSvgUrl = chrome.runtime.getURL(`svg/align-${selectedObj.align || 'left'}.svg`);
-      }
-    } catch (e) {}
+    const alignSvgUrl = getOverlayIconUrl(`align-${selectedObj.align || 'left'}.svg`);
     alignIcon.setAttribute('href', alignSvgUrl);
   }
 

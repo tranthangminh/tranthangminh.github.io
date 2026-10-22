@@ -104,7 +104,7 @@ function initEditorShortcutsModule() {
 
     // Ctrl+A (Select All Text in active text object)
     if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
-      if (editorMode === 'idle' && selectedTextObj) {
+      if ((editorMode === 'idle' || editorMode === 'text') && selectedTextObj) {
         e.preventDefault();
         selectedTextObj.isEditingText = true;
         selectedTextObj.selectionStart = 0;
@@ -117,7 +117,7 @@ function initEditorShortcutsModule() {
     }
 
     // Keyboard Typing & Caret Navigation onto Selected Text Object or Delete Brush Object
-    if (editorMode === 'idle' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    if ((editorMode === 'idle' || editorMode === 'text') && !e.ctrlKey && !e.altKey && !e.metaKey) {
       if (selectedBrushObj && (e.key === 'Backspace' || e.key === 'Delete')) {
         e.preventDefault();
         markSessionDirty();

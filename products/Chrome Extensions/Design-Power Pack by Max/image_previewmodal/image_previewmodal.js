@@ -17,6 +17,20 @@ function updateModalTransform() {
   const modal = document.getElementById('image-preview-modal');
   const modalImg = document.getElementById('modal-image-preview');
   if (modalImg && modal) {
+    if (modal.classList.contains('web-draw-mode') || window.isWebDrawMode) {
+      modalImg.style.position = 'fixed';
+      modalImg.style.top = '0';
+      modalImg.style.left = '0';
+      modalImg.style.width = '100vw';
+      modalImg.style.height = '100vh';
+      modalImg.style.maxWidth = '100vw';
+      modalImg.style.maxHeight = '100vh';
+      modalImg.style.margin = '0';
+      modalImg.style.opacity = '0';
+      modalImg.style.pointerEvents = 'none';
+      modalImg.style.transform = 'none';
+      return;
+    }
     if (!modal.classList.contains('hud-hidden')) {
       const editToolbar = document.getElementById('modal-edit-toolbar');
       const modalInfo = document.querySelector('.modal-info');
@@ -82,7 +96,9 @@ function initPreviewModal() {
   // [C3 Fix] Prevent duplicate document-level listeners (keydown, mousemove, mouseup)
   if (isModalInitialized) return;
   isModalInitialized = true;
-  applySavedHideHudState();
+  if (!window.isWebDrawMode && !modal.classList.contains('web-draw-mode')) {
+    applySavedHideHudState();
+  }
 
   const closeBtn = modal.querySelector('.modal-close-btn');
   const downloadBtn = document.getElementById('modal-download-btn');
@@ -151,7 +167,21 @@ function initPreviewModal() {
   }
 
   function forceClosePreviewModal() {
-    if (modal) modal.classList.add('hidden');
+    if (window.isWebDrawMode && window.__maxWebDraw && typeof window.__maxWebDraw.stop === 'function') {
+      window.__maxWebDraw.stop();
+      return;
+    }
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('web-draw-mode');
+    }
+    const toolbar = document.getElementById('modal-edit-toolbar');
+    if (toolbar) {
+      toolbar.classList.add('hidden');
+      toolbar.classList.remove('web-draw-mode');
+    }
+    window.isWebDrawMode = false;
+    window.isDrawingsHidden = false;
     if (typeof window.exitEditMode === 'function') {
       window.exitEditMode();
     } else if (typeof exitEditMode === 'function') {
@@ -218,16 +248,104 @@ function initPreviewModal() {
     }
   });
 
-  // Global capture-phase ESC hotkey (Escape to close modal/tab anytime anywhere regardless of object selection)
+  // Global capture-phase ESC hotkey with layered priority
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       const modal = document.getElementById('image-preview-modal');
-      if (!modal) return;
-      if (!modal.classList.contains('hidden') || modal.classList.contains('editor-page-modal')) {
+      const isModalActive = modal && (!modal.classList.contains('hidden') || modal.classList.contains('editor-page-modal') || window.isWebDrawMode);
+      if (!isModalActive) return;
+
+      // 1. If Discard Changes dialog is visible, ESC cancels the dialog and returns to editing
+      const discardDialog = document.getElementById('discard-changes-dialog');
+      if (discardDialog && !discardDialog.classList.contains('hidden')) {
         e.preventDefault();
-        e.stopPropagation();
-        requestClosePreviewModal();
+        e.stopImmediatePropagation();
+        discardDialog.classList.add('hidden');
+        return;
       }
+
+      // 2. If vector inline size input or color/size popovers are open, close them first
+      const inlineInput = document.getElementById('vector-inline-size-input');
+      if (inlineInput && !inlineInput.classList.contains('hidden')) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        inlineInput.classList.add('hidden');
+        inlineInput.blur();
+        return;
+      }
+      const sizePopover = document.getElementById('vector-size-popover');
+      if (sizePopover && !sizePopover.classList.contains('hidden')) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        sizePopover.classList.add('hidden');
+        return;
+      }
+      const colorPopover = document.getElementById('vector-color-popover');
+      if (colorPopover && !colorPopover.classList.contains('hidden')) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        colorPopover.classList.add('hidden');
+        return;
+      }
+
+      // 3. PRIORITY: If currently typing/writing text or in text tool mode:
+      // Exit text typing state, commit text, and switch to selection tool
+      const isActivelyEditingText = (typeof selectedTextObj !== 'undefined' && selectedTextObj && selectedTextObj.isEditingText) ||
+                                    Boolean(window.activeTextWrapper) ||
+                                    (typeof editorMode !== 'undefined' && editorMode === 'text');
+      if (isActivelyEditingText) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (typeof window.commitActiveTextOverlay === 'function') {
+          window.commitActiveTextOverlay();
+        }
+        if (typeof selectedTextObj !== 'undefined' && selectedTextObj) {
+          selectedTextObj.isEditingText = false;
+          if (!selectedTextObj.text || selectedTextObj.text.trim() === '') {
+            if (Array.isArray(window.editorObjects)) {
+              window.editorObjects = window.editorObjects.filter(o => o.id !== selectedTextObj.id);
+            }
+            selectedTextObj = null;
+          }
+        }
+        if (typeof stopCaretBlink === 'function') stopCaretBlink();
+        if (typeof activateIdleMode === 'function') activateIdleMode();
+        if (typeof renderCompositeCanvas === 'function') renderCompositeCanvas();
+        return;
+      }
+
+      // 4. If an object is selected (text, shape, brush), deselect it first
+      const hasSelectedObj = (typeof getSelectedObject === 'function' && getSelectedObject()) ||
+                             (typeof selectedTextObj !== 'undefined' && selectedTextObj) ||
+                             (typeof selectedBrushObj !== 'undefined' && selectedBrushObj);
+      if (hasSelectedObj) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (typeof deselectAllObjects === 'function') {
+          deselectAllObjects();
+        } else {
+          if (typeof selectedTextObj !== 'undefined') selectedTextObj = null;
+          if (typeof selectedBrushObj !== 'undefined') selectedBrushObj = null;
+        }
+        if (typeof renderCompositeCanvas === 'function') renderCompositeCanvas();
+        return;
+      }
+
+      // 5. If drawing a polygonal shape, cancel current polygon drawing
+      if (window.isDrawingPolygonal) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window.isDrawingPolygonal = false;
+        window.currentPolygonalPoints = [];
+        if (typeof renderCompositeCanvas === 'function') renderCompositeCanvas();
+        return;
+      }
+
+      // 6. Only when not editing text, no popovers open, and no objects selected:
+      // Request close, which shows Discard Confirmation dialog if dirty, or closes cleanly
+      e.preventDefault();
+      e.stopPropagation();
+      requestClosePreviewModal();
     }
   }, true);
 
@@ -645,7 +763,11 @@ function openPreviewModal(url, filename, sizeLabel) {
   updateModalTransform();
 
   modal.classList.remove('hidden');
-  applySavedHideHudState();
+  if (!window.isWebDrawMode && !modal.classList.contains('web-draw-mode')) {
+    applySavedHideHudState();
+  } else {
+    modal.classList.remove('hud-hidden');
+  }
 
   // Automatically trigger Edit Mode upon opening Preview Modal
   const autoEnterEdit = () => {
@@ -778,7 +900,7 @@ window.initModalThemeSync = initModalThemeSync;
 
 function toggleHideHud(forceState = null) {
   const modal = document.getElementById('image-preview-modal');
-  if (!modal) return;
+  if (!modal || window.isWebDrawMode || modal.classList.contains('web-draw-mode')) return;
 
   if (typeof forceState === 'boolean') {
     modal.classList.toggle('hud-hidden', forceState);

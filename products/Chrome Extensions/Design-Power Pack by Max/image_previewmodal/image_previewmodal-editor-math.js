@@ -17,9 +17,18 @@ window.hexToRgba = hexToRgba;
 
 // Calculate exact visible image bounds on screen (excluding letterbox padding)
 function getImageRenderedRect(img) {
-  const rect = img.getBoundingClientRect();
-  const naturalWidth = img.naturalWidth || 1;
-  const naturalHeight = img.naturalHeight || 1;
+  if (window.isWebDrawMode || (img && img.classList && img.classList.contains('web-draw-mode'))) {
+    return {
+      left: 0,
+      top: 0,
+      width: window.innerWidth,
+      height: window.innerHeight
+    };
+  }
+
+  const rect = img ? img.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+  const naturalWidth = (img && img.naturalWidth) ? img.naturalWidth : 1;
+  const naturalHeight = (img && img.naturalHeight) ? img.naturalHeight : 1;
 
   const imgRatio = naturalWidth / naturalHeight;
   const containerRatio = rect.width / rect.height;
@@ -45,6 +54,107 @@ function getImageRenderedRect(img) {
   };
 }
 window.getImageRenderedRect = getImageRenderedRect;
+
+// Detect Main Content Container Left Offset for Centered Layouts (Content-Left Anchor)
+function getMainContentLeft() {
+  if (typeof window === 'undefined' || !document || !document.body) return 0;
+
+  const viewportW = window.innerWidth;
+  if (!viewportW || viewportW < 360) return 0;
+
+  const isElementCentered = (el) => {
+    if (!el || el.nodeType !== 1) return null;
+    if (el.id === 'image-preview-modal' || (el.closest && el.closest('#image-preview-modal'))) return null;
+    const tag = el.tagName ? el.tagName.toUpperCase() : '';
+    if (['SCRIPT', 'STYLE', 'NAV', 'HEADER', 'FOOTER', 'NOSCRIPT', 'SVG'].includes(tag)) return null;
+
+    try {
+      const rect = el.getBoundingClientRect();
+      if (rect.width < 300 || rect.height < 50) return null;
+      if (rect.width > viewportW - 24) return null; // Fills entire viewport
+
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') return null;
+      if (style.position === 'fixed') return null;
+
+      const marginL = rect.left;
+      const marginR = viewportW - rect.right;
+      // Centered container check: significant balanced margins on both sides
+      if (marginL >= 20 && marginR >= 20 && Math.abs(marginL - marginR) <= 60) {
+        return rect.left + window.scrollX;
+      }
+    } catch (e) {}
+    return null;
+  };
+
+  // 1. Check semantic main containers
+  const selectors = [
+    'main',
+    '[role="main"]',
+    '#main-content',
+    '#main',
+    '#content',
+    '.main-content',
+    '.main',
+    '.container',
+    '.wrapper',
+    '#wrapper',
+    'article'
+  ];
+
+  for (const sel of selectors) {
+    try {
+      const el = document.querySelector(sel);
+      if (el) {
+        const left = isElementCentered(el);
+        if (left !== null) return Math.round(left);
+      }
+    } catch (e) {}
+  }
+
+  // 2. Check top-level elements inside body or root wrappers
+  const rootIds = ['root', 'app', '__next', '__nuxt', 'layout-container'];
+  const roots = [document.body];
+  for (const id of rootIds) {
+    const r = document.getElementById(id);
+    if (r) roots.push(r);
+  }
+
+  for (const root of roots) {
+    if (!root || !root.children) continue;
+    for (let i = 0; i < root.children.length; i++) {
+      const child = root.children[i];
+      const left = isElementCentered(child);
+      if (left !== null) return Math.round(left);
+    }
+  }
+
+  // 3. Fallback: Check if body itself has max-width and is centered
+  try {
+    const bodyRect = document.body.getBoundingClientRect();
+    if (bodyRect.width > 300 && bodyRect.width <= viewportW - 24) {
+      const marginL = bodyRect.left;
+      const marginR = viewportW - bodyRect.right;
+      if (marginL >= 20 && marginR >= 20 && Math.abs(marginL - marginR) <= 60) {
+        return Math.round(bodyRect.left + window.scrollX);
+      }
+    }
+  } catch (e) {}
+
+  return 0;
+}
+window.getMainContentLeft = getMainContentLeft;
+
+function getCurrentContentAnchor() {
+  if (window.isWebDrawMode && typeof window.getMainContentLeft === 'function') {
+    const scale = (typeof editCanvas !== 'undefined' && editCanvas && window.innerWidth)
+      ? (editCanvas.width / window.innerWidth)
+      : 1;
+    return window.getMainContentLeft() * scale;
+  }
+  return 0;
+}
+window.getCurrentContentAnchor = getCurrentContentAnchor;
 
 function getScreenScaleRatio() {
   const modalImg = document.getElementById('modal-image-preview');
@@ -110,8 +220,14 @@ function getCanvasCoordinates(e) {
   const mouseX = e.clientX - renderRect.left;
   const mouseY = e.clientY - renderRect.top;
 
-  const canvasX = (mouseX / renderRect.width) * editCanvas.width;
-  const canvasY = (mouseY / renderRect.height) * editCanvas.height;
+  let canvasX = (mouseX / renderRect.width) * editCanvas.width;
+  let canvasY = (mouseY / renderRect.height) * editCanvas.height;
+
+  if (window.isWebDrawMode) {
+    const scale = editCanvas ? (editCanvas.width / window.innerWidth) : 1;
+    canvasX += window.scrollX * scale;
+    canvasY += window.scrollY * scale;
+  }
 
   return { x: canvasX, y: canvasY, renderRect };
 }

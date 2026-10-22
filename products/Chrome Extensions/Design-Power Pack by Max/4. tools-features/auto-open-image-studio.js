@@ -274,6 +274,7 @@
       </div>
     `;
   }
+  window.createImageStudioModalHtml = createModalHtml;
 
   function initThemeSync() {
     function applyTheme(theme) {

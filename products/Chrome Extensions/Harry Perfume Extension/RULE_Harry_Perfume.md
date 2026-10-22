@@ -502,6 +502,7 @@
     3. 📗 **Tổng Kết Tháng**: Mở tab Google Sheet Tổng Kết Tháng.
     4. 📗 **File Nhập**: Mở tab Google Sheet File Nhập.
     5. 📗 **Gửi Khách Zalo**: Mở tab Google Sheet Gửi Khách Zalo (`https://docs.google.com/spreadsheets/d/1K8kMtmAG0ZwNC9mr-tPQ3VkcAU7RzRWbBWlGu0y9Dzw/edit?gid=1199644754#gid=1199644754`).
+    6. 📗 **Bảng Giá CTV**: Mở tab Google Sheet Bảng Giá CTV (`https://docs.google.com/spreadsheets/d/1RpeA7re9vYjyYwghuQev9SD_fp3JfPc9VJ2UjdoSvVk/edit?usp=sharing`).
 
 ## 8.2. Công cụ "Kiểm Tra Giá Vốn" (Cost Checker Standalone Tool)
 1. **Kiến trúc Cửa sổ Độc lập & Đơn Nhất (Single Instance, Square 900×900px)**:

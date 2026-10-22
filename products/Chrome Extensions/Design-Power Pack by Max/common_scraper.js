@@ -4,6 +4,15 @@
   const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.m3u8', '.mkv', '.avi', '.flv'];
   const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'];
 
+  const EXTENSION_UI_SELECTORS = '#image-preview-modal, #edit-ui-vector-overlay, #modal-edit-toolbar, #vector-color-popover, #vector-size-popover, .discard-dialog-box, .app-container, .tab-controls, .tab-bar, .vector-popover, .edit-tool-popover-wrapper, #image-previewmodal-editcanvas';
+
+  function isExtensionElement(el) {
+    if (!el) return false;
+    if (el.id === 'edit-ui-vector-overlay' || el.id === 'image-previewmodal-editcanvas') return true;
+    if (el.closest && el.closest(EXTENSION_UI_SELECTORS)) return true;
+    return false;
+  }
+
   // Global resource manager to handle de-duplication, routing, and filename cleaning
   const resourceManager = {
     imagesList: [],
@@ -15,6 +24,7 @@
 
     addResource: function(src, width, height, extra = {}) {
       if (!src) return;
+      if (src.startsWith('chrome-extension://') || src.startsWith('moz-extension://')) return;
       try {
         src = new URL(src, document.baseURI).href;
       } catch (e) {
@@ -139,6 +149,7 @@
   const allElements = document.querySelectorAll('*');
   allElements.forEach(el => {
     try {
+      if (isExtensionElement(el)) return;
       // 1. <img> tags
       if (el.tagName === 'IMG') {
         const src = el.currentSrc || el.src || el.getAttribute('src') || el.getAttribute('data-src');
@@ -278,6 +289,7 @@
   if (document.images) {
     for (let i = 0; i < document.images.length; i++) {
       const img = document.images[i];
+      if (isExtensionElement(img)) continue;
       if (img.src) {
         resourceManager.addResource(img.src, img.naturalWidth || img.clientWidth || 0, img.naturalHeight || img.clientHeight || 0);
       }
@@ -418,7 +430,7 @@
   const inlineSvgs = document.querySelectorAll('svg');
   inlineSvgs.forEach((svg, index) => {
     try {
-      if (svg.closest('.app-container') || svg.closest('.tab-controls') || svg.closest('.tab-bar')) return;
+      if (isExtensionElement(svg)) return;
 
       // Clone the SVG so we don't modify the page's original DOM
       const clonedSvg = svg.cloneNode(true);
