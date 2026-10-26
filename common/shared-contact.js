@@ -34,7 +34,7 @@
         var copyright = escapeHtml(translate('contact.copyright', '© 2026 Trần Thắng Minh. All rights reserved.'));
         var visitsPrefix = escapeHtml(translate('contact.visitsPrefix', 'Số lượt truy cập:'));
 
-        var v = '?v=20260905-1';
+        var v = '?v=20261026-2';
         var facebookSvg = assetBase + 'svg/facebook.svg' + v;
         var instagramSvg = assetBase + 'svg/instagram.svg' + v;
         var tiktokSvg = assetBase + 'svg/tiktok.svg' + v;
