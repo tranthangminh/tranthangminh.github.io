@@ -252,37 +252,50 @@ body.actor-page-view .contact-page {
 }
 
 /* --------------------------------------------------------------------------
-   COL 3: RIGHT 30% - ACTION BUTTONS (GỌI & EMAIL)
+   COL 3: RIGHT 30% - ACTION BUTTONS (LIÊN HỆ: GỌI, EMAIL & DONATE)
    -------------------------------------------------------------------------- */
 .contact-col-actions {
     flex: 0 0 30%;
     width: 30%;
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
     gap: 12px;
+}
+
+.contact-actions-title {
+    text-align: right;
+}
+
+.contact-actions-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .contact-action-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 10px 18px;
+    padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     background: var(--bg-primary);
     color: var(--text-primary);
     text-decoration: none;
     font-family: var(--font-secondary);
-    font-size: var(--font-md);
+    font-size: var(--font-sm);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     line-height: 1;
+    white-space: nowrap;
     transition: border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
     box-sizing: border-box;
-    min-height: 40px;
+    min-height: 38px;
 }
 
 .contact-action-btn:hover {
@@ -292,18 +305,16 @@ body.actor-page-view .contact-page {
     box-shadow: 0 4px 12px var(--accent-glow, rgba(229, 9, 20, 0.25));
 }
 
-.contact-btn-icon {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    background-color: currentColor;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    flex-shrink: 0;
+.contact-btn-donate {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    background: rgba(229, 9, 20, 0.04);
+}
+
+.contact-btn-donate:hover {
+    background: var(--accent-primary);
+    color: var(--text-on-accent, #ffffff);
+    box-shadow: 0 4px 14px var(--accent-glow, rgba(229, 9, 20, 0.35));
 }
 
 /* --------------------------------------------------------------------------
@@ -339,6 +350,19 @@ body.actor-page-view .contact-page {
         text-align: center;
     }
 
+    .contact-actions-title {
+        text-align: center;
+    }
+
+    .contact-actions-row {
+        justify-content: center;
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+        gap: 8px;
+        flex-wrap: nowrap;
+    }
+
     .contact-col-actions {
         border-bottom: none;
     }
@@ -348,7 +372,12 @@ body.actor-page-view .contact-page {
     }
 
     .contact-action-btn {
-        flex: 1;
-        max-width: 160px;
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: none;
+        padding: 8px 4px;
+        font-size: var(--font-xs);
+        min-height: 36px;
+        text-align: center;
     }
 }

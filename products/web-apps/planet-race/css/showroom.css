@@ -1,0 +1,307 @@
+/**
+ * Planet Race - 3D Showroom UI & Asset Inspector Styles
+ * Conforms to: products/web-apps/_RULE-web-apps.md (< 500 lines)
+ */
+
+/* Header Showroom Toggle Button */
+.btn-showroom-toggle {
+  background: linear-gradient(135deg, rgba(241, 196, 15, 0.25), rgba(230, 126, 34, 0.35));
+  border: 1px solid #f1c40f;
+  color: #f1c40f;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.btn-showroom-toggle:hover {
+  background: #f1c40f;
+  color: #060913;
+  box-shadow: 0 0 16px rgba(241, 196, 15, 0.6);
+}
+
+/* Showroom Fullscreen UI Overlay */
+.showroom-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Top Action Header */
+.showroom-header {
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, rgba(6, 9, 19, 0.95) 0%, rgba(6, 9, 19, 0) 100%);
+}
+
+.showroom-title-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #00d2d3;
+  text-shadow: 0 0 10px rgba(0, 210, 211, 0.5);
+}
+
+.showroom-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-showroom-action {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ced6e0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-showroom-action:hover,
+.btn-showroom-action.active {
+  background: #00d2d3;
+  color: #060913;
+  border-color: #00d2d3;
+  box-shadow: 0 0 14px rgba(0, 210, 211, 0.5);
+}
+
+.btn-showroom-exit {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  border: none;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 16px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-showroom-exit:hover {
+  box-shadow: 0 0 16px rgba(231, 76, 60, 0.6);
+  transform: translateY(-1px);
+}
+
+/* Left Categorized Asset Catalog Sidebar */
+.showroom-sidebar {
+  pointer-events: auto;
+  position: absolute;
+  top: 70px;
+  left: 18px;
+  bottom: 24px;
+  width: 290px;
+  max-width: calc(100vw - 36px);
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(0, 210, 211, 0.35);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.6);
+  overflow-y: auto;
+}
+
+.showroom-sidebar-title {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #f1c40f;
+  text-transform: uppercase;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.showroom-cat-header {
+  font-size: 10px;
+  font-weight: 800;
+  color: #00d2d3;
+  text-transform: uppercase;
+  margin-top: 6px;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+}
+
+.showroom-item-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.showroom-item-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.showroom-item-btn.active {
+  background: rgba(0, 210, 211, 0.2);
+  border-color: #00d2d3;
+  box-shadow: inset 0 0 10px rgba(0, 210, 211, 0.25);
+}
+
+.showroom-item-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.showroom-item-code {
+  font-size: 9.5px;
+  font-family: monospace;
+  color: #747d8c;
+}
+
+.showroom-item-btn.active .showroom-item-code {
+  color: #00d2d3;
+}
+
+/* Bottom Right Telemetry Spec Card */
+.showroom-spec-card {
+  pointer-events: auto;
+  position: absolute;
+  bottom: 24px;
+  right: 18px;
+  width: 360px;
+  max-width: calc(100vw - 36px);
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(241, 196, 15, 0.4);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.65);
+}
+
+.spec-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.spec-item-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.spec-id-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spec-item-id {
+  font-size: 10px;
+  font-family: monospace;
+  font-weight: 700;
+  color: #f1c40f;
+  background: rgba(241, 196, 15, 0.15);
+  border: 1px solid rgba(241, 196, 15, 0.35);
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+
+.btn-copy-id {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-id:hover {
+  background: #00d2d3;
+  color: #060913;
+  border-color: #00d2d3;
+}
+
+.spec-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spec-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #a4b0be;
+  text-transform: uppercase;
+}
+
+.spec-val {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ced6e0;
+}
+
+.spec-val--highlight {
+  color: #2ecc71;
+  font-weight: 700;
+}
+
+.spec-desc-box {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 10.5px;
+  color: #95a5a6;
+  line-height: 1.4;
+}
+
+.spec-hint-footer {
+  font-size: 9.5px;
+  color: #747d8c;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 768px) {
+  .showroom-sidebar {
+    width: 220px;
+  }
+  .showroom-spec-card {
+    width: 260px;
+    font-size: 10px;
+  }
+}

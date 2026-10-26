@@ -183,9 +183,11 @@ function renderFinanceStatsView() {
     isFinanceInitialized = true;
   }
 
-  // 4. Tính mốc cao nhất để vẽ thanh tỷ lệ % (Năm cao nhất & Tháng cao nhất trong từng năm)
+  // 4. Tính mốc cao nhất để vẽ thanh tỷ lệ % (Năm cao nhất & Tháng cao nhất trong từng năm) & Tổng tất cả các năm
   let peakYearTotal = 1;
+  let grandTotal = 0;
   yearlyDataMap.forEach(yData => {
+    grandTotal += yData.total;
     if (yData.total > peakYearTotal) peakYearTotal = yData.total;
     let peakM = 0;
     yData.months.forEach(mData => {
@@ -209,7 +211,9 @@ function renderFinanceStatsView() {
     <div class="finance-container">
       <!-- 1. THANH TOOLBAR & NÚT SẮP XẾP + NÚT BẬT/TẮT CHI TIẾT -->
       <div class="finance-toolbar">
-        <span class="finance-toolbar-title">💰 Tổng Thành Tiền Theo Năm</span>
+        <span class="finance-toolbar-title" title="Tổng thành tiền tất cả các năm: ${formatMoneyVND(grandTotal)}">
+          💰 Tổng: <span class="finance-toolbar-grand-total">${formatMoneyVND(grandTotal)}</span>
+        </span>
         <div class="finance-toolbar-actions">
           <button type="button" id="btnFinanceSortToggle" class="btn-finance-sort ${isFinanceSortMenuOpen ? 'active' : ''}" title="Sắp xếp năm: ${sortLabel}">
             <span class="icon-mask filter-svg" style="mask-image: url('svg/filter.svg'); -webkit-mask-image: url('svg/filter.svg');"></span>

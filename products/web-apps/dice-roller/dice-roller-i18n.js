@@ -11,7 +11,7 @@
         'en': {
             brand: {
                 title: '3D Dice Roller',
-                documentTitle: '3D Dice Roller - Polyhedral Physics Simulation'
+                documentTitle: '3D Dice Roller - Polyhedral Physics Simulation | Tran Thang Minh'
             },
             auth: {
                 signIn: 'Sign in',
@@ -47,7 +47,7 @@
         'vi': {
             brand: {
                 title: 'Đổ Xí Ngầu 3D',
-                documentTitle: 'Đổ Xí Ngầu 3D - Xí Ngầu Đa Diện Chân Thực'
+                documentTitle: 'Đổ Xí Ngầu 3D - Lắc Xúc Xắc Đa Diện Online | Trần Thắng Minh'
             },
             auth: {
                 signIn: 'Đăng nhập',

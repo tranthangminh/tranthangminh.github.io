@@ -465,6 +465,11 @@ function openResourceInNewTab(url, options = {}) {
   } else if (typeof window !== 'undefined') {
     window.open(targetUrl, '_blank');
   }
+  if (typeof targetUrl === 'string' && targetUrl.startsWith('blob:')) {
+    setTimeout(() => {
+      try { URL.revokeObjectURL(targetUrl); } catch (e) {}
+    }, 60000);
+  }
 }
 _global.openResourceInNewTab = openResourceInNewTab;
 

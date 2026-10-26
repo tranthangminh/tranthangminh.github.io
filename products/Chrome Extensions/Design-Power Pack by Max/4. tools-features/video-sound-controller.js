@@ -24,9 +24,32 @@
   window.maxIsExtensionContextValid = isExtValid;
   window.maxSafeStorageGet = safeGet;
   window.maxSafeStorageSet = safeSet;
+  window.maxIsSpeedControllerEnabled = () => speedControllerEnabled;
 
   // Video Eligibility (Visible, connected, and rendered above minimal size)
   const isValidVideo = (v) => v instanceof HTMLVideoElement && v.isConnected && v.clientWidth >= 120 && v.clientHeight >= 60;
+
+  // Resolve True Player Frame Container (Handles YouTube, HTML5 players with letterbox/black bars)
+  function getPlayerContainer(video) {
+    if (!video) return null;
+    const knownPlayer = video.closest('.html5-video-player, .jwplayer, .video-js, [data-player], .player-container, .video-player');
+    if (knownPlayer) return knownPlayer;
+
+    let cur = video.parentElement;
+    while (cur && cur !== document.body && cur !== document.documentElement) {
+      const rect = cur.getBoundingClientRect();
+      const vRect = video.getBoundingClientRect();
+      if (rect.width >= vRect.width * 0.95 && rect.height >= vRect.height * 0.95) {
+        const pos = window.getComputedStyle(cur).position;
+        if (pos === 'relative' || pos === 'absolute' || pos === 'fixed') {
+          return cur;
+        }
+      }
+      cur = cur.parentElement;
+    }
+    return video.parentElement;
+  }
+  window.maxGetPlayerContainer = getPlayerContainer;
 
   // Visibility Helpers
   function showController(c, ms = 2500) {
@@ -78,19 +101,19 @@
 
   // Setup Controller for Single Video
   function setupControllerForVideo(video) {
-    const parent = video.parentElement;
-    if (!parent || !isValidVideo(video) || controllers.has(video) || video.hasAttribute('data-max-speed-controlled')) return;
+    const playerContainer = getPlayerContainer(video) || video.parentElement;
+    if (!playerContainer || !isValidVideo(video) || controllers.has(video) || video.hasAttribute('data-max-speed-controlled')) return;
 
-    // Guard: Prevent duplicate controller in the same parent container
-    const existing = parent.querySelector(':scope > .max-video-speed-controller');
+    // Guard: Prevent duplicate controller in the same container or parent
+    const existing = playerContainer.querySelector(':scope > .max-video-speed-controller') || video.parentElement?.querySelector(':scope > .max-video-speed-controller');
     if (existing) {
       controllers.set(video, existing);
       video.setAttribute('data-max-speed-controlled', 'true');
       return;
     }
 
-    if (getComputedStyle(parent).position === 'static') {
-      parent.style.setProperty('position', 'relative', 'important');
+    if (getComputedStyle(playerContainer).position === 'static') {
+      playerContainer.style.setProperty('position', 'relative', 'important');
     }
     video.setAttribute('data-max-speed-controlled', 'true');
 
@@ -107,36 +130,53 @@
     ['click', 'dblclick', 'mousedown', 'mouseup', 'keydown', 'keypress', 'keyup'].forEach(e => controller.addEventListener(e, ev => ev.stopPropagation()));
     controller.addEventListener('dragstart', e => { e.preventDefault(); e.stopPropagation(); });
 
-    // Draggable Logic
-    let isDragging = false, hasDragged = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+    // Draggable Logic (Compensating for CSS zoom: 0.8 scale factor to maintain 1:1 mouse tracking)
+    let isDragging = false, hasDragged = false, startX = 0, startY = 0;
+    let startVisualLeft = 0, startVisualTop = 0, zoomFactor = 0.8;
+
     controller.addEventListener('mousedown', (e) => {
       if (e.button !== 0 || e.target.closest('.max-speed-presets, .max-speed-settings-panel')) return;
       isDragging = true;
       hasDragged = false;
       startX = e.clientX;
       startY = e.clientY;
-      startLeft = controller.offsetLeft;
-      startTop = controller.offsetTop;
+
+      zoomFactor = parseFloat(window.getComputedStyle(controller).zoom) || 0.8;
+      const cRect = controller.getBoundingClientRect();
+      const pRect = playerContainer ? playerContainer.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+      startVisualLeft = cRect.left - pRect.left;
+      startVisualTop = cRect.top - pRect.top;
+
       controller.style.setProperty('transition', 'none', 'important');
 
-      const onMove = (ev) => {
+      const onDragMove = (ev) => {
         if (!isDragging) return;
-        const dx = ev.clientX - startX, dy = ev.clientY - startY;
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
         if (Math.abs(dx) > 4 || Math.abs(dy) > 4) hasDragged = true;
-        controller.style.setProperty('left', `${startLeft + dx}px`, 'important');
-        controller.style.setProperty('top', `${startTop + dy}px`, 'important');
+
+        const newVisualLeft = startVisualLeft + dx;
+        const newVisualTop = startVisualTop + dy;
+
+        const maxVisualLeft = (playerContainer?.clientWidth || pRect.width) - cRect.width;
+        const maxVisualTop = (playerContainer?.clientHeight || pRect.height) - cRect.height;
+        const clampedVisualLeft = Math.max(0, Math.min(Math.max(0, maxVisualLeft), newVisualLeft));
+        const clampedVisualTop = Math.max(0, Math.min(Math.max(0, maxVisualTop), newVisualTop));
+
+        controller.style.setProperty('left', `${clampedVisualLeft / zoomFactor}px`, 'important');
+        controller.style.setProperty('top', `${clampedVisualTop / zoomFactor}px`, 'important');
         ev.preventDefault();
       };
 
-      const onUp = () => {
+      const onDragUp = () => {
         isDragging = false;
         controller.style.removeProperty('transition');
-        document.removeEventListener('mousemove', onMove, true);
-        document.removeEventListener('mouseup', onUp, true);
+        document.removeEventListener('mousemove', onDragMove, true);
+        document.removeEventListener('mouseup', onDragUp, true);
       };
 
-      document.addEventListener('mousemove', onMove, true);
-      document.addEventListener('mouseup', onUp, true);
+      document.addEventListener('mousemove', onDragMove, true);
+      document.addEventListener('mouseup', onDragUp, true);
       e.preventDefault();
     });
 
@@ -144,18 +184,30 @@
       if (hasDragged) { e.stopPropagation(); e.preventDefault(); hasDragged = false; }
     }, true);
 
-    // Hover & Idle Listeners (CSS handles :hover and :focus-within automatically)
+    // Hover & Idle Listeners covering whole player container, black bars, and video
     const onMove = () => speedControllerEnabled && showController(controller, 2500);
     const onLeave = (e) => {
-      if (e.relatedTarget && (controller.contains(e.relatedTarget) || controller === e.relatedTarget)) return;
+      const to = e.relatedTarget;
+      // If moving into controller, video, or anywhere inside the player container, DO NOT HIDE!
+      if (to && (
+        to === controller || controller.contains(to) ||
+        to === video || video.contains(to) ||
+        (playerContainer && (to === playerContainer || playerContainer.contains(to)))
+      )) {
+        return;
+      }
       clearTimeout(controller._idleTimer);
-      controller._idleTimer = setTimeout(() => controller.classList.remove('max-visible'), 350);
+      controller._idleTimer = setTimeout(() => controller.classList.remove('max-visible'), 800);
     };
 
     video.addEventListener('mousemove', onMove, { passive: true });
     video.addEventListener('mouseleave', onLeave, { passive: true });
-    parent.addEventListener('mousemove', onMove, { passive: true });
-    parent.addEventListener('mouseleave', onLeave, { passive: true });
+    if (playerContainer) {
+      playerContainer.addEventListener('mousemove', onMove, { capture: true, passive: true });
+      playerContainer.addEventListener('mouseleave', onLeave, { passive: true });
+    }
+    controller.addEventListener('mousemove', onMove, { passive: true });
+    controller.addEventListener('mouseenter', onMove, { passive: true });
 
     // Mount Rows
     window.maxSetupVideoSpeedRow?.(video, controller);
@@ -167,17 +219,21 @@
         cleanup.disconnect();
         video.removeEventListener('mousemove', onMove);
         video.removeEventListener('mouseleave', onLeave);
-        parent.removeEventListener('mousemove', onMove);
-        parent.removeEventListener('mouseleave', onLeave);
+        if (playerContainer) {
+          playerContainer.removeEventListener('mousemove', onMove, { capture: true });
+          playerContainer.removeEventListener('mouseleave', onLeave);
+        }
+        controller.removeEventListener('mousemove', onMove);
+        controller.removeEventListener('mouseenter', onMove);
         clearTimeout(controller._idleTimer);
         controller.remove();
         controllers.delete(video);
         video.removeAttribute('data-max-speed-controlled');
       }
     });
-    cleanup.observe(parent, { childList: true });
+    cleanup.observe(playerContainer, { childList: true });
 
-    parent.appendChild(controller);
+    playerContainer.appendChild(controller);
     controllers.set(video, controller);
   }
   window.maxSetupControllerForVideo = setupControllerForVideo;

@@ -319,7 +319,11 @@ function handleScreenCaptureContextMenuClick(info, tab) {
         if (typeof createSelectionOverlay === 'function') {
           chrome.scripting.executeScript({ target: { tabId: tab.id }, func: createSelectionOverlay }).catch(() => {});
         } else {
-          chrome.tabs.sendMessage(tab.id, { action: 'start_area_capture' });
+          try {
+            chrome.tabs.sendMessage(tab.id, { action: 'start_area_capture' }, () => {
+              void chrome.runtime?.lastError;
+            });
+          } catch (e) {}
         }
       }
       return true;

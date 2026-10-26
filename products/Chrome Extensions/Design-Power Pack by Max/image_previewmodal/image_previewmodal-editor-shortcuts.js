@@ -43,27 +43,8 @@ function initEditorShortcutsModule() {
       active.isContentEditable
     );
 
-    if (!e.ctrlKey && !e.altKey && !e.metaKey && !isActivelyTypingText && !isTypingInput) {
+    if (!e.ctrlKey && !e.altKey && !e.metaKey && !isActivelyTypingText && !isTypingInput && !window.isDrawingsHidden) {
       const k = e.key.toLowerCase();
-      if (k === '1') {
-        e.preventDefault();
-        if (typeof window.zoomTo100Percent === 'function') window.zoomTo100Percent();
-        return;
-      }
-      if (k === '2') {
-        e.preventDefault();
-        if (typeof window.zoomToFitScreen === 'function') window.zoomToFitScreen();
-        return;
-      }
-      if (k === 'h') {
-        e.preventDefault();
-        if (typeof window.toggleHideHud === 'function') {
-          window.toggleHideHud();
-        } else if (typeof toggleHideHud === 'function') {
-          toggleHideHud();
-        }
-        return;
-      }
       if (k === 'a') {
         e.preventDefault();
         activateIdleMode();
@@ -140,9 +121,15 @@ function initEditorShortcutsModule() {
             renderCompositeCanvas();
             saveUndoState();
             return;
-          } else if (e.key.length === 1 || e.key === 'Enter') {
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
             selectedTextObj.isEditingText = true;
+            selectedTextObj.cursorIndex = (selectedTextObj.text || '').length;
+            startCaretBlink();
+            renderCompositeCanvas();
+            return;
           }
+          return;
         }
 
         const textStr = selectedTextObj.text || '';

@@ -401,20 +401,23 @@
 - Toàn bộ các con số tài chính hiển thị trên giao diện Thống Kê bắt buộc sử dụng định dạng số có dấu chấm phân cách hàng nghìn và **tuyệt đối không kèm ký hiệu đơn vị tiền tệ** (ví dụ: `125.400.000`, không viết `125.400.000đ`). Sử dụng hàm `formatMoneyVND()` từ `common/formatters.js`.
 
 ## 6.4. Phân hệ Thống kê Tổng thành tiền (Finance Stats: Collapsible Years, Bar Chart, Month Grid, Nút Sort)
-1. **Giao diện dòng Năm Collapsible**:
+1. **Thanh Toolbar đầu trang (`.finance-toolbar`)**:
+   - Tiêu đề hiển thị: `💰 Tổng: [số tiền]` tính tổng thành tiền của tất cả các năm cộng lại (`grandTotal`), số tiền làm nổi bật bằng màu vàng Gold thương hiệu.
+   - Bên phải chứa nút Sắp xếp năm (`btnFinanceSortToggle`) và nút Bật/Tắt hiển thị chi tiết (`btnFinanceDetailToggle`).
+2. **Giao diện dòng Năm Collapsible**:
    - Năm bên trái, tổng tiền năm bên phải (`formatMoneyVND`).
    - Thanh tiến trình `finance-progress-fill` bên dưới hiển thị tỷ lệ % so với năm cao điểm nhất để so sánh trực quan giữa các năm.
    - Click vào dòng Năm để mở rộng / thu gọn độc lập (`is-expanded`), tự động mở sẵn năm mới nhất chỉ duy nhất 1 lần khi khởi tạo (`isFinanceInitialized`). Cho phép đóng toàn bộ các năm hoặc mở nhiều năm tùy ý.
    - Tự động bảo lưu vị trí thanh cuộn (`scrollTop`) khi đóng / mở thẻ để tránh giật giao diện lên đầu.
-2. **Nút Sắp xếp Năm (`btnFinanceSortToggle`)**:
+3. **Nút Sắp xếp Năm (`btnFinanceSortToggle`)**:
    - Tích hợp nút Filter (reuse icon từ tab Nước hoa) ngay trên thanh toolbar cạnh nút Chi tiết.
    - Menu dropdown hỗ trợ 3 tiêu chí: 🗓️ Năm mới nhất (mặc định), 🗓️ Năm cũ nhất, 💵 Theo tổng tiền.
    - Tự động đóng menu khi click ra ngoài hoặc khi chọn xong.
-3. **Nội dung mở rộng bên trong dòng Năm**:
+4. **Nội dung mở rộng bên trong dòng Năm**:
    - Bắt buộc thiết lập `flex-shrink: 0` trên toàn bộ thẻ và mục con để ngăn flexbox co rút chiều cao, đảm bảo thanh cuộn mượt mà không bị ép vào chiều cao extension:
      1. **Biểu đồ cột đứng 12 tháng (`finance-bar-chart`)**: Thiết kế pure HTML/CSS flexbox `align-items: flex-end`, chiều cao chuẩn 120px, nhãn T1...T12 sắc nét, cột đổi màu gradient khi hover, làm nổi bật cột tháng cao điểm nhất năm (thẻ sao ⭐ / viền sáng).
      2. **Lưới 3 cột × 4 hàng 12 tháng (`finance-month-grid`)**: Hiển thị cố định 12 tháng trong năm. Tên tháng ở trên, tổng thành tiền của tháng ở dưới.
-4. **Nút "Chi tiết" (`btnFinanceDetailToggle`)**:
+5. **Nút "Chi tiết" (`btnFinanceDetailToggle`)**:
    - Nút pill toggle ở toolbar trên cùng: Mặc định tắt cho gọn gàng.
    - Khi bật: trên mỗi dòng Năm và từng ô Tháng sẽ hiển thị thêm: số kiện hàng, số chai, và % cao điểm.
    - Hover vào từng cột biểu đồ có tooltip chi tiết (Tháng/Năm, tổng tiền, số kiện, số chai, % đỉnh).

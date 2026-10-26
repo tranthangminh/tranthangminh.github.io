@@ -289,7 +289,7 @@ function initPreviewModal() {
       }
 
       // 3. PRIORITY: If currently typing/writing text or in text tool mode:
-      // Exit text typing state, commit text, and switch to selection tool
+      // Exit text typing state, commit text, and switch to selection tool (Select)
       const isActivelyEditingText = (typeof selectedTextObj !== 'undefined' && selectedTextObj && selectedTextObj.isEditingText) ||
                                     Boolean(window.activeTextWrapper) ||
                                     (typeof editorMode !== 'undefined' && editorMode === 'text');
@@ -306,6 +306,9 @@ function initPreviewModal() {
               window.editorObjects = window.editorObjects.filter(o => o.id !== selectedTextObj.id);
             }
             selectedTextObj = null;
+          } else if (typeof commitObjectSession === 'function') {
+            commitObjectSession();
+            if (typeof saveUndoState === 'function') saveUndoState();
           }
         }
         if (typeof stopCaretBlink === 'function') stopCaretBlink();
@@ -314,24 +317,7 @@ function initPreviewModal() {
         return;
       }
 
-      // 4. If an object is selected (text, shape, brush), deselect it first
-      const hasSelectedObj = (typeof getSelectedObject === 'function' && getSelectedObject()) ||
-                             (typeof selectedTextObj !== 'undefined' && selectedTextObj) ||
-                             (typeof selectedBrushObj !== 'undefined' && selectedBrushObj);
-      if (hasSelectedObj) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        if (typeof deselectAllObjects === 'function') {
-          deselectAllObjects();
-        } else {
-          if (typeof selectedTextObj !== 'undefined') selectedTextObj = null;
-          if (typeof selectedBrushObj !== 'undefined') selectedBrushObj = null;
-        }
-        if (typeof renderCompositeCanvas === 'function') renderCompositeCanvas();
-        return;
-      }
-
-      // 5. If drawing a polygonal shape, cancel current polygon drawing
+      // 4. If drawing a polygonal shape, cancel current polygon drawing
       if (window.isDrawingPolygonal) {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -341,20 +327,19 @@ function initPreviewModal() {
         return;
       }
 
-      // 6. Only when not editing text, no popovers open, and no objects selected:
-      // Request close, which shows Discard Confirmation dialog if dirty, or closes cleanly
+      // 5. Next ESC press: Request close, which shows Discard Confirmation dialog if dirty, or closes cleanly
       e.preventDefault();
       e.stopPropagation();
       requestClosePreviewModal();
     }
   }, true);
 
-  // Global capture-phase hotkeys (H for Hide HUD, 1 for 100% Zoom, 2 for Fit Screen)
+  // Global capture-phase hotkeys (H for Hide HUD, 1 for 100% Zoom, 2 for Fit Screen — Image Studio only)
   window.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.altKey || e.metaKey) return;
 
     const modal = document.getElementById('image-preview-modal');
-    if (!modal || modal.classList.contains('hidden')) return;
+    if (!modal || modal.classList.contains('hidden') || window.isWebDrawMode || modal.classList.contains('web-draw-mode')) return;
 
     const active = document.activeElement;
     const isTypingInput = active && (

@@ -247,13 +247,11 @@ namespace ModernAutoClicker.Advanced
 
         private static int GetActionTypeIndex(MacroActionType actionType)
         {
-            if (actionType == MacroActionType.IfColorArea || actionType == MacroActionType.WaitColor) return Array.IndexOf(ActionTypeDisplayList, MacroActionType.IfColor);
-            if (actionType == MacroActionType.WaitImage) return Array.IndexOf(ActionTypeDisplayList, MacroActionType.IfImage);
-            for (int i = 0; i < ActionTypeDisplayList.Length; i++)
-            {
-                if (ActionTypeDisplayList[i] == actionType) return i;
-            }
-            return 0;
+            if (actionType == MacroActionType.IfColorArea || actionType == MacroActionType.WaitColor) actionType = MacroActionType.IfColor;
+            else if (actionType == MacroActionType.WaitImage) actionType = MacroActionType.IfImage;
+
+            int idx = Array.IndexOf(ActionTypeDisplayList, actionType);
+            return idx >= 0 ? idx : 0;
         }
 
         private static MacroActionType GetActionTypeFromIndex(int index)
@@ -1731,20 +1729,11 @@ namespace ModernAutoClicker.Advanced
 
         private string GetCoordDisplayText(bool compactForColorSwatch = false)
         {
-            if (_step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage)
+            if (_step.EndPoint != Point.Empty && _step.EndPoint != _step.StartPoint)
             {
-                bool isAreaImg = (_step.EndPoint != Point.Empty && _step.EndPoint != _step.StartPoint);
-                if (isAreaImg)
-                {
-                    int w = Math.Abs(_step.EndPoint.X - _step.StartPoint.X);
-                    int h = Math.Abs(_step.EndPoint.Y - _step.StartPoint.Y);
-                    return string.Format("{0} x {1}", w, h);
-                }
-                if (_step.StartPoint != Point.Empty)
-                {
-                    return string.Format("{0}, {1}", _step.StartPoint.X, _step.StartPoint.Y);
-                }
-                return "Full\nScreen";
+                int w = Math.Abs(_step.EndPoint.X - _step.StartPoint.X);
+                int h = Math.Abs(_step.EndPoint.Y - _step.StartPoint.Y);
+                return string.Format("{0} x {1}", w, h);
             }
 
             if (IsDragAction())
@@ -1752,19 +1741,16 @@ namespace ModernAutoClicker.Advanced
                 return string.Format("A: {0}, {1}\nB: {2}, {3}", _step.StartPoint.X, _step.StartPoint.Y, _step.EndPoint.X, _step.EndPoint.Y);
             }
 
-            bool isArea = (_step.EndPoint != Point.Empty && _step.EndPoint != _step.StartPoint);
-            if (isArea)
+            if (_step.ActionType == MacroActionType.WaitImage || _step.ActionType == MacroActionType.IfImage)
             {
-                int w = Math.Abs(_step.EndPoint.X - _step.StartPoint.X);
-                int h = Math.Abs(_step.EndPoint.Y - _step.StartPoint.Y);
-                return string.Format("{0} x {1}", w, h);
+                return (_step.StartPoint != Point.Empty)
+                    ? string.Format("{0}, {1}", _step.StartPoint.X, _step.StartPoint.Y)
+                    : "Full\nScreen";
             }
 
-            if (_step.StartPoint == Point.Empty)
-            {
-                return "0, 0";
-            }
-            return string.Format("{0}, {1}", _step.StartPoint.X, _step.StartPoint.Y);
+            return (_step.StartPoint == Point.Empty)
+                ? "0, 0"
+                : string.Format("{0}, {1}", _step.StartPoint.X, _step.StartPoint.Y);
         }
 
         private void UpdateDynamicFields()
@@ -2417,31 +2403,23 @@ namespace ModernAutoClicker.Advanced
                 if (_step.IfTrueStep > maxStepNeeded) maxStepNeeded = _step.IfTrueStep;
                 if (_step.IfFalseStep > maxStepNeeded) maxStepNeeded = _step.IfFalseStep;
 
-                // 1. Populate items (Click Target / Click Center, Next Step, Step 1..maxStepNeeded, Stop)
+                // 1. Populate items (Click Target / Click Center, Next Step, Repeat, Step 1..maxStepNeeded, Stop)
                 cboIfTrue.Items.Clear();
                 cboIfFalse.Items.Clear();
 
                 string clickActionLabel = (_step.ActionType == MacroActionType.IfImage) ? Loc.JumpClickCenter : Loc.JumpClickTarget;
-                string nextStepLabel = Loc.JumpNextStep;
-                string repeatStepLabel = Loc.JumpRepeatStep;
-                string stopLabel = Loc.JumpStop;
-
-                cboIfTrue.Items.Add(clickActionLabel);
-                cboIfTrue.Items.Add(nextStepLabel);
-                cboIfTrue.Items.Add(repeatStepLabel);
-
-                cboIfFalse.Items.Add(clickActionLabel);
-                cboIfFalse.Items.Add(nextStepLabel);
-                cboIfFalse.Items.Add(repeatStepLabel);
-
+                string[] jumpItems = new string[3 + maxStepNeeded + 1];
+                jumpItems[0] = clickActionLabel;
+                jumpItems[1] = Loc.JumpNextStep;
+                jumpItems[2] = Loc.JumpRepeatStep;
                 for (int i = 1; i <= maxStepNeeded; i++)
                 {
-                    string stepName = Loc.JumpStepFormat(i);
-                    cboIfTrue.Items.Add(stepName);
-                    cboIfFalse.Items.Add(stepName);
+                    jumpItems[2 + i] = Loc.JumpStepFormat(i);
                 }
-                cboIfTrue.Items.Add(stopLabel);
-                cboIfFalse.Items.Add(stopLabel);
+                jumpItems[jumpItems.Length - 1] = Loc.JumpStop;
+
+                cboIfTrue.Items.AddRange(jumpItems);
+                cboIfFalse.Items.AddRange(jumpItems);
 
                 // 2. Resolve True selection (Default: Click Target / Click Center, value = -2)
                 int trueIdx = 0;

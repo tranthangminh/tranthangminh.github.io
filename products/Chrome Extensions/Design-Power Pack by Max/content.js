@@ -15,7 +15,7 @@
   document.addEventListener('contextmenu', (e) => {
     lastRightClickCoords = { x: e.clientX, y: e.clientY };
     const modalImg = document.getElementById('modal-image-preview');
-    if (e.target && (e.target.id === 'image-previewmodal-editcanvas' || e.target.closest('#image-preview-modal')) && modalImg) {
+    if (!window.isWebDrawMode && e.target && (e.target.id === 'image-previewmodal-editcanvas' || e.target.closest?.('#image-preview-modal')) && modalImg) {
       lastRightClickTarget = modalImg;
     } else {
       lastRightClickTarget = e.target;
@@ -129,26 +129,44 @@
     showImageSelectionModal(validCandidates, menuItemId);
   }
 
+  function isExtensionUiElement(el) {
+    if (!el || typeof el.closest !== 'function') return false;
+    if (el.closest('#max-floating-tools-host, #edit-ui-vector-overlay, #modal-edit-toolbar, #vector-color-popover, #vector-size-popover, #discard-changes-dialog, #max-image-selector-container, #max-toast-container')) {
+      return true;
+    }
+    if (window.isWebDrawMode && el.closest('#image-preview-modal, #image-previewmodal-editcanvas')) {
+      return true;
+    }
+    return false;
+  }
+
   // ── DOM Scanning Algorithm ──
   function findImagesAtCoords(x, y, nativeSrc) {
     const urls = new Set();
-    if (nativeSrc) {
+    if (nativeSrc && !nativeSrc.startsWith('chrome-extension://')) {
       urls.add(nativeSrc);
     }
 
     const elements = getElementsUnderPoint(document, x, y);
-    if (lastRightClickTarget && !elements.includes(lastRightClickTarget)) {
+    if (lastRightClickTarget && !isExtensionUiElement(lastRightClickTarget) && !elements.includes(lastRightClickTarget)) {
       elements.unshift(lastRightClickTarget);
     }
-    if (lastRightClickTarget) {
+    if (lastRightClickTarget && !isExtensionUiElement(lastRightClickTarget)) {
       try {
-        lastRightClickTarget.querySelectorAll?.('img').forEach(im => elements.push(im));
+        lastRightClickTarget.querySelectorAll?.('img').forEach(im => {
+          if (!isExtensionUiElement(im)) elements.push(im);
+        });
         const parentCard = lastRightClickTarget.closest?.('a, [role="button"], article, figure, .card, div');
-        if (parentCard) parentCard.querySelectorAll?.('img').forEach(im => elements.push(im));
+        if (parentCard && !isExtensionUiElement(parentCard)) {
+          parentCard.querySelectorAll?.('img').forEach(im => {
+            if (!isExtensionUiElement(im)) elements.push(im);
+          });
+        }
       } catch (e) {}
     }
 
     for (const el of elements) {
+      if (isExtensionUiElement(el)) continue;
       if (el.tagName === 'IMG') {
         if (el.currentSrc) {
           urls.add(resolveUrl(el.currentSrc));
@@ -192,6 +210,7 @@
       if (!url || typeof url !== 'string') return false;
 
       const lowerUrl = url.toLowerCase();
+      if (lowerUrl.startsWith('chrome-extension://')) return false;
       const cleanUrl = lowerUrl.split(/[?#]/)[0];
       if (cleanUrl.endsWith('.svg') || cleanUrl.endsWith('.xml')) {
         return false;

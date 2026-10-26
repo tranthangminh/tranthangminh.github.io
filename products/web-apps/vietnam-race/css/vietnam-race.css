@@ -1,0 +1,278 @@
+/**
+ * Vietnam Race - App Stylesheet
+ * Conforms to: products/web-apps/_RULE-web-apps.md
+ */
+
+/* ==========================================================================
+   Base & Reset
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #0b0f19;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #ffffff;
+}
+
+/* 3D Canvas Viewport */
+#canvasContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+#canvasContainer canvas { display: block; width: 100%; height: 100%; }
+
+/* ==========================================================================
+   Header & Navigation
+   ========================================================================== */
+.app-header { position: absolute; top: 0; left: 0; right: 0; height: 56px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(180deg, rgba(11, 15, 25, 0.85) 0%, rgba(11, 15, 25, 0) 100%); backdrop-filter: blur(4px); z-index: 10; }
+.brand-wrapper { display: flex; align-items: center; gap: 10px; }
+.brand-badge { background: #ef4444; color: #ffffff; font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 4px; letter-spacing: 0.5px; }
+.brand-title { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; color: #f8fafc; }
+.brand-sub { font-size: 12px; color: #94a3b8; margin-left: 6px; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+
+/* Pure CSS Flag Language Switcher */
+.lang-btn { display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; padding: 5px 8px; cursor: pointer; transition: background 0.2s ease; color: #ffffff; }
+.lang-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.lang-flag { position: relative; display: block; width: 18px; height: 12px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35); overflow: hidden; }
+.lang-flag--vi, .lang-flag--vn { background: #d62828; }
+.lang-flag--vi::before, .lang-flag--vn::before { content: ""; position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; background: #f4d35e; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); transform: translate(-50%, -50%); }
+.lang-flag--en, .lang-flag--us { background: repeating-linear-gradient(to bottom, #b22234 0px, #b22234 1px, #ffffff 1px, #ffffff 2px); }
+.lang-flag--en::before, .lang-flag--us::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 6px; background: #3c3b6e; }
+.lang-code { font-size: 11px; font-weight: 700; }
+.icon-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: #ffffff; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: background 0.2s; }
+.icon-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* ==========================================================================
+   HUD Display Overlays
+   ========================================================================== */
+.hud-layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; padding: 70px 20px 20px 20px; display: flex; flex-direction: column; justify-content: space-between; }
+.location-card { background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border-radius: 8px; padding: 10px 14px; max-width: 280px; pointer-events: auto; }
+.location-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+.landmark-name { font-size: 15px; font-weight: 700; color: #38bdf8; margin-top: 2px; }
+
+/* Bottom Center: Dashboard Speedometer */
+.speedometer-wrapper { align-self: center; display: flex; flex-direction: column; align-items: center; background: radial-gradient(circle, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.4) 100%); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); border-radius: 20px; padding: 10px 28px; margin-bottom: 12px; pointer-events: auto; }
+.speed-gauge { display: flex; align-items: baseline; gap: 6px; }
+.speed-value { font-size: 42px; font-weight: 800; color: #f8fafc; font-variant-numeric: tabular-nums; text-shadow: 0 0 16px rgba(56, 189, 248, 0.6); }
+.speed-unit { font-size: 13px; font-weight: 700; color: #38bdf8; }
+.gear-display { display: flex; align-items: center; gap: 8px; margin-top: -2px; }
+.gear-badge { background: #ef4444; color: #ffffff; font-weight: 800; font-size: 12px; padding: 1px 8px; border-radius: 4px; }
+.cam-badge { font-size: 11px; color: #cbd5e1; }
+
+/* Bottom Right: Minimap (2x Enlarged with Glassmorphism Border) */
+.minimap-wrapper { position: absolute; bottom: 24px; right: 24px; width: 270px; height: 270px; border-radius: 50%; overflow: hidden; border: 3px solid rgba(56, 189, 248, 0.7); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65), inset 0 0 15px rgba(56, 189, 248, 0.15); pointer-events: auto; background: #0f172a; }
+#minimapCanvas { display: block; width: 100%; height: 100%; }
+
+/* Controls Hint Modal / Floating Card */
+.controls-card { position: absolute; bottom: 24px; left: 24px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(6px); border-radius: 8px; padding: 10px 14px; font-size: 11px; color: #cbd5e1; line-height: 1.6; pointer-events: auto; }
+.controls-card h4 { font-size: 11px; color: #f59e0b; margin-bottom: 4px; font-weight: 700; }
+
+/* ==========================================================================
+   Mobile On-Screen Controls
+   ========================================================================== */
+.touch-controls {
+    display: none;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 15;
+}
+
+@media (pointer: coarse), (max-width: 900px) {
+    .touch-controls {
+        display: block;
+    }
+    .controls-card {
+        display: none;
+    }
+    .minimap-wrapper {
+        width: 170px;
+        height: 170px;
+        bottom: 16px;
+        right: 16px;
+    }
+}
+
+.touch-cluster-left {
+    position: absolute;
+    bottom: 24px;
+    left: 20px;
+    display: flex;
+    gap: 12px;
+    pointer-events: auto;
+}
+
+.touch-cluster-right {
+    position: absolute;
+    bottom: 24px;
+    right: 140px;
+    display: flex;
+    gap: 12px;
+    pointer-events: auto;
+}
+
+.touch-btn {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: rgba(30, 41, 59, 0.85);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    backdrop-filter: blur(4px);
+    transition: transform 0.1s, background 0.1s;
+}
+
+.touch-btn:active {
+    transform: scale(0.92);
+    background: rgba(56, 189, 248, 0.6);
+}
+
+.touch-btn--gas {
+    background: rgba(16, 185, 129, 0.85);
+}
+
+.touch-btn--brake {
+    background: rgba(239, 68, 68, 0.85);
+}
+
+.touch-btn--nitro {
+    background: radial-gradient(circle, #00d2d3 0%, #0984e3 100%);
+    border-color: #00cec9;
+    box-shadow: 0 0 14px rgba(0, 210, 211, 0.7);
+    font-size: 22px;
+}
+
+/* Mode Switcher Button in Header */
+.mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.6);
+    color: #fbbf24;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mode-btn:hover {
+    background: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+/* Hyper Nitro Speed Glow */
+.speed-nitro-glow {
+    color: #00d2d3 !important;
+    text-shadow: 0 0 20px #00d2d3, 0 0 40px #0984e3 !important;
+    animation: nitroPulse 0.15s infinite alternate;
+}
+@keyframes nitroPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.06); }
+}
+
+/* 3D Asset Studio / Showroom Layer */
+.showroom-layer { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+.showroom-hint-pill { position: absolute; top: 68px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 20px; padding: 6px 16px; font-size: 11px; font-weight: 600; color: #38bdf8; pointer-events: auto; }
+.showroom-sidebar { position: absolute; top: 68px; bottom: 20px; left: 20px; width: 280px; background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; backdrop-filter: blur(12px); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto; }
+.sidebar-header { padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.sidebar-badge { background: #0284c7; color: #fff; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+.sidebar-title { font-size: 13px; font-weight: 700; color: #f8fafc; margin-top: 4px; }
+.sidebar-sub { font-size: 11px; color: #94a3b8; margin: 0; }
+.sidebar-scrollable-list { flex: 1; overflow-y: auto; padding: 8px; }
+.sidebar-cat-title { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; padding: 6px 4px 2px; }
+.asset-item-btn { width: 100%; text-align: left; padding: 6px 8px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: #f1f5f9; cursor: pointer; display: flex; flex-direction: column; gap: 2px; transition: all 0.15s; }
+.asset-item-btn:hover { background: rgba(56, 189, 248, 0.15); }
+.asset-item-btn.active { background: rgba(0, 210, 211, 0.25); border-color: #00d2d3; color: #00d2d3; }
+.asset-btn-name { font-size: 11px; font-weight: 600; }
+.asset-btn-id { font-size: 9px; color: #64748b; font-family: monospace; }
+.showroom-spec-card { position: absolute; bottom: 20px; right: 20px; width: 330px; background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 12px; backdrop-filter: blur(12px); padding: 14px; pointer-events: auto; display: flex; flex-direction: column; gap: 8px; }
+.spec-card-header { display: flex; justify-content: space-between; align-items: center; }
+.spec-title { font-size: 15px; font-weight: 700; color: #ffffff; margin: 0; }
+.btn-spin { font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px; background: #334155; border: 1px solid #475569; color: #cbd5e1; cursor: pointer; }
+.btn-spin.active { background: rgba(0, 210, 211, 0.25); border-color: #00d2d3; color: #00d2d3; }
+.spec-id-row, .spec-meta-row { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.spec-id-label, .spec-meta-label { color: #94a3b8; font-weight: 700; }
+.spec-id-code { font-family: monospace; color: #38bdf8; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+.btn-copy-id { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: #0284c7; color: #ffffff; border: none; cursor: pointer; }
+.spec-meta-val { color: #f1f5f9; font-weight: 600; }
+.spec-perf-box { background: rgba(0, 0, 0, 0.35); border-radius: 6px; padding: 8px; font-size: 11px; color: #cbd5e1; line-height: 1.5; }
+.btn-drive-car { width: 100%; padding: 8px 12px; background: linear-gradient(135deg, #00d2d3, #0984e3); border: none; border-radius: 8px; color: #ffffff; font-weight: 700; font-size: 12px; cursor: pointer; transition: transform 0.1s; }
+.btn-drive-car:active { transform: scale(0.97); }
+
+/* Vehicle Durability Health Gauge & Destruction Overlay */
+.health-gauge { display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 4px; }
+.health-icon { font-size: 11px; }
+.health-bar-track { flex: 1; height: 6px; background: rgba(255, 255, 255, 0.15); border-radius: 3px; overflow: hidden; }
+.health-bar-fill { height: 100%; border-radius: 3px; transition: width 0.2s ease, background 0.3s; }
+.health-val { font-size: 10px; font-weight: 700; color: #f1f5f9; min-width: 32px; text-align: right; }
+.destroyed-alert { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); background: rgba(185, 28, 28, 0.92); border: 2px solid #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.8); border-radius: 12px; padding: 18px 26px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 50; backdrop-filter: blur(8px); animation: pulseAlert 0.8s infinite alternate; text-align: center; }
+.destroyed-title { font-size: 17px; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
+.destroyed-sub { font-size: 12px; color: #fecaca; font-weight: 600; }
+@keyframes pulseAlert { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.03); } }
+
+/* ==========================================================================
+   Settings Modal & Gameplay Customization Panel
+   ========================================================================== */
+.settings-modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; }
+.settings-backdrop { position: absolute; inset: 0; background: rgba(11, 15, 25, 0.75); backdrop-filter: blur(8px); }
+.settings-card { position: relative; z-index: 2; width: 90%; max-width: 440px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.2); padding: 20px; display: flex; flex-direction: column; gap: 18px; animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+.settings-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px; }
+.settings-title-group { display: flex; align-items: center; gap: 8px; }
+.settings-badge { background: #0284c7; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; }
+.settings-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin: 0; }
+.btn-close-settings { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: #cbd5e1; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background 0.15s; }
+.btn-close-settings:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+.settings-body { display: flex; flex-direction: column; gap: 16px; }
+.settings-section { display: flex; flex-direction: column; gap: 8px; }
+.settings-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+.density-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.density-option-btn { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; color: #e2e8f0; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; }
+.density-option-btn:hover { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4); }
+.density-option-btn.active { background: rgba(0, 210, 211, 0.25); border-color: #00d2d3; color: #00d2d3; box-shadow: 0 0 10px rgba(0, 210, 211, 0.3); }
+.density-icon { font-size: 15px; }
+.settings-row { flex-direction: row; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); }
+.settings-text-group { display: flex; flex-direction: column; gap: 4px; padding-right: 12px; }
+.settings-row-title { font-size: 13px; font-weight: 700; color: #f8fafc; display: flex; align-items: center; gap: 6px; }
+.settings-row-desc { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+.toggle-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; cursor: pointer; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: #334155; border-radius: 26px; transition: 0.25s; border: 1px solid rgba(255, 255, 255, 0.2); }
+.toggle-slider::before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #ffffff; border-radius: 50%; transition: 0.25s; }
+.toggle-switch input:checked + .toggle-slider { background: linear-gradient(135deg, #10b981, #059669); border-color: #10b981; }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+.settings-footer { display: flex; justify-content: flex-end; }
+.btn-primary-settings { background: #0284c7; color: #fff; border: none; border-radius: 6px; padding: 8px 18px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+.btn-primary-settings:hover { background: #0369a1; }
+
+/* Real Map Actions & Upload */
+.realmap-status-pill { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: #34d399; margin-bottom: 4px; }
+.map-actions-group { display: flex; flex-direction: column; gap: 8px; }
+.btn-map-action { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: #f8fafc; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-decoration: none; }
+.btn-map-action:hover { background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; transform: translateY(-1px); }
+.btn-map-action.active { background: rgba(16, 185, 129, 0.25); border-color: #10b981; color: #34d399; }
+.btn-map-real { background: linear-gradient(135deg, rgba(2, 132, 199, 0.4), rgba(16, 185, 129, 0.3)); border-color: #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.25); font-weight: 700; }
+.btn-map-real:hover { background: linear-gradient(135deg, rgba(2, 132, 199, 0.6), rgba(16, 185, 129, 0.5)); border-color: #00d2d3; box-shadow: 0 0 18px rgba(0, 210, 211, 0.4); }
+.btn-map-upload { justify-content: flex-start; }
+.settings-hint { font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 4px; line-height: 1.4; }
+
+/* In-game Toast Notification */
+.map-toast-notice { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(15, 23, 42, 0.95); border: 1px solid #38bdf8; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.4); color: #f8fafc; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 20px; z-index: 150; pointer-events: none; opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.map-toast-notice.visible { opacity: 1; transform: translateX(-50%) translateY(0); }

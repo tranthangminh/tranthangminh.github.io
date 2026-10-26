@@ -3,8 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title data-i18n="brand.documentTitle">Vòng Xoay May Mắn - Vòng Quay Ngẫu Nhiên &amp; Quyết Định</title>
+    <title data-i18n="brand.documentTitle">Vòng Xoay May Mắn - Vòng Quay Quyết Định | Trần Thắng Minh</title>
+    <meta name="description" content="Vòng Xoay May Mắn: Ứng dụng vòng quay ngẫu nhiên trực tuyến đa năng, hỗ trợ quay thưởng, chọn tên, bốc thăm quyết định công bằng bởi Trần Thắng Minh.">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://tranthangminh.github.io/products/web-apps/lucky-wheel.html">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tranthangminh.github.io/products/web-apps/lucky-wheel.html">
+    <meta property="og:title" content="Vòng Xoay May Mắn - Vòng Quay Quyết Định | Trần Thắng Minh">
+    <meta property="og:description" content="Ứng dụng vòng quay ngẫu nhiên trực tuyến đa năng, hỗ trợ quay thưởng, chọn tên, bốc thăm quyết định công bằng bởi Trần Thắng Minh.">
+    <meta property="og:image" content="https://tranthangminh.github.io/products/web-apps/lucky-wheel.png">
+    <meta property="og:image:alt" content="Biểu tượng ứng dụng Lucky Wheel">
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:site_name" content="Trần Thắng Minh Portfolio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://tranthangminh.github.io/products/web-apps/lucky-wheel.html">
+    <meta name="twitter:title" content="Vòng Xoay May Mắn - Vòng Quay Quyết Định | Trần Thắng Minh">
+    <meta name="twitter:description" content="Ứng dụng vòng quay ngẫu nhiên trực tuyến đa năng, hỗ trợ quay thưởng, chọn tên, bốc thăm quyết định công bằng bởi Trần Thắng Minh.">
+    <meta name="twitter:image" content="https://tranthangminh.github.io/products/web-apps/lucky-wheel.png">
+
+    <!-- Favicon & App Icons -->
     <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
+    <link rel="alternate icon" href="../../favicon.ico">
+    <link rel="apple-touch-icon" href="../../svg/logo-MAX-favicon.svg">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://tranthangminh.github.io/products/web-apps/lucky-wheel.html",
+          "name": "Vòng Xoay May Mắn - Lucky Wheel",
+          "url": "https://tranthangminh.github.io/products/web-apps/lucky-wheel.html",
+          "description": "Ứng dụng vòng quay ngẫu nhiên trực tuyến đa năng, hỗ trợ quay thưởng, chọn tên, bốc thăm quyết định công bằng bởi Trần Thắng Minh.",
+          "applicationCategory": "EntertainmentApplication",
+          "operatingSystem": "All",
+          "browserRequirements": "Requires JavaScript. Requires HTML5.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "VND"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Trần Thắng Minh"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://tranthangminh.github.io/products/web-apps/lucky-wheel.html#breadcrumb",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Trang Chủ",
+              "item": "https://tranthangminh.github.io/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Sản Phẩm",
+              "item": "https://tranthangminh.github.io/products.html"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Lucky Wheel",
+              "item": "https://tranthangminh.github.io/products/web-apps/lucky-wheel.html"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -457,7 +533,7 @@
     <div class="modal-backdrop" id="bulkEditModal" role="dialog" aria-modal="true" aria-labelledby="bulkEditHeading">
         <div class="modal-card bulk-modal-card">
             <div class="modal-header">
-                <h3 class="modal-title" id="bulkEditHeading" data-i18n="bulk.heading">Chỉnh Sửa Hàng Loạt</h3>
+                <h2 class="modal-title" id="bulkEditHeading" data-i18n="bulk.heading">Chỉnh Sửa Hàng Loạt</h2>
                 <button type="button" class="modal-close-btn" id="bulkEditCloseBtn" aria-label="Close Modal">&times;</button>
             </div>
             <div class="bulk-toolbar">
@@ -493,7 +569,7 @@
     <div class="modal-backdrop" id="presetModal" role="dialog" aria-modal="true" aria-labelledby="presetModalHeading">
         <div class="modal-card preset-modal-card">
             <div class="modal-header">
-                <h3 class="modal-title" id="presetModalHeading" data-i18n="presets.modalCreateHeading">💾 Lưu Các Ô Hiện Tại Thành Mẫu Mới</h3>
+                <h2 class="modal-title" id="presetModalHeading" data-i18n="presets.modalCreateHeading">💾 Lưu Các Ô Hiện Tại Thành Mẫu Mới</h2>
                 <button type="button" class="modal-close-btn" id="presetModalCloseBtn" aria-label="Close Modal">&times;</button>
             </div>
             <div class="preset-modal-body">

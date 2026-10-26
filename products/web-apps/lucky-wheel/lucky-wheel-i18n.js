@@ -11,7 +11,7 @@
         'en': {
             brand: {
                 title: 'Lucky Wheel',
-                documentTitle: 'Lucky Wheel - Random Picker & Decision Maker'
+                documentTitle: 'Lucky Wheel - Random Picker & Decision Maker | Tran Thang Minh'
             },
             auth: {
                 signIn: 'Sign in',
@@ -133,7 +133,7 @@
         'vi': {
             brand: {
                 title: 'Vòng Xoay May Mắn',
-                documentTitle: 'Vòng Xoay May Mắn - Vòng Quay Ngẫu Nhiên & Quyết Định'
+                documentTitle: 'Vòng Xoay May Mắn - Vòng Quay Quyết Định | Trần Thắng Minh'
             },
             auth: {
                 signIn: 'Đăng nhập',

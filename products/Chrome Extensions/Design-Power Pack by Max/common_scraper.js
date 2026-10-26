@@ -342,7 +342,7 @@
           }
 
           const refElement = document.getElementById(refId);
-          if (refElement) {
+          if (refElement && !isExtensionElement(refElement)) {
             const cloned = refElement.cloneNode(true);
             defs.appendChild(cloned);
           }
@@ -350,80 +350,6 @@
       });
     } catch (e) {}
     return svg;
-  }
-
-  // Helper to determine if an SVG has visible rendering elements (not just empty layouts or bounding boxes)
-  function isSvgVisible(svg) {
-    try {
-      const els = svg.querySelectorAll('path, rect, circle, polygon, ellipse, line, text, use, image');
-      if (els.length === 0) return false;
-
-      let hasVisibleElement = false;
-      for (let i = 0; i < els.length; i++) {
-        const el = els[i];
-        
-        // 1. Skip elements that are inside defs or symbol definitions (since they are just templates)
-        if (el.closest('defs, symbol') !== null) {
-          continue;
-        }
-
-        // 2. Check computed styles
-        const style = window.getComputedStyle(el);
-        if (style.display === 'none' || style.visibility === 'hidden' || el.getAttribute('display') === 'none') {
-          continue;
-        }
-        
-        // 3. Check opacity
-        if (style.opacity === '0' || el.getAttribute('opacity') === '0') {
-          continue;
-        }
-
-        const tagName = el.tagName.toLowerCase();
-
-        // 4. For use tags, check if the referenced ID exists locally in this SVG
-        if (tagName === 'use') {
-          const href = el.getAttribute('href') || el.getAttribute('xlink:href');
-          if (href && href.startsWith('#')) {
-            const refId = href.substring(1);
-            try {
-              if (!svg.querySelector(`#${CSS.escape(refId)}`)) {
-                continue; // Skip unresolved reference
-              }
-            } catch (e) {
-              continue;
-            }
-          } else {
-            continue;
-          }
-        }
-
-        // 5. Check width/height for rect/image
-        if (tagName === 'rect' || tagName === 'image') {
-          const w = parseFloat(el.getAttribute('width')) || 0;
-          const h = parseFloat(el.getAttribute('height')) || 0;
-          if (el.hasAttribute('width') && el.hasAttribute('height') && (w === 0 || h === 0)) {
-            continue;
-          }
-        }
-
-        // 6. Check for transparent layout helper / bounding boxes
-        const fill = el.getAttribute('fill');
-        const stroke = el.getAttribute('stroke');
-        const isFillNone = fill === 'none' || fill === 'transparent' || style.fill === 'none' || style.fill === 'transparent';
-        const hasStroke = (stroke && stroke !== 'none' && stroke !== 'transparent') || (style.stroke && style.stroke !== 'none' && style.stroke !== 'transparent');
-        
-        if (isFillNone && !hasStroke) {
-          continue; // Invisible bounding box or guide path
-        }
-
-        // Found a rendering element that is likely visible!
-        hasVisibleElement = true;
-        break;
-      }
-      return hasVisibleElement;
-    } catch (e) {
-      return true; // Default to keeping it in case of errors
-    }
   }
 
   // --- 3. QUÉT SVG INLINE (Thẻ <svg> nhúng trực tiếp trong DOM) ---
@@ -435,14 +361,24 @@
       // Clone the SVG so we don't modify the page's original DOM
       const clonedSvg = svg.cloneNode(true);
 
-      // Remove all <script> tags and inline on* attributes for security and CSP compliance
-      const scripts = clonedSvg.querySelectorAll('script');
-      scripts.forEach(s => s.remove());
-      clonedSvg.querySelectorAll('*').forEach(el => {
+      // 1. Make the cloned SVG self-contained FIRST so imported symbols also get sanitized
+      makeSvgSelfContained(clonedSvg);
+
+      // 2. Remove dangerous tags (<script>, <foreignObject>, <iframe>, <object>, <embed>) for XSS & CSP safety
+      clonedSvg.querySelectorAll('script, foreignObject, iframe, object, embed').forEach(s => s.remove());
+
+      // 3. Sanitize attributes on both root <svg> and all descendants
+      [clonedSvg, ...clonedSvg.querySelectorAll('*')].forEach(el => {
         for (let i = el.attributes.length - 1; i >= 0; i--) {
-          const attrName = el.attributes[i].name;
-          if (attrName.startsWith('on')) {
-            el.removeAttribute(attrName);
+          const attr = el.attributes[i];
+          const attrNameLower = attr.name.toLowerCase();
+          const attrValLower = (attr.value || '').trim().toLowerCase();
+          if (
+            attrNameLower.startsWith('on') ||
+            ((attrNameLower === 'href' || attrNameLower === 'xlink:href') &&
+              (attrValLower.startsWith('javascript:') || attrValLower.startsWith('chrome-extension:')))
+          ) {
+            el.removeAttribute(attr.name);
           }
         }
         if (el.tagName.toLowerCase() === 'feblend' && el.hasAttribute('mode')) {
@@ -454,9 +390,6 @@
           }
         }
       });
-
-      // Make the cloned SVG self-contained by importing page-defined referenced symbols
-      makeSvgSelfContained(clonedSvg);
 
       const svgString = clonedSvg.outerHTML;
       if (svgString.length < 150) return;

@@ -23,14 +23,21 @@
 }
 
 .finance-toolbar-title {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  gap: 5px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.finance-toolbar-grand-total {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  letter-spacing: -0.2px;
 }
 
 /* Nhóm nút tác vụ bên phải của Toolbar */

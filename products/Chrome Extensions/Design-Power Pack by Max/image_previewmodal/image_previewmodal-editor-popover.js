@@ -535,8 +535,9 @@ function positionVectorColorPopover(popover) {
       let left = (btnRect.left - modalRect.left) + (btnRect.width / 2) - (popoverWidth / 2);
       let top = (btnRect.top - modalRect.top) - popoverHeight - 10;
 
-      left = Math.max(10, Math.min(window.innerWidth - popoverWidth - 10, left));
+      left = Math.max(10, Math.min(Math.max(10, window.innerWidth - popoverWidth - 10), left));
       if (top < 10) top = btnRect.bottom - modalRect.top + 10;
+      top = Math.max(10, Math.min(Math.max(10, window.innerHeight - popoverHeight - 10), top));
 
       popover.style.left = `${left}px`;
       popover.style.top = `${top}px`;
@@ -574,7 +575,8 @@ function positionVectorColorPopover(popover) {
   let popoverTop = screenY + rotateY - popoverHeight;
 
   if (popoverTop < 10) popoverTop = screenY + halfH + 20;
-  popoverLeft = Math.max(10, Math.min(window.innerWidth - popoverWidth - 10, popoverLeft));
+  popoverLeft = Math.max(10, Math.min(Math.max(10, window.innerWidth - popoverWidth - 10), popoverLeft));
+  popoverTop = Math.max(10, Math.min(Math.max(10, window.innerHeight - popoverHeight - 10), popoverTop));
 
   popover.style.left = `${popoverLeft}px`;
   popover.style.top = `${popoverTop}px`;

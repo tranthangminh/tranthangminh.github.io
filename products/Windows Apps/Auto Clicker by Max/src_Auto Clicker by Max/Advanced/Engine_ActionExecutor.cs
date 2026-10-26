@@ -346,10 +346,9 @@ namespace ModernAutoClicker.Advanced
             return false;
         }
 
-        public static Point ResolveActualScreenPoint(MacroStep step, Point localPt)
+        public static IntPtr EnsureTargetWindowHandle(MacroStep step)
         {
-            if (localPt == Point.Empty) return Point.Empty;
-            if (step == null || !step.RelativeToWindow || (step.WindowHwnd == IntPtr.Zero && string.IsNullOrEmpty(step.ProcessName) && step.TargetPid == 0)) return localPt;
+            if (step == null || !step.RelativeToWindow || (step.WindowHwnd == IntPtr.Zero && string.IsNullOrEmpty(step.ProcessName) && step.TargetPid == 0)) return IntPtr.Zero;
 
             IntPtr hWnd = step.WindowHwnd;
             if (!NativeMethods.IsValidWindowHandle(hWnd, step.TargetPid, step.ProcessName))
@@ -367,7 +366,13 @@ namespace ModernAutoClicker.Advanced
                     step.WindowHwnd = IntPtr.Zero;
                 }
             }
+            return hWnd;
+        }
 
+        public static Point ResolveActualScreenPoint(MacroStep step, Point localPt)
+        {
+            if (localPt == Point.Empty) return Point.Empty;
+            IntPtr hWnd = EnsureTargetWindowHandle(step);
             if (hWnd != IntPtr.Zero)
             {
                 NativeMethods.POINT origin = new NativeMethods.POINT { X = 0, Y = 0 };
@@ -378,6 +383,22 @@ namespace ModernAutoClicker.Advanced
             }
 
             return localPt;
+        }
+
+        public static Point ResolveScreenPointToRelative(MacroStep step, Point screenPt)
+        {
+            if (screenPt == Point.Empty) return Point.Empty;
+            IntPtr hWnd = EnsureTargetWindowHandle(step);
+            if (hWnd != IntPtr.Zero)
+            {
+                NativeMethods.POINT np = new NativeMethods.POINT { X = screenPt.X, Y = screenPt.Y };
+                if (NativeMethods.ScreenToClient(hWnd, ref np))
+                {
+                    return new Point(np.X, np.Y);
+                }
+            }
+
+            return screenPt;
         }
 
         public static Point GetTargetClickPoint(MacroStep step, int randJitterPx, out Point rawClickPt)

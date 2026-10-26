@@ -60,6 +60,7 @@
 
   // Global Keyboard Shortcuts
   function handleGlobalKeyDown(e) {
+    if (typeof window.maxIsSpeedControllerEnabled === 'function' && !window.maxIsSpeedControllerEnabled()) return;
     const modal = document.getElementById('image-preview-modal');
     if (modal && (!modal.classList.contains('hidden') || modal.classList.contains('editor-page-modal'))) return;
     if (window.isEditMode || window.selectedTextObj?.isEditingText) return;
@@ -73,7 +74,10 @@
 
     if (![decrease?.key, increase?.key, reset?.key, preferred?.key].map(k => k?.toLowerCase()).includes(key)) return;
 
-    const videos = window.maxGetAllVideos ? window.maxGetAllVideos(document) : [...document.querySelectorAll('video')];
+    const rawVideos = window.maxGetAllVideos ? window.maxGetAllVideos(document) : [...document.querySelectorAll('video')];
+    const videos = rawVideos.filter(v => v instanceof HTMLVideoElement && v.isConnected && v.clientWidth >= 120 && v.clientHeight >= 60);
+    if (videos.length === 0) return;
+
     let changed = false;
 
     videos.forEach(video => {

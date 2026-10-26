@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title data-i18n="brand.documentTitle">Vietnam Race 3D - Khám Phá Sài Gòn</title>
+    <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Universal Theme System Token Master -->
+    <link rel="stylesheet" href="../../common/theme.css">
+    
+    <!-- Vietnam Race Custom Styles -->
+    <link rel="stylesheet" href="./vietnam-race/css/vietnam-race.css">
+</head>
+<body>
+    <!-- 3D WebGL Canvas Viewport -->
+    <div id="canvasContainer"></div>
+
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="brand-wrapper">
+            <span class="brand-badge">3D MAP</span>
+            <span class="brand-title" data-i18n="brand.appTitle">VIETNAM RACE 3D</span>
+            <span class="brand-sub" data-i18n="brand.subTitle">Khu vực Sài Gòn (Quận 1)</span>
+        </div>
+
+        <div class="header-actions">
+            <!-- Showroom Mode Switcher -->
+            <button id="btnModeToggle" class="mode-btn" title="Chuyển Showroom (M/Tab)">
+                <span aria-hidden="true">🏛️</span> <span>SHOWROOM</span>
+            </button>
+
+            <!-- Settings Button -->
+            <button id="btnSettings" class="icon-btn" title="Cài đặt / Settings">⚙️</button>
+
+            <!-- Reset Car Button -->
+            <button id="btnResetCar" class="icon-btn" title="Đặt lại xe (R)">↺</button>
+            
+            <!-- Switch Camera Button -->
+            <button id="btnSwitchCam" class="icon-btn" title="Đổi camera (C)">📷</button>
+
+            <!-- Audio Mute / Unmute Button -->
+            <button id="audioToggleBtn" class="icon-btn" title="Âm thanh">🔊</button>
+
+            <!-- Language Switcher (Conforms strictly to _RULE-web-apps.md) -->
+            <button id="langFlagBtn" class="lang-btn" type="button" aria-label="Switch Language">
+                <span id="langFlagIcon" class="lang-flag lang-flag--en" aria-hidden="true"></span>
+                <span id="langFlagCode" class="lang-code">EN</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- In-Game HUD Layer -->
+    <div class="hud-layer">
+        <!-- Top Left: Location Info -->
+        <div class="location-card">
+            <div class="location-title" data-i18n="hud.district1">Quận 1, TP. Hồ Chí Minh</div>
+            <div id="hudNearLandmark" class="landmark-name">📍 Phố đi bộ Nguyễn Huệ</div>
+        </div>
+
+        <!-- Bottom Center: Speedometer, Gear & Health -->
+        <div class="speedometer-wrapper">
+            <div class="speed-gauge">
+                <span id="hudSpeed" class="speed-value">0</span>
+                <span class="speed-unit" data-i18n="hud.speedUnit">KM/H</span>
+            </div>
+            <div class="gear-display">
+                <span id="hudGear" class="gear-badge">P</span>
+                <span id="hudCamMode" class="cam-badge" data-i18n="hud.camBehind">Sau xe</span>
+            </div>
+            <!-- Vehicle Durability / Health Bar -->
+            <div class="health-gauge">
+                <span class="health-icon">🛡️</span>
+                <div class="health-bar-track">
+                    <div id="hudHealthFill" class="health-bar-fill" style="width: 100%;"></div>
+                </div>
+                <span id="hudHealthVal" class="health-val">100%</span>
+            </div>
+        </div>
+
+        <!-- Vehicle Destroyed Alert Overlay -->
+        <div id="destroyedAlert" class="destroyed-alert" style="display: none;">
+            <div class="destroyed-title">🔥 XE BỐC CHÁY & BỊ PHÁ HỦY! 🔥</div>
+            <div class="destroyed-sub">Động cơ nát vụn do va chạm mạnh. Nhấn phím [ R ] để Hồi Sinh / Sửa Xe!</div>
+        </div>
+
+        <!-- Bottom Right: Live Interactive Minimap (2x Enlarged) -->
+        <div class="minimap-wrapper">
+            <canvas id="minimapCanvas" width="270" height="270"></canvas>
+        </div>
+
+        <!-- Bottom Left: Desktop Controls Guide -->
+        <div class="controls-card">
+            <h4 data-i18n="controls.title">HƯỚNG DẪN LÁI XE</h4>
+            <div data-i18n="controls.drive">W / ↑ : Tiến</div>
+            <div data-i18n="controls.reverse">S / ↓ : Lùi / Phanh</div>
+            <div data-i18n="controls.steer">A / D / ← / → : Rẽ trái / phải</div>
+            <div data-i18n="controls.handbrake">Space : Phanh tay / Drift</div>
+            <div>Shift : Tăng tốc Nitro (699 km/h) 🚀</div>
+            <div>Tab / M : Chế độ Showroom Assets 🏛️</div>
+            <div data-i18n="controls.horn">H : Bấm còi bim bim</div>
+            <div data-i18n="controls.camera">C : Đổi góc nhìn camera</div>
+            <div data-i18n="controls.respawn">R : Đặt lại xe</div>
+        </div>
+    </div>
+
+    <!-- 3D Asset Studio / Showroom Layer (Active in Showroom Mode) -->
+    <div id="showroomUI" class="showroom-layer" style="display: none;">
+        <!-- Top Center: Interaction Hint -->
+        <div class="showroom-hint-pill">
+            <span>🖱️ Kéo chuột trái xoay 360° • 🔍 Lăn chuột phóng to/thu nhỏ</span>
+        </div>
+
+        <!-- Left: Categorized Asset Sidebar -->
+        <aside id="showroomSidebar" class="showroom-sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-badge">STUDIO</span>
+                <h3 class="sidebar-title">DANH SÁCH ASSETS</h3>
+                <p class="sidebar-sub">Chọn model để soi cận cảnh 3D</p>
+            </div>
+            <div id="showroomAssetList" class="sidebar-scrollable-list"></div>
+        </aside>
+
+        <!-- Bottom Right: Spec Inspector Card -->
+        <div id="showroomSpecCard" class="showroom-spec-card">
+            <div class="spec-card-header">
+                <h3 id="specTitle" class="spec-title">Tên Asset</h3>
+                <button id="btnToggleAutoSpin" class="btn-spin active" title="Bật/Tắt xoay tự động">🔄 TỰ XOAY: BẬT</button>
+            </div>
+            <div class="spec-id-row">
+                <span class="spec-id-label">ID CODE:</span>
+                <code id="specAssetId" class="spec-id-code">asset_id</code>
+                <button id="btnCopyAssetId" class="btn-copy-id" title="Sao chép ID vào clipboard">📋 COPY ID</button>
+            </div>
+            <div class="spec-meta-row">
+                <span class="spec-meta-label">📐 KÍCH THƯỚC:</span>
+                <span id="specDims" class="spec-meta-val">--</span>
+            </div>
+            <div id="specPerf" class="spec-perf-box" style="display: none;"></div>
+            <div id="specActionSlot" class="spec-action-slot"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal Layer -->
+    <div id="settingsModal" class="settings-modal" style="display: none;">
+        <div id="settingsBackdrop" class="settings-backdrop"></div>
+        <div class="settings-card">
+            <div class="settings-header">
+                <div class="settings-title-group">
+                    <span class="settings-badge">SETTINGS</span>
+                    <h3 class="settings-title" data-i18n="settings.title">CÀI ĐẶT TRÒ CHƠI</h3>
+                </div>
+                <button id="btnCloseSettings" class="btn-close-settings" title="Đóng">✕</button>
+            </div>
+
+            <div class="settings-body">
+                <!-- Section 1: Traffic Density -->
+                <div class="settings-section">
+                    <label class="settings-label" data-i18n="settings.trafficDensity">MẬT ĐỘ XE NPC</label>
+                    <div class="density-group">
+                        <button type="button" class="density-option-btn" data-density="none">
+                            <span class="density-icon">🚫</span>
+                            <span class="density-text" data-i18n="settings.trafficNone">Không xe (0)</span>
+                        </button>
+                        <button type="button" class="density-option-btn" data-density="low">
+                            <span class="density-icon">🚗</span>
+                            <span class="density-text" data-i18n="settings.trafficLow">Thưa thớt</span>
+                        </button>
+                        <button type="button" class="density-option-btn" data-density="normal">
+                            <span class="density-icon">🚕🛵</span>
+                            <span class="density-text" data-i18n="settings.trafficNormal">Bình thường</span>
+                        </button>
+                        <button type="button" class="density-option-btn" data-density="dense">
+                            <span class="density-icon">🚌🚙🛵</span>
+                            <span class="density-text" data-i18n="settings.trafficDense">Giờ cao điểm</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section 2: God Mode (Invulnerable) -->
+                <div class="settings-section settings-row">
+                    <div class="settings-text-group">
+                        <div class="settings-row-title">
+                            <span class="god-mode-icon">🛡️</span>
+                            <span data-i18n="settings.godMode">XE BẤT TỬ (GOD MODE)</span>
+                        </div>
+                        <div class="settings-row-desc" data-i18n="settings.godModeDesc">
+                            Không nhận sát thương khi va chạm tốc độ cao, không cháy nổ xe.
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="chkGodMode">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Section 3: Real Map Status & Custom Upload -->
+                <div class="settings-section">
+                    <label class="settings-label" data-i18n="settings.realMap">BẢN ĐỒ THỰC TẾ SÀI GÒN</label>
+                    <div class="realmap-status-pill">
+                        <span>🗺️</span>
+                        <span data-i18n="settings.mapStatusActive">Đang kích hoạt: Bản đồ vệ tinh Quận 1 (3.400+ đường & cao ốc)</span>
+                    </div>
+                    <div class="map-actions-group">
+                        <label for="osmFileInput" class="btn-map-action btn-map-upload">
+                            <span>📁</span>
+                            <span data-i18n="settings.uploadMap">Nạp file bản đồ khác (.geojson / .osm)</span>
+                            <input type="file" id="osmFileInput" accept=".osm,.geojson,.json" style="display:none;">
+                        </label>
+                    </div>
+                    <div class="settings-hint" data-i18n="settings.dragDropHint">
+                        💡 Mẹo: Bạn có thể kéo thả trực tiếp file bản đồ vào màn hình game bất cứ lúc nào!
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-footer">
+                <button id="btnDismissSettings" class="btn-primary-settings" data-i18n="settings.close">ĐÓNG</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Touch Controls -->
+    <div class="touch-controls">
+        <div class="touch-cluster-left">
+            <button id="touchLeft" class="touch-btn" aria-label="Steer Left">◀</button>
+            <button id="touchRight" class="touch-btn" aria-label="Steer Right">▶</button>
+        </div>
+        <div class="touch-cluster-right">
+            <button id="touchBoost" class="touch-btn touch-btn--nitro" aria-label="Nitro Boost">🚀</button>
+            <button id="touchHorn" class="touch-btn" aria-label="Horn">📢</button>
+            <button id="touchHandbrake" class="touch-btn" aria-label="Handbrake">⚡</button>
+            <button id="touchBrake" class="touch-btn touch-btn--brake" aria-label="Brake">▼</button>
+            <button id="touchGas" class="touch-btn touch-btn--gas" aria-label="Throttle">▲</button>
+        </div>
+    </div>
+
+    <!-- Core Three.js Engine (Standalone WebGL 3D, zero build tools) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Vietnam Race Modular Architecture (Conforms to _MAX-RULES.md & _RULE-web-apps.md) -->
+    <!-- Tier 1: Core System, Settings & Localization -->
+    <script src="./vietnam-race/core/settings.js"></script>
+    <script src="./vietnam-race/core/vietnam-race-i18n.js"></script>
+    <script src="./vietnam-race/core/audio.js"></script>
+
+    <!-- Tier 2: Vehicle Physics Specs -->
+    <script src="./vietnam-race/vehicle/vehicles-config.js"></script>
+
+    <!-- Tier 3: 3D Asset Registry & World Geometry -->
+    <script src="./vietnam-race/assets/assets.js"></script>
+    <script src="./vietnam-race/world/buildings.js"></script>
+    <script src="./vietnam-race/world/map-saigon.js"></script>
+    <script src="./vietnam-race/world/osm-loader.js"></script>
+    <script src="./vietnam-race/assets/saigon-d1-data.js" defer></script>
+    <script src="./vietnam-race/assets/saigon-signals-data.js" defer></script>
+    <script src="./vietnam-race/assets/saigon-buildings-data.js" defer></script>
+
+    <!-- Tier 4: Entities & Simulation Systems -->
+    <script src="./vietnam-race/traffic/traffic.js"></script>
+    <script src="./vietnam-race/vehicle/car.js"></script>
+
+    <!-- Tier 5: UI Radar & 3D Studio -->
+    <script src="./vietnam-race/ui/minimap.js"></script>
+    <script src="./vietnam-race/ui/showroom.js"></script>
+
+    <!-- Tier 6: App Orchestration & Render Loop -->
+    <script src="./vietnam-race/core/app.js"></script>
+
+    <!-- Shared Web App Visit Counter -->
+    <script src="../../common/shared-webapp-counter.js" data-webapp-id="webapp-vietnamrace"></script>
+</body>
+</html>

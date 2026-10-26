@@ -13,7 +13,7 @@
         'en': {
             brand: {
                 title: '52 Cards Tracker',
-                documentTitle: '52 Cards Tracker - Card Counter & Odds Assistant',
+                documentTitle: '52 Cards Tracker - Card Counter & Odds Assistant | Tran Thang Minh',
                 tagline: 'Standard 52-card deck tracker & game odds'
             },
             auth: {
@@ -97,7 +97,7 @@
         'vi': {
             brand: {
                 title: 'Bộ Đếm Bài 52 Lá',
-                documentTitle: 'Bộ Đếm Bài 52 Lá - Quản Lý & Tính Xác Suất Chuẩn',
+                documentTitle: '52 Cards Tracker - Đếm & Theo Dõi Bài 52 Lá | Trần Thắng Minh',
                 tagline: 'Theo dõi bài đã đánh & tính toán xác suất'
             },
             auth: {

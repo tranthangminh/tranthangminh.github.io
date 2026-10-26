@@ -1,0 +1,331 @@
+/**
+ * Planet Race - Modern Cosmic HUD & Control Interface
+ * Conforms to: products/web-apps/_RULE-web-apps.md (< 500 lines)
+ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  background-color: #060913;
+  color: #f1f2f6;
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+#canvasContainer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Header */
+.app-header {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, rgba(6, 9, 19, 0.88) 0%, rgba(6, 9, 19, 0) 100%);
+  pointer-events: none;
+}
+
+.brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.brand-badge {
+  background: linear-gradient(135deg, #e84118, #f0932b);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(232, 65, 24, 0.6);
+}
+
+.brand-sub {
+  font-size: 12px;
+  color: #a4b0be;
+  margin-left: 6px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.select-control {
+  background: rgba(30, 39, 46, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f1f2f6;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.config-toggle-btn {
+  background: linear-gradient(135deg, rgba(0, 210, 211, 0.25), rgba(9, 132, 227, 0.35));
+  border: 1px solid #00d2d3;
+  color: #00d2d3;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.config-toggle-btn:hover {
+  background: #00d2d3;
+  color: #060913;
+  box-shadow: 0 0 16px rgba(0, 210, 211, 0.6);
+}
+
+.icon-btn {
+  background: rgba(30, 39, 46, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 15px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.icon-btn:hover {
+  background: rgba(47, 53, 66, 1);
+  border-color: #00d2d3;
+}
+
+/* Telemetry Card */
+.telemetry-card {
+  position: absolute;
+  top: 68px; right: 20px;
+  z-index: 10;
+  background: rgba(15, 22, 36, 0.85);
+  border: 1px solid rgba(0, 210, 211, 0.35);
+  border-radius: 12px;
+  padding: 12px 16px;
+  width: 250px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.telemetry-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #00d2d3;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.telemetry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+
+.telemetry-label { color: #ced6e0; }
+.telemetry-val { font-weight: 700; color: #fff; }
+
+.adhesion-bar-container {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.adhesion-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.adhesion-track {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.adhesion-fill {
+  width: 100%;
+  height: 100%;
+  background: #26de81;
+  transition: width 0.1s linear, background 0.3s ease;
+}
+
+.hud-status-pill {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.hud-status--ground {
+  background: rgba(38, 222, 129, 0.25);
+  color: #26de81;
+  border: 1px solid #26de81;
+}
+
+.hud-status--orbit {
+  background: rgba(0, 210, 211, 0.35);
+  color: #00d2d3;
+  border: 1px solid #00d2d3;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* Speedometer Cluster */
+.hud-speedometer {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.speed-readout {
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 0 16px rgba(0, 210, 211, 0.4);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.speed-unit { font-size: 18px; font-weight: 600; color: #747d8c; }
+
+.hud-speed--nitro {
+  color: #00d2d3 !important;
+  text-shadow: 0 0 24px #00d2d3, 0 0 45px rgba(0, 210, 211, 0.8) !important;
+}
+
+.hud-badge {
+  margin-top: 6px;
+  background: #3742fa;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 12px;
+}
+
+.hud-badge--drive { background: #2ed573; }
+.hud-badge--reverse { background: #ffa502; }
+.hud-badge--nitro { background: #00d2d3; box-shadow: 0 0 14px #00d2d3; }
+
+/* Control Hints */
+.control-hints {
+  position: absolute;
+  bottom: 18px; left: 18px;
+  z-index: 10;
+  background: rgba(15, 22, 36, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #a4b0be;
+  backdrop-filter: blur(8px);
+}
+
+.control-hints kbd {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Mobile Touch Controls */
+.touch-controls {
+  position: absolute;
+  bottom: 16px; width: 100%;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.touch-cluster-left,
+.touch-cluster-right {
+  display: flex;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.touch-btn {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(30, 39, 46, 0.65);
+  color: #fff;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.touch-btn:active { background: rgba(255, 255, 255, 0.35); transform: scale(0.92); }
+.touch-btn--nitro { border-color: #00d2d3; background: rgba(0, 210, 211, 0.3); }
+.touch-btn--brake { border-color: #ff4757; }
+
+@media (min-width: 900px) {
+  .touch-controls { display: none; }
+}

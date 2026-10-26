@@ -223,6 +223,17 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
+        private static Rectangle GetScanRectangle(MacroStep step)
+        {
+            Point screenA = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
+            Point screenB = ActionExecutor.ResolveActualScreenPoint(step, step.EndPoint);
+            int ax = Math.Min(screenA.X, screenB.X);
+            int ay = Math.Min(screenA.Y, screenB.Y);
+            int aw = Math.Max(1, Math.Abs(screenB.X - screenA.X));
+            int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
+            return new Rectangle(ax, ay, aw, ah);
+        }
+
         private void ExecuteSingleStep(MacroStep step, List<MacroStep> stepList, ref int i, Dictionary<string, List<MacroStep>> subProfilesMap, bool freeMouseMode, int randIntervalMs, int randJitterPx, bool smoothMouseMove)
         {
             // 1. RunScript Action
@@ -256,13 +267,7 @@ namespace ModernAutoClicker.Advanced
                 {
                     if (isArea)
                     {
-                        Point screenA = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
-                        Point screenB = ActionExecutor.ResolveActualScreenPoint(step, step.EndPoint);
-                        int ax = Math.Min(screenA.X, screenB.X);
-                        int ay = Math.Min(screenA.Y, screenB.Y);
-                        int aw = Math.Max(1, Math.Abs(screenB.X - screenA.X));
-                        int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
-                        Rectangle scanRect = new Rectangle(ax, ay, aw, ah);
+                        Rectangle scanRect = GetScanRectangle(step);
 
                         Point foundPt = PixelSampler.FindMatchingPixelInArea(step, scanRect, step.TargetColor, tol);
                         if (foundPt != Point.Empty)
@@ -293,13 +298,7 @@ namespace ModernAutoClicker.Advanced
                 bool isArea = (step.EndPoint != Point.Empty && step.EndPoint != step.StartPoint);
                 if (isArea)
                 {
-                    Point screenA = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
-                    Point screenB = ActionExecutor.ResolveActualScreenPoint(step, step.EndPoint);
-                    int ax = Math.Min(screenA.X, screenB.X);
-                    int ay = Math.Min(screenA.Y, screenB.Y);
-                    int aw = Math.Max(1, Math.Abs(screenB.X - screenA.X));
-                    int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
-                    scanRect = new Rectangle(ax, ay, aw, ah);
+                    scanRect = GetScanRectangle(step);
                 }
 
                 Bitmap template = step.GetTemplateBitmap();
@@ -357,13 +356,7 @@ namespace ModernAutoClicker.Advanced
 
                 if (isArea)
                 {
-                    Point screenA = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
-                    Point screenB = ActionExecutor.ResolveActualScreenPoint(step, step.EndPoint);
-                    int ax = Math.Min(screenA.X, screenB.X);
-                    int ay = Math.Min(screenA.Y, screenB.Y);
-                    int aw = Math.Max(1, Math.Abs(screenB.X - screenA.X));
-                    int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
-                    Rectangle scanRect = new Rectangle(ax, ay, aw, ah);
+                    Rectangle scanRect = GetScanRectangle(step);
 
                     Point foundPt = PixelSampler.FindMatchingPixelInArea(step, scanRect, step.TargetColor, tol);
                     if (foundPt != Point.Empty)
@@ -374,7 +367,7 @@ namespace ModernAutoClicker.Advanced
                     else
                     {
                         matched = false;
-                        samplePt = screenA;
+                        samplePt = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
                     }
                 }
                 else
@@ -406,39 +399,7 @@ namespace ModernAutoClicker.Advanced
 
                         if (isArea)
                         {
-                            if (step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
-                            {
-                                IntPtr hWnd = step.WindowHwnd;
-                                if (!NativeMethods.IsValidWindowHandle(hWnd, step.TargetPid, step.ProcessName))
-                                {
-                                    hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex, step.TargetPid);
-                                    if (hWnd != IntPtr.Zero)
-                                    {
-                                        step.WindowHwnd = hWnd;
-                                        uint p;
-                                        NativeMethods.GetWindowThreadProcessId(hWnd, out p);
-                                        if (p > 0) step.TargetPid = p;
-                                    }
-                                    else
-                                    {
-                                        step.WindowHwnd = IntPtr.Zero;
-                                    }
-                                }
-                                if (hWnd != IntPtr.Zero)
-                                {
-                                    NativeMethods.POINT np = new NativeMethods.POINT { X = samplePt.X, Y = samplePt.Y };
-                                    if (NativeMethods.ScreenToClient(hWnd, ref np))
-                                    {
-                                        clickStep.StartPoint = new Point(np.X, np.Y);
-                                    }
-                                    else clickStep.StartPoint = samplePt;
-                                }
-                                else clickStep.StartPoint = samplePt;
-                            }
-                            else
-                            {
-                                clickStep.StartPoint = samplePt;
-                            }
+                            clickStep.StartPoint = ActionExecutor.ResolveScreenPointToRelative(step, samplePt);
                         }
 
                         int clickReps = Math.Max(1, step.RepeatCount);
@@ -535,13 +496,7 @@ namespace ModernAutoClicker.Advanced
                 bool isArea = (step.EndPoint != Point.Empty && step.EndPoint != step.StartPoint);
                 if (isArea)
                 {
-                    Point screenA = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
-                    Point screenB = ActionExecutor.ResolveActualScreenPoint(step, step.EndPoint);
-                    int ax = Math.Min(screenA.X, screenB.X);
-                    int ay = Math.Min(screenA.Y, screenB.Y);
-                    int aw = Math.Max(1, Math.Abs(screenB.X - screenA.X));
-                    int ah = Math.Max(1, Math.Abs(screenB.Y - screenA.Y));
-                    scanRect = new Rectangle(ax, ay, aw, ah);
+                    scanRect = GetScanRectangle(step);
                 }
 
                 Bitmap template = step.GetTemplateBitmap();
@@ -573,40 +528,7 @@ namespace ModernAutoClicker.Advanced
                         clickStep.ActionType = MacroActionType.LeftClick;
                         clickStep.HoldMs = Math.Max(1, step.HoldMs);
                         clickStep.EndPoint = Point.Empty;
-
-                        if (step.RelativeToWindow && (step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName)))
-                        {
-                            IntPtr hWnd = step.WindowHwnd;
-                            if (!NativeMethods.IsValidWindowHandle(hWnd, step.TargetPid, step.ProcessName))
-                            {
-                                hWnd = NativeMethods.FindWindowByTarget(step.ProcessName, step.WindowTitle, step.WindowIndex, step.TargetPid);
-                                if (hWnd != IntPtr.Zero)
-                                {
-                                    step.WindowHwnd = hWnd;
-                                    uint p;
-                                    NativeMethods.GetWindowThreadProcessId(hWnd, out p);
-                                    if (p > 0) step.TargetPid = p;
-                                }
-                                else
-                                {
-                                    step.WindowHwnd = IntPtr.Zero;
-                                }
-                            }
-                            if (hWnd != IntPtr.Zero)
-                            {
-                                NativeMethods.POINT np = new NativeMethods.POINT { X = foundCenter.X, Y = foundCenter.Y };
-                                if (NativeMethods.ScreenToClient(hWnd, ref np))
-                                {
-                                    clickStep.StartPoint = new Point(np.X, np.Y);
-                                }
-                                else clickStep.StartPoint = foundCenter;
-                            }
-                            else clickStep.StartPoint = foundCenter;
-                        }
-                        else
-                        {
-                            clickStep.StartPoint = foundCenter;
-                        }
+                        clickStep.StartPoint = ActionExecutor.ResolveScreenPointToRelative(step, foundCenter);
 
                         int clickReps = Math.Max(1, step.RepeatCount);
                         for (int cr = 0; cr < clickReps; cr++)

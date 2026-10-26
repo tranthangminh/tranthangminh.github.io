@@ -501,10 +501,12 @@ function createSelectionOverlay() {
 
     if (w > 5 && h > 5) {
       setTimeout(() => {
-        chrome.runtime.sendMessage({
-          action: 'area_selected',
-          coords: { x, y, w, h, dpr: window.devicePixelRatio || 1 }
-        });
+        try {
+          chrome.runtime.sendMessage({
+            action: 'area_selected',
+            coords: { x, y, w, h, dpr: window.devicePixelRatio || 1 }
+          }, () => { void chrome.runtime?.lastError; });
+        } catch (err) {}
       }, 80);
     } else {
       if (floatingHost) floatingHost.style.removeProperty('display');
@@ -516,7 +518,7 @@ function createSelectionOverlay() {
       cleanup();
       if (floatingHost) floatingHost.style.removeProperty('display');
       try {
-        chrome.runtime.sendMessage({ action: 'area_cancelled' });
+        chrome.runtime.sendMessage({ action: 'area_cancelled' }, () => { void chrome.runtime?.lastError; });
       } catch(err) {
         // Safe fallback if extension context is invalidated
       }
@@ -625,16 +627,18 @@ function cropAndDownloadInTab(dataUrl, coords, formatConfig, folderPrefix, times
       const croppedDataUrl = canvas.toDataURL(formatConfig.mime, 1.0);
 
       // Send message to background script to trigger the download and add it to the history
-      chrome.runtime.sendMessage({
-        action: 'download_and_save_area_capture',
-        croppedDataUrl: croppedDataUrl,
-        filename: finalFilename,
-        ext: formatConfig.ext,
-        width: canvas.width,
-        height: canvas.height,
-        pageTitle: document.title || 'Webpage',
-        pageUrl: window.location.href || ''
-      });
+      try {
+        chrome.runtime.sendMessage({
+          action: 'download_and_save_area_capture',
+          croppedDataUrl: croppedDataUrl,
+          filename: finalFilename,
+          ext: formatConfig.ext,
+          width: canvas.width,
+          height: canvas.height,
+          pageTitle: document.title || 'Webpage',
+          pageUrl: window.location.href || ''
+        }, () => { void chrome.runtime?.lastError; });
+      } catch (err) {}
 
       // Copy PNG to Clipboard
       let copied = false;

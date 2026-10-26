@@ -128,7 +128,11 @@ function initScreenCapture() {
       } else if (mode === 'area') {
         startCustomAreaCapture();
       } else if (mode === 'record') {
-        chrome.runtime.sendMessage({ action: 'trigger_screen_recorder' });
+        try {
+          chrome.runtime.sendMessage({ action: 'trigger_screen_recorder' }, () => {
+            void chrome.runtime?.lastError;
+          });
+        } catch (e) {}
       }
     });
   }

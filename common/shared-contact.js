@@ -25,10 +25,12 @@
         var rv = opts.includeReveal === false ? '' : ' reveal-up';
         var assetBase = opts.assetBase ? String(opts.assetBase) : '';
 
-        var connectTitle = escapeHtml(translate('contact.connectTitle', 'Liên Hệ'));
+        var socialTitle = escapeHtml(translate('contact.socialTitle', 'Mạng Xã Hội'));
+        var directTitle = escapeHtml(translate('contact.directTitle', 'Liên Hệ'));
         var quoteText = escapeHtml(translate('contact.quote', 'Để lại giá trị cho cuộc sống'));
         var callLabel = escapeHtml(translate('contact.callBtn', 'Gọi'));
         var emailLabel = escapeHtml(translate('contact.emailBtn', 'Email'));
+        var donateLabel = escapeHtml(translate('contact.donateBtn', 'Donate'));
         var copyright = escapeHtml(translate('contact.copyright', '© 2026 Trần Thắng Minh. All rights reserved.'));
         var visitsPrefix = escapeHtml(translate('contact.visitsPrefix', 'Số lượt truy cập:'));
 
@@ -40,8 +42,7 @@
         var redditSvg = assetBase + 'svg/reddit.svg' + v;
         var discordSvg = assetBase + 'svg/discord.svg' + v;
         var githubSvg = assetBase + 'svg/github.svg' + v;
-        var phoneSvg = assetBase + 'svg/phone.svg' + v;
-        var emailSvg = assetBase + 'svg/email.svg' + v;
+        var donateHref = assetBase + 'donate.html';
 
         var moreSocialLabel = escapeHtml(translate('contact.moreSocial', 'Xem thêm mạng xã hội'));
 
@@ -79,7 +80,7 @@
             '        <div class="contact-bar' + rv + '">' +
             '            <!-- Left 30%: Social Media -->' +
             '            <div class="contact-col contact-col-social">' +
-            '                <span class="contact-connect-title">' + connectTitle + '</span>' +
+            '                <span class="contact-connect-title" data-i18n="contact.socialTitle">' + socialTitle + '</span>' +
             '                <div class="contact-social-row">' +
                                  mainSocialsHtml +
             '                    <details class="social-more">' +
@@ -94,24 +95,28 @@
             '            <div class="contact-col contact-col-quote">' +
             '                <div class="contact-quote-wrap">' +
             '                    <span class="contact-quote-mark" aria-hidden="true">&ldquo;</span>' +
-            '                    <span class="contact-quote-text">' + quoteText + '</span>' +
+            '                    <span class="contact-quote-text" data-i18n="contact.quote">' + quoteText + '</span>' +
             '                    <span class="contact-quote-mark" aria-hidden="true">&rdquo;</span>' +
             '                </div>' +
             '            </div>' +
-            '            <!-- Right 30%: Action Buttons (Call & Email) -->' +
+            '            <!-- Right 30%: Action Buttons (Contact & Donate) -->' +
             '            <div class="contact-col contact-col-actions">' +
-            '                <a class="contact-action-btn contact-btn-call" href="tel:+84363219989" aria-label="Gọi điện thoại">' +
-            '                    <span class="contact-btn-icon" style="-webkit-mask-image: url(\'' + phoneSvg + '\'); mask-image: url(\'' + phoneSvg + '\');" aria-hidden="true"></span>' +
-            '                    <span>' + callLabel + '</span>' +
-            '                </a>' +
-            '                <a class="contact-action-btn contact-btn-email" href="mailto:maxiechen96@gmail.com" aria-label="Gửi Email">' +
-            '                    <span class="contact-btn-icon" style="-webkit-mask-image: url(\'' + emailSvg + '\'); mask-image: url(\'' + emailSvg + '\');" aria-hidden="true"></span>' +
-            '                    <span>' + emailLabel + '</span>' +
-            '                </a>' +
+            '                <span class="contact-connect-title contact-actions-title" data-i18n="contact.directTitle">' + directTitle + '</span>' +
+            '                <div class="contact-actions-row">' +
+            '                    <a class="contact-action-btn contact-btn-call" href="tel:+84363219989" aria-label="Gọi điện thoại" data-i18n-attr="aria-label:contact.callAria">' +
+            '                        <span data-i18n="contact.callBtn">' + callLabel + '</span>' +
+            '                    </a>' +
+            '                    <a class="contact-action-btn contact-btn-email" href="mailto:maxiechen96@gmail.com" aria-label="Gửi Email" data-i18n-attr="aria-label:contact.emailAria">' +
+            '                        <span data-i18n="contact.emailBtn">' + emailLabel + '</span>' +
+            '                    </a>' +
+            '                    <a class="contact-action-btn contact-btn-donate" href="' + donateHref + '" target="_blank" rel="noopener noreferrer" aria-label="Ủng hộ dự án (Donate)" data-i18n-attr="aria-label:contact.donateAria">' +
+            '                        <span data-i18n="contact.donateBtn">' + donateLabel + '</span>' +
+            '                    </a>' +
+            '                </div>' +
             '            </div>' +
             '        </div>' +
             '        <div class="contact-copyright-row">' +
-            '            <span>' + copyright + '</span>' +
+            '            <span data-i18n="contact.copyright">' + copyright + '</span>' +
             '        </div>' +
             '    </div>' +
             '</section>';
@@ -123,6 +128,10 @@
                     socialMore.removeAttribute('open');
                 }
             });
+        }
+
+        if (window.sharedI18n && typeof window.sharedI18n.apply === 'function') {
+            window.sharedI18n.apply(root);
         }
 
         initVisitsCounter();

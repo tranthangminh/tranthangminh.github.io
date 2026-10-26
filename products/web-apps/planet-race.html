@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kaio Planet Race 3D - Đua Xe Tiểu Hành Tinh</title>
+    <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Universal Theme Token Master -->
+    <link rel="stylesheet" href="../../common/theme.css">
+    
+    <!-- Planet Race Styles -->
+    <link rel="stylesheet" href="./planet-race/css/planet-race.css">
+    <link rel="stylesheet" href="./planet-race/css/cosmic-sidebar.css">
+    <link rel="stylesheet" href="./planet-race/css/showroom.css">
+</head>
+<body>
+    <!-- 3D WebGL Canvas Viewport -->
+    <div id="canvasContainer"></div>
+
+    <!-- Header & Quick Settings -->
+    <header class="app-header">
+        <div class="brand-wrapper">
+            <span class="brand-badge">MINI PLANET</span>
+            <span class="brand-title">KAIO PLANET RACE</span>
+            <span class="brand-sub">Dragon Ball Physics</span>
+        </div>
+
+        <div class="header-controls">
+            <!-- Vehicle Preset Selector -->
+            <select id="vehiclePresetSelect" class="select-control" title="Chọn Mẫu Xe">
+                <option value="player_sport" selected>🏎️ Sedan Thể Thao (245 HP)</option>
+                <option value="player_supercar">⚡ Hypercar Quỹ Đạo (1200 HP)</option>
+                <option value="player_kaio_classic">🚗 Roadster Kaio (210 HP)</option>
+            </select>
+
+            <!-- Quick Action Buttons -->
+            <button id="btnToggleShowroom" class="btn-showroom-toggle" title="Xem 3D Showroom Toàn Bộ Object">🏛️ SHOWROOM</button>
+            <button id="btnResetCar" class="icon-btn" title="Đặt lại xe (R)">↺</button>
+            <button id="btnSwitchCam" class="icon-btn" title="Đổi camera (C)">📷</button>
+            <button id="btnToggleAudio" class="icon-btn" title="Âm thanh động cơ">🔊</button>
+        </div>
+    </header>
+
+    <!-- Cosmic Parameters Left Docked Sidebar (Expand/Collapse) -->
+    <aside id="cosmicSidebar" class="cosmic-sidebar">
+        <button id="btnToggleSidebar" class="sidebar-toggle-btn" title="Đóng / Mở Bảng Thông Số Vũ Trụ" aria-label="Toggle Cosmic Parameters">
+            <span class="toggle-icon">🪐</span>
+            <span class="toggle-text">THÔNG SỐ VŨ TRỤ</span>
+            <span id="sidebarToggleArrow" class="toggle-arrow">◀</span>
+        </button>
+
+        <div class="sidebar-content">
+            <!-- Section 1: Planet Radius -->
+            <div class="sidebar-section">
+                <div class="sidebar-row-head">
+                    <label for="rangeRadius" class="sidebar-label">BÁN KÍNH HÀNH TINH (R)</label>
+                    <span id="txtRadiusVal" class="sidebar-val-badge">1.000 m (1.0 km)</span>
+                </div>
+                <input type="range" id="rangeRadius" class="sidebar-slider" min="40" max="2000" step="10" value="1000">
+                <div class="preset-pill-row">
+                    <button type="button" class="preset-pill" data-radius="55">55m Kaio</button>
+                    <button type="button" class="preset-pill" data-radius="250">250m</button>
+                    <button type="button" class="preset-pill" data-radius="500">500m</button>
+                    <button type="button" class="preset-pill preset-pill--active" data-radius="1000">1.000m (1km)</button>
+                    <button type="button" class="preset-pill" data-radius="2000">2.000m</button>
+                </div>
+                <div class="sidebar-sub-info" id="txtRadiusInfo">
+                    Chu vi: 6.283 m (6,28 km) | Đường kính: 2.000 m
+                </div>
+            </div>
+
+            <!-- Section 2: Gravity (G-Force) Real-Time Adjuster -->
+            <div class="sidebar-section">
+                <div class="sidebar-row-head">
+                    <label for="rangeGravity" class="sidebar-label">TRỌNG LỰC (G) - THAY ĐỔI TỨC THÌ</label>
+                    <span id="txtGravityVal" class="sidebar-val-badge">10.0 G (98.1 m/s²)</span>
+                </div>
+                <input type="range" id="rangeGravity" class="sidebar-slider" min="0.05" max="25" step="0.05" value="10.0">
+                <div class="preset-pill-row">
+                    <button type="button" class="preset-pill" data-gravity="0.05">0.05G Vi-G</button>
+                    <button type="button" class="preset-pill" data-gravity="0.16">0.16G Trăng</button>
+                    <button type="button" class="preset-pill" data-gravity="0.38">0.38G Hỏa</button>
+                    <button type="button" class="preset-pill" data-gravity="1.0">1.0G Đất</button>
+                    <button type="button" class="preset-pill preset-pill--active" data-gravity="10.0">10.0G Kaio</button>
+                </div>
+            </div>
+
+            <!-- Section 3: Terrain Deformation & Bumps -->
+            <div class="sidebar-section">
+                <div class="sidebar-row-head">
+                    <label for="rangeAmplitude" class="sidebar-label">ĐỘ NHÔ ĐỊA HÌNH (BUMPS)</label>
+                    <span id="txtAmplitudeVal" class="sidebar-val-badge">0 m (Phẳng)</span>
+                </div>
+                <input type="range" id="rangeAmplitude" class="sidebar-slider" min="0" max="35" step="1" value="0">
+                <div class="preset-pill-row">
+                    <button type="button" class="preset-pill preset-pill--active" data-ampl="0">0m Phẳng</button>
+                    <button type="button" class="preset-pill" data-ampl="6">6m Đồi nhẹ</button>
+                    <button type="button" class="preset-pill" data-ampl="14">14m Lượn sóng</button>
+                    <button type="button" class="preset-pill" data-ampl="25">25m Dốc gắt</button>
+                </div>
+                <div class="sidebar-actions-row">
+                    <button type="button" id="btnRandomTerrain" class="btn-sidebar-secondary" title="Sinh ngẫu nhiên địa hình mới">
+                        🎲 RANDOM ĐỊA HÌNH
+                    </button>
+                    <button type="button" id="btnToggleRollercoaster" class="btn-sidebar-secondary" title="Bật/Tắt đường đua uốn lượn theo đồi">
+                        🎢 ĐƯỜNG ĐUA: LƯỢN SÓNG
+                    </button>
+                </div>
+                <button type="button" id="btnToggleSculpt" class="btn-sidebar-sculpt" title="Click trên hành tinh để tự đắp đồi / khoét hố">
+                    🖌️ CHẾ ĐỘ SỬA ĐỊA HÌNH (SCULPT)
+                </button>
+            </div>
+
+            <!-- Section 4: Real-Time Calculated Feedback -->
+            <div class="sidebar-section sidebar-section--feedback">
+                <div class="feedback-mini-row">
+                    <span class="feedback-mini-label">Ngưỡng bay quỹ đạo (Vorb):</span>
+                    <span id="txtCalcVorb" class="feedback-mini-val">1.127 km/h</span>
+                </div>
+                <div class="feedback-mini-row">
+                    <span class="feedback-mini-label">Vận tốc thoát ly (Vesc):</span>
+                    <span id="txtCalcVesc" class="feedback-mini-val">1.594 km/h</span>
+                </div>
+            </div>
+
+            <!-- Rebuild Planet Radius Button -->
+            <button id="btnApplyRadius" class="btn-sidebar-apply" title="Tái tạo hành tinh với bán kính mới">
+                🔄 TÁI TẠO BÁN KÍNH HÀNH TINH
+            </button>
+        </div>
+    </aside>
+
+    <!-- Orbital Physics Telemetry Card -->
+    <div class="telemetry-card">
+        <div class="telemetry-title">
+            <span>📡</span>
+            <span>QUỸ ĐẠO & TRỌNG LỰC</span>
+        </div>
+        
+        <div class="telemetry-row">
+            <span class="telemetry-label">Trạng Thái:</span>
+            <span id="hudAltBadge" class="hud-status-pill hud-status--ground">BÁM ĐẤT</span>
+        </div>
+
+        <div class="telemetry-row">
+            <span class="telemetry-label">Độ Cao Quỹ Đạo:</span>
+            <span id="hudAltitude" class="telemetry-val">0.0 m</span>
+        </div>
+
+        <div class="telemetry-row">
+            <span class="telemetry-label">Ngưỡng Bay Quỹ Đạo:</span>
+            <span id="hudVOrb" class="telemetry-val">328 km/h</span>
+        </div>
+
+        <div class="telemetry-row">
+            <span class="telemetry-label">Gia Tốc Trọng Trường:</span>
+            <span id="hudGForce" class="telemetry-val">10.0 G</span>
+        </div>
+
+        <!-- Adhesion Normal Force Bar -->
+        <div class="adhesion-bar-container">
+            <div class="adhesion-header">
+                <span class="telemetry-label">Độ Bám Mặt Đường (Fn):</span>
+                <span id="hudNormalForceVal" class="telemetry-val">100%</span>
+            </div>
+            <div class="adhesion-track">
+                <div id="hudNormalForceFill" class="adhesion-fill" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center Bottom Speedometer Cluster -->
+    <div class="hud-speedometer">
+        <div class="speed-readout">
+            <span id="hudSpeed">0</span>
+            <span class="speed-unit">KM/H</span>
+        </div>
+        <div id="hudGear" class="hud-badge">P</div>
+    </div>
+
+    <!-- Keyboard Control Hints (Desktop) -->
+    <div class="control-hints">
+        💡 <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>: Lái xe | <kbd>Q</kbd>/<kbd>E</kbd>: Nhìn Trái/Phải (Q+E: Nhìn Sau) | <kbd>Shift</kbd>: Nitro 🚀 | <kbd>Space</kbd>: Phanh | <kbd>C</kbd>: Đổi Cam | <kbd>R</kbd>: Reset
+    </div>
+
+    <!-- Mobile Touch Controls -->
+    <div class="touch-controls">
+        <div class="touch-cluster-left">
+            <button id="touchLeft" class="touch-btn" aria-label="Steer Left">◀</button>
+            <button id="touchRight" class="touch-btn" aria-label="Steer Right">▶</button>
+        </div>
+        <div class="touch-cluster-right">
+            <button id="touchBoost" class="touch-btn touch-btn--nitro" aria-label="Nitro Boost">🚀</button>
+            <button id="touchHorn" class="touch-btn" aria-label="Horn">📢</button>
+            <button id="touchHandbrake" class="touch-btn" aria-label="Handbrake">⚡</button>
+            <button id="touchBrake" class="touch-btn touch-btn--brake" aria-label="Brake">▼</button>
+            <button id="touchGas" class="touch-btn touch-btn--gas" aria-label="Throttle">▲</button>
+        </div>
+    </div>
+
+    <!-- 3D Showroom Fullscreen Inspector UI (Hidden by default) -->
+    <div id="showroomUI" class="showroom-overlay" style="display: none;">
+        <div class="showroom-header">
+            <div class="showroom-title-badge">
+                <span>🏛️</span>
+                <span>KAIO ASSET SHOWROOM & 3D INSPECTOR</span>
+            </div>
+            <div class="showroom-header-actions">
+                <button id="btnToggleAutoSpin" class="btn-showroom-action active">🔄 XOAY: BẬT</button>
+                <button id="btnExitShowroom" class="btn-showroom-exit">🏎️ TRỞ LẠI GAME</button>
+            </div>
+        </div>
+
+        <!-- Left Categorized Asset Catalog Sidebar -->
+        <aside class="showroom-sidebar">
+            <div class="showroom-sidebar-title">DANH MỤC ĐẠO CỤ & XE</div>
+            <div id="showroomAssetList"></div>
+        </aside>
+
+        <!-- Bottom Right Telemetry Spec Card -->
+        <div class="showroom-spec-card">
+            <div class="spec-head-row">
+                <div id="specItemTitle" class="spec-item-title">Sedan Thể Thao</div>
+                <div class="spec-id-badge-wrap">
+                    <span id="specItemId" class="spec-item-id">player_sport</span>
+                    <button type="button" id="btnCopyAssetId" class="btn-copy-id" title="Copy mã ID gọi tên">📋 Copy</button>
+                </div>
+            </div>
+            <div class="spec-detail-row">
+                <span class="spec-label">Kích thước (Dài × Rộng × Cao):</span>
+                <span id="specItemDims" class="spec-val">4.25m × 1.82m × 1.35m</span>
+            </div>
+            <div class="spec-detail-row">
+                <span class="spec-label">Quy tắc cắm móng & Hướng mọc:</span>
+                <span id="specItemRule" class="spec-val spec-val--highlight">Khối động lực học bánh xe 4WD</span>
+            </div>
+            <div id="specItemDesc" class="spec-desc-box">
+                Mẫu xe sedan tiêu chuẩn 245 HP, cân bằng giữa tốc độ và khả năng bám cua xích đạo.
+            </div>
+            <div class="spec-hint-footer">
+                💡 Kéo chuột để xoay 360° | Cuộn chuột để phóng to / thu nhỏ
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Three.js Engine (Standalone WebGL, Zero Build Tools) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Cannon.js Real Physics Engine (Rigid Body Dynamics & RaycastVehicle) -->
+    <script src="./planet-race/libs/cannon.min.js"></script>
+
+    <!-- Planet Race Modular Subsystems (Conforms to _RULE-web-apps.md) -->
+    <script src="./planet-race/physics/vehicle-specs.js"></script>
+    <script src="./planet-race/physics/planet-physics.js"></script>
+    <script src="./planet-race/core/audio.js"></script>
+    <script src="./planet-race/world/terrain-noise.js"></script>
+    <script src="./planet-race/world/space-skybox.js"></script>
+    <script src="./planet-race/world/assets.js"></script>
+    <script src="./planet-race/world/planet.js"></script>
+    <script src="./planet-race/vehicle/car.js"></script>
+    <script src="./planet-race/core/camera.js"></script>
+    <script src="./planet-race/ui/hud.js"></script>
+    <script src="./planet-race/ui/showroom.js"></script>
+    <script src="./planet-race/core/app.js"></script>
+</body>
+</html>

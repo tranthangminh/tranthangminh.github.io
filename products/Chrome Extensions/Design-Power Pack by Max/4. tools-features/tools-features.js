@@ -231,7 +231,11 @@ if (typeof document !== 'undefined') {
 
     const notifyBackground = () => {
       if (typeof chrome !== 'undefined' && chrome.runtime) {
-        chrome.runtime.sendMessage({ action: 'update_context_menus' });
+        try {
+          chrome.runtime.sendMessage({ action: 'update_context_menus' }, () => {
+            void chrome.runtime?.lastError;
+          });
+        } catch (e) {}
       }
     };
 

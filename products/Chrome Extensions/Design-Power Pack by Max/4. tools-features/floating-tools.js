@@ -62,22 +62,35 @@
   }
 
   function initFloatingTools() {
-    safeStorageGet({ [STORAGE_KEY]: true, [POS_KEY]: 60 }, (data) => {
+    safeStorageGet({ [STORAGE_KEY]: true, [POS_KEY]: 50 }, (data) => {
       if (data[STORAGE_KEY] === false) return;
-      mountFloatingTools(data[POS_KEY] || 60);
+      mountFloatingTools(data[POS_KEY] !== undefined ? data[POS_KEY] : 50);
     });
 
     try {
       if (isExtensionAlive() && chrome.storage && chrome.storage.onChanged) {
         chrome.storage.onChanged.addListener((changes, area) => {
           if (!isExtensionAlive()) return;
-          if (area === 'local' && changes[STORAGE_KEY]) {
-            if (changes[STORAGE_KEY].newValue === false) {
-              unmountFloatingTools();
-            } else {
-              safeStorageGet({ [POS_KEY]: 60 }, (d) => {
-                mountFloatingTools(d[POS_KEY] || 60);
-              });
+          if (area === 'local') {
+            if (changes[STORAGE_KEY]) {
+              if (changes[STORAGE_KEY].newValue === false) {
+                unmountFloatingTools();
+              } else {
+                safeStorageGet({ [POS_KEY]: 50 }, (d) => {
+                  mountFloatingTools(d[POS_KEY] !== undefined ? d[POS_KEY] : 50);
+                });
+              }
+            } else if (changes[POS_KEY] && changes[POS_KEY].newValue !== undefined) {
+              const newPos = changes[POS_KEY].newValue;
+              currentPercentY = (typeof newPos === 'number' && newPos > 100)
+                ? Math.max(5, Math.min(95, (newPos / (window.innerHeight || 800)) * 100))
+                : Math.max(2, Math.min(98, newPos || 50));
+              if (hostEl && hostEl.shadowRoot) {
+                const dockEl = hostEl.shadowRoot.querySelector('.dock-container');
+                if (dockEl) {
+                  dockEl.style.top = `clamp(16px, ${currentPercentY}vh, calc(100vh - 56px))`;
+                }
+              }
             }
           }
         });
@@ -86,8 +99,24 @@
   }
 
   let hostEl = null;
+  let currentPercentY = 50;
+  let currentResizeHandler = null;
+  let currentPointerDownHandler = null;
+  let currentKeyDownHandler = null;
 
   function unmountFloatingTools() {
+    if (currentResizeHandler) {
+      window.removeEventListener('resize', currentResizeHandler);
+      currentResizeHandler = null;
+    }
+    if (currentPointerDownHandler) {
+      document.removeEventListener('pointerdown', currentPointerDownHandler);
+      currentPointerDownHandler = null;
+    }
+    if (currentKeyDownHandler) {
+      window.removeEventListener('keydown', currentKeyDownHandler);
+      currentKeyDownHandler = null;
+    }
     if (hostEl && hostEl.parentNode) {
       hostEl.parentNode.removeChild(hostEl);
       hostEl = null;
@@ -238,11 +267,19 @@
     const dock = document.createElement('div');
     dock.className = 'dock-container';
 
-    // Calculate clamped vertical position
-    let currentTop = typeof initialPosY === 'number'
-      ? Math.max(16, Math.min(window.innerHeight - 56, initialPosY))
-      : 100;
-    dock.style.top = `${currentTop}px`;
+    // Calculate vertical position as percentage (supports legacy pixel values via safe conversion)
+    currentPercentY = 50;
+    if (typeof initialPosY === 'number') {
+      if (initialPosY > 100) {
+        // Legacy pixel value (> 100) -> convert to percentage of window height
+        const winH = window.innerHeight || 800;
+        currentPercentY = Math.max(5, Math.min(95, (initialPosY / winH) * 100));
+        safeStorageSet({ [POS_KEY]: Number(currentPercentY.toFixed(2)) });
+      } else {
+        currentPercentY = Math.max(2, Math.min(98, initialPosY));
+      }
+    }
+    dock.style.top = `clamp(16px, ${currentPercentY}vh, calc(100vh - 56px))`;
 
     dock.innerHTML = `
       <button class="main-btn" title="MAX Quick Tools" aria-label="MAX Quick Tools">
@@ -295,7 +332,7 @@
       isDragging = true;
       hasMoved = false;
       startY = e.clientY;
-      startTop = dock.offsetTop;
+      startTop = dock.getBoundingClientRect().top;
 
       const onMouseMove = (moveEvent) => {
         const dy = moveEvent.clientY - startY;
@@ -304,8 +341,8 @@
         }
         if (hasMoved) {
           const maxTop = window.innerHeight - 56;
-          currentTop = Math.max(16, Math.min(maxTop, startTop + dy));
-          dock.style.top = `${currentTop}px`;
+          const currentPx = Math.max(16, Math.min(maxTop, startTop + dy));
+          dock.style.top = `${currentPx}px`;
         }
       };
 
@@ -315,7 +352,12 @@
         window.removeEventListener('mouseup', onMouseUp);
 
         if (hasMoved) {
-          safeStorageSet({ [POS_KEY]: currentTop });
+          const currentPx = dock.getBoundingClientRect().top;
+          const winH = window.innerHeight || 800;
+          const rawPercent = (currentPx / winH) * 100;
+          currentPercentY = Number(Math.max(2, Math.min(98, rawPercent)).toFixed(2));
+          safeStorageSet({ [POS_KEY]: currentPercentY });
+          dock.style.top = `clamp(16px, ${currentPercentY}vh, calc(100vh - 56px))`;
         } else {
           // Pure click without dragging -> toggle expanded state
           setExpanded(!dock.classList.contains('expanded'));
@@ -325,6 +367,21 @@
       window.addEventListener('mousemove', onMouseMove);
       window.addEventListener('mouseup', onMouseUp);
     });
+
+    // Window resize / zoom listener to ensure dock stays clamped to viewport percentage across zoom levels
+    let resizeTicking = false;
+    currentResizeHandler = () => {
+      if (!resizeTicking) {
+        window.requestAnimationFrame(() => {
+          if (hostEl && hostEl.isConnected && dock && !isDragging) {
+            dock.style.top = `clamp(16px, ${currentPercentY}vh, calc(100vh - 56px))`;
+          }
+          resizeTicking = false;
+        });
+        resizeTicking = true;
+      }
+    };
+    window.addEventListener('resize', currentResizeHandler, { passive: true });
 
     // Action button triggers (Calling existing extension functions/messages only)
     actionsMenu.addEventListener('click', (e) => {
@@ -367,21 +424,23 @@
     });
 
     // Dismiss on click outside
-    document.addEventListener('pointerdown', (e) => {
+    currentPointerDownHandler = (e) => {
       if (dock.classList.contains('expanded')) {
         const path = e.composedPath ? e.composedPath() : [];
         if (!path.includes(hostEl) && !path.includes(dock)) {
           setExpanded(false);
         }
       }
-    });
+    };
+    document.addEventListener('pointerdown', currentPointerDownHandler);
 
     // Dismiss on Escape
-    window.addEventListener('keydown', (e) => {
+    currentKeyDownHandler = (e) => {
       if (e.key === 'Escape' && dock.classList.contains('expanded')) {
         setExpanded(false);
       }
-    });
+    };
+    window.addEventListener('keydown', currentKeyDownHandler);
 
     (document.body || document.documentElement).appendChild(hostEl);
   }
