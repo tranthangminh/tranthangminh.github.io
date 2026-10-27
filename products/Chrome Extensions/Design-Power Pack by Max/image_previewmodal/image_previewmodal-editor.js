@@ -602,7 +602,10 @@ function setEditorMode(mode, showOptions = false) {
     }
     if (shapePanel) shapePanel.classList.add('hidden');
     if (stopBrushBtn) stopBrushBtn.classList.remove('hidden');
-    if (editCanvas) editCanvas.style.cursor = 'none';
+    if (editCanvas) {
+      editCanvas.style.cursor = 'none';
+      editCanvas.style.pointerEvents = 'auto';
+    }
   } else if (mode === 'shape') {
     deselectAllObjects();
     if (shapeToolBtn) shapeToolBtn.classList.add('active');
@@ -616,13 +619,19 @@ function setEditorMode(mode, showOptions = false) {
     }
     if (brushPanel) brushPanel.classList.add('hidden');
     if (stopBrushBtn) stopBrushBtn.classList.remove('hidden');
-    if (editCanvas) editCanvas.style.cursor = 'crosshair';
+    if (editCanvas) {
+      editCanvas.style.cursor = 'crosshair';
+      editCanvas.style.pointerEvents = 'auto';
+    }
     hideBrushCursor();
   } else if (mode === 'text') {
     if (textToolBtn) textToolBtn.classList.add('active');
     if (brushPanel) brushPanel.classList.add('hidden');
     if (stopBrushBtn) stopBrushBtn.classList.add('hidden');
-    if (editCanvas) editCanvas.style.cursor = 'default';
+    if (editCanvas) {
+      editCanvas.style.cursor = 'default';
+      editCanvas.style.pointerEvents = 'auto';
+    }
     hideBrushCursor();
   } else {
     // Default mode === 'idle'
@@ -631,6 +640,9 @@ function setEditorMode(mode, showOptions = false) {
     if (stopBrushBtn) stopBrushBtn.classList.add('hidden');
     if (editCanvas) editCanvas.style.cursor = 'default';
     hideBrushCursor();
+    if (typeof window.syncIdlePointerEvents === 'function') {
+      window.syncIdlePointerEvents(null);
+    }
   }
 }
 window.setEditorMode = setEditorMode;

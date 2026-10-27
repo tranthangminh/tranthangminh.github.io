@@ -256,10 +256,10 @@ async function main() {
       // Giữ lại 3 card in-house đầu tiên (01, 02, 03: Lucky Wheel, 52 Cards Tracker, Dice Roller 3D)
       const cardRegex = /<a class="product-card"[\s\S]*?<\/a>/gi;
       const cards = currentGridContent.match(cardRegex) || [];
-      const inHouseCards = cards.slice(0, 3);
+      const inHouseCards = cards.slice(0, 4);
 
       // Tạo các card curated mới (bắt đầu từ số 04)
-      let index = 4;
+      let index = 5;
       const curatedCardsHtml = items.map(item => {
         const padIndex = String(index++).padStart(2, '0');
         const catTheme = categoryColorMap[item.category] || { color: 'var(--accent-primary)', glow: 'rgba(229, 9, 20, 0.35)' };
@@ -284,7 +284,31 @@ async function main() {
                     </a>`;
       }).join('\n');
 
-      const newGridContent = '\n' + inHouseCards.map(c => c.trim()).join('\n\n') + '\n' + curatedCardsHtml + '\n                ';
+      const curatedDividerHtml = `
+                    <!-- Curated Web Apps Divider & Note -->
+                    <div class="webapps-curated-divider" role="region" aria-label="Website sưu tầm">
+                        <div class="webapps-curated-divider-bar">
+                            <span class="webapps-curated-divider-line" aria-hidden="true"></span>
+                            <div class="webapps-curated-divider-title">
+                                <svg class="webapps-curated-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                </svg>
+                                <h3 class="webapps-curated-heading" data-i18n="productsCatalog.curated.title">Kho Website &amp; Tiện Ích Sưu Tầm</h3>
+                                <span class="webapps-curated-badge" data-i18n="productsCatalog.curated.badge">Sưu Tầm</span>
+                            </div>
+                            <span class="webapps-curated-divider-line" aria-hidden="true"></span>
+                        </div>
+                        <div class="webapps-curated-note-box">
+                            <svg class="webapps-curated-note-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            </svg>
+                            <p class="webapps-curated-desc" data-i18n-html="productsCatalog.curated.note">
+                                Các website và tiện ích dưới đây <strong>không phải do tôi phát triển</strong>, đây là bộ sưu tập những công cụ hay và hữu ích được tôi chọn lọc từ internet để lưu lại và chia sẻ cùng mọi người.
+                            </p>
+                        </div>
+                    </div>`;
+
+      const newGridContent = '\n' + inHouseCards.map(c => c.trim()).join('\n\n') + '\n\n' + curatedDividerHtml + '\n' + curatedCardsHtml + '\n                ';
       html = html.replace(sectionRegex, `${beforeGrid}${newGridContent}${afterGrid}`);
       fs.writeFileSync(PRODUCTS_HTML, html, 'utf8');
       console.log('    [OK] Da cap nhat products.html thanh cong voi day du anh va category!');
@@ -306,12 +330,20 @@ async function main() {
       const currentGridContent = gridMatch[2];
       const afterGrid = gridMatch[3];
 
-      // 3 button in-house đầu tiên (Lucky Wheel, 52 Cards Tracker, Dice Roller 3D)
+      // 4 button in-house đầu tiên (Lucky Wheel, QR to Vector, 52 Cards Tracker, Dice Roller 3D)
       const inHouseBtnsHtml = `
                 <a class="product-item-btn" href="products/web-apps/lucky-wheel.html">
                     <img src="products/web-apps/lucky-wheel.png" alt="Biểu tượng ứng dụng Lucky Wheel" width="30" height="30" class="product-item-btn-icon" loading="lazy">
                     <div class="product-item-btn-content">
                         <span class="product-item-btn-text">Lucky Wheel</span>
+                        <span class="product-item-btn-tag" style="--tag-color: var(--accent-primary);" data-i18n="productsCatalog.tags.webApp">Web App</span>
+                    </div>
+                </a>
+
+                <a class="product-item-btn" href="products/web-apps/qr-to-vector.html">
+                    <img src="products/web-apps/qr-to-vector.svg" alt="Biểu tượng ứng dụng QR to Vector" width="30" height="30" class="product-item-btn-icon" loading="lazy">
+                    <div class="product-item-btn-content">
+                        <span class="product-item-btn-text">QR to Vector</span>
                         <span class="product-item-btn-tag" style="--tag-color: var(--accent-primary);" data-i18n="productsCatalog.tags.webApp">Web App</span>
                     </div>
                 </a>

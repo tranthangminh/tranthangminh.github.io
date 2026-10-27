@@ -506,6 +506,107 @@ body {
     font-size: 11px;
 }
 
+/* ==========================================================================
+   Curated External Web Apps Divider & Disclaimer Box
+   ========================================================================== */
+.webapps-curated-divider {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 28px 0 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-sizing: border-box;
+}
+
+.webapps-curated-divider-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.webapps-curated-divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+    opacity: 0.8;
+}
+
+.webapps-curated-divider-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.webapps-curated-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-primary);
+    flex-shrink: 0;
+}
+
+.webapps-curated-heading {
+    margin: 0;
+    font-family: var(--font-secondary);
+    font-size: var(--font-xl);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.webapps-curated-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-secondary);
+    font-size: var(--font-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: var(--border-radius-full);
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+    line-height: 1;
+}
+
+.webapps-curated-note-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: var(--border-radius-md);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    box-sizing: border-box;
+}
+
+.webapps-curated-note-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--accent-primary);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.webapps-curated-desc {
+    margin: 0;
+    font-size: var(--font-sm);
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.webapps-curated-desc strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
 @media (max-width: 1024px) {
     [data-product-section="books"] .products-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -629,5 +730,27 @@ body {
 
     [data-product-section="web-apps"] .product-card-arrow {
         font-size: 14px;
+    }
+
+    .webapps-curated-divider {
+        margin: 18px 0 6px;
+        gap: 10px;
+    }
+
+    .webapps-curated-divider-bar {
+        gap: 10px;
+    }
+
+    .webapps-curated-heading {
+        font-size: var(--font-lg);
+    }
+
+    .webapps-curated-note-box {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .webapps-curated-desc {
+        font-size: var(--font-xs);
     }
 }

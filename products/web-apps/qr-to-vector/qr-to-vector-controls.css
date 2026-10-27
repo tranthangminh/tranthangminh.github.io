@@ -1,0 +1,350 @@
+/* ==========================================================================
+   QR to Vector - Controls & Panels Stylesheet
+   Complies with _RULE-web-apps.md (< 500 lines)
+   Uses 100% Theme Tokens from common/theme.css
+   ========================================================================== */
+
+/* Left Sidebar / Control Panels */
+.control-panels {
+    width: 320px;
+    min-width: 290px;
+    max-width: 350px;
+    background-color: var(--bg-secondary, #222222);
+    border-right: 1px solid var(--border-color, #3a3a3a);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.panels-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.panels-scroll-area::-webkit-scrollbar {
+    width: 6px;
+}
+.panels-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+.panels-scroll-area::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary, #343434);
+    border-radius: var(--border-radius-full, 9999px);
+}
+.panels-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-elevated, #464646);
+}
+
+/* Cards & Settings Groups */
+#qrSettingsGroup,
+#pixelArtSettingsGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.card {
+    background-color: var(--bg-primary, #191919);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius-lg, 8px);
+    padding: 14px;
+}
+
+.card-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #bbbbbb);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.file-input {
+    display: none;
+}
+
+/* Mode Switcher Buttons (Clean 3 Tabs, No Icons) */
+.mode-toggle-group {
+    display: flex;
+    background-color: var(--bg-tertiary, #343434);
+    border-radius: var(--border-radius, 6px);
+    padding: 3px;
+    gap: 3px;
+    margin-bottom: 12px;
+}
+
+.mode-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #bbbbbb);
+    padding: 7px 4px;
+    border-radius: var(--border-radius-sm, 2px);
+    font-size: 10.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-fast, 0.12s);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.mode-btn:hover {
+    color: var(--text-primary, #ffffff);
+}
+
+.mode-btn.is-active {
+    background-color: var(--accent-primary, #e50914);
+    color: var(--text-on-accent, #ffffff);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Controls */
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.control-group:last-child {
+    margin-bottom: 0;
+}
+
+.control-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary, #bbbbbb);
+}
+
+.control-value-badge {
+    background-color: var(--bg-tertiary, #343434);
+    color: var(--c-cyan, #8DF2F2);
+    padding: 2px 7px;
+    border-radius: var(--border-radius-sm, 2px);
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: 700;
+}
+
+.range-slider {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-tertiary, #343434);
+    border-radius: var(--border-radius-full, 9999px);
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent-primary, #e50914);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform var(--transition-fast, 0.12s);
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Toggle */
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 0;
+}
+
+.toggle-input {
+    appearance: none;
+    width: 36px;
+    height: 20px;
+    background: var(--bg-tertiary, #343434);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background var(--transition-normal, 0.2s);
+    outline: none;
+    flex-shrink: 0;
+}
+
+.toggle-input::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    border-radius: 50%;
+    transition: transform var(--transition-normal, 0.2s);
+}
+
+.toggle-input:checked {
+    background: var(--c-green, #34d399);
+}
+
+.toggle-input:checked::after {
+    transform: translateX(16px);
+}
+
+/* Colors */
+.color-picker-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.color-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-swatch-input {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: var(--border-radius-sm, 4px);
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+}
+
+.color-text-input {
+    width: 80px;
+    background: var(--bg-tertiary, #343434);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius-sm, 2px);
+    color: var(--text-primary, #ffffff);
+    padding: 5px 8px;
+    font-size: 11.5px;
+    font-family: monospace;
+    text-transform: uppercase;
+}
+
+/* Stats in Right Inspector Panel */
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.stats-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-secondary, #bbbbbb);
+}
+
+.stats-value {
+    color: var(--text-primary, #ffffff);
+    font-weight: 700;
+}
+
+.stats-desc {
+    font-size: 11px;
+    color: var(--text-tertiary, #888888);
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+.qr-decoded-box {
+    background: var(--bg-tertiary, #343434);
+    border-radius: var(--border-radius-sm, 4px);
+    padding: 10px;
+    font-size: 12px;
+    font-family: monospace;
+    word-break: break-all;
+    max-height: 160px;
+    overflow-y: auto;
+    color: var(--text-primary, #ffffff);
+    line-height: 1.4;
+}
+
+/* Footer Buttons */
+.panels-footer {
+    padding: 14px;
+    background-color: var(--bg-secondary, #222222);
+    border-top: 1px solid var(--border-color, #3a3a3a);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-primary {
+    background-color: var(--accent-primary, #e50914);
+    color: var(--text-on-accent, #ffffff);
+    border: none;
+    border-radius: var(--border-radius, 6px);
+    padding: 11px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color var(--transition-fast, 0.12s), transform var(--transition-fast, 0.12s);
+    width: 100%;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-primary-hover, #ff2a35);
+    transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-primary:disabled, .btn-secondary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background-color: var(--bg-tertiary, #343434);
+    color: var(--text-primary, #ffffff);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius, 6px);
+    padding: 9px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color var(--transition-normal, 0.2s);
+    width: 100%;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--bg-elevated, #464646);
+    border-color: var(--border-hover, #666666);
+}
+
+button svg, button img, a svg, a img {
+    pointer-events: none !important;
+}

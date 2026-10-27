@@ -13,12 +13,20 @@
 
 html {
     scrollbar-gutter: stable;
+    background-color: var(--bg-100);
 }
 
 @supports not (scrollbar-gutter: stable) {
     html {
         overflow-y: scroll;
     }
+}
+
+body {
+    background: var(--bg-100);
+    background-color: var(--bg-100);
+    color: var(--text-primary);
+    min-height: 100vh;
 }
 
 .content-wrap {

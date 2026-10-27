@@ -109,3 +109,34 @@ function copyEditedImage() {
   bgImg.src = cleanBgUrl;
 }
 window.copyEditedImage = copyEditedImage;
+
+function hasVectorEdits() {
+  if (typeof window === 'undefined') return false;
+  return Boolean(
+    window.isEditMode &&
+    ((Array.isArray(window.editorObjects) && window.editorObjects.length > 0) ||
+     (Array.isArray(window.undoStack) && window.undoStack.length > 0))
+  );
+}
+window.hasVectorEdits = hasVectorEdits;
+
+function getMergedImageDataUrl() {
+  const modalImg = document.getElementById('modal-image-preview');
+  const canvas = window.editCanvas;
+  if (!modalImg || !canvas) return null;
+
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = modalImg.naturalWidth || canvas.width || 1200;
+  tempCanvas.height = modalImg.naturalHeight || canvas.height || 800;
+  const tempCtx = tempCanvas.getContext('2d');
+  if (!tempCtx) return null;
+
+  try {
+    tempCtx.drawImage(modalImg, 0, 0, tempCanvas.width, tempCanvas.height);
+    tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+    return tempCanvas.toDataURL('image/png');
+  } catch (err) {
+    return null;
+  }
+}
+window.getMergedImageDataUrl = getMergedImageDataUrl;

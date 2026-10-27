@@ -68,25 +68,25 @@
 </script>
 
 <link rel="stylesheet" href="common/theme.css?v=20261026-2">
-<link rel="stylesheet" href="common/shared-layout.css?v=20261026-2">
+<link rel="stylesheet" href="common/shared-layout.css?v=20261026-3">
 <link rel="stylesheet" href="common/shared-header.css?v=20261026-2">
 <link rel="stylesheet" href="common/shared-footer.css?v=20261026-2">
 <link rel="stylesheet" href="common/shared-book-now.css?v=20261026-2">
 <link rel="stylesheet" href="common/shared-surfaces.css?v=20261026-2">
 <link rel="stylesheet" href="common/shared-mobile-type-scale.css?v=20261026-2">
-<link rel="stylesheet" href="donate.css?v=20261026-2">
+<link rel="stylesheet" href="donate.css?v=20261026-4">
 
 <script src="common/shared-utils.js?v=20261026-2"></script>
 <script src="common/shared-i18n.js?v=20261026-2"></script>
 <script src="common/i18n-vi.js?v=20261026-2"></script>
 <script src="common/i18n-en.js?v=20261026-2"></script>
-<script src="donate-i18n.js?v=20261026-2"></script>
+<script src="donate-i18n.js?v=20261026-3"></script>
 <script src="common/shared-header.js?v=20261026-2"></script>
 <script src="common/shared-book-now.js?v=20261026-2"></script>
 <script src="common/shared-contact.js?v=20261026-2"></script>
 <script src="common/shared-page.js?v=20261026-2"></script>
 </head>
-<body class="theme-dark">
+<body>
 
 <div id="sharedHeaderRoot"></div>
 
@@ -147,34 +147,28 @@
                 <h2 class="donate-card-title" data-i18n="donatePage.cards.paypal.title">Cổng Thanh Toán PayPal</h2>
                 <p class="donate-card-subtitle" data-i18n="donatePage.cards.paypal.subtitle">Dành cho bạn bè &amp; đối tác quốc tế</p>
 
-                <div class="donate-qr-placeholder">
-                    <svg class="donate-placeholder-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.27 5.12-6.505 5.12h-.995c-.43 0-.79.314-.87.738l-.68 3.52c-.04.22-.24.38-.46.38H7.39c-.31 0-.53-.29-.47-.59l2.76-14.35c.07-.37.39-.64.77-.64h5.27c2.61 0 4.67.63 5.347 2.495zm-3.08 3.55c.42-2.15-.99-3.02-3.12-3.02h-2.19l-1.07 5.56h1.53c2.09 0 4.43-.39 4.85-2.54z"/>
-                    </svg>
-                    <h3 class="donate-placeholder-title" data-i18n="donatePage.cards.paypal.statusTitle">Đang Chuẩn Bị Mã QR</h3>
-                    <p class="donate-placeholder-desc" data-i18n="donatePage.cards.paypal.statusDesc">
-                        Mã QR PayPal chính thức đang được cập nhật. Bạn có thể gửi ủng hộ trực tiếp qua email hoặc liên hệ với tác giả.
-                    </p>
+                <div class="donate-qr-wrapper">
+                    <img src="svg/QR_Paypal.svg" alt="Mã QR chuyển khoản PayPal của Trần Thắng Minh" width="220" height="220" class="donate-qr-img" loading="eager">
                 </div>
 
                 <div class="donate-card-info">
                     <div class="donate-info-row">
-                        <span class="donate-info-label">Email PayPal:</span>
+                        <span class="donate-info-label" data-i18n="donatePage.cards.paypal.accountLabel">Tài Khoản / Email:</span>
                         <span class="donate-info-val">maxiechen96@gmail.com</span>
                     </div>
                     <div class="donate-info-row">
-                        <span class="donate-info-label">Status:</span>
-                        <span class="donate-info-val">Active / Sẵn sàng</span>
+                        <span class="donate-info-label" data-i18n="donatePage.cards.paypal.serviceLabel">Cổng Thanh Toán:</span>
+                        <span class="donate-info-val">PayPal</span>
                     </div>
                 </div>
 
-                <p class="donate-card-hint" data-i18n="donatePage.cards.paypal.statusDesc">
-                    Mã QR PayPal chính thức đang được cập nhật. Bạn có thể gửi ủng hộ trực tiếp qua email hoặc liên hệ với tác giả.
+                <p class="donate-card-hint" data-i18n="donatePage.cards.paypal.scanHint">
+                    Quét mã bằng ứng dụng PayPal hoặc camera điện thoại để gửi ủng hộ quốc tế.
                 </p>
 
-                <a class="donate-card-btn" href="mailto:maxiechen96@gmail.com?subject=Ủng%20hộ%20dự%20án%20(Donate)&body=Chào%20Minh,%20tôi%20muốn%20gửi%20ủng%20hộ%20dự%20án%20của%20bạn...">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                    <span data-i18n="donatePage.cards.paypal.contactBtn">Gửi Email Liên Hệ</span>
+                <a class="donate-card-btn donate-card-btn--primary" href="svg/QR_Paypal.svg" download="QR_Paypal_TranThangMinh.svg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    <span data-i18n="donatePage.cards.paypal.downloadBtn">Tải Ảnh Mã QR</span>
                 </a>
             </article>
         </div>

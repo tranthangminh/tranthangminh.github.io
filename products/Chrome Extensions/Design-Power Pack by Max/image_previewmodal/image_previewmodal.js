@@ -68,6 +68,17 @@ function updateModalTransform() {
       modalImg.style.maxHeight = '100vh';
     }
     modalImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+    if (scale > 1) {
+      modalImg.style.webkitUserDrag = 'none';
+      modalImg.classList.add('is-zoomed');
+      if (!window.isEditMode || window.editorMode === 'idle') {
+        modalImg.style.cursor = 'grab';
+      }
+    } else {
+      modalImg.style.webkitUserDrag = 'auto';
+      modalImg.classList.remove('is-zoomed');
+      modalImg.style.cursor = 'default';
+    }
   }
   const modalSize = document.getElementById('modal-image-size');
   if (modalSize && modalImg) {
@@ -560,7 +571,35 @@ function initPreviewModal() {
   window.startPanDrag = startPanDrag;
 
   if (modalImg) {
-    modalImg.addEventListener('mousedown', startPanDrag);
+    modalImg.draggable = true;
+    modalImg.addEventListener('mousedown', (e) => {
+      if (e.button === 0 && window.isEditMode && window.editorMode === 'idle') {
+        if (typeof window.deselectAllObjects === 'function') {
+          window.deselectAllObjects();
+        }
+      }
+      startPanDrag(e);
+    });
+
+    modalImg.addEventListener('dragstart', (e) => {
+      if (scale > 1) {
+        e.preventDefault();
+        return;
+      }
+      if (typeof window.hasVectorEdits === 'function' && window.hasVectorEdits()) {
+        if (typeof window.getMergedImageDataUrl === 'function') {
+          const mergedUrl = window.getMergedImageDataUrl();
+          if (mergedUrl) {
+            const ext = 'png';
+            const baseName = window.modalPreviewFilename ? window.modalPreviewFilename.replace(/\.[^/.]+$/, '') : 'image';
+            const filename = `edited_${baseName}.${ext}`;
+            try {
+              e.dataTransfer.setData('DownloadURL', `image/png:${filename}:${mergedUrl}`);
+            } catch (err) {}
+          }
+        }
+      }
+    });
   }
 
   modal.addEventListener('mousedown', (e) => {

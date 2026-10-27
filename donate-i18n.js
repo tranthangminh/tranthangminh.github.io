@@ -27,9 +27,10 @@
                     badge: 'QUỐC TẾ (INTERNATIONAL)',
                     title: 'Cổng Thanh Toán PayPal',
                     subtitle: 'Dành cho bạn bè & đối tác quốc tế',
-                    statusTitle: 'Đang Chuẩn Bị Mã QR',
-                    statusDesc: 'Mã QR PayPal chính thức đang được cập nhật. Bạn có thể gửi ủng hộ trực tiếp qua email hoặc liên hệ với tác giả.',
-                    contactBtn: 'Gửi Email Liên Hệ'
+                    accountLabel: 'Tài Khoản / Email',
+                    serviceLabel: 'Cổng Thanh Toán',
+                    scanHint: 'Quét mã bằng ứng dụng PayPal hoặc camera điện thoại để gửi ủng hộ quốc tế.',
+                    downloadBtn: 'Tải Ảnh Mã QR'
                 }
             },
             thankYou: {
@@ -64,9 +65,10 @@
                     badge: 'INTERNATIONAL',
                     title: 'PayPal Gateway',
                     subtitle: 'For international friends & supporters',
-                    statusTitle: 'QR Code Coming Soon',
-                    statusDesc: 'Official PayPal QR code is being prepared. You can send support directly via email or get in touch.',
-                    contactBtn: 'Contact via Email'
+                    accountLabel: 'Account / Email',
+                    serviceLabel: 'Payment Gateway',
+                    scanHint: 'Scan with PayPal app or camera to send support internationally.',
+                    downloadBtn: 'Download QR Image'
                 }
             },
             thankYou: {

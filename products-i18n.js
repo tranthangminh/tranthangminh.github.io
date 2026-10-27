@@ -21,6 +21,11 @@
                 users: 'người dùng',
                 visits: 'lượt truy cập'
             },
+            curated: {
+                title: 'Kho Website & Tiện Ích Sưu Tầm',
+                badge: 'Sưu Tầm',
+                note: 'Các website và tiện ích dưới đây <strong>không phải do tôi phát triển</strong>, đây là bộ sưu tập những công cụ hay và hữu ích được tôi chọn lọc từ internet để lưu lại và chia sẻ cùng mọi người.'
+            },
             autoclicker: {
                 title: 'Auto Clicker by Max v1.1.2',
                 desc: 'Phần mềm Windows tự động click chuột theo tọa độ và kịch bản phím tắt tùy chỉnh, tối ưu thao tác lặp lại với hiệu năng cao và độ trễ cực thấp.',
@@ -91,6 +96,10 @@
                 title: 'Dice Roller 3D',
                 aria: 'Lượt truy cập Dice Roller 3D'
             },
+            qrToVector: {
+                title: 'QR to Vector',
+                aria: 'Lượt truy cập QR to Vector'
+            },
             tiermaker: {
                 title: 'TierMaker'
             },
@@ -130,6 +139,11 @@
                 downloads: 'downloads',
                 users: 'users',
                 visits: 'visits'
+            },
+            curated: {
+                title: 'Curated Websites & Useful Tools',
+                badge: 'Curated',
+                note: 'The websites and tools below were <strong>not developed by me</strong>; this is a hand-picked collection of interesting and useful web resources gathered from across the internet to share with the community.'
             },
             autoclicker: {
                 title: 'Auto Clicker by Max v1.1.2',
@@ -200,6 +214,10 @@
             diceRoller: {
                 title: 'Dice Roller 3D',
                 aria: 'Dice Roller 3D visits'
+            },
+            qrToVector: {
+                title: 'QR to Vector',
+                aria: 'QR to Vector visits'
             },
             tiermaker: {
                 title: 'TierMaker'

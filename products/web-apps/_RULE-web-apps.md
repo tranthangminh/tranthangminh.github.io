@@ -61,9 +61,11 @@ Toàn bộ ứng dụng trong `products/web-apps/` bắt buộc tuân theo cấu
 ```text
 products/web-apps/
 ├── _RULE-web-apps.md                  # File quy chuẩn này
+├── common/                            # Module dùng chung nội bộ cho các Web Apps
+│   └── web-app-header.css             # Fixed Header 52px chuẩn hóa (Cờ Pure CSS + SSO Slot)
 ├── [app-name].html                    # File khởi chạy HTML duy nhất ở ngoài
 └── [app-name]/                        # Thư mục chứa toàn bộ logic, style của riêng app đó
-    ├── [app-name].css                 # Stylesheet riêng của app
+    ├── [app-name].css                 # Stylesheet riêng của app (kế thừa common)
     ├── [app-name].js (hoặc app.js)    # Controller chính của app
     └── [modules].js                   # Các module phụ trợ (audio, engine, slices, modal...)
 ```
@@ -73,7 +75,7 @@ products/web-apps/
    - Tránh viết các file "God Object" dài hàng nghìn dòng code. Nếu 1 file vượt quá **500 dòng code** -> Bắt buộc tách nhỏ thành các sub-module độc lập (ví dụ: `audio.js`, `wheel.js`, `slices.js`, `history.js`, `winner-modal.js`).
 2. **Tính độc lập tuyệt đối giữa các Web App:**
    - Mỗi Web App là một giải pháp độc lập. Sửa đổi thư mục của app này tuyệt đối không được ảnh hưởng sang app khác.
-   - Tài nguyên dùng chung bắt buộc nằm ở thư mục gốc `../../common/` (`theme.css`, `shared-auth.js`, `shared-auth-config.js`).
+   - Tài nguyên dùng chung bắt buộc nằm ở thư mục gốc `../../common/` (`theme.css`, `shared-auth.js`, `shared-auth-config.js`) hoặc thư mục dùng chung nội bộ Web Apps `products/web-apps/common/` (ví dụ: `web-app-header.css`). Tuyệt đối cấm import chéo giữa các thư mục app với nhau.
 
 ---
 
@@ -123,6 +125,20 @@ products/web-apps/
   - Giữ cho giao diện tối giản, thanh thoát, hiện đại, không bị các popup chữ vàng/đen mặc định của trình duyệt che khuất tầm nhìn hay gây rối mắt khi di chuột qua lại.
   - Tránh làm cồng kềnh bộ từ điển i18n với hàng chục key chú thích thừa thãi.
 - **Quy tắc thực thi:** Chỉ sử dụng `aria-label` cho mục đích hỗ trợ thiết bị trợ năng (screen reader) nếu cần thiết, tuyệt đối không gán thuộc tính `title`. Chỉ chừng nào người dùng chủ động yêu cầu thêm chú thích cho một nút cụ thể, AI Agent mới được phép bổ sung cho đúng nút đó.
+
+### 5.6 Quy Chuẩn Thanh Fixed Header 52px Dùng Chung (`products/web-apps/common/web-app-header.css`)
+1. **Tập trung hóa Style (Single Source of Truth):**
+   - Mọi Web App bắt buộc nhúng module dùng chung:
+     ```html
+     <link rel="stylesheet" href="./common/web-app-header.css">
+     ```
+   - **TUYỆT ĐỐI CẤM** viết lại hoặc sao chép các rule `.app-header`, `.header-brand`, `.brand-title`, `.header-actions`, `.icon-btn`, `.lang-switch`, `.lang-btn`, `.lang-flag` vào stylesheet riêng của từng ứng dụng.
+2. **Kích thước & Ngân sách Viewport:**
+   - Chiều cao cố định chuẩn của Header là **52px** (`height: 52px; flex-shrink: 0; box-sizing: border-box;`).
+   - Khung bố cục chính `.app-layout` bắt buộc thiết lập chiều cao: `height: calc(100vh - 52px);` để khớp khít 100vh mà không sinh thanh cuộn ngoài.
+3. **Cấu trúc thành phần:**
+   - **Bên trái (`.header-brand`):** `.brand-icon` (emoji kích thước 22-24px hoặc icon SVG inline) + `.brand-title` (`<h1>`, `font-size: var(--font-lg, 16px)`, `font-weight: 700`, `margin: 0;`).
+   - **Bên phải (`.header-actions`):** Xếp Right-to-Left chuẩn: `[#sharedAuthSlot]` (ngoài cùng bên phải) ➔ `[.lang-switch]` (cờ Pure CSS) ➔ `[.icon-btn]` (nút âm thanh hoặc công cụ phụ).
 
 ---
 
@@ -350,6 +366,8 @@ Khi tạo một Web App mới, AI Agent hãy sao chép trực tiếp khung mẫu
     <!-- Design System & Shared SSO Styles -->
     <link rel="stylesheet" href="../../common/theme.css">
     <link rel="stylesheet" href="../../common/shared-auth.css">
+    <!-- Shared Web App Header Component (Fixed 52px) -->
+    <link rel="stylesheet" href="./common/web-app-header.css">
     <link rel="stylesheet" href="./[app-name]/[app-name].css">
 </head>
 <body>

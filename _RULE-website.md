@@ -104,6 +104,7 @@
 - **Cấm "Đắp Code" khi Fix Bug (No Band-Aid Code):**
   - Khi phát sinh lỗi hoặc edge case, **KHÔNG ĐƯỢC đắp thêm các đoạn hack DOM hay hack CSS chắp vá** làm phình to codebase.
   - Phải tìm ra **nguyên nhân gốc rễ (Root Cause)** và xử lý triệt để bằng giải pháp tối giản nhất.
+- **CẤM ẨN THAY VÌ XÓA (Clean Code Triệt Để):** Khi bỏ hoặc không dùng một thành phần giao diện, class CSS hoặc logic nào nữa, BẮT BUỘC PHẢI XÓA BỎ HOÀN TOÀN khỏi HTML/CSS/JS. TUYỆT ĐỐI CẤM để lại code thừa rồi override nửa vời kiểu `display: none`, `background: none`, `opacity: 0` hay comment tạm bợ làm rác codebase.
 - **Giới hạn Debug (Circuit Breaker):** Nếu một lỗi sửa **quá 2 lần** vẫn thất bại, PHẢI DỪNG LẠI, giải thích rõ nguyên nhân cho "mày" và xin ý kiến chỉ đạo, tuyệt đối không tự thử nghiệm linh tinh làm nát codebase.
 
 ---

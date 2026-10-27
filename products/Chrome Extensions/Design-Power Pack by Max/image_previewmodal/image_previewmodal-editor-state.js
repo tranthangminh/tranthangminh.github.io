@@ -357,6 +357,9 @@ function deselectAllObjects() {
     window.closeVectorColorPopover();
   }
   if (window.renderCompositeCanvas) window.renderCompositeCanvas();
+  if (editorMode === 'idle' && typeof window.syncIdlePointerEvents === 'function') {
+    window.syncIdlePointerEvents(null);
+  }
 }
 window.deselectAllObjects = deselectAllObjects;
 

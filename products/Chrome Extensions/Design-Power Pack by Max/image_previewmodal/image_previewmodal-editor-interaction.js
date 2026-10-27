@@ -753,6 +753,9 @@ function handleGlobalWindowMouseUp(e) {
     dragTextObj = null;
     renderCompositeCanvas();
     saveUndoState();
+    if (editorMode === 'idle' && typeof syncIdlePointerEvents === 'function') {
+      syncIdlePointerEvents(e);
+    }
   }
   if (isDrawingShape && currentShapeObj) {
     handleCanvasMouseUp();
@@ -761,6 +764,67 @@ function handleGlobalWindowMouseUp(e) {
   window.removeEventListener('mouseup', handleGlobalWindowMouseUp, true);
 }
 window.handleGlobalWindowMouseUp = handleGlobalWindowMouseUp;
+
+function syncIdlePointerEvents(e = null) {
+  if (!editCanvas || !isEditMode || window.isWebDrawMode) return;
+
+  if (editorMode !== 'idle') {
+    editCanvas.style.pointerEvents = 'auto';
+    return;
+  }
+
+  if (isDraggingText || isRotatingText || isScalingText || window.isDrawingPolygonal) {
+    editCanvas.style.pointerEvents = 'auto';
+    return;
+  }
+
+  if (!e) {
+    const active = (typeof getSelectedObject === 'function') ? getSelectedObject() : null;
+    editCanvas.style.pointerEvents = active ? 'auto' : 'none';
+    if (!active) editCanvas.style.cursor = 'default';
+    return;
+  }
+
+  const pos = getCanvasCoordinates(e);
+  const hitObj = findVectorObjectAtCanvas(pos);
+
+  let hitHandle = false;
+  let handleCursor = null;
+  const activeObj = (typeof getSelectedObject === 'function') ? getSelectedObject() : null;
+
+  if (activeObj) {
+    const scaleRatio = getScreenScaleRatio();
+    const hitRadiusCanvas = 22 * scaleRatio;
+    const bounds = activeObj.type === 'brush'
+      ? getBrushObjectBounds(activeObj)
+      : (activeObj.type === 'shape' ? getShapeObjectBounds(activeObj) : getTextObjectBounds(activeObj));
+    const local = worldToLocal(pos, activeObj);
+
+    const distRotate = Math.hypot(local.lx - bounds.halfW, local.ly - (-bounds.halfH));
+    const distScale = Math.hypot(local.lx - bounds.halfW, local.ly - bounds.halfH);
+
+    if (distRotate <= hitRadiusCanvas) {
+      hitHandle = true;
+      handleCursor = 'grab';
+    } else if (distScale <= hitRadiusCanvas) {
+      hitHandle = true;
+      handleCursor = 'nwse-resize';
+    }
+  }
+
+  if (hitObj || hitHandle || (activeObj && activeObj.type === 'text' && activeObj.isEditingText)) {
+    editCanvas.style.pointerEvents = 'auto';
+    if (hitHandle) {
+      editCanvas.style.cursor = handleCursor || 'nwse-resize';
+    } else if (hitObj) {
+      editCanvas.style.cursor = (activeObj && activeObj.id === hitObj.id && activeObj.isEditingText) ? 'text' : 'move';
+    }
+  } else {
+    editCanvas.style.pointerEvents = 'none';
+    editCanvas.style.cursor = 'default';
+  }
+}
+window.syncIdlePointerEvents = syncIdlePointerEvents;
 
 // Native Image Context Menu Pass-Through (Allows full Chrome native <img> right-click context menu)
 function disableDrawingLayerPointerEvents() {
@@ -796,21 +860,27 @@ window.addEventListener('contextmenu', (e) => {
   }
 }, true);
 
-// Restore drawing layer pointer events when user moves cursor back or left-clicks
+// Idle mode smart pointer tracking: dynamically enable canvas pointer events only over vector objects/handles
 window.addEventListener('pointermove', (e) => {
-  if (e.buttons === 0 && editCanvas && editCanvas.style.pointerEvents === 'none') {
+  if (isEditMode && !window.isWebDrawMode && editorMode === 'idle' && e.buttons === 0) {
+    syncIdlePointerEvents(e);
+  } else if (e.buttons === 0 && editCanvas && editCanvas.style.pointerEvents === 'none' && editorMode !== 'idle') {
     restoreDrawingLayerPointerEvents();
   }
 }, true);
 
 window.addEventListener('pointerdown', (e) => {
-  if (e.button === 0 && !e.ctrlKey && editCanvas && editCanvas.style.pointerEvents === 'none') {
-    restoreDrawingLayerPointerEvents();
+  if (e.button === 0 && !e.ctrlKey && editCanvas) {
+    if (isEditMode && !window.isWebDrawMode && editorMode === 'idle') {
+      syncIdlePointerEvents(e);
+    } else if (editCanvas.style.pointerEvents === 'none') {
+      restoreDrawingLayerPointerEvents();
+    }
   }
 }, true);
 
 window.addEventListener('keydown', (e) => {
-  if (editCanvas && editCanvas.style.pointerEvents === 'none') {
+  if (editCanvas && editCanvas.style.pointerEvents === 'none' && editorMode !== 'idle') {
     restoreDrawingLayerPointerEvents();
   }
 }, true);

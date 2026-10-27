@@ -1,6 +1,14 @@
 /* ==========================================================================
    DONATE & SUPPORT PAGE STYLES (donate.css)
+   Strictly derived from Design System Tokens (common/theme.css & surfaces)
    ========================================================================== */
+
+body {
+    background: var(--bg-100);
+    background-color: var(--bg-100);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
 
 .donate-main {
     padding: 32px 0 64px;
@@ -62,16 +70,16 @@
     align-items: center;
     gap: 6px;
     font-family: var(--font-secondary);
-    font-size: 11px;
-    font-weight: 800;
+    font-size: var(--font-xs);
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #ffffff;
-    background: var(--accent-primary);
-    padding: 4px 12px;
-    border-radius: 9999px;
+    color: var(--accent-primary);
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-primary);
+    padding: 4px 14px;
+    border-radius: var(--border-radius-full);
     margin-bottom: 14px;
-    box-shadow: 0 2px 8px var(--accent-glow, rgba(229, 9, 20, 0.35));
 }
 
 .donate-hero-title {
@@ -106,13 +114,14 @@
 .donate-card {
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg, 12px);
+    border-radius: var(--border-radius-lg);
     padding: 28px 24px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
+    box-shadow: var(--shadow-sm);
     transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
     position: relative;
     overflow: hidden;
@@ -121,31 +130,32 @@
 .donate-card:hover {
     transform: translateY(-3px);
     border-color: var(--accent-primary);
-    box-shadow: 0 8px 24px var(--accent-glow, rgba(229, 9, 20, 0.15));
+    box-shadow: var(--shadow-accent);
 }
 
 .donate-card-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-family: var(--font-secondary);
-    font-size: 10px;
-    font-weight: 800;
+    font-size: var(--font-xs);
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    padding: 3px 10px;
-    border-radius: 9999px;
+    padding: 4px 12px;
+    border-radius: var(--border-radius-full);
     margin-bottom: 12px;
     line-height: 1;
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
 }
 
-.donate-card-badge--vcb {
-    color: #ffffff;
-    background: #034c2d;
-    border: 1px solid #034c2d;
-}
-
+.donate-card-badge--vcb,
 .donate-card-badge--paypal {
-    color: #ffffff;
-    background: #00457c;
-    border: 1px solid #00457c;
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
 }
 
 .donate-card-title {
@@ -173,13 +183,14 @@
     height: 220px;
     max-width: 100%;
     background: #ffffff;
-    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
     padding: 12px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 20px;
 }
 
@@ -196,7 +207,7 @@
     height: 220px;
     max-width: 100%;
     border: 2px dashed var(--border-color);
-    border-radius: 12px;
+    border-radius: var(--border-radius-lg);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -204,14 +215,14 @@
     justify-content: center;
     gap: 10px;
     padding: 16px;
-    background: rgba(0, 69, 124, 0.04);
+    background: var(--bg-secondary);
     margin-bottom: 20px;
 }
 
 .donate-placeholder-icon {
     width: 48px;
     height: 48px;
-    color: #0079c1;
+    color: var(--accent-primary);
 }
 
 .donate-placeholder-title {
@@ -224,7 +235,7 @@
 }
 
 .donate-placeholder-desc {
-    font-size: 11px;
+    font-size: var(--font-xs);
     line-height: 1.4;
     color: var(--text-tertiary);
     margin: 0;
@@ -235,9 +246,9 @@
    -------------------------------------------------------------------------- */
 .donate-card-info {
     width: 100%;
-    background: var(--bg-secondary, rgba(255, 255, 255, 0.02));
+    background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-md);
     padding: 12px 14px;
     box-sizing: border-box;
     margin-bottom: 18px;
@@ -265,7 +276,7 @@
 }
 
 .donate-card-hint {
-    font-size: 11px;
+    font-size: var(--font-xs);
     line-height: 1.45;
     color: var(--text-secondary);
     margin: 0 0 16px;
@@ -277,6 +288,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
+    min-height: var(--btn-height-lg);
     padding: 10px 18px;
     border-radius: var(--border-radius-sm);
     background: var(--bg-primary);
@@ -297,20 +309,22 @@
 .donate-card-btn:hover {
     border-color: var(--accent-primary);
     color: var(--accent-primary);
+    background: var(--accent-subtle);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--accent-glow, rgba(229, 9, 20, 0.25));
+    box-shadow: var(--shadow-sm);
 }
 
 .donate-card-btn--primary {
     background: var(--accent-primary);
     border-color: var(--accent-primary);
-    color: #ffffff;
+    color: var(--text-on-accent);
 }
 
 .donate-card-btn--primary:hover {
-    background: var(--accent-primary-hover, #ff2a35);
-    border-color: var(--accent-primary-hover, #ff2a35);
-    color: #ffffff;
+    background: var(--accent-primary-hover);
+    border-color: var(--accent-primary-hover);
+    color: var(--text-on-accent);
+    box-shadow: var(--shadow-accent);
 }
 
 /* --------------------------------------------------------------------------
@@ -319,10 +333,11 @@
 .donate-thankyou {
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
+    border-radius: var(--border-radius-lg);
     padding: 24px;
     text-align: center;
     box-sizing: border-box;
+    box-shadow: var(--shadow-sm);
 }
 
 .donate-thankyou-heart {

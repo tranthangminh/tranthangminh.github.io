@@ -1,0 +1,278 @@
+/* ==========================================================================
+   QR Generator & Center Logo Stylesheet
+   Complies with _RULE-web-apps.md (< 500 lines)
+   Uses 100% Theme Tokens from common/theme.css
+   ========================================================================== */
+
+/* Top Mode Segmented Switch */
+.app-mode-switch {
+    display: flex;
+    background: var(--bg-primary, #191919);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius, 6px);
+    padding: 3px;
+    gap: 3px;
+    margin-bottom: 12px;
+}
+
+.app-mode-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #bbbbbb);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 8px 10px;
+    border-radius: var(--border-radius-sm, 4px);
+    cursor: pointer;
+    transition: background var(--transition-normal, 0.2s), color var(--transition-normal, 0.2s);
+    text-align: center;
+    font-family: inherit;
+}
+
+.app-mode-tab:hover {
+    color: var(--text-primary, #ffffff);
+}
+
+.app-mode-tab.is-active {
+    background: var(--accent-primary, #343434);
+    color: var(--text-primary, #ffffff);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Stage Generator Panel (Docked at top-left inside stage-viewport) */
+.stage-generator-panel {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    width: 310px;
+    max-width: 330px;
+    max-height: calc(100% - 32px);
+    overflow-y: auto;
+    background: var(--bg-secondary, #222222);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius-lg, 12px);
+    padding: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+}
+
+.stage-generator-panel::-webkit-scrollbar {
+    width: 6px;
+}
+.stage-generator-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+.stage-generator-panel::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary, #343434);
+    border-radius: var(--border-radius-full, 9999px);
+}
+.stage-generator-panel::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-elevated, #464646);
+}
+
+/* Generator Types Grid (9 Types) */
+.gen-types-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.gen-type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 4px;
+    background: var(--bg-primary, #191919);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius-sm, 4px);
+    color: var(--text-secondary, #bbbbbb);
+    font-size: 10.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color var(--transition-normal, 0.2s), background var(--transition-normal, 0.2s), color var(--transition-normal, 0.2s);
+    font-family: inherit;
+}
+
+.gen-type-btn:hover {
+    border-color: var(--border-hover, #666666);
+    background: var(--bg-tertiary, #343434);
+    color: var(--text-primary, #ffffff);
+}
+
+.gen-type-btn.is-active {
+    border-color: var(--accent-primary, #e50914);
+    background: var(--bg-tertiary, #343434);
+    color: var(--text-primary, #ffffff);
+    font-weight: 700;
+}
+
+.gen-type-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+/* Generator Form Inputs */
+.gen-form-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.gen-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.gen-field-row {
+    display: flex;
+    gap: 8px;
+}
+
+.gen-field-row .gen-field {
+    flex: 1;
+}
+
+.gen-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary, #bbbbbb);
+}
+
+.gen-input, .gen-textarea, .gen-select {
+    width: 100%;
+    background: var(--bg-primary, #191919);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius-sm, 4px);
+    color: var(--text-primary, #ffffff);
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--transition-normal, 0.2s);
+}
+
+.gen-input:focus, .gen-textarea:focus, .gen-select:focus {
+    border-color: var(--accent-primary, #e50914);
+}
+
+.gen-textarea {
+    resize: vertical;
+    min-height: 56px;
+    line-height: 1.4;
+}
+
+.gen-field-inline {
+    margin-top: 4px;
+    margin-bottom: 8px;
+}
+
+/* Center Logo Upload & Preview */
+.logo-upload-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: var(--bg-primary, #191919);
+    border: 1px dashed var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius, 6px);
+    color: var(--text-secondary, #bbbbbb);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--transition-normal, 0.2s), color var(--transition-normal, 0.2s), background var(--transition-normal, 0.2s);
+    font-family: inherit;
+}
+
+.logo-upload-btn:hover {
+    border-color: var(--accent-primary, #e50914);
+    background: var(--bg-tertiary, #343434);
+    color: var(--text-primary, #ffffff);
+}
+
+.logo-preview-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 10px;
+    background: var(--bg-primary, #191919);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius-sm, 4px);
+}
+
+.logo-thumb-wrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--bg-tertiary, #343434);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.logo-thumb {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.logo-name {
+    font-size: 11px;
+    color: var(--text-primary, #ffffff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.btn-remove-logo {
+    background: transparent;
+    border: none;
+    color: var(--accent-primary, #e50914);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-family: inherit;
+}
+
+.btn-remove-logo:hover {
+    text-decoration: underline;
+}
+
+/* Mobile Responsiveness (< 768px) */
+@media (max-width: 768px) {
+    .stage-generator-panel {
+        position: static;
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        margin-bottom: 16px;
+        box-shadow: none;
+        overflow: visible;
+    }
+
+    .gen-type-btn {
+        min-height: 44px;
+        padding: 8px 4px;
+    }
+
+    .gen-input,
+    .gen-textarea,
+    .gen-select {
+        font-size: 16px; /* Prevents auto-zoom on iOS */
+    }
+}
+

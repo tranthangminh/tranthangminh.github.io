@@ -1,0 +1,225 @@
+/**
+ * Web Apps Shared Fixed Header Component
+ * Standardized across Web Apps (Lucky Wheel, Dice Roller, QR to Vector, 52 Cards Tracker)
+ * Reference: lucky-wheel.html / _RULE-web-apps.md
+ * Height: 52px fixed viewport budget
+ * Theme: 100% Theme Tokens (var(--bg-secondary), var(--border-color), etc.)
+ */
+
+/* 1. App Header Container */
+.app-header {
+    background-color: var(--bg-secondary, #222222);
+    border-bottom: 1px solid var(--border-color, #3a3a3a);
+    padding: 8px 24px;
+    height: 52px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 50;
+    box-sizing: border-box;
+}
+
+/* 2. Header Brand (Left) */
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.brand-icon svg {
+    display: block;
+}
+
+.brand-title {
+    font-size: var(--font-lg, 16px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary, #ffffff);
+    line-height: 1.2;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.brand-subtitle {
+    font-size: 11px;
+    color: var(--text-secondary, #a0a0a0);
+    line-height: 1.2;
+    margin: 0;
+}
+
+/* 3. Header Actions (Right - Right-to-Left priority) */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* 4. Action Icon Button (Sound, Settings, Tools) */
+.icon-btn {
+    background: var(--bg-tertiary, #343434);
+    border: 1px solid var(--border-color, #3a3a3a);
+    color: var(--text-primary, #ffffff);
+    width: 34px;
+    height: 34px;
+    border-radius: var(--border-radius-md, 4px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    user-select: none;
+    transition: var(--transition-fast, all 0.15s ease);
+    box-sizing: border-box;
+}
+
+.icon-btn:hover {
+    background: var(--bg-elevated, #464646);
+    border-color: var(--border-hover, #8a8a8a);
+}
+
+.icon-btn.is-active {
+    color: var(--c-yellow, #e5c158);
+}
+
+.icon-btn.is-muted {
+    opacity: 0.55;
+    filter: grayscale(1);
+}
+
+/* 5. Language Switcher (Pure CSS Flag Style) */
+.lang-switch {
+    display: inline-flex;
+    align-items: center;
+}
+
+.lang-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #ffffff);
+    padding: 0 4px;
+    min-width: var(--btn-height-sm, 28px);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-xs, 11px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    opacity: 0.85;
+    user-select: none;
+    transition: opacity var(--transition-normal, 0.2s ease), color var(--transition-normal, 0.2s ease);
+    box-sizing: border-box;
+}
+
+.lang-btn:hover,
+.lang-btn--toggle {
+    opacity: 1;
+}
+
+.lang-code {
+    display: block;
+    line-height: 1;
+}
+
+.lang-flag {
+    position: relative;
+    display: block;
+    width: 20px;
+    height: 13px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* Vietnamese Pure CSS Flag (Red bg + Yellow 5-point Star) */
+.lang-flag--vi,
+.lang-flag--vn {
+    background: #d62828;
+}
+
+.lang-flag--vi::before,
+.lang-flag--vn::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    background: #f4d35e;
+    clip-path: polygon(
+        50% 0%,
+        61% 35%,
+        98% 35%,
+        68% 57%,
+        79% 91%,
+        50% 70%,
+        21% 91%,
+        32% 57%,
+        2% 35%,
+        39% 35%
+    );
+    transform: translate(-50%, -50%);
+}
+
+/* English / US Pure CSS Flag (Red/White stripes + Blue Canton) */
+.lang-flag--en,
+.lang-flag--us {
+    background: repeating-linear-gradient(
+        to bottom,
+        #b22234 0px,
+        #b22234 1px,
+        #ffffff 1px,
+        #ffffff 2px
+    );
+}
+
+.lang-flag--en::before,
+.lang-flag--us::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 9px;
+    height: 7px;
+    background: #3c3b6e;
+}
+
+/* 6. Shared SSO Authentication Slot (Rightmost) */
+#sharedAuthSlot {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 7. Mobile Responsive Adjustments */
+@media (max-width: 600px) {
+    .app-header {
+        padding: 8px 12px;
+    }
+
+    .header-brand {
+        gap: 8px;
+    }
+
+    .brand-title {
+        font-size: var(--font-base, 14px);
+    }
+}

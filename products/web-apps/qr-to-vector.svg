@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#181a26"/>
+      <stop offset="70%" stop-color="#0e1017"/>
+      <stop offset="100%" stop-color="#07080b"/>
+    </radialGradient>
+    <linearGradient id="neonCyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8DF2F2"/>
+      <stop offset="100%" stop-color="#00D2D2"/>
+    </linearGradient>
+    <linearGradient id="neonPurple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#C084FC"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#8DF2F2" flood-opacity="0.25"/>
+    </filter>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGrad)"/>
+
+  <!-- Subtle Blueprint Grid Pattern -->
+  <g opacity="0.08" stroke="#8DF2F2" stroke-width="1">
+    <path d="M 0,100 L 800,100 M 0,200 L 800,200 M 0,300 L 800,300 M 0,400 L 800,400 M 0,500 L 800,500" />
+    <path d="M 100,0 L 100,600 M 200,0 L 200,600 M 300,0 L 300,600 M 400,0 L 400,600 M 500,0 L 500,600 M 600,0 L 600,600 M 700,0 L 700,600" />
+  </g>
+
+  <!-- Card Backdrop -->
+  <rect x="180" y="80" width="440" height="440" rx="28" fill="#12141c" stroke="rgba(255,255,255,0.08)" stroke-width="2" filter="url(#cardShadow)"/>
+
+  <!-- QR Inner Canvas -->
+  <rect x="220" y="120" width="360" height="360" rx="18" fill="#ffffff" filter="url(#softGlow)"/>
+
+  <!-- QR Code Vector Elements -->
+  <!-- Top-Left Finder Pattern -->
+  <rect x="250" y="150" width="90" height="90" rx="16" fill="#0e1017"/>
+  <rect x="264" y="164" width="62" height="62" rx="10" fill="#ffffff"/>
+  <rect x="276" y="176" width="38" height="38" rx="8" fill="#0e1017"/>
+
+  <!-- Top-Right Finder Pattern -->
+  <rect x="460" y="150" width="90" height="90" rx="16" fill="#0e1017"/>
+  <rect x="474" y="164" width="62" height="62" rx="10" fill="#ffffff"/>
+  <rect x="486" y="176" width="38" height="38" rx="8" fill="#0e1017"/>
+
+  <!-- Bottom-Left Finder Pattern -->
+  <rect x="250" y="360" width="90" height="90" rx="16" fill="#0e1017"/>
+  <rect x="264" y="374" width="62" height="62" rx="10" fill="#ffffff"/>
+  <rect x="276" y="386" width="38" height="38" rx="8" fill="#0e1017"/>
+
+  <!-- Alignment Module & Smooth Unified Paths -->
+  <rect x="440" y="340" width="50" height="50" rx="10" fill="#0e1017"/>
+  <rect x="452" y="352" width="26" height="26" rx="6" fill="#ffffff"/>
+  <rect x="460" y="360" width="10" height="10" rx="3" fill="#0e1017"/>
+
+  <!-- Timing Patterns & Decorative Continuous Data Blocks -->
+  <path d="M 370 150 h 26 v 26 h -26 z M 370 210 h 26 v 56 h 56 v -26 h 26 v 56 h -26 v 26 h -56 v -26 h -26 z M 250 270 h 56 v 26 h -56 z M 490 270 h 56 v 26 h -56 z M 370 340 h 26 v 56 h 26 v -26 h 26 v 26 h -26 v 56 h -26 v -26 h -26 z M 340 440 h 56 v 26 h -56 z M 490 410 h 56 v 56 h -56 z" fill="#0e1017"/>
+
+  <!-- Dynamic Vector Path Accent Overlay (Fillet & Bezier Node Pins) -->
+  <circle cx="370" cy="210" r="4.5" fill="#8DF2F2" stroke="#00D2D2" stroke-width="2"/>
+  <circle cx="452" cy="266" r="4.5" fill="#8DF2F2" stroke="#00D2D2" stroke-width="2"/>
+  <circle cx="478" cy="292" r="4.5" fill="#8DF2F2" stroke="#00D2D2" stroke-width="2"/>
+  <circle cx="396" cy="340" r="4.5" fill="#8DF2F2" stroke="#00D2D2" stroke-width="2"/>
+  <circle cx="448" cy="396" r="4.5" fill="#8DF2F2" stroke="#00D2D2" stroke-width="2"/>
+
+  <!-- Floating Vector Badge -->
+  <g transform="translate(480, 460)">
+    <rect width="140" height="42" rx="12" fill="url(#neonPurple)" filter="url(#softGlow)"/>
+    <text x="70" y="26" fill="#ffffff" font-family="'Montserrat', sans-serif" font-size="14" font-weight="800" text-anchor="middle" letter-spacing="1">.SVG PATH</text>
+  </g>
+</svg>

@@ -74,7 +74,11 @@
   box-shadow: var(--shadow-lg);
   cursor: grab;
   user-select: none;
-  -webkit-user-drag: none;
+  -webkit-user-drag: auto;
+}
+
+#modal-image-preview.is-zoomed {
+  -webkit-user-drag: none !important;
 }
 
 /* Glassmorphic Floating Bottom Bar Wrapper containing Hide HUD button & Modal Info Capsule */
