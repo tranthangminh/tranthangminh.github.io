@@ -232,19 +232,18 @@
     left: 2px;
     width: 12px;
     height: 12px;
-    background: #888888;
+    background: var(--bg-secondary);
     border-radius: 50%;
     transition: transform var(--transition-fast, 0.15s), background-color var(--transition-fast, 0.15s);
 }
 
 .toggle-input:checked {
-    background: #444444;
-    border-color: #555555;
+    background: var(--accent-primary);
 }
 
 .toggle-input:checked::after {
     transform: translateX(14px);
-    background: var(--accent-primary, #e50914);
+    background: var(--text-primary);
 }
 
 /* Colors */
