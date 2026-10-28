@@ -117,6 +117,20 @@ class QrContourExtractor {
     }
 
     /**
+     * Function 2: 4-Connected extraction (Tách điểm - Orthogonal 4-connectivity)
+     */
+    static extract4Connected(grid, cols, rows) {
+        return this.extract(grid, cols, rows, false);
+    }
+
+    /**
+     * Function 3: 8-Connected extraction (Dính điểm - Diagonal 8-connectivity)
+     */
+    static extract8Connected(grid, cols, rows) {
+        return this.extract(grid, cols, rows, true);
+    }
+
+    /**
      * Remove collinear intermediate points along straight Manhattan edges
      */
     static simplify(loop) {

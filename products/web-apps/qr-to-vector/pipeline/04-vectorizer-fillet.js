@@ -104,6 +104,13 @@ class QrFilletRenderer {
 
         return paths.join('');
     }
+
+    /**
+     * Function 1: 0-Connected rendering (Block rời - Discrete blocks with gap & radius)
+     */
+    static render0Connected(grid, cols, rows, rxFraction, scaleX, scaleY, offsetX = 0, offsetY = 0, gapFraction = 0) {
+        return this.renderDiscreteBlocks(grid, cols, rows, rxFraction, scaleX, scaleY, offsetX, offsetY, gapFraction);
+    }
 }
 
 if (typeof window !== 'undefined') {

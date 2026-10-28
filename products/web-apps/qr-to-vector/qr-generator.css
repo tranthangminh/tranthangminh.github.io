@@ -4,26 +4,34 @@
    Uses 100% Theme Tokens from common/theme.css
    ========================================================================== */
 
-/* Top Mode Segmented Switch */
+/* Top Mode Segmented Switch (Prominent 60px Height) */
 .app-mode-switch {
     display: flex;
+    align-items: center;
+    height: 60px;
     background: var(--bg-primary, #191919);
     border: 1px solid var(--border-color, #3a3a3a);
-    border-radius: var(--border-radius, 6px);
-    padding: 3px;
-    gap: 3px;
-    margin-bottom: 12px;
+    border-radius: var(--border-radius-lg, 8px);
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .app-mode-tab {
     flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     border: none;
     color: var(--text-secondary, #bbbbbb);
-    font-size: 11.5px;
-    font-weight: 600;
-    padding: 8px 10px;
-    border-radius: var(--border-radius-sm, 4px);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 0 12px;
+    border-radius: var(--border-radius-md, 6px);
     cursor: pointer;
     transition: background var(--transition-normal, 0.2s), color var(--transition-normal, 0.2s);
     text-align: center;

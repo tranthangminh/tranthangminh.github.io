@@ -141,6 +141,7 @@
             this.card = null;
             this.activeId = null;
             this.onRestoreCallback = null;
+            this.onActiveDeletedCallback = null;
             this.onToastCallback = null;
             this._saveTimer = null;
             this._pendingSave = null;
@@ -170,11 +171,12 @@
             }, 300);
         }
 
-        init({ gridId = 'historyGrid', emptyId = 'historyEmpty', cardId = 'historyCard', onRestore, onToast } = {}) {
+        init({ gridId = 'historyGrid', emptyId = 'historyEmpty', cardId = 'historyCard', onRestore, onActiveDeleted, onToast } = {}) {
             this.grid = document.getElementById(gridId);
             this.emptyNotice = document.getElementById(emptyId);
             this.card = document.getElementById(cardId);
             this.onRestoreCallback = onRestore;
+            this.onActiveDeletedCallback = onActiveDeleted;
             this.onToastCallback = onToast;
 
             const btnClear = document.getElementById('btnClearHistory');
@@ -316,12 +318,17 @@
         }
 
         async deleteItem(id) {
+            const isVi = (window.QrToVectorI18n?.lang || 'vi').startsWith('vi');
+            if (!window.confirm(isVi ? 'Bạn có chắc chắn muốn xóa ảnh này khỏi lịch sử không?' : 'Are you sure you want to delete this item from history?')) return;
             try {
+                const wasActive = (this.activeId === id);
                 await HistoryStore.delete(id);
-                if (this.activeId === id) this.activeId = null;
+                if (wasActive) {
+                    this.activeId = null;
+                    if (this.onActiveDeletedCallback) this.onActiveDeletedCallback(id);
+                }
                 await this.reload();
                 if (this.onToastCallback) {
-                    const isVi = (window.QrToVectorI18n?.lang || 'vi').startsWith('vi');
                     this.onToastCallback(isVi ? 'Đã xóa mục khỏi lịch sử!' : 'History item deleted!');
                 }
             } catch (err) {
@@ -330,12 +337,15 @@
         }
 
         async clearAll() {
+            const isVi = (window.QrToVectorI18n?.lang || 'vi').startsWith('vi');
+            if (!window.confirm(isVi ? 'Bạn có chắc chắn muốn xóa toàn bộ lịch sử ảnh không?' : 'Are you sure you want to clear all history?')) return;
             try {
+                const hadActive = !!this.activeId;
                 await HistoryStore.clearAll();
                 this.activeId = null;
                 this.render([]);
+                if (hadActive && this.onActiveDeletedCallback) this.onActiveDeletedCallback(null);
                 if (this.onToastCallback) {
-                    const isVi = (window.QrToVectorI18n?.lang || 'vi').startsWith('vi');
                     this.onToastCallback(isVi ? 'Đã xóa toàn bộ lịch sử!' : 'All history cleared!');
                 }
             } catch (err) {

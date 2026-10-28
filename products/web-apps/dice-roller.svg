@@ -86,7 +86,7 @@
   <!-- Title Badge Overlay -->
   <g transform="translate(400, 500)">
     <rect x="-140" y="-22" width="280" height="44" rx="22" fill="rgba(25, 25, 25, 0.85)" stroke="#34d399" stroke-width="2" filter="url(#softGlow)"/>
-    <text x="0" y="7" fill="#ffffff" font-family="'Montserrat', sans-serif" font-size="18" font-weight="800" text-anchor="middle" letter-spacing="1.5">
+    <text x="0" y="7" fill="#ffffff" font-family="'Barlow', sans-serif" font-size="18" font-weight="800" text-anchor="middle" letter-spacing="1.5">
       3D DICE ROLLER
     </text>
   </g>

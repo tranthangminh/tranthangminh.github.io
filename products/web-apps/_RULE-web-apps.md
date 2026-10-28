@@ -361,7 +361,7 @@ Khi tạo một Web App mới, AI Agent hãy sao chép trực tiếp khung mẫu
     <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Design System & Shared SSO Styles -->
     <link rel="stylesheet" href="../../common/theme.css">

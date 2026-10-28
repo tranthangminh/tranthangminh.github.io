@@ -633,7 +633,7 @@ body {
 }
 
 .timeline-text {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-primary);
     font-size: 0.95rem;
     line-height: 1.6;
     color: var(--text-primary);

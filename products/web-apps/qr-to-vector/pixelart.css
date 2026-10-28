@@ -4,88 +4,56 @@
    Uses 100% Theme Tokens from common/theme.css
    ========================================================================== */
 
-.pixelart-card {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.pixelart-card { display: flex; flex-direction: column; gap: 12px; }
+.pixelart-title-actions { display: flex; align-items: center; gap: 6px; }
+.pixelart-toolstrip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 2px; }
+.pixelart-tool-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    padding: 6px 4px; font-size: 11px; font-weight: 600; border-radius: var(--border-radius-sm, 4px);
+    background: var(--bg-tertiary, #343434); border: 1px solid var(--border-color, #3a3a3a);
+    color: var(--text-primary, #ffffff); cursor: pointer; transition: all 0.15s; font-family: inherit;
+    white-space: nowrap;
 }
+.pixelart-tool-btn:hover { background: var(--bg-elevated, #464646); border-color: var(--border-hover, #666666); }
+.pixelart-tool-btn.is-accent { background: var(--bg-tertiary, #343434); border-color: var(--border-hover, #555555); color: var(--text-primary, #ffffff); }
+.pixelart-tool-btn.is-accent:hover { background: var(--bg-elevated, #444444); color: #ffffff; }
 
-/* Bounding Box & Stepper Controls */
-.pixelart-title-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.pixelart-bbox-stepper-row {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-}
-
-.pixelart-stepper-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.pixelart-stepper-row .range-slider {
-    flex: 1;
-}
-
-.pixelart-sublabel {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-tertiary, #888888);
-}
-
+.pixelart-stepper-row { display: flex; align-items: center; gap: 4px; grid-column: 2; order: 2; width: 100%; min-width: 0; }
+.pixelart-stepper-row .range-slider { flex: 1; order: 0; width: auto; min-width: 30px; }
+.pixelart-stepper-row .pixelart-btn-sm { order: 0; }
+#pixelArtColorsBadge { font-size: 10px; padding: 2px 4px; white-space: pre-line; line-height: 1.15; text-align: right; }
+.pixelart-sublabel { font-size: 11px; font-weight: 500; color: var(--text-secondary, #bbbbbb); }
 .pixelart-btn-sm {
-    background: var(--bg-tertiary, #343434);
-    border: 1px solid var(--border-color, #3a3a3a);
-    color: var(--text-primary, #ffffff);
-    border-radius: var(--border-radius-sm, 4px);
-    padding: 4px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background var(--transition-normal, 0.2s), border-color var(--transition-normal, 0.2s);
-    font-family: inherit;
+    background: var(--bg-tertiary, #343434); border: 1px solid var(--border-color, #3a3a3a);
+    color: var(--text-secondary, #bbbbbb); border-radius: var(--border-radius-sm, 3px);
+    width: 20px; height: 20px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    transition: background var(--transition-fast, 0.12s), border-color var(--transition-fast, 0.12s);
+    font-family: inherit; flex-shrink: 0;
 }
-
-.pixelart-btn-sm:hover {
-    background: var(--bg-elevated, #464646);
-    border-color: var(--border-hover, #666666);
-}
-
+.pixelart-btn-sm:hover { background: var(--bg-elevated, #464646); border-color: var(--border-hover, #666666); color: var(--text-primary, #ffffff); }
 .pixelart-btn-auto {
-    background: var(--accent-primary, #e50914);
-    border: none;
-    color: var(--text-on-accent, #ffffff);
-    border-radius: var(--border-radius-sm, 4px);
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity var(--transition-normal, 0.2s);
-    font-family: inherit;
+    background: var(--bg-tertiary, #343434); border: 1px solid var(--border-color, #3a3a3a); color: var(--text-secondary, #bbbbbb);
+    border-radius: var(--border-radius-sm, 3px); padding: 3px 8px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: opacity var(--transition-normal, 0.2s); font-family: inherit;
 }
+.pixelart-btn-auto:hover { background: var(--bg-elevated, #444444); color: var(--text-primary, #ffffff); }
 
-.pixelart-btn-auto:hover {
-    opacity: 0.85;
-}
-
-/* Palette Swatches List */
+/* Palette Swatches List (Full 3 Columns) */
 .pixelart-palette-list {
+    grid-column: 1 / -1;
+    width: 100%;
+    box-sizing: border-box;
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    max-height: 120px;
+    max-height: 130px;
     overflow-y: auto;
-    padding: 6px;
+    padding: 8px;
     background: var(--bg-primary, #191919);
     border: 1px solid var(--border-color, #3a3a3a);
     border-radius: var(--border-radius-sm, 4px);
+    margin-top: 6px;
 }
 
 .pixelart-palette-swatch {
@@ -183,7 +151,6 @@
     position: relative;
     background: transparent;
 }
-
 .stage-dual-wrapper.is-split-screen .split-pane-divider {
     width: 2px;
     height: 100%;
@@ -191,10 +158,10 @@
     flex-shrink: 0;
     z-index: 10;
 }
-
 .split-pane-header {
     width: 100%;
     height: 36px;
+    box-sizing: border-box;
     padding: 0 16px;
     background: var(--bg-secondary, #222222);
     border-bottom: 1px solid var(--border-color, #3a3a3a);
@@ -204,7 +171,6 @@
     flex-shrink: 0;
     z-index: 10;
 }
-
 .split-pane-title {
     font-size: 11px;
     font-weight: 700;
@@ -212,14 +178,12 @@
     letter-spacing: 0.5px;
     color: var(--text-secondary, #bbbbbb);
 }
-
 .split-pane-badge {
     font-size: 11px;
     font-weight: 600;
     color: var(--text-tertiary, #888888);
     font-variant-numeric: tabular-nums;
 }
-
 .split-pane-content {
     flex: 1;
     min-height: 0;
@@ -228,10 +192,9 @@
     justify-content: center;
     position: relative;
     overflow: hidden;
-    padding: 0;
+    padding: 16px;
     background: transparent;
 }
-
 .grid-canvas-container {
     position: relative;
     display: flex;
@@ -242,7 +205,6 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     background: transparent;
 }
-
 .grid-canvas-container canvas#pixelArtGridCanvas {
     display: block;
     width: 100%;
@@ -251,7 +213,6 @@
     image-rendering: pixelated;
     border-radius: var(--border-radius-sm, 4px);
 }
-
 .pixelart-overlay-canvas {
     position: absolute;
     top: 0;
@@ -261,9 +222,10 @@
     user-select: none;
     box-shadow: none !important;
 }
-
 .floating-autogrid-btn {
     position: absolute;
+    top: 100px;
+    left: 50%;
     z-index: 30;
     display: inline-flex;
     align-items: center;
@@ -280,7 +242,7 @@
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
-    transform: translate(-50%, -100%) scale(0.92);
+    transform: translateX(-50%) translateY(-6px);
     transition: opacity 0.25s ease, transform 0.25s ease;
 }
 .floating-autogrid-btn:hover {
@@ -291,7 +253,13 @@
 .floating-autogrid-btn.is-visible {
     opacity: 1;
     pointer-events: auto;
-    transform: translate(-50%, -100%) scale(1);
+    transform: translateX(-50%) translateY(0);
+}
+
+#pixelArtEnclosureGroup.is-disabled {
+    opacity: 0.35;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
 }
 
 /* Ensure SVG inside split screen matches exact canvas height and moves in lockstep */
@@ -302,9 +270,9 @@
     justify-content: center;
     flex-shrink: 0;
     transform-origin: center center;
-    max-width: none;
-    max-height: none;
-    aspect-ratio: unset;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: var(--svg-aspect-ratio, 1 / 1);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     background: transparent;
     transition: none !important;
@@ -314,8 +282,8 @@
     display: block;
     width: 100%;
     height: 100%;
-    max-width: none;
-    max-height: none;
+    max-width: 100%;
+    max-height: 100%;
     border-radius: var(--border-radius-sm, 4px);
 }
 
@@ -353,7 +321,7 @@
 /* Stage Submode Pill (Fixed Absolute at Viewport Top Center, below 36px split header) */
 .stage-submode-pill {
     position: absolute;
-    top: 48px;
+    top: 46px;
     left: 50%;
     transform: translateX(-50%);
     display: inline-flex;
@@ -410,78 +378,27 @@
     display: none !important;
 }
 
-/* Shortcuts HUD Overlay at Bottom-Left Viewport */
-.stage-shortcuts-hud {
-    position: absolute;
-    bottom: 18px;
-    left: 18px;
-    background: rgba(18, 18, 18, 0.88);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--border-color, #3a3a3a);
-    border-radius: var(--border-radius-md, 8px);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
-    z-index: 20;
-    font-size: 11px;
-    color: var(--text-secondary, #cccccc);
-    max-width: 295px;
-    transition: all 0.18s ease;
-    user-select: none;
-}
-.shortcuts-hud-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 5px 9px;
-    background: rgba(30, 30, 30, 0.6);
-    border-bottom: 1px solid var(--border-color, #3a3a3a);
-    border-radius: var(--border-radius-md, 8px) var(--border-radius-md, 8px) 0 0;
-}
-.shortcuts-hud-title {
-    font-weight: 700;
-    font-size: 11px;
-    color: var(--text-primary, #ffffff);
-    letter-spacing: 0.3px;
-}
-.shortcuts-hud-toggle {
-    background: transparent;
-    border: none;
-    color: var(--text-tertiary, #888888);
-    cursor: pointer;
-    font-size: 12px;
-    line-height: 1;
-    padding: 2px 4px;
-    border-radius: 4px;
-}
-.shortcuts-hud-toggle:hover {
-    color: var(--text-primary, #ffffff);
-    background: var(--bg-hover, rgba(255, 255, 255, 0.08));
-}
-.shortcuts-hud-body {
-    padding: 6px 9px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.stage-shortcuts-hud.is-collapsed .shortcuts-hud-body {
-    display: none;
-}
-.stage-shortcuts-hud.is-collapsed .shortcuts-hud-header {
-    border-bottom: none;
-    border-radius: var(--border-radius-md, 8px);
-}
+/* Shortcuts HUD Rows & Keys (Rendered inside Stage Footer Popover) */
 .shortcut-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
-    line-height: 1.35;
+    gap: 12px;
+    line-height: 1.4;
+}
+.shortcut-desc {
+    text-align: left;
+    flex: 1;
+    color: var(--text-secondary, #cccccc);
+    font-size: 11px;
 }
 .shortcut-keys {
     display: inline-flex;
     align-items: center;
     gap: 2px;
     flex-shrink: 0;
+    margin-left: auto;
+    text-align: right;
 }
 .stage-shortcuts-hud kbd {
     background: var(--bg-primary, #111111);

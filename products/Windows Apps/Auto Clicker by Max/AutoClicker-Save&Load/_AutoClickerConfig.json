@@ -1,4 +1,4 @@
-﻿{
+{
   "ActiveSimpleTabIndex": 0,
   "AlwaysOnTop": false,
   "ShowMapOverlay": false,
@@ -6,8 +6,8 @@
   "SmoothMouseMove": true,
   "MapOverlayOpacity": 60,
   "IsDarkTheme": true,
-  "IsAdvancedTab": true,
-  "LastUpdateCheckDate": "1.1.2@2026-10-12",
+  "IsAdvancedTab": false,
+  "LastUpdateCheckDate": "1.1.3@2026-10-28",
   "Language": "vi",
   "AsianWindowWidth": 700,
   "AsianWindowHeight": 1046,

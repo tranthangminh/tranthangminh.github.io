@@ -14,7 +14,7 @@
 body {
   background-color: #060913;
   color: #f1f2f6;
-  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-primary);
   overflow: hidden;
   width: 100vw;
   height: 100vh;

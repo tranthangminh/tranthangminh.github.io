@@ -76,10 +76,20 @@ class PixelArtGridCanvas {
             return { x: rx * imgW, y: ry * imgH };
         };
 
+        let isSpaceHeld = false;
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.target.closest('input, textarea, select')) isSpaceHeld = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') isSpaceHeld = false;
+        });
+
         overlayCanvas.addEventListener('mousemove', (e) => {
             if (isDragging) return;
-            // If Space key is held, let stage viewport controller handle cursor
-            if (e.code === 'Space' || e.getModifierState('Space')) return;
+            if (isSpaceHeld) {
+                overlayCanvas.style.cursor = 'grab';
+                return;
+            }
 
             const hit = PixelArtGridCanvas.hitTest(e.clientX, e.clientY, getBbox(), gridCanvas, getImage());
             overlayCanvas.style.cursor = hit.cursor;
@@ -88,7 +98,7 @@ class PixelArtGridCanvas {
 
         overlayCanvas.addEventListener('mousedown', (e) => {
             // Only Left Click and NOT holding Space (Space + left click is reserved for pan)
-            if (e.button !== 0 || e.getModifierState('Space')) return;
+            if (e.button !== 0 || isSpaceHeld) return;
 
             const hit = PixelArtGridCanvas.hitTest(e.clientX, e.clientY, getBbox(), gridCanvas, getImage());
             const pos = getImgPos(e.clientX, e.clientY);
@@ -224,12 +234,15 @@ class PixelArtGridCanvas {
                     window.PixelArtGridDetector.projectFullImageGrid(w, h, safeBox, cols, rows) :
                     { startX: safeBox.x, startY: safeBox.y, pitchX: safeBox.w / cols, pitchY: safeBox.h / rows };
 
-                for (let x = proj.startX; x <= w + proj.pitchX; x += proj.pitchX) {
+                const totC = proj.totalCols || Math.ceil(w / proj.pitchX), totR = proj.totalRows || Math.ceil(h / proj.pitchY);
+                for (let c = 0; c <= totC; c++) {
+                    const x = proj.startX + c * proj.pitchX;
                     if (x < 0.5 || x > w - 0.5) continue;
                     const sx = Math.round(x * scaleX) + 0.5;
                     ctx.moveTo(sx, 0); ctx.lineTo(sx, bufH);
                 }
-                for (let y = proj.startY; y <= h + proj.pitchY; y += proj.pitchY) {
+                for (let r = 0; r <= totR; r++) {
+                    const y = proj.startY + r * proj.pitchY;
                     if (y < 0.5 || y > h - 0.5) continue;
                     const sy = Math.round(y * scaleY) + 0.5;
                     ctx.moveTo(0, sy); ctx.lineTo(bufW, sy);

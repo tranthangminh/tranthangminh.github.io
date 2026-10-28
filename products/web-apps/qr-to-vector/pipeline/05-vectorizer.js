@@ -47,15 +47,16 @@ class QrVectorizer {
         const gapNorm = (Math.max(0, Math.min(40, blockGap)) / 100) * 0.5;
 
         if (mode === 'blocks') {
-            compoundPath = QrFilletRenderer.renderDiscreteBlocks(
+            compoundPath = (QrFilletRenderer.render0Connected ? QrFilletRenderer.render0Connected : QrFilletRenderer.renderDiscreteBlocks)(
                 matrix, cols, rows, radiusNorm, scale, scale, padBlocks, padBlocks, gapNorm
             );
             for (let i = 0; i < matrix.length; i++) {
                 if (matrix[i]) shapeCount++;
             }
         } else {
-            const connectDiagonals = (mode !== 'unified-separated');
-            const loops = QrContourExtractor.extract(matrix, cols, rows, connectDiagonals);
+            const loops = (mode === 'unified-separated')
+                ? (QrContourExtractor.extract4Connected ? QrContourExtractor.extract4Connected(matrix, cols, rows) : QrContourExtractor.extract(matrix, cols, rows, false))
+                : (QrContourExtractor.extract8Connected ? QrContourExtractor.extract8Connected(matrix, cols, rows) : QrContourExtractor.extract(matrix, cols, rows, true));
             const filletRadius = radiusNorm * 0.5;
             compoundPath = loops.map(l => QrFilletRenderer.renderLoop(
                 l, filletRadius, scale, scale, padBlocks, padBlocks

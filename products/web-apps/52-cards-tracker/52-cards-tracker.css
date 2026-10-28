@@ -12,7 +12,7 @@
 }
 
 body {
-    font-family: var(--font-primary, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    font-family: var(--font-primary);
     background: radial-gradient(ellipse at 50% 25%, #222938 0%, var(--bg-primary, #151821) 75%);
     background-attachment: fixed;
     color: var(--text-primary, #ffffff);

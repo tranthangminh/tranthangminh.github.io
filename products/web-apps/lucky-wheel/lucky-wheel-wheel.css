@@ -596,7 +596,7 @@ body.wheel-is-spinning .stage-spotlights {
 
 /* Authentic Neon Tube Text (Crisp Solid Glyph with Layered Neon Glow) */
 .neon-winner-text {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-primary);
     font-weight: 800;
     font-size: 20px;
     line-height: 1;
@@ -659,7 +659,7 @@ body.wheel-is-spinning .stage-spotlights {
 }
 
 .winner-prize-name {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-primary);
     font-weight: 800;
     font-size: clamp(20px, 5.2vw, 34px);
     color: #ffffff;
@@ -788,7 +788,7 @@ body.wheel-is-spinning .stage-spotlights {
 }
 
 .counter-unit {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-primary);
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 1.2px;

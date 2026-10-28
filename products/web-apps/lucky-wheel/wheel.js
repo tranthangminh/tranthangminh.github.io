@@ -992,7 +992,7 @@ class LuckyWheelEngine {
         const arcCap = Math.round(availableArc * (isMultiLine ? 0.32 : 0.50));
         let fontSize = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, Math.min(targetSize, arcCap)));
 
-        ctx.font = `700 ${fontSize}px Montserrat, system-ui, sans-serif`;
+        ctx.font = `700 ${fontSize}px Barlow, system-ui, sans-serif`;
 
         // 3. Truncate line with ellipsis if still wider than slice room
         // maxLineWidth capped to avoid hub overlap: text must stop before hubRadius
@@ -1060,7 +1060,7 @@ class LuckyWheelEngine {
 
         // SPIN text in center (Sized comfortably inside inner circle without clipping)
         ctx.fillStyle = '#ffffff';
-        ctx.font = `800 ${Math.floor(hubRadius * 0.32)}px Montserrat, sans-serif`;
+        ctx.font = `800 ${Math.floor(hubRadius * 0.32)}px Barlow, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
@@ -1169,7 +1169,7 @@ class LuckyWheelEngine {
         ctx.stroke();
 
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '600 15px Montserrat, sans-serif';
+        ctx.font = '600 15px Barlow, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('Add slices to spin!', this.centerX, this.centerY);

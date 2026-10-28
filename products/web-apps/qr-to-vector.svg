@@ -70,6 +70,6 @@
   <!-- Floating Vector Badge -->
   <g transform="translate(480, 460)">
     <rect width="140" height="42" rx="12" fill="url(#neonPurple)" filter="url(#softGlow)"/>
-    <text x="70" y="26" fill="#ffffff" font-family="'Montserrat', sans-serif" font-size="14" font-weight="800" text-anchor="middle" letter-spacing="1">.SVG PATH</text>
+    <text x="70" y="26" fill="#ffffff" font-family="'Barlow', sans-serif" font-size="14" font-weight="800" text-anchor="middle" letter-spacing="1">.SVG PATH</text>
   </g>
 </svg>

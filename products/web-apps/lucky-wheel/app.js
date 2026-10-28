@@ -993,7 +993,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDisplayModeUI();
     updatePanelButtonsUI();
 
-    // Re-draw wheel once Montserrat font is loaded
+    // Re-draw wheel once Barlow font is loaded
     if (document.fonts) {
         document.fonts.ready.then(() => {
             if (wheelEngine) wheelEngine.draw();

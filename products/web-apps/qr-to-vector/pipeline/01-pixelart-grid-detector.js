@@ -276,14 +276,18 @@ class PixelArtGridDetector {
         const bw = bbox.w !== undefined ? bbox.w : (bbox.width || imgW);
         const bh = bbox.h !== undefined ? bbox.h : (bbox.height || imgH);
         const pitchX = bw / cCount, pitchY = bh / rCount;
-        const colsLeft = Math.ceil(bx / pitchX);
+        const calcEdgeCells = (dist, pitch) => {
+            const raw = Math.max(0, dist) / pitch;
+            return Math.floor(raw) + ((raw - Math.floor(raw) >= 0.6) ? 1 : 0);
+        };
+        const colsLeft = calcEdgeCells(bx, pitchX);
         const startX = bx - colsLeft * pitchX;
-        const colsRight = Math.ceil((imgW - (bx + bw)) / pitchX);
+        const colsRight = calcEdgeCells(imgW - (bx + bw), pitchX);
         const totalCols = Math.max(1, colsLeft + cCount + colsRight);
 
-        const rowsTop = Math.ceil(by / pitchY);
+        const rowsTop = calcEdgeCells(by, pitchY);
         const startY = by - rowsTop * pitchY;
-        const rowsBottom = Math.ceil((imgH - (by + bh)) / pitchY);
+        const rowsBottom = calcEdgeCells(imgH - (by + bh), pitchY);
         const totalRows = Math.max(1, rowsTop + rCount + rowsBottom);
 
         return { startX, startY, pitchX, pitchY, totalCols, totalRows, colsLeft, rowsTop };

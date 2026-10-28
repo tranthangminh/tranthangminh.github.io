@@ -54,7 +54,7 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 4px;
-    font-family: 'Barlow', 'Barlow Condensed', var(--font-secondary), sans-serif;
+    font-family: var(--font-secondary);
     font-size: var(--font-sm);
     font-weight: 600;
     letter-spacing: 0.06em;

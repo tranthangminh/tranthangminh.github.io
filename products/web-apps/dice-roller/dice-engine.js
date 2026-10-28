@@ -281,7 +281,7 @@ class Dice3DEngine {
         ctx.fillStyle = theme === 'ivory' ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.25)';
         ctx.fill();
 
-        ctx.font = 'bold 54px "Montserrat", sans-serif';
+        ctx.font = 'bold 54px "Barlow", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = textColor;

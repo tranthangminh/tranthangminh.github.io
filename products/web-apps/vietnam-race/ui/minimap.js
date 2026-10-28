@@ -116,7 +116,7 @@ window.VietnamRaceMinimap = {
 
         // Label
         ctx.fillStyle = '#f8fafc';
-        ctx.font = 'bold 9px Montserrat, sans-serif';
+        ctx.font = 'bold 9px Barlow, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(lm.name, lx, lz - 11);
       });
@@ -170,7 +170,7 @@ window.VietnamRaceMinimap = {
     const ny = h / 2 + Math.cos(car.yaw) * compassR;
 
     ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 11px Montserrat, sans-serif';
+    ctx.font = 'bold 11px Barlow, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('N', nx, ny);

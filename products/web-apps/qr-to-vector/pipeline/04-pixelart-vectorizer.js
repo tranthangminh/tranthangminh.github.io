@@ -49,11 +49,11 @@ class PixelArtVectorizer {
 
         const pathLayers = [];
 
-        // 1. LAYERED SOLID MODE (Topology Containment Tree)
+        // 1. LAYERED SOLID MODE (Function 4: Similarity Graph & Solid Layers)
         if (layeredSolids && Topology && Extractor && Fillet) {
-            const comps = Topology.analyze(matrix, cols, rows, palette, {
-                threshold: enclosureThreshold
-            });
+            const comps = (Topology.buildSimilarityGraphAndSolidLayers ? Topology.buildSimilarityGraphAndSolidLayers : Topology.analyze).call(
+                Topology, matrix, cols, rows, palette, { threshold: enclosureThreshold }
+            );
 
             for (let i = 0; i < comps.length; i++) {
                 const comp = comps[i];
@@ -110,13 +110,13 @@ class PixelArtVectorizer {
      */
     static _renderBinaryMask(binary, cols, rows, style, radiusNorm, gapNorm, blockSize, pad, Extractor, Fillet) {
         if (style === 'blocks' || gapNorm > 0) {
-            return Fillet ? Fillet.renderDiscreteBlocks(
-                binary, cols, rows, radiusNorm, blockSize, blockSize, pad, pad, gapNorm
-            ) : '';
+            return Fillet ? (Fillet.render0Connected ? Fillet.render0Connected(binary, cols, rows, radiusNorm, blockSize, blockSize, pad, pad, gapNorm)
+                : Fillet.renderDiscreteBlocks(binary, cols, rows, radiusNorm, blockSize, blockSize, pad, pad, gapNorm)) : '';
         }
         if (!Extractor || !Fillet) return '';
-        const connectDiagonals = (style !== 'unified-separated');
-        const loops = Extractor.extract(binary, cols, rows, connectDiagonals);
+        const loops = (style === 'unified-separated')
+            ? (Extractor.extract4Connected ? Extractor.extract4Connected(binary, cols, rows) : Extractor.extract(binary, cols, rows, false))
+            : (Extractor.extract8Connected ? Extractor.extract8Connected(binary, cols, rows) : Extractor.extract(binary, cols, rows, true));
         return loops.map(loop => Fillet.renderLoop(
             loop, radiusNorm * 0.5, blockSize, blockSize, pad, pad
         )).join(' ');

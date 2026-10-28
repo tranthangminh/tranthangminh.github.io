@@ -60,7 +60,10 @@ class DomUtils {
         const { stageViewport, fileInput, stageEmptyState, btnUploadToolbar, onFileLoaded } = options;
 
         if (stageEmptyState && fileInput) {
-            stageEmptyState.addEventListener('click', () => fileInput.click());
+            stageEmptyState.addEventListener('click', (e) => {
+                if (e.target && e.target.closest('#emptyCardGenerate')) return;
+                fileInput.click();
+            });
         }
         if (btnUploadToolbar && fileInput) {
             btnUploadToolbar.addEventListener('click', () => fileInput.click());
