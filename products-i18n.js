@@ -96,9 +96,9 @@
                 title: 'Dice Roller 3D',
                 aria: 'Lượt truy cập Dice Roller 3D'
             },
-            qrToVector: {
-                title: 'QR to Vector',
-                aria: 'Lượt truy cập QR to Vector'
+            qrImageToVector: {
+                title: 'QR/Image to Vector',
+                aria: 'Lượt truy cập QR/Image to Vector'
             },
             tiermaker: {
                 title: 'TierMaker'
@@ -215,9 +215,9 @@
                 title: 'Dice Roller 3D',
                 aria: 'Dice Roller 3D visits'
             },
-            qrToVector: {
-                title: 'QR to Vector',
-                aria: 'QR to Vector visits'
+            qrImageToVector: {
+                title: 'QR/Image to Vector',
+                aria: 'QR/Image to Vector visits'
             },
             tiermaker: {
                 title: 'TierMaker'

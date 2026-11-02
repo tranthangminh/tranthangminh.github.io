@@ -330,7 +330,7 @@ async function main() {
       const currentGridContent = gridMatch[2];
       const afterGrid = gridMatch[3];
 
-      // 4 button in-house đầu tiên (Lucky Wheel, QR to Vector, 52 Cards Tracker, Dice Roller 3D)
+      // 4 button in-house đầu tiên (Lucky Wheel, QR/Image to Vector, 52 Cards Tracker, Dice Roller 3D)
       const inHouseBtnsHtml = `
                 <a class="product-item-btn" href="products/web-apps/lucky-wheel.html">
                     <img src="products/web-apps/lucky-wheel.png" alt="Biểu tượng ứng dụng Lucky Wheel" width="30" height="30" class="product-item-btn-icon" loading="lazy">
@@ -340,10 +340,10 @@ async function main() {
                     </div>
                 </a>
 
-                <a class="product-item-btn" href="products/web-apps/qr-to-vector.html">
-                    <img src="products/web-apps/qr-to-vector.svg" alt="Biểu tượng ứng dụng QR to Vector" width="30" height="30" class="product-item-btn-icon" loading="lazy">
+                <a class="product-item-btn" href="products/web-apps/qr-image-to-vector.html">
+                    <img src="products/web-apps/qr-image-to-vector.svg" alt="Biểu tượng ứng dụng QR/Image to Vector" width="30" height="30" class="product-item-btn-icon" loading="lazy">
                     <div class="product-item-btn-content">
-                        <span class="product-item-btn-text">QR to Vector</span>
+                        <span class="product-item-btn-text">QR/Image to Vector</span>
                         <span class="product-item-btn-tag" style="--tag-color: var(--accent-primary);" data-i18n="productsCatalog.tags.webApp">Web App</span>
                     </div>
                 </a>

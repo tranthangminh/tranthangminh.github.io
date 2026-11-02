@@ -1,6 +1,6 @@
 /**
  * Web Apps Shared Fixed Header Component
- * Standardized across Web Apps (Lucky Wheel, Dice Roller, QR to Vector, 52 Cards Tracker)
+ * Standardized across Web Apps (Lucky Wheel, Dice Roller, QR/Image to Vector, 52 Cards Tracker)
  * Reference: lucky-wheel.html / _RULE-web-apps.md
  * Height: 52px fixed viewport budget
  * Theme: 100% Theme Tokens (var(--bg-secondary), var(--border-color), etc.)

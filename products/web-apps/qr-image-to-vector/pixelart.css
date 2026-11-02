@@ -1,0 +1,493 @@
+/* ==========================================================================
+   8-Bit Pixel Art to Vector Stylesheet
+   Complies with _RULE-web-apps.md (< 500 lines)
+   Uses 100% Theme Tokens from common/theme.css
+   ========================================================================== */
+
+.pixelart-title-actions { display: flex; align-items: center; gap: 6px; }
+.pixelart-pane-toolbar { position: absolute; inset: 0; z-index: 31; pointer-events: none; }
+.pixelart-pane-toolbar-group { position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 6px; }
+.pixelart-tool-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    height: 26px; padding: 0 10px; font-size: 11px; font-weight: 600; border-radius: var(--border-radius-sm, 4px);
+    background: var(--bg-tertiary, #343434); border: 1px solid var(--border-color, #3a3a3a);
+    color: var(--text-primary, #ffffff); cursor: pointer; transition: all 0.15s; font-family: inherit;
+    white-space: nowrap; pointer-events: auto; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.pixelart-tool-btn:hover { background: var(--bg-elevated, #464646); border-color: var(--border-hover, #666666); }
+.pixelart-tool-btn.is-accent { background: var(--bg-tertiary, #343434); border-color: var(--border-hover, #555555); color: var(--text-primary, #ffffff); }
+.pixelart-tool-btn.is-accent:hover { background: var(--bg-elevated, #444444); color: #ffffff; }
+
+.pixelart-stepper-row { display: flex; align-items: center; gap: 4px; grid-column: 2; order: 2; width: 100%; min-width: 0; }
+.pixelart-stepper-row .range-slider { flex: 1; order: 0; width: auto; min-width: 30px; }
+.pixelart-stepper-row .pixelart-btn-sm { order: 0; }
+#pixelArtColorsBadge { font-size: 10px; padding: 2px 4px; white-space: pre-line; line-height: 1.15; text-align: right; }
+.pixelart-sublabel { font-size: 11px; font-weight: 500; color: var(--text-secondary, #bbbbbb); }
+.pixelart-btn-sm {
+    background: var(--bg-tertiary, #343434); border: 1px solid var(--border-color, #3a3a3a);
+    color: var(--text-secondary, #bbbbbb); border-radius: var(--border-radius-sm, 3px);
+    width: 20px; height: 20px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    transition: background var(--transition-fast, 0.12s), border-color var(--transition-fast, 0.12s);
+    font-family: inherit; flex-shrink: 0;
+}
+.pixelart-btn-sm:hover { background: var(--bg-elevated, #464646); border-color: var(--border-hover, #666666); color: var(--text-primary, #ffffff); }
+.pixelart-btn-auto {
+    background: var(--bg-tertiary, #343434); border: 1px solid var(--border-color, #3a3a3a); color: var(--text-secondary, #bbbbbb);
+    border-radius: var(--border-radius-sm, 3px); padding: 3px 8px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: opacity var(--transition-normal, 0.2s); font-family: inherit;
+}
+.pixelart-btn-auto:hover { background: var(--bg-elevated, #444444); color: var(--text-primary, #ffffff); }
+
+/* Palette Swatches List (Full 3 Columns) */
+.pixelart-palette-list {
+    grid-column: 1 / -1;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 130px;
+    overflow-y: auto;
+    padding: 8px;
+    background: var(--bg-primary, #191919);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius-sm, 4px);
+    margin-top: 6px;
+}
+
+.pixelart-palette-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    border: 2px solid var(--border-color, #3a3a3a);
+    cursor: default;
+    position: relative;
+    transition: transform 0.15s, border-color 0.15s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.pixelart-palette-swatch:hover {
+    transform: scale(1.15);
+    border-color: var(--border-focus, #ffffff);
+    z-index: 2;
+}
+
+.stats-divider {
+    height: 1px;
+    background: var(--border-color, rgba(255, 255, 255, 0.08));
+    margin: 4px 0;
+}
+
+.stats-item.is-stacked {
+    align-items: flex-start;
+}
+
+.stats-value-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    line-height: 1.35;
+}
+
+.stats-sub-value {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary, #888888);
+}
+
+/* ==========================================================================
+   Dual View Equal-Height Split Screen for 8-Bit Pixel Art Mode
+   Full-Bleed 50% / 50% Synchronized Pan & Zoom Viewport
+   ========================================================================== */
+.stage-preview-area.is-split-mode {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: none !important;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+}
+
+.stage-dual-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.stage-dual-wrapper.is-split-screen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: stretch;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: none;
+    z-index: 5;
+}
+
+.stage-dual-wrapper.is-split-screen .split-pane {
+    flex: 1 1 50%;
+    width: 50%;
+    max-width: 50%;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+}
+.stage-dual-wrapper.is-split-screen .split-pane-divider {
+    width: 2px;
+    height: 100%;
+    background: var(--border-color, #3a3a3a);
+    flex-shrink: 0;
+    z-index: 10;
+}
+.split-pane-header {
+    width: 100%;
+    height: 36px;
+    box-sizing: border-box;
+    padding: 0 16px;
+    background: var(--bg-secondary, #222222);
+    border-bottom: 1px solid var(--border-color, #3a3a3a);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 10;
+}
+.split-pane-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #bbbbbb);
+}
+.split-pane-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary, #888888);
+    font-variant-numeric: tabular-nums;
+}
+.split-pane-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 48px 16px 16px;
+    background: transparent;
+}
+.grid-canvas-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transform-origin: center center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    background: transparent;
+}
+.grid-canvas-container canvas#pixelArtGridCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    image-rendering: pixelated;
+    border-radius: var(--border-radius-sm, 4px);
+}
+.pixelart-overlay-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: auto;
+    cursor: crosshair;
+    user-select: none;
+    box-shadow: none !important;
+}
+.grid-toggle-btn {
+    width: 26px;
+    padding: 0;
+    color: var(--text-secondary, #bbbbbb);
+}
+.grid-toggle-btn.is-active {
+    color: #00e6ff;
+    border-color: #00e6ff;
+}
+.floating-autogrid-btn {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    z-index: 30;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--accent-primary, #6366f1);
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--accent-primary, #6366f1);
+    border-radius: 9999px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(-6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.floating-autogrid-btn:hover {
+    background: var(--accent-primary, #6366f1);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.4);
+}
+.floating-autogrid-btn.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+.control-group.is-disabled {
+    opacity: 0.35;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Ensure SVG inside split screen matches exact canvas height and moves in lockstep */
+.stage-dual-wrapper.is-split-screen .svg-display-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transform-origin: center center;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: var(--svg-aspect-ratio, 1 / 1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    background: transparent;
+    transition: none !important;
+}
+
+.stage-dual-wrapper.is-split-screen .svg-display-wrapper svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: var(--border-radius-sm, 4px);
+}
+
+/* Responsive Split-Screen for Mobile (< 768px) */
+@media (max-width: 768px) {
+    .stage-dual-wrapper.is-split-screen {
+        flex-direction: column;
+        height: 100%;
+        max-height: none;
+        min-height: 0;
+    }
+
+    .stage-dual-wrapper.is-split-screen .split-pane {
+        flex: 1 1 50%;
+        width: 100%;
+        max-width: 100%;
+        height: 50%;
+    }
+
+    .stage-dual-wrapper.is-split-screen .split-pane-divider {
+        width: 100%;
+        height: 2px;
+    }
+
+    .pixelart-btn-sm {
+        padding: 6px 10px;
+        min-height: 36px;
+    }
+}
+
+/* Stage Submode Pill (Fixed Absolute at Viewport Top Center, below 36px split header) */
+.stage-submode-pill {
+    position: absolute;
+    top: 46px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    background: var(--bg-secondary, #222222);
+    border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: var(--border-radius-full, 9999px);
+    padding: 3px;
+    gap: 4px;
+    z-index: 20;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.stage-submode-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #bbbbbb);
+    padding: 6px 16px;
+    border-radius: var(--border-radius-full, 9999px);
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-fast, 0.12s);
+    white-space: nowrap;
+}
+
+.stage-submode-btn:hover {
+    color: var(--text-primary, #ffffff);
+}
+
+.stage-submode-btn.is-active {
+    background: var(--accent-primary, #e50914);
+    color: var(--text-on-accent, #ffffff);
+    box-shadow: 0 2px 8px rgba(229, 9, 20, 0.4);
+}
+
+/* Single View vs Dual View Mode (Toggled via Y Key or Toolbar) */
+.stage-dual-wrapper.is-split-screen.view-mode-source .split-pane-source {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+}
+.stage-dual-wrapper.is-split-screen.view-mode-source .split-pane-divider,
+.stage-dual-wrapper.is-split-screen.view-mode-source .split-pane-vector {
+    display: none !important;
+}
+
+.stage-dual-wrapper.is-split-screen.view-mode-vector .split-pane-vector {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+}
+.stage-dual-wrapper.is-split-screen.view-mode-vector .split-pane-divider,
+.stage-dual-wrapper.is-split-screen.view-mode-vector .split-pane-source {
+    display: none !important;
+}
+
+/* Shortcuts HUD Rows & Keys (Rendered inside Stage Footer Popover) */
+.shortcut-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    line-height: 1.4;
+}
+.shortcut-desc {
+    text-align: right;
+    color: var(--text-secondary, #cccccc);
+    font-size: 11px;
+    padding: 5px 12px 5px 0;
+    border-right: 1px solid var(--border-color, #3a3a3a);
+}
+.shortcut-keys {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    font-size: 10px;
+    gap: 4px 2px;
+    padding: 5px 0 5px 12px;
+}
+.shortcut-or {
+    margin: 0 4px;
+    color: var(--text-tertiary, #888888);
+    font-size: 10px;
+}
+.shortcut-keys kbd {
+    background: var(--bg-primary, #111111);
+    border: 1px solid var(--border-color, #444444);
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-primary, #ffffff);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Pixel Art Interactive Guide Modal (3-page stepper: 2 steps per page + shortcuts) */
+.guide-modal-overlay {
+    position: fixed; inset: 0; z-index: 99999;
+    background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(5px);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.guide-modal-overlay.is-open { display: flex; }
+.guide-modal-card {
+    background: var(--bg-secondary, #222222); border: 1px solid var(--border-color, #3a3a3a);
+    border-radius: 14px; width: min(980px, 95vw); height: min(600px, 92vh);
+    display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); overflow: hidden;
+}
+.guide-modal-header {
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    padding: 12px 20px; border-bottom: 1px solid var(--border-color, #3a3a3a);
+}
+.guide-modal-title { font-size: 15px; font-weight: 700; color: var(--text-primary, #ffffff); display: flex; align-items: center; gap: 8px; }
+.guide-close-btn { background: transparent; border: none; color: var(--text-tertiary, #888888); font-size: 24px; cursor: pointer; line-height: 1; padding: 0 4px; }
+.guide-close-btn:hover { color: var(--text-primary, #ffffff); }
+
+.guide-modal-body { flex: 1; min-height: 0; overflow-y: auto; padding: 20px; }
+.guide-page { display: none; }
+.guide-page.is-active { display: flex; flex-direction: column; justify-content: center; min-height: 100%; }
+
+.guide-steps-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.guide-step { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.guide-step-media {
+    aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    background: var(--bg-primary, #191919); border: 1px solid var(--border-color, #3a3a3a); border-radius: 10px;
+}
+.guide-step-media img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; }
+.guide-step-text { display: flex; align-items: flex-start; gap: 10px; }
+.step-badge {
+    display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0;
+    border-radius: 50%; background: var(--bg-elevated, #464646); border: 1px solid var(--border-hover, #666666);
+    color: var(--text-primary, #ffffff); font-size: 12px; font-weight: 800;
+}
+.guide-step-title { font-size: 15px; font-weight: 700; color: var(--text-primary, #ffffff); line-height: 24px; }
+.guide-step-desc { font-size: 12.5px; color: var(--text-secondary, #bbbbbb); line-height: 1.45; margin-top: 2px; }
+
+.guide-shortcuts-title { font-size: 14px; font-weight: 700; color: var(--text-primary, #ffffff); margin-bottom: 14px; text-align: center; }
+.guide-shortcuts-list { width: min(440px, 100%); margin: 0 auto; }
+.guide-shortcuts-list .shortcut-desc { font-size: 12.5px; padding: 9px 16px 9px 0; }
+.guide-shortcuts-list .shortcut-keys { padding: 9px 0 9px 16px; font-size: 11px; }
+.guide-shortcuts-list .shortcut-keys kbd { font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+.guide-reopen-hint {
+    display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 22px;
+    font-size: 12.5px; color: var(--text-secondary, #bbbbbb);
+}
+.guide-arrow-down { font-size: 16px; display: inline-block; animation: guideBounce 1.4s infinite ease-in-out; }
+@keyframes guideBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+
+.guide-modal-footer {
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    padding: 12px 20px; border-top: 1px solid var(--border-color, #3a3a3a);
+}
+.guide-dots { display: flex; align-items: center; gap: 8px; }
+.guide-dot {
+    width: 8px; height: 8px; padding: 0; border: none; border-radius: 50%; cursor: pointer;
+    background: var(--border-hover, #666666); transition: width var(--transition-fast, 0.12s), background-color var(--transition-fast, 0.12s);
+}
+.guide-dot.is-active { width: 22px; border-radius: 4px; background: var(--accent-primary, #e50914); }
+.guide-nav { display: flex; align-items: center; gap: 8px; }
+.guide-nav-btn { width: auto; min-width: 84px; padding: 8px 18px; font-size: 12.5px; }
+
+@media (max-width: 720px) {
+    .guide-steps-row { grid-template-columns: 1fr; }
+}
