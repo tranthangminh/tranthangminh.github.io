@@ -320,6 +320,20 @@ body.actor-page-view .contact-page {
 /* --------------------------------------------------------------------------
    COPYRIGHT BOTTOM ROW
    -------------------------------------------------------------------------- */
+.contact-privacy-link {
+    color: var(--text-tertiary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.contact-privacy-link:hover {
+    color: var(--text-primary);
+}
+
+.contact-copyright-sep {
+    margin: 0 6px;
+}
+
 .contact-copyright-row {
     text-align: center;
     padding-top: 18px;

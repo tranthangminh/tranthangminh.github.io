@@ -31,6 +31,7 @@
         var callLabel = escapeHtml(translate('contact.callBtn', 'Gọi'));
         var emailLabel = escapeHtml(translate('contact.emailBtn', 'Email'));
         var donateLabel = escapeHtml(translate('contact.donateBtn', 'Donate'));
+        var privacyLabel = escapeHtml(translate('contact.privacy', 'Privacy Policy'));
         var copyright = escapeHtml(translate('contact.copyright', '© 2026 Trần Thắng Minh. All rights reserved.'));
         var visitsPrefix = escapeHtml(translate('contact.visitsPrefix', 'Số lượt truy cập:'));
 
@@ -117,6 +118,8 @@
             '        </div>' +
             '        <div class="contact-copyright-row">' +
             '            <span data-i18n="contact.copyright">' + copyright + '</span>' +
+            '            <span class="contact-copyright-sep" aria-hidden="true">·</span>' +
+            '            <a class="contact-privacy-link" href="' + escapeHtml(assetBase) + 'privacy.html" data-i18n="contact.privacy">' + privacyLabel + '</a>' +
             '        </div>' +
             '    </div>' +
             '</section>';

@@ -79,6 +79,7 @@
             email: 'Email: maxiechen96@gmail.com',
             moreSocial: 'Xem thêm mạng xã hội',
             copyright: '© 2026 Trần Thắng Minh. All rights reserved.',
+            privacy: 'Chính sách quyền riêng tư',
             signatureAlt: 'Chữ ký',
             visitsPrefix: 'Số lượt truy cập:'
         },

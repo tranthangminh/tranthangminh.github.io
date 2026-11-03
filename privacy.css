@@ -1,0 +1,68 @@
+/* ==========================================================================
+   Privacy Policy page (privacy.html). Uses theme tokens only.
+   ========================================================================== */
+
+.privacy-main {
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px 72px;
+    box-sizing: border-box;
+}
+
+.privacy-card {
+    width: 100%;
+    max-width: 800px;
+    padding: 40px 36px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    box-sizing: border-box;
+}
+
+.privacy-title {
+    margin: 0 0 8px;
+    font-family: var(--font-primary);
+    font-size: clamp(24px, 5vw, 34px);
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--text-primary);
+}
+
+.privacy-updated {
+    margin: 0 0 28px;
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+}
+
+.privacy-card h2 {
+    margin: 32px 0 10px;
+    font-family: var(--font-primary);
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.privacy-card p,
+.privacy-card li {
+    font-family: var(--font-primary);
+    font-size: var(--font-md);
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.privacy-card p { margin: 0 0 12px; }
+
+.privacy-card ul {
+    margin: 0 0 12px;
+    padding-left: 22px;
+}
+
+.privacy-card li { margin-bottom: 6px; }
+
+.privacy-card strong { color: var(--text-primary); }
+
+@media (max-width: 600px) {
+    .privacy-main { padding: 24px 12px 48px; }
+    .privacy-card { padding: 28px 18px; }
+}
