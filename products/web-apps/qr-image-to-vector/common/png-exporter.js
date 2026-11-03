@@ -6,14 +6,17 @@
  */
 
 class PngExporter {
+    /** Longest side allowed for a PNG, so a big print size cannot exhaust canvas memory */
+    static MAX_SIDE = 8192;
+
     /**
-     * Export SVG string or DOM element as a downloadable PNG image
+     * Render SVG markup to a PNG Blob
      * @param {string|SVGElement} svgSource - SVG markup or element
-     * @param {string} [filename='pixel-vector.png'] - Output filename
-     * @param {number} [scale=1] - Resolution multiplier (default 1x for 1:1 pixel match)
-     * @returns {Promise<boolean>}
+     * @param {number} [scale=1] - Resolution multiplier (1x = 1:1 with the SVG's own size)
+     * @param {number} [targetWidthPx=0] - Exact output width; overrides scale when > 0
+     * @returns {Promise<Blob>}
      */
-    static async exportSvg(svgSource, filename = 'pixel-vector.png', scale = 1) {
+    static async renderBlob(svgSource, scale = 1, targetWidthPx = 0) {
         let svgString = typeof svgSource === 'string'
             ? svgSource
             : new XMLSerializer().serializeToString(svgSource);
@@ -53,8 +56,11 @@ class PngExporter {
         const baseW = vbW || attrW || 512;
         const baseH = vbH || attrH || 512;
 
-        const targetW = Math.max(1, Math.round(baseW * scale));
-        const targetH = Math.max(1, Math.round(baseH * scale));
+        let targetW = targetWidthPx > 0 ? targetWidthPx : baseW * scale;
+        let targetH = targetW * (baseH / baseW);
+        const fit = Math.min(1, PngExporter.MAX_SIDE / Math.max(targetW, targetH));
+        targetW = Math.max(1, Math.round(targetW * fit));
+        targetH = Math.max(1, Math.round(targetH * fit));
 
         // 3. Set explicit rasterization dimensions on SVG element
         svgEl.setAttribute('width', `${targetW}px`);
@@ -71,9 +77,6 @@ class PngExporter {
         const ctx = canvas.getContext('2d');
         if (!ctx) throw new Error('Failed to create 2D canvas context');
 
-        // Disable smoothing to guarantee 100% pure pixel colors without boundary blending
-        ctx.imageSmoothingEnabled = false;
-
         // Render SVG to Image via Blob URL
         const blob = new Blob([exportSvgString], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(blob);
@@ -86,21 +89,34 @@ class PngExporter {
                 img.src = url;
             });
 
+            // Disable smoothing to guarantee 100% pure pixel colors without boundary blending
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(img, 0, 0, targetW, targetH);
         } finally {
             URL.revokeObjectURL(url);
         }
 
-        // Trigger native download
-        const pngDataUrl = canvas.toDataURL('image/png');
+        return new Promise((resolve, reject) => canvas.toBlob((png) => (png ? resolve(png) : reject(new Error('PNG encoding failed'))), 'image/png'));
+    }
+
+    /**
+     * Export SVG string or DOM element as a downloadable PNG image
+     * @param {string|SVGElement} svgSource - SVG markup or element
+     * @param {string} [filename='pixel-vector.png'] - Output filename
+     * @param {number} [scale=1] - Resolution multiplier (default 1x for 1:1 pixel match)
+     * @param {number} [targetWidthPx=0] - Exact output width; overrides scale when > 0
+     * @returns {Promise<boolean>}
+     */
+    static async exportSvg(svgSource, filename = 'pixel-vector.png', scale = 1, targetWidthPx = 0) {
+        const png = await PngExporter.renderBlob(svgSource, scale, targetWidthPx);
+        const url = URL.createObjectURL(png);
         const downloadLink = document.createElement('a');
-        downloadLink.href = pngDataUrl;
+        downloadLink.href = url;
         downloadLink.download = filename;
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
-
+        URL.revokeObjectURL(url);
         return true;
     }
 }

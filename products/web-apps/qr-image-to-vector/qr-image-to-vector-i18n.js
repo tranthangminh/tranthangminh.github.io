@@ -11,20 +11,14 @@
         'en': {
             brand: {
                 title: 'QR/Image to Vector',
-                documentTitle: 'Convert & Generate QR Vector SVG Online Free | Tran Thang Minh'
+                documentTitle: 'Convert QR/Image to Vector SVG & Generate QR Online Free | Trần Thắng Minh',
+                privacy: 'Privacy'
             },
             tabs: {
                 convert: 'Convert QR/Image to Vector',
-                generate: 'Create QR',
-                pixelart: '8-Bit Vector',
+                generate: 'Create QR', 
                 submodeQr: 'QR Code',
                 submodePixelArt: 'Pixel Art (8-Bit)'
-            },
-            upload: {
-                title: 'Upload QR Image',
-                dropzone: 'Drag & drop QR image here, click to browse, or paste with Ctrl + V',
-                supported: 'Supports PNG, JPG, JPEG, WEBP',
-                changeImage: 'Choose another image'
             },
             generator: {
                 heading: 'QR Code Payload',
@@ -83,17 +77,13 @@
                 }
             },
             controls: {
-                heading: 'Vector Settings',
-                styleMode: 'Render Style',
+                heading: 'Vector Settings', ecc: 'Error correction', 
                 styleUnifiedConnected: 'Connected',
                 styleUnifiedSeparated: 'Separated',
                 styleBlocks: 'Discrete Blocks',
                 radiusUnified: 'Corner Radius',
                 radiusBlocks: 'Corner Radius',
-                blockSize: 'Block Size (px)',
-                threshold: 'Threshold (Contrast)',
-                autoThreshold: 'Auto Otsu',
-                invert: 'Invert colors (Light on dark QR)',
+                blockSize: 'Block Size (px)', 
                 fgColor: 'QR Color',
                 bgColor: 'Background',
                 transparentBg: 'Transparent background',
@@ -103,8 +93,7 @@
                 outerPadding: 'Outer Padding (Margin)',
                 outerPaddingBlocks: '{n} blocks',
                 blockGap: 'Block Spacing (Gap)',
-                logoBlocks: 'Logo Area (Blocks)',
-                logoBlocksCount: '{n} blocks',
+                logoBlocks: 'Logo Area (Blocks)', 
                 logoScale: 'Logo Inner Scale',
                 resetDefaults: 'Reset default settings',
                 colorHeading: 'QR Color', colorSolid: '1 Color', colorDuo: '2 Colors', colorGradient: 'Gradient',
@@ -113,16 +102,13 @@
                 gradPerShape: 'One color per vector shape', gradEyes: 'Corners follow gradient'
             },
             qrContent: {
-                bannerTitle: 'QR Code Content',
+                
                 copy: 'Copy',
                 copied: 'Copied QR content!',
                 open: 'Open Link',
                 scanning: 'Scanning image for QR code...',
                 scanSuccess: 'QR code detected successfully!',
-                noQrFound: 'No QR code detected in image! Please upload a clearer photo.',
-                cardTitle: 'Decoded QR Data',
-                typeUrl: 'Web URL',
-                typeText: 'Plain Text'
+                noQrFound: 'No QR code detected in image! Please upload a clearer photo.'
             },
             stats: {
                 heading: 'Vector Specs', exportDim: 'Export Size', pixelSize: 'Pixel Block Size',
@@ -130,18 +116,15 @@
             },
             actions: { downloadSvg: 'Download Vector', downloadPng: 'Download Image', copySvg: 'Copy Vector', copied: 'Copied to clipboard!' },
             pixelart: {
-                heading: '8-Bit Pixel Settings', gridHeading: 'Object Bounding Box & Grid', bboxHeading: 'Object Bounding Box',
-                autoBbox: 'Find Object', fullBbox: 'Select Image', bboxBounds: 'Bounding Box (X, Y, W, H)',
-                gridCountHeading: 'Grid Columns & Rows', autoGrid: 'Auto Grid', cols: 'Columns', rows: 'Rows',
+                 gridHeading: 'Object Bounding Box & Grid', 
+                autoBbox: 'Find Object', fullBbox: 'Select Image',  autoGrid: 'Auto Grid', cols: 'Columns', rows: 'Rows',
                 lockSquare: 'Lock Ratio', cropToBbox: 'Crop to Frame', groupByColor: 'Group by Color',
-                colorHeading: 'Palette & Color Limit', vectorHeading: '8-Bit Vector Styling', maxColors: 'Number of Colors',
-                palette: 'Color Palette', pixelSize: 'Pixel Block Size', autoPalette: 'Auto Colors',
-                sourcePaneTitle: 'Source Image & Grid', vectorPaneTitle: 'Result Vector SVG',
-                viewModeDual: 'View Mode: Split Dual (50/50) [Y]', viewModeSource: 'View Mode: Source & Grid Only [Y]', viewModeVector: 'View Mode: Vector SVG Only [Y]',
+                colorHeading: 'Palette & Color Limit', vectorHeading: '8-Bit Vector Styling', maxColors: 'Number of Colors',  pixelSize: 'Pixel Block Size', autoPalette: 'Auto Colors',
+                sourcePaneTitle: 'Source Image & Grid', vectorPaneTitle: 'Result Vector SVG', 
                 layeredSolids: 'Layered Solid Underlays', enclosureThreshold: 'Underlay Enclosure Threshold',
                 statsHeading: 'Pixel Art Specs', statSource: 'Source Image', statBbox: 'Crop Area', statGrid: 'Grid Resolution',
                 statColors: 'Colors', statPixelSize: 'Pixel Block Size', statExportDim: 'Export Size', statSvgSize: 'SVG Size', statPngSize: 'PNG Size',
-                bestTag: 'Best', swatchLabel: 'Color {hex}',
+                bestTag: 'Best', swatchLabel: 'Color {hex}', presetLabel: 'Palette preset', presetAuto: 'Auto (from image)', editColor: 'Edit color', mergeInto: 'Merge into...', resetEdits: 'Reset edits', mergeHint: 'Pick the color to merge into',
                 colorAdjustHeading: 'Color Adjust (HSL)', resetColorAdjust: 'Reset', greyscale: 'Greyscale',
                 hue: 'Hue', saturation: 'Saturation', lightness: 'Lightness'
             },
@@ -156,22 +139,21 @@
                 altStep1: 'Step 1: Select Object', altStep2: 'Step 2: Adjust grid', altStep3: 'Step 3: Adjust Color Count', altStep4: 'Step 4: Extra customization'
             },
             hud: {
-                title: '⌨️ Shortcuts & Gestures', titleShort: 'Shortcuts',
+                title: 'Shortcuts & Gestures', titleShort: 'Shortcuts',
                 undo: 'Undo',
                 pan: 'Pan canvas',
                 zoom: 'Zoom in / out',
                 view: 'Toggle view mode',
                 newImage: 'New image',
                 redo: 'Redo',
-                bbox: 'Move / Resize box',
-                reset: 'Reset zoom (100%)'
+                bbox: 'Move / Resize box'
             },
             preview: {
-                heading: 'Vector Preview',
-                zoomIn: 'Zoom in',
-                zoomOut: 'Zoom out',
-                resetZoom: 'Reset (100%)',
-                toggleGrid: 'Checkerboard grid',
+                
+                
+                
+                
+                
                 emptyTitle: 'Drag & Drop or Click to Choose Image',
                 emptyModeQrTitle: 'QR Code to Vector QR', emptyModeQrDesc: 'Supports PNG, JPG, JPEG, WEBP',
                 emptyModePixelTitle: '8-Bit Image to 8-Bit Vector', emptyModePixelDesc: 'Supports PNG, JPG, JPEG, WEBP, GIF',
@@ -198,11 +180,15 @@
                 logoInvalid: 'Please choose a vector (SVG) or image file (PNG, JPG, WEBP, AVIF, BMP, ICO)!'
             },
             units: { chars: 'chars', blocks: 'blocks', colors: 'colors', fullImage: 'Full image' },
+            export: { heading: 'Export', pngScale: 'PNG size', printWidth: 'Print width (mm)', auto: 'Auto', printHint: 'Empty: keep pixel size. With a print size: the SVG is written in exact mm and the PNG is exported at 300 DPI.' },
+            batch: { heading: 'Batch export (ZIP)', placeholder: 'One QR content per line', fromText: 'Create from list', fromImages: 'Pick QR images', progress: 'Processing {done}/{total}...', done: '{ok} SVG files in ZIP', skipped: '{n} skipped', noneConverted: 'No QR could be converted.', nothingToDo: 'Nothing to convert yet.' },
+            sideTabs: { settings: 'Settings', info: 'Specs' },
+            scan: { checking: 'Checking scan...', ok: 'Scannable', fail: 'Not scannable' },
             logo: { centerOdd: 'Odd center', centerEven: 'Even center', blocksBadge: '{n} blocks\n{tag}' },
             tooltips: {
-                gridToggle: 'Show / hide grid', swapGradColors: 'Swap gradient colors 1 and 2',
+                gridToggle: 'Show / hide grid', panMode: 'Move mode: drag with one finger', eccL: 'Level L: recovers about 7% damage (smallest code)', eccM: 'Level M: recovers about 15% damage', eccQ: 'Level Q: recovers about 25% damage', eccH: 'Level H: recovers about 30% damage (densest code)', swapGradColors: 'Swap gradient colors 1 and 2',
                 autoBbox: 'Auto-detect object', fullBbox: 'Select the whole image', autoGrid: 'Auto-calculate columns & rows',
-                colsMinus: 'Remove 1 column', colsPlus: 'Add 1 column', rowsMinus: 'Remove 1 row', rowsPlus: 'Add 1 row',
+                colorsMinus: 'Remove 1 color', colorsPlus: 'Add 1 color', colsMinus: 'Remove 1 column', colsPlus: 'Add 1 column', rowsMinus: 'Remove 1 row', rowsPlus: 'Add 1 row',
                 shortcuts: 'View keyboard shortcuts', guide: 'View the Pixel Art to Vector guide',
                 undo: 'Undo (Ctrl+Z)', redo: 'Redo (Ctrl+Y)', checkerboard: 'Checkerboard background',
                 viewMode: 'Switch view: Split / Source / Vector (Y key)'
@@ -211,20 +197,14 @@
         'vi': {
             brand: {
                 title: 'Chuyển QR/Ảnh Sang Vector',
-                documentTitle: 'Chuyển & Tạo Mã QR Vector (SVG) Online Miễn Phí | Trần Thắng Minh'
+                documentTitle: 'Chuyển QR/Ảnh Sang Vector (SVG) & Tạo Mã QR Online Miễn Phí | Trần Thắng Minh',
+                privacy: 'Quyền riêng tư'
             },
             tabs: {
                 convert: 'Chuyển QR/Ảnh sang Vector',
-                generate: 'Tạo Mã QR',
-                pixelart: '8-Bit Vector',
+                generate: 'Tạo Mã QR', 
                 submodeQr: 'Mã QR',
                 submodePixelArt: 'Pixel Art (8-Bit)'
-            },
-            upload: {
-                title: 'Tải Lên Ảnh QR',
-                dropzone: 'Kéo thả ảnh QR vào đây, nhấp để chọn file hoặc dán ảnh bằng phím Ctrl + V',
-                supported: 'Hỗ trợ định dạng PNG, JPG, JPEG, WEBP',
-                changeImage: 'Chọn ảnh khác'
             },
             generator: {
                 heading: 'Dữ Liệu Mã QR',
@@ -283,17 +263,13 @@
                 }
             },
             controls: {
-                heading: 'Tùy Chỉnh Vector',
-                styleMode: 'Kiểu Hiển Thị',
+                heading: 'Tùy Chỉnh Vector', ecc: 'Mức sửa lỗi', 
                 styleUnifiedConnected: 'Dính Điểm',
                 styleUnifiedSeparated: 'Tách Điểm',
                 styleBlocks: 'Block Rời',
                 radiusUnified: 'Bo Góc',
                 radiusBlocks: 'Bo Góc',
-                blockSize: 'Kích Thước Block',
-                threshold: 'Độ Tương Phản (Ngưỡng)',
-                autoThreshold: 'Tự động (Otsu)',
-                invert: 'Đảo ngược màu (Mã sáng trên nền tối)',
+                blockSize: 'Kích Thước Block', 
                 fgColor: 'Màu mã QR',
                 bgColor: 'Màu nền',
                 transparentBg: 'Nền trong suốt',
@@ -303,8 +279,7 @@
                 outerPadding: 'Viền Đệm Ngoài (Margin)',
                 outerPaddingBlocks: '{n} block',
                 blockGap: 'Khoảng hở Pixel Block',
-                logoBlocks: 'Vùng Chiếm Của Logo',
-                logoBlocksCount: '{n} blocks',
+                logoBlocks: 'Vùng Chiếm Của Logo', 
                 logoScale: 'Tỷ Lệ Logo Trong Khối',
                 resetDefaults: 'Đặt lại mặc định',
                 colorHeading: 'Màu Mã QR', colorSolid: '1 Màu', colorDuo: '2 Màu', colorGradient: 'Gradient',
@@ -313,16 +288,13 @@
                 gradPerShape: 'Mỗi khối vector 1 màu', gradEyes: 'Mắt theo gradient'
             },
             qrContent: {
-                bannerTitle: 'Nội Dung Mã QR',
+                
                 copy: 'Sao chép',
                 copied: 'Đã sao chép nội dung QR!',
                 open: 'Mở liên kết',
                 scanning: 'Đang quét mã QR trong ảnh...',
                 scanSuccess: 'Đã quét và bóc tách mã QR thành công!',
-                noQrFound: 'Không tìm thấy mã QR trong ảnh! Hãy chọn ảnh chụp rõ nét hơn.',
-                cardTitle: 'Dữ Liệu Giải Mã',
-                typeUrl: 'Đường dẫn Web (URL)',
-                typeText: 'Văn bản thuần'
+                noQrFound: 'Không tìm thấy mã QR trong ảnh! Hãy chọn ảnh chụp rõ nét hơn.'
             },
             stats: {
                 heading: 'Thông Số Vector', exportDim: 'Kích thước xuất', pixelSize: 'Kích thước Pixel Block',
@@ -330,18 +302,15 @@
             },
             actions: { downloadSvg: 'Tải Vector', downloadPng: 'Tải Ảnh', copySvg: 'Copy Vector', copied: 'Đã sao chép vào bộ nhớ tạm!' },
             pixelart: {
-                heading: 'Cài Đặt 8-Bit Pixel', gridHeading: 'Khung Đối Tượng & Lưới Pixel', bboxHeading: 'Khung Đối Tượng (Bounding Box)',
-                autoBbox: 'Tìm Object', fullBbox: 'Chọn Ảnh', bboxBounds: 'Tọa Độ Vùng Chọn (X, Y, W, H)',
-                gridCountHeading: 'Số Lưới Ngang & Dọc', autoGrid: 'Lưới Tự Động', cols: 'Số Cột', rows: 'Số Hàng',
+                 gridHeading: 'Khung Đối Tượng & Lưới Pixel', 
+                autoBbox: 'Tìm Object', fullBbox: 'Chọn Ảnh',  autoGrid: 'Lưới Tự Động', cols: 'Số Cột', rows: 'Số Hàng',
                 lockSquare: 'Khóa Tỷ Lệ', cropToBbox: 'Cắt theo Khung', groupByColor: 'Gộp nhóm cùng màu',
-                colorHeading: 'Bảng Màu & Lọc Số Màu', vectorHeading: 'Kiểu Khối Vector 8-Bit', maxColors: 'Số Lượng Màu',
-                palette: 'Bảng Màu', pixelSize: 'Kích thước Pixel Block', autoPalette: 'Tự Động',
-                sourcePaneTitle: 'Ảnh Gốc & Lưới Thực Tế', vectorPaneTitle: 'Vector SVG Kết Quả',
-                viewModeDual: 'Chế độ xem: Song song (50/50) [Y]', viewModeSource: 'Chế độ xem: Chỉ ảnh gốc & lưới [Y]', viewModeVector: 'Chế độ xem: Chỉ Vector SVG [Y]',
+                colorHeading: 'Bảng Màu & Lọc Số Màu', vectorHeading: 'Kiểu Khối Vector 8-Bit', maxColors: 'Số Lượng Màu',  pixelSize: 'Kích thước Pixel Block', autoPalette: 'Tự Động',
+                sourcePaneTitle: 'Ảnh Gốc & Lưới Thực Tế', vectorPaneTitle: 'Vector SVG Kết Quả', 
                 layeredSolids: 'Xếp tầng vector lót đáy (Solid Layers)', enclosureThreshold: 'Độ bọc lót đáy (Ngưỡng chu vi)',
                 statsHeading: 'Thông Số Pixel Art', statSource: 'Ảnh gốc', statBbox: 'Vùng chọn', statGrid: 'Độ phân giải lưới',
                 statColors: 'Số màu', statPixelSize: 'Kích thước Pixel Block', statExportDim: 'Kích thước xuất', statSvgSize: 'Dung lượng SVG', statPngSize: 'Dung lượng PNG',
-                bestTag: 'Đẹp', swatchLabel: 'Màu {hex}',
+                bestTag: 'Đẹp', swatchLabel: 'Màu {hex}', presetLabel: 'Bảng màu mẫu', presetAuto: 'Tự động (theo ảnh)', editColor: 'Sửa màu', mergeInto: 'Gộp vào...', resetEdits: 'Hoàn nguyên', mergeHint: 'Chọn màu muốn gộp vào',
                 colorAdjustHeading: 'Chỉnh Màu (HSL)', resetColorAdjust: 'Đặt lại', greyscale: 'Ảnh xám (Greyscale)',
                 hue: 'Sắc độ (Hue)', saturation: 'Độ bão hòa', lightness: 'Độ sáng'
             },
@@ -356,22 +325,21 @@
                 altStep1: 'Bước 1: Chọn Object', altStep2: 'Bước 2: Điều chỉnh lưới', altStep3: 'Bước 3: Chỉnh Số Lượng Màu', altStep4: 'Bước 4: Tùy chỉnh thêm'
             },
             hud: {
-                title: '⌨️ Phím Tắt & Thao Tác', titleShort: 'Phím Tắt',
+                title: 'Phím Tắt & Thao Tác', titleShort: 'Phím Tắt',
                 undo: 'Hoàn tác',
                 pan: 'Di chuyển vùng nhìn',
                 zoom: 'Thu phóng',
                 view: 'Đổi 3 chế độ xem',
                 newImage: 'Ảnh mới',
                 redo: 'Làm lại',
-                bbox: 'Kéo / Resize box',
-                reset: 'Reset Zoom (100%)'
+                bbox: 'Kéo / Resize box'
             },
             preview: {
-                heading: 'Xem Trước Vector',
-                zoomIn: 'Phóng to',
-                zoomOut: 'Thu nhỏ',
-                resetZoom: 'Mặc định (100%)',
-                toggleGrid: 'Lưới caro nền',
+                
+                
+                
+                
+                
                 emptyTitle: 'Kéo thả hoặc Nhấp để chọn ảnh',
                 emptyModeQrTitle: 'Ảnh Mã QR sang Vector QR', emptyModeQrDesc: 'Hỗ trợ PNG, JPG, JPEG, WEBP',
                 emptyModePixelTitle: 'Ảnh 8-Bit sang 8-Bit Vector', emptyModePixelDesc: 'Hỗ trợ PNG, JPG, JPEG, WEBP, GIF',
@@ -398,11 +366,15 @@
                 logoInvalid: 'Vui lòng chọn file vector (SVG) hoặc ảnh (PNG, JPG, WEBP, AVIF, BMP, ICO)!'
             },
             units: { chars: 'ký tự', blocks: 'ô', colors: 'màu', fullImage: 'Toàn ảnh' },
+            export: { heading: 'Xuất File', pngScale: 'Cỡ PNG', printWidth: 'Cỡ in (mm)', auto: 'Auto', printHint: 'Để trống: giữ cỡ pixel. Có cỡ in: SVG ghi đúng mm, PNG xuất ở 300 DPI.' },
+            batch: { heading: 'Xuất hàng loạt (ZIP)', placeholder: 'Mỗi dòng một nội dung QR', fromText: 'Tạo từ danh sách', fromImages: 'Chọn nhiều ảnh QR', progress: 'Đang xử lý {done}/{total}...', done: '{ok} file SVG trong ZIP', skipped: 'bỏ qua {n}', noneConverted: 'Không chuyển được mã QR nào.', nothingToDo: 'Chưa có gì để chuyển.' },
+            sideTabs: { settings: 'Cài đặt', info: 'Thông số' },
+            scan: { checking: 'Đang kiểm tra quét...', ok: 'Quét được', fail: 'Không quét được' },
             logo: { centerOdd: 'Tâm lẻ', centerEven: 'Tâm chẵn', blocksBadge: '{n} blocks\n{tag}' },
             tooltips: {
-                gridToggle: 'Hiện / ẩn lưới', swapGradColors: 'Đổi chỗ màu gradient 1 và 2',
+                gridToggle: 'Hiện / ẩn lưới', panMode: 'Chế độ di chuyển: kéo bằng một ngón', eccL: 'Mức L: sửa được khoảng 7% hư hại (mã nhỏ nhất)', eccM: 'Mức M: sửa được khoảng 15% hư hại', eccQ: 'Mức Q: sửa được khoảng 25% hư hại', eccH: 'Mức H: sửa được khoảng 30% hư hại (mã dày nhất)', swapGradColors: 'Đổi chỗ màu gradient 1 và 2',
                 autoBbox: 'Tự động nhận diện đối tượng', fullBbox: 'Chọn toàn bộ khung ảnh', autoGrid: 'Tự động tính số cột & hàng',
-                colsMinus: 'Giảm 1 cột', colsPlus: 'Tăng 1 cột', rowsMinus: 'Giảm 1 hàng', rowsPlus: 'Tăng 1 hàng',
+                colorsMinus: 'Giảm 1 màu', colorsPlus: 'Tăng 1 màu', colsMinus: 'Giảm 1 cột', colsPlus: 'Tăng 1 cột', rowsMinus: 'Giảm 1 hàng', rowsPlus: 'Tăng 1 hàng',
                 shortcuts: 'Xem danh sách phím tắt', guide: 'Xem hướng dẫn chuyển ảnh Pixel Art sang Vector',
                 undo: 'Hoàn tác (Ctrl+Z)', redo: 'Làm lại (Ctrl+Y)', checkerboard: 'Lưới caro nền',
                 viewMode: 'Chuyển chế độ xem: Song song / Ảnh gốc / Vector (Phím Y)'
@@ -500,6 +472,12 @@
                         if (val && val !== key) el.setAttribute(attr, val);
                     }
                 });
+            });
+
+            // Sliders are labelled by a sibling span, so mirror that text as their accessible name
+            document.querySelectorAll('.control-group input[type="range"]').forEach((slider) => {
+                const label = slider.closest('.control-group').querySelector('.control-label-row > span:first-child');
+                if (label) slider.setAttribute('aria-label', label.textContent.trim());
             });
 
             const docTitle = this.t('brand.documentTitle');

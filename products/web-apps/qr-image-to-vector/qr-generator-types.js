@@ -44,7 +44,11 @@
 
         renderForm(typeId, values = {}, i18n) {
             const t = (key) => (i18n ? i18n.t(key) : key);
-            const v = (k, def = '') => (values[k] !== undefined ? values[k] : def);
+            const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            const v = (k, def = '') => {
+                const val = values[k] !== undefined ? values[k] : def;
+                return typeof val === 'string' ? escapeHtml(val) : val;
+            };
 
             switch (typeId) {
                 case 'url':

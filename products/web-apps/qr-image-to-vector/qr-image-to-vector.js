@@ -17,6 +17,7 @@
         transparentBg: false,
         outerPadding: 3,
         blockGap: 0,
+        eccLevel: 'M',
         colorMode: 'solid',
         eyeColor: '#000000',
         gradColor: '#2563EB',
@@ -30,6 +31,7 @@
     let currentSubMode = 'qr'; // 'qr' | 'pixelart'
     let currentImage = null, currentFileName = 'qr-code', currentMatrixData = null;
     let currentSvgData = null, currentDecodedText = '', currentZoom = 1;
+    let currentEcc = DEFAULT_SETTINGS.eccLevel;
     let currentMode = DEFAULT_SETTINGS.mode, pixelArtHandler = null, viewportCtrl = null, isProcessingImage = false, contrastWarned = false;
 
     const $ = (id) => document.getElementById(id);
@@ -45,7 +47,7 @@
     const btnDownloadSvg = $('btnDownloadSvg'), btnDownloadPng = $('btnDownloadPng'), btnCopySvg = $('btnCopySvg'), zoomLevelBadge = $('zoomLevelBadge'), toast = $('toast'), langToggleBtn = $('langToggleBtn');
 
     function init() {
-        initColorControls(); loadSettings(); initLogoHandler(); initPixelArtHandler(); initViewportController();
+        initColorControls(); loadSettings(); initLogoHandler(); initPixelArtHandler(); initViewportController(); initExport();
         window.QrShortcuts?.renderRows($('shortcutsHudBody'));
         bindEvents(); initGenerator(); initHistory(); hideStage();
     }
@@ -97,6 +99,17 @@
         const isLow = Boolean(!transparentBgToggle?.checked && window.QrColorControls?.hasLowContrast(fgColorPicker.value, bgColorPicker.value));
         if (isLow && !contrastWarned) window.DomUtils?.showToast(toast, tr('messages.lowContrast', 'Low contrast between the QR colors and the background: the code may be hard to scan.'), 4500, true);
         contrastWarned = isLow;
+    }
+
+    function initExport() {
+        window.ExportControls?.init({ scaleButtons: [...document.querySelectorAll('#exportScaleGroup [data-scale]')], scaleGroup: $('exportScaleGroup'), mmInput: $('exportPrintMm') });
+        window.QrBatch?.init(
+            { textarea: $('batchLines'), btnText: $('btnBatchFromText'), btnImages: $('btnBatchFromImages'), fileInput: $('batchFileInput'), status: $('batchStatus') },
+            () => {
+                const { hasLogo, logoBlocks } = window.QrLogoHandler.getOptions();
+                return { options: { ...getVectorizeOptions(), hasLogo, logoBlocks }, printMm: window.ExportControls.getOptions().printMm };
+            }
+        );
     }
 
     function initLogoHandler() {
@@ -155,6 +168,7 @@
         on(outerPaddingSlider, 'input', () => { updateOuterPaddingBadge(parseInt(outerPaddingSlider.value, 10)); saveSettings(); triggerVectorize(); });
         on(blockGapSlider, 'input', () => { if (blockGapBadge) blockGapBadge.textContent = `${blockGapSlider.value}%`; saveSettings(); triggerVectorize(); });
         on(btnResetDefaults, 'click', resetToDefaults);
+        document.querySelectorAll('#eccGroup [data-ecc]').forEach((b) => on(b, 'click', () => { currentEcc = b.dataset.ecc; syncEccUi(); saveSettings(); reconstructAndVectorize(); }));
         on(btnCopyQrText, 'click', () => {
             if (!currentDecodedText) return;
             navigator.clipboard.writeText(currentDecodedText).then(() => {
@@ -175,7 +189,17 @@
         on($('btnZoomIn'), 'click', () => viewportCtrl ? viewportCtrl.zoomIn() : setZoom(currentZoom + 0.25));
         on($('btnZoomOut'), 'click', () => viewportCtrl ? viewportCtrl.zoomOut() : setZoom(currentZoom - 0.25));
         on($('btnZoomReset'), 'click', () => viewportCtrl ? viewportCtrl.reset(1) : setZoom(1));
-        on($('btnToggleGrid'), 'click', () => stageViewport?.classList.toggle('has-checkerboard'));
+        on($('btnPanMode'), 'click', (e) => {
+            const isOn = !viewportCtrl?.panMode;
+            viewportCtrl?.setPanMode(isOn);
+            e.currentTarget.classList.toggle('is-active', isOn);
+            e.currentTarget.setAttribute('aria-pressed', String(isOn));
+        });
+        on($('btnToggleGrid'), 'click', (e) => {
+            const isOn = stageViewport.classList.toggle('has-checkerboard');
+            e.currentTarget.classList.toggle('is-active', isOn);
+            e.currentTarget.setAttribute('aria-pressed', String(isOn));
+        });
     }
 
     function setAppMode(appMode) {
@@ -285,7 +309,16 @@
         const gap = Math.max(0, Math.min(40, parseInt(s.blockGap, 10) || 0));
         if (blockGapSlider) { blockGapSlider.value = gap; if (blockGapBadge) blockGapBadge.textContent = `${gap}%`; }
         window.QrColorControls?.setOptions(s);
+        currentEcc = ['L', 'M', 'Q', 'H'].includes(s.eccLevel) ? s.eccLevel : DEFAULT_SETTINGS.eccLevel;
+        syncEccUi();
         syncModeUi();
+    }
+
+    // A center logo forces level H in the matrix generator, so the choice is locked and shown as H while a logo is present
+    function syncEccUi() {
+        const forced = Boolean(window.QrLogoHandler?.getOptions().hasLogo);
+        document.querySelectorAll('#eccGroup [data-ecc]').forEach((b) => b.classList.toggle('is-active', b.dataset.ecc === (forced ? 'H' : currentEcc)));
+        $('eccGroup')?.classList.toggle('is-disabled', forced);
     }
 
     function saveSettings() {
@@ -298,16 +331,15 @@
 
     function resetToDefaults() {
         try { localStorage.removeItem(SETTINGS_STORAGE_KEY); } catch (err) { console.warn('Failed to reset settings:', err); }
-        loadSettings(DEFAULT_SETTINGS); saveSettings(); triggerVectorize();
+        loadSettings(DEFAULT_SETTINGS); saveSettings();
+        if (currentDecodedText) reconstructAndVectorize(); else triggerVectorize();
         showToast(tr('controls.resetDefaults', 'Reset default settings'));
     }
 
     function syncModeUi() {
         updateRadiusLabels();
         if (blockGapGroup) {
-            const isBlocks = currentMode === 'blocks';
-            blockGapGroup.style.opacity = isBlocks ? '1' : '0.4';
-            blockGapGroup.style.pointerEvents = isBlocks ? 'auto' : 'none';
+            blockGapGroup.classList.toggle('is-disabled', currentMode !== 'blocks');
         }
     }
 
@@ -355,7 +387,7 @@
             cornerRadius: parseInt(radiusSlider?.value || 50, 10), blockSize: bs, moduleResolution: bs,
             fgColor: fgColorPicker?.value || '#000000', bgColor: bgColorPicker?.value || '#FFFFFF',
             transparentBg: Boolean(transparentBgToggle?.checked), outerPadding: parseInt(outerPaddingSlider?.value || 3, 10),
-            blockGap: parseInt(blockGapSlider?.value || 0, 10), logoData: logoOpts.logoData, logoScale: logoOpts.logoScale,
+            blockGap: parseInt(blockGapSlider?.value || 0, 10), eccLevel: currentEcc, logoData: logoOpts.logoData, logoScale: logoOpts.logoScale,
             ...(window.QrColorControls ? window.QrColorControls.getOptions() : {})
         };
     }
@@ -396,10 +428,12 @@
     }
 
     function reconstructAndVectorize() {
+        syncEccUi();
         if (!currentDecodedText) return;
         try {
             const logoOpts = window.QrLogoHandler ? window.QrLogoHandler.getOptions() : {};
             currentMatrixData = QrMatrixGenerator.generate(currentDecodedText, {
+                eccLevel: currentEcc,
                 hasLogo: logoOpts.hasLogo,
                 logoBlocks: logoOpts.logoBlocks
             });
@@ -418,6 +452,7 @@
         if (stageEmptyState) stageEmptyState.style.display = 'none';
         if (stagePreviewArea) stagePreviewArea.style.display = 'flex';
         if (stageFooterBar) stageFooterBar.style.display = 'flex';
+        $('exportCard').style.display = 'block';
         updateSubmodePillVisibility();
         if (statsCard) statsCard.style.display = (currentSubMode === 'pixelart' && currentAppMode !== 'generate') ? 'none' : 'block';
     }
@@ -425,6 +460,7 @@
     function hideStage() {
         if (stagePreviewArea) stagePreviewArea.style.display = 'none';
         if (stageFooterBar) stageFooterBar.style.display = 'none';
+        $('exportCard').style.display = 'none';
         if (shortcutsDropdownWrapper) shortcutsDropdownWrapper.classList.remove('is-open');
         if (stageSubmodePill) stageSubmodePill.style.display = 'none';
         if (stageEmptyState) stageEmptyState.style.display = 'flex';
@@ -467,6 +503,7 @@
         if (statBlockSize) statBlockSize.textContent = `${blockSizeSlider?.value || 10} px`;
         if (statGrid) statGrid.textContent = `${result.gridCols} × ${result.gridRows} (${result.moduleCount} ${tr('units.blocks', 'blocks')})`;
         if (statElements) statElements.textContent = result.shapeCount.toLocaleString();
+        window.QrScanCheck?.schedule(result.svgString, currentDecodedText, $('qrScanBadge'), result.width);
     }
 
     function setZoom(val) {
@@ -477,8 +514,8 @@
     }
 
     const curSvg = () => currentSvgData?.svgString || svgDisplayWrapper.innerHTML;
-    function downloadSvg() { window.StageExporter?.downloadSvg(curSvg(), currentFileName, currentSubMode === 'pixelart' ? '8bit' : currentMode, showToast); }
-    function downloadPng() { window.StageExporter?.downloadPng(curSvg(), currentFileName, currentSubMode === 'pixelart' ? '8bit' : currentMode, showToast, 1); }
+    function downloadSvg() { window.StageExporter?.downloadSvg(curSvg(), currentFileName, currentSubMode === 'pixelart' ? '8bit' : currentMode, showToast, window.ExportControls.getOptions().printMm); }
+    function downloadPng() { const { scale, printMm } = window.ExportControls.getOptions(); window.StageExporter?.downloadPng(curSvg(), currentFileName, currentSubMode === 'pixelart' ? '8bit' : currentMode, showToast, scale, printMm); }
     function copySvg() { window.StageExporter?.copySvg(curSvg(), showToast); }
     function initHistory() {
         if (window.HistoryManager) window.HistoryManager.init({
@@ -495,6 +532,7 @@
     function resetToEmptyState(message) {
         currentImage = null; currentDecodedText = ''; currentMatrixData = null; currentSvgData = null; currentFileName = 'vector';
         if (svgDisplayWrapper) svgDisplayWrapper.innerHTML = '';
+        window.QrScanCheck?.cancel($('qrScanBadge'));
         pixelArtHandler?.reset(); hideStage();
         if (message) showToast(message);
     }

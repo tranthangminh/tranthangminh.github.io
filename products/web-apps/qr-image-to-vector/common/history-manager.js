@@ -287,7 +287,7 @@
                 const delBtn = document.createElement('button');
                 delBtn.type = 'button';
                 delBtn.className = 'history-item-del';
-                delBtn.innerHTML = '&times;';
+                delBtn.innerHTML = '<span class="icon-mask icon-close" aria-hidden="true"></span>';
                 delBtn.title = this._tr('history.deleteTitle', 'Remove from history');
                 delBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -318,7 +318,7 @@
             tile.className = 'history-item history-item-new' + (this.activeId === null ? ' is-active' : '');
             tile.title = this._tr('history.newTitle', 'New image');
             tile.setAttribute('aria-label', tile.title);
-            tile.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+            tile.innerHTML = '<span class="icon-mask icon-add" aria-hidden="true"></span>';
             tile.addEventListener('click', async () => {
                 await this.flushPendingSave();
                 this.activeId = null;

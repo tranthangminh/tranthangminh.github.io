@@ -6,6 +6,9 @@
 /** Height reserved above the images for the source pane toolbar; keep equal to the extra `.split-pane-content` top padding in pixelart.css */
 const PANE_TOOLBAR_HEIGHT = 32;
 
+/** Keep the ?v= in step with the pipeline scripts the worker imports (it forwards the same query to them) */
+const PIXELART_WORKER_URL = './qr-image-to-vector/pipeline/pixelart-worker.js?v=20261103-18';
+
 class PixelArtHandler {
     constructor(appContext) {
         this.app = appContext;
@@ -22,15 +25,23 @@ class PixelArtHandler {
         this.currentPalette = []; this.currentMatrix = null; this.currentCells = null;
         this.undoStack = []; this.redoStack = []; this._isUndoing = false;
         this._renderTimer = null; this._resizeObserver = null;
+        this._worker = null; this._workerUnavailable = false; this._workerJobId = 0; this._pendingJobs = new Map(); this._vectorSeq = 0;
         this._pngMeasureSeq = 0; this._pngMeasureTimer = null; this._lastPngSizeStr = '';
         this._initDom(); this._bindEvents(); this._bindColorAdjustEvents();
+        this.paletteUi = new PixelArtPaletteUi({
+            list: this.paletteList, select: this.paletteSelect, btnEdit: this.btnPaletteEdit, btnMerge: this.btnPaletteMerge, btnReset: this.btnPaletteReset,
+            colorInput: this.paletteColorInput, hint: this.paletteHint, colorsGroup: this.colorsSlider?.closest('.control-group')
+        }, ({ commit }) => {
+            this.processQuantizeAndDebouncedRender();
+            if (commit) { this._notifySettingsChanged(); this.pushUndoSnapshot(); }
+        });
     }
 
     _tr(key, fallback) { return window.QrImageToVectorI18n ? window.QrImageToVectorI18n.t(key, fallback) : fallback; }
 
     _initDom() {
         const $ = (id) => document.getElementById(id);
-        const map = { stagePreviewArea: 'stagePreviewArea', settingsGroup: 'pixelArtSettingsGroup', dualWrapper: 'stageDualWrapper', sourcePane: 'dualPaneSource', divider: 'dualPaneDivider', vectorPane: 'dualPaneVector', vectorHeader: 'dualVectorHeader', sourceDimBadge: 'sourceDimBadge', vectorDimBadge: 'vectorDimBadge', gridContainer: 'gridCanvasContainer', svgWrapper: 'svgDisplayWrapper', gridCanvas: 'pixelArtGridCanvas', overlayCanvas: 'pixelArtOverlayCanvas', btnAutoBbox: 'btnPixelArtAutoBbox', btnFullBbox: 'btnPixelArtFullBbox', colsSlider: 'pixelArtColsSlider', colsBadge: 'pixelArtColsBadge', btnColsMinus: 'btnColsMinus', btnColsPlus: 'btnColsPlus', rowsSlider: 'pixelArtRowsSlider', rowsBadge: 'pixelArtRowsBadge', btnRowsMinus: 'btnRowsMinus', btnRowsPlus: 'btnRowsPlus', lockSquareToggle: 'pixelArtLockSquareToggle', cropToBboxToggle: 'pixelArtCropToBboxToggle', btnGridToggle: 'btnPixelArtGridToggle', toolbarLeft: 'pixelArtToolbarLeft', toolbarRight: 'pixelArtToolbarRight', btnAutoGrid: 'btnPixelArtAutoGrid', colorsSlider: 'pixelArtColorsSlider', colorsBadge: 'pixelArtColorsBadge', btnColorsMinus: 'btnColorsMinus', btnColorsPlus: 'btnColorsPlus', groupByColorToggle: 'pixelArtGroupByColorToggle', paletteList: 'pixelArtPaletteList', btnAutoPalette: 'btnPixelArtAutoPalette', radiusSlider: 'pixelArtRadiusSlider', radiusBadge: 'pixelArtRadiusBadge', blockSizeSlider: 'pixelArtBlockSizeSlider', blockSizeBadge: 'pixelArtBlockSizeBadge', blockGapSlider: 'pixelArtGapSlider', blockGapBadge: 'pixelArtGapBadge', layeredToggle: 'pixelArtLayeredToggle', enclosureGroup: 'pixelArtEnclosureGroup', enclosureSlider: 'pixelArtEnclosureSlider', enclosureBadge: 'pixelArtEnclosureBadge', btnToggleViewMode: 'btnToggleViewMode', shortcutsHud: 'stageShortcutsHud', btnToggleShortcutsHud: 'btnToggleShortcutsHud', statsCard: 'pixelArtStatsCard', paStatSource: 'paStatSource', paStatBbox: 'paStatBbox', paStatGrid: 'paStatGrid', paStatColors: 'paStatColors', paStatPixelSize: 'paStatPixelSize', paStatExportDim: 'paStatExportDim', paStatSvgDim: 'paStatSvgDim', paStatSvgSize: 'paStatSvgSize', paStatPngSize: 'paStatPngSize', btnFloatingAutoGrid: 'btnBboxFloatingAutoGrid', greyscaleToggle: 'pixelArtGreyscaleToggle', hueSlider: 'pixelArtHueSlider', hueBadge: 'pixelArtHueBadge', hueGroup: 'pixelArtHueGroup', satSlider: 'pixelArtSatSlider', satBadge: 'pixelArtSatBadge', satGroup: 'pixelArtSatGroup', lightSlider: 'pixelArtLightSlider', lightBadge: 'pixelArtLightBadge', btnResetColorAdjust: 'btnPixelArtResetColorAdjust' };
+        const map = { stagePreviewArea: 'stagePreviewArea', settingsGroup: 'pixelArtSettingsGroup', dualWrapper: 'stageDualWrapper', sourcePane: 'dualPaneSource', divider: 'dualPaneDivider', vectorPane: 'dualPaneVector', vectorHeader: 'dualVectorHeader', sourceDimBadge: 'sourceDimBadge', vectorDimBadge: 'vectorDimBadge', gridContainer: 'gridCanvasContainer', svgWrapper: 'svgDisplayWrapper', gridCanvas: 'pixelArtGridCanvas', overlayCanvas: 'pixelArtOverlayCanvas', btnAutoBbox: 'btnPixelArtAutoBbox', btnFullBbox: 'btnPixelArtFullBbox', colsSlider: 'pixelArtColsSlider', colsBadge: 'pixelArtColsBadge', btnColsMinus: 'btnColsMinus', btnColsPlus: 'btnColsPlus', rowsSlider: 'pixelArtRowsSlider', rowsBadge: 'pixelArtRowsBadge', btnRowsMinus: 'btnRowsMinus', btnRowsPlus: 'btnRowsPlus', lockSquareToggle: 'pixelArtLockSquareToggle', cropToBboxToggle: 'pixelArtCropToBboxToggle', btnGridToggle: 'btnPixelArtGridToggle', toolbarLeft: 'pixelArtToolbarLeft', toolbarRight: 'pixelArtToolbarRight', btnAutoGrid: 'btnPixelArtAutoGrid', colorsSlider: 'pixelArtColorsSlider', colorsBadge: 'pixelArtColorsBadge', btnColorsMinus: 'btnColorsMinus', btnColorsPlus: 'btnColorsPlus', groupByColorToggle: 'pixelArtGroupByColorToggle', paletteList: 'pixelArtPaletteList', btnAutoPalette: 'btnPixelArtAutoPalette', radiusSlider: 'pixelArtRadiusSlider', radiusBadge: 'pixelArtRadiusBadge', blockSizeSlider: 'pixelArtBlockSizeSlider', blockSizeBadge: 'pixelArtBlockSizeBadge', blockGapSlider: 'pixelArtGapSlider', blockGapBadge: 'pixelArtGapBadge', layeredToggle: 'pixelArtLayeredToggle', enclosureGroup: 'pixelArtEnclosureGroup', enclosureSlider: 'pixelArtEnclosureSlider', enclosureBadge: 'pixelArtEnclosureBadge', btnToggleViewMode: 'btnToggleViewMode', shortcutsHud: 'stageShortcutsHud', btnToggleShortcutsHud: 'btnToggleShortcutsHud', statsCard: 'pixelArtStatsCard', paStatSource: 'paStatSource', paStatBbox: 'paStatBbox', paStatGrid: 'paStatGrid', paStatColors: 'paStatColors', paStatPixelSize: 'paStatPixelSize', paStatExportDim: 'paStatExportDim', paStatSvgDim: 'paStatSvgDim', paStatSvgSize: 'paStatSvgSize', paStatPngSize: 'paStatPngSize', btnFloatingAutoGrid: 'btnBboxFloatingAutoGrid', greyscaleToggle: 'pixelArtGreyscaleToggle', hueSlider: 'pixelArtHueSlider', hueBadge: 'pixelArtHueBadge', hueGroup: 'pixelArtHueGroup', satSlider: 'pixelArtSatSlider', satBadge: 'pixelArtSatBadge', satGroup: 'pixelArtSatGroup', lightSlider: 'pixelArtLightSlider', lightBadge: 'pixelArtLightBadge', btnResetColorAdjust: 'btnPixelArtResetColorAdjust', paletteSelect: 'pixelArtPaletteSelect', btnPaletteEdit: 'btnPaletteEdit', btnPaletteMerge: 'btnPaletteMerge', btnPaletteReset: 'btnPaletteReset', paletteColorInput: 'pixelArtSwatchColor', paletteHint: 'pixelArtPaletteHint' };
         for (const [k, v] of Object.entries(map)) this[k] = $(v);
     }
 
@@ -264,7 +275,7 @@ class PixelArtHandler {
 
     loadImage(img) {
         this.undoStack = []; this.redoStack = [];
-        this._resetColorAdjustState(); this._syncColorAdjustUi();
+        this._resetColorAdjustState(); this._syncColorAdjustUi(); this.paletteUi.reset();
         this._setupImageBuffer(img);
         this.autoDetectBbox(false); this._updateGridLimits();
         this.autoEstimateGrid(false); this._syncContentDimensions();
@@ -325,7 +336,7 @@ class PixelArtHandler {
     processQuantizeAndDebouncedRender() {
         const c = this.activeCols || this.cols, r = this.activeRows || this.rows;
         if (!this.currentCells || c === 0) return;
-        const quant = PixelArtQuantizer.quantize(this.currentCells, c, r, { maxColors: this.maxColors });
+        const quant = this.paletteUi.quantize(this.currentCells, c, r, this.maxColors);
         this.basePalette = quant.palette; this.currentPalette = this._adjustedPalette(quant.palette);
         this.currentMatrix = quant.matrix; this._renderPaletteSwatches();
         const activeColors = quant.palette.filter(p => !p.isTransparent).length;
@@ -335,38 +346,70 @@ class PixelArtHandler {
 
     debouncedRenderVector() { clearTimeout(this._renderTimer); this._renderTimer = setTimeout(() => this.renderVector(), 80); }
 
-    _renderPaletteSwatches() {
-        if (!this.paletteList) return;
-        this.paletteList.innerHTML = '';
-        this.currentPalette.forEach(item => {
-            const swatch = document.createElement('div');
-            swatch.className = 'pixelart-palette-swatch'; swatch.style.backgroundColor = item.hex;
-            swatch.title = `${item.hex} (${item.count.toLocaleString()} px)`; swatch.setAttribute('aria-label', this._tr('pixelart.swatchLabel', 'Color {hex}').replace('{hex}', item.hex));
-            this.paletteList.appendChild(swatch);
-        });
-    }
+    _renderPaletteSwatches() { this.paletteUi?.render(this.currentPalette); }
 
     renderVector() {
         const c = this.activeCols || this.cols, r = this.activeRows || this.rows;
         if (!this.currentMatrix || !this.currentPalette) return;
         const style = (this.vectorBlockGap > 0) ? 'blocks' : 'unified-connected';
-        const svgString = PixelArtVectorizer.vectorize(this.currentMatrix, c, r, this.currentPalette, {
+        const options = {
             style, radius: this.vectorRadius, blockSize: this.vectorBlockSize,
             outerPadding: this.vectorPadding, blockGap: this.vectorBlockGap, bgColor: this.bgColor,
             transparentBg: this.transparentBg, layeredSolids: this.layeredSolids && !(this.vectorBlockGap > 0), groupByColor: Boolean(this.groupByColor), enclosureThreshold: this.enclosureThreshold
+        };
+        const seq = ++this._vectorSeq;
+        // A newer render supersedes this one, so a slow result never overwrites a fresher preview
+        this._vectorize(this.currentMatrix, c, r, this.currentPalette, options).then((svgString) => {
+            if (seq === this._vectorSeq) this._showVector(svgString, c, r);
         });
+    }
+
+    _showVector(svgString, c, r) {
         this._lastSvgString = svgString; const pad = Math.max(0, this.vectorPadding || 0);
         this.app.displaySvg(svgString, (c + pad * 2) * this.vectorBlockSize, (r + pad * 2) * this.vectorBlockSize);
         this._syncVectorSize();
         this._updateStats(svgString);
     }
 
+    /** Vectorizes in a Web Worker so big grids never freeze the UI; falls back to the main thread when workers are unavailable */
+    _vectorize(matrix, cols, rows, palette, options) {
+        const worker = this._getWorker();
+        if (!worker) return Promise.resolve(PixelArtVectorizer.vectorize(matrix, cols, rows, palette, options));
+        return new Promise((resolve) => {
+            const id = ++this._workerJobId;
+            this._pendingJobs.set(id, { resolve, args: [matrix, cols, rows, palette, options] });
+            worker.postMessage({ id, matrix, cols, rows, palette, options });
+        });
+    }
+
+    _getWorker() {
+        if (this._worker || this._workerUnavailable) return this._worker;
+        try {
+            this._worker = new Worker(PIXELART_WORKER_URL);
+            this._worker.onmessage = ({ data }) => {
+                const job = this._pendingJobs.get(data.id);
+                if (!job) return;
+                this._pendingJobs.delete(data.id);
+                job.resolve(data.error ? PixelArtVectorizer.vectorize(...job.args) : data.svg);
+            };
+            this._worker.onerror = (err) => {
+                console.warn('Pixel Art worker failed, using the main thread:', err.message);
+                this._workerUnavailable = true; this._worker = null;
+                this._pendingJobs.forEach((job) => job.resolve(PixelArtVectorizer.vectorize(...job.args)));
+                this._pendingJobs.clear();
+            };
+        } catch (err) {
+            console.warn('Pixel Art worker unavailable, using the main thread:', err);
+            this._workerUnavailable = true; this._worker = null;
+        }
+        return this._worker;
+    }
     toggleViewMode(targetMode = null) {
         if (!this.dualWrapper) return;
         const modes = ['dual', 'source', 'vector'];
         this.viewMode = (targetMode && modes.includes(targetMode)) ? targetMode : modes[(modes.indexOf(this.viewMode) + 1) % modes.length];
         this.dualWrapper.className = `stage-dual-wrapper is-split-screen view-mode-${this.viewMode}`;
-        if (this.btnToggleViewMode) this.btnToggleViewMode.textContent = { dual: '◧', source: '◨', vector: '◩' }[this.viewMode] || '◧';
+        this.btnToggleViewMode?.firstElementChild.setAttribute('class', `icon-mask icon-${{ dual: 'split', source: 'left', vector: 'right' }[this.viewMode]}-view`);
         this._syncContentDimensions();
     }
 
@@ -457,7 +500,7 @@ class PixelArtHandler {
     }
 
     reset() {
-        this.rawImage = null; this.undoStack = []; this.redoStack = []; this._lastSvgString = '';
+        this._vectorSeq++; this.rawImage = null; this.undoStack = []; this.redoStack = []; this._lastSvgString = '';
         if (this.gridCanvas) { const ctx = this.gridCanvas.getContext('2d'); if (ctx) ctx.clearRect(0, 0, this.gridCanvas.width, this.gridCanvas.height); }
         this.deactivate();
     }
@@ -550,7 +593,8 @@ class PixelArtHandler {
             vectorStyle: this.vectorStyle || 'unified-connected', vectorRadius: this.vectorRadius ?? 0, vectorBlockSize: this.vectorBlockSize || 10,
             vectorBlockGap: this.vectorBlockGap ?? 0, vectorPadding: this.vectorPadding ?? 0, transparentBg: Boolean(this.transparentBg),
             greyscale: Boolean(this.greyscale), hueShift: this.hueShift || 0, satShift: this.satShift || 0, lightShift: this.lightShift || 0,
-            bgColor: this.bgColor || '#ffffff', layeredSolids: Boolean(this.layeredSolids), enclosureThreshold: this.enclosureThreshold ?? 0.7
+            bgColor: this.bgColor || '#ffffff', layeredSolids: Boolean(this.layeredSolids), enclosureThreshold: this.enclosureThreshold ?? 0.7,
+            paletteEdits: this.paletteUi.getState()
         };
     }
 
@@ -583,6 +627,7 @@ class PixelArtHandler {
             this._syncLayeredUi();
             this.greyscale = Boolean(s.greyscale); this.hueShift = s.hueShift || 0; this.satShift = s.satShift || 0; this.lightShift = s.lightShift || 0;
             this._syncColorAdjustUi();
+            this.paletteUi.setState(s.paletteEdits);
             this._syncContentDimensions(); this._sampleCells(); this.renderGridCanvas();
             this.maxColors = s.maxColors || 16; this._updateColorsBadge();
             clearTimeout(this._renderTimer); this.processQuantizeAndDebouncedRender();

@@ -90,6 +90,35 @@ class PixelArtQuantizer {
         return { palette, matrix, suggestedTransparentHex: null };
     }
 
+    /**
+     * Map every cell to its nearest color of a fixed palette (retro presets); only colors that end up used are kept
+     * @param {Array<{r: number, g: number, b: number, a: number}>} cells
+     * @param {string[]} hexes - Target palette as #RRGGBB
+     * @returns {{palette: Array<{hex: string, r: number, g: number, b: number, count: number, isTransparent: boolean}>, matrix: Int16Array, suggestedTransparentHex: null}}
+     */
+    static quantizeToPalette(cells, hexes) {
+        const target = hexes.map((hex) => {
+            const n = parseInt(hex.slice(1), 16);
+            return { hex: hex.toUpperCase(), r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, count: 0 };
+        });
+        const cache = new Map();
+        const matrix = new Int16Array(cells.length);
+        for (let i = 0; i < cells.length; i++) {
+            const c = cells[i];
+            if (c.a < 64) { matrix[i] = -1; continue; }
+            const key = (c.r << 16) | (c.g << 8) | c.b;
+            let idx = cache.get(key);
+            if (idx === undefined) { idx = this._findNearestPaletteIndex(c, target); cache.set(key, idx); }
+            matrix[i] = idx;
+            target[idx].count++;
+        }
+        const remap = new Int16Array(target.length).fill(-1);
+        const palette = [];
+        target.forEach((t, i) => { if (t.count > 0) { remap[i] = palette.length; palette.push({ hex: t.hex, r: t.r, g: t.g, b: t.b, count: t.count, isTransparent: false }); } });
+        for (let i = 0; i < matrix.length; i++) if (matrix[i] >= 0) matrix[i] = remap[matrix[i]];
+        return { palette, matrix, suggestedTransparentHex: null };
+    }
+
     static _clusterActiveBins(bins, threshold = 12) {
         const clusters = [];
         for (let i = 0; i < bins.length; i++) {

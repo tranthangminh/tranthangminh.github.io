@@ -78,7 +78,7 @@ Mọi thay đổi code hoặc bảo trì tính năng trong thư mục này BẮT
   - Bảo lưu thuộc tính chiều cao khi ở Split-Screen (không xóa đè `wrapper.style.height`).
 
 ### 2.6. Đồng Bộ Thanh Tiêu Đề Stage (`.stage-header-bar`) & Cố Định Submode Pill
-- **Quy chuẩn Thanh Tiêu Đề Chung 36px**: Cả 3 chế độ (Mã QR, Pixel Art 8-Bit, Tạo mã QR) đều chia sẻ chung một quy chuẩn thanh Header (`.stage-header-bar`, `.qr-decoded-banner`, `.qr-generator-header`, `.split-pane-header`) cao đúng **36px** (`height: 36px; box-sizing: border-box; padding: 0 16px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);`).
+- **Quy chuẩn Thanh Tiêu Đề Chung 36px**: Cả 3 chế độ (Mã QR, Pixel Art 8-Bit, Tạo mã QR) đều chia sẻ chung một quy chuẩn thanh Header (`.stage-header-bar`, `.qr-decoded-banner`, `.split-pane-header`) cao đúng **36px** (`height: 36px; box-sizing: border-box; padding: 0 16px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);`).
 - **Cố định Tọa độ Submode Pill Bất Biến ($Y = 46$px)**: Nút `stage-submode-pill` luôn luôn ở tọa độ $Y = 46$px tính từ đỉnh Stage trong cả chế độ QR và Pixel Art, triệt tiêu 100% hiện tượng nhảy giật vị trí khi bấm đổi qua lại giữa Mã QR và Pixel Art.
 
 ---
@@ -290,3 +290,45 @@ Mọi thay đổi code hoặc bảo trì tính năng trong thư mục này BẮT
 
 ### 9.4. Kích Thước Tab Chế Độ Chính (`.app-mode-switch`)
 - Chiều cao cố định chuẩn **60px** (`height: 60px`), bo góc 8px, phân tách rõ ràng 2 nhánh tác vụ chính: `QR/Ảnh -> Vector` và `Tạo Mã QR`.
+
+---
+
+## IX. QUY TẮC SAU ĐỢT KIỂM TOÁN (WEB AUDIT)
+
+- **i18n thuộc tính (`data-i18n-attr`)**: nhiều cặp phân tách bằng dấu chấm phẩy `;` (`title:tooltips.a;aria-label:tooltips.a`). Cấm dấu phẩy: bộ dịch sẽ bỏ qua cả hai thuộc tính. Khóa i18n không còn dùng phải xóa ở CẢ hai ngôn ngữ; khóa dựng động (`guide.step${n}Title`, `guide.altStep${n}`, `generator.*`) coi là đang dùng.
+- **Escape dữ liệu người dùng**: giá trị đưa vào form tạo QR bằng `innerHTML` phải qua `escapeHtml` (hàm `v()` trong `qr-generator-types.js`). Cấm chèn chuỗi người dùng thô vào thuộc tính hay `<textarea>`.
+- **Viewport**: không khóa zoom (`user-scalable=no`, `maximum-scale` bị cấm).
+- **Modal (Hướng Dẫn)**: khi mở phải focus vào nút đầu, `Tab` bị khóa trong modal, `Esc` đóng và trả focus về nút đã mở; phím tắt toàn cục (Y, Ctrl+Z...) bị chặn khi modal mở (listener capture + `stopPropagation`).
+- **Tên cho thanh trượt**: mỗi `input[type=range]` lấy `aria-label` từ nhãn của hàng (gán trong `applyTranslations`, chạy lại khi đổi ngôn ngữ). Nút chỉ có ký tự (`+`, `−`) bắt buộc có `aria-label`.
+- **Màu & cỡ chữ trong CSS**: không dùng mã HEX thô (dùng `var(--token)`; riêng màu lưới Pixel Art là `--grid-accent`). Cỡ chữ nhỏ nhất 10px (micro) và 12px; không dùng 9, 10.5, 11, 11.5, 12.5. Trạng thái "mờ, không bấm được" dùng class `.is-disabled`, cấm viết `opacity`/`pointer-events` inline.
+- **Dead code**: CSS class và khóa i18n không dùng phải xóa ngay (đã quét bằng script ở đợt kiểm toán này).
+- **Icon đơn sắc**: file `.svg` nằm trong `svg/`, dùng qua CSS mask: `<span class="icon-mask icon-undo" aria-hidden="true"></span>`, định nghĩa trong `qr-image-to-vector-icons.css` (thêm icon mới = thêm file vào `svg/` + 1 dòng `.icon-<tên>`). Cấm vẽ `<svg>` / `<path>` tay trong HTML hay JS, cấm dùng emoji hay ký tự Unicode làm icon của nút. Icon đa sắc (`QR-8bit.svg`, `QR-add.svg`) giữ dạng `<img>`. Đổi chế độ xem (Y) đổi icon bằng cách đổi class `icon-split-view` / `icon-left-view` / `icon-right-view`. Còn dùng emoji: 💡 (Hướng Dẫn), ⌨️ (Phím Tắt), 🖼️ (nút Tải Logo), chờ icon mới.
+- **Nền caro**: nút `#btnToggleGrid` (icon `icon-grid`) bật/tắt class `has-checkerboard` trên `.stage-viewport`; nền caro vẽ bằng `conic-gradient` từ token `--bg-secondary` để thấy vùng trong suốt của QR. Không lưu trạng thái.
+
+---
+
+## X. TÍNH NĂNG BỔ SUNG (ĐỢT NÂNG CẤP SAU KIỂM TOÁN)
+
+- **Footer co theo bề rộng của chính nó** (`container: stage-footer / inline-size`): dưới 860px chữ của các nút Tải/Copy/Phím Tắt/Hướng Dẫn ẩn, chỉ còn icon (nút bắt buộc có `title` + `aria-label` qua `data-i18n-attr`); dưới 600px footer xuống dòng. Không dùng `@media` theo cửa sổ cho footer vì bề rộng khung xem phụ thuộc cả sidebar.
+- **Kiểm tra quét QR** (`pipeline/06-qr-scan-check.js`, chip `#qrScanBadge` trong banner): sau mỗi lần vẽ vector QR (debounce 400ms) rasterize SVG trên nền trắng và giải mã lại, so với nội dung gốc. Chỉ dùng cho QR/Tạo mã, không dùng cho Pixel Art.
+- **Mức sửa lỗi QR** (`eccLevel`: L/M/Q/H, mặc định M, nằm trong `DEFAULT_SETTINGS` và history). Có logo giữa thì `QrMatrixGenerator` ép H, nút bị khóa và hiện H. Đổi mức phải gọi `reconstructAndVectorize()` (matrix đổi), không chỉ vẽ lại.
+- **Thẻ Xuất File** (`common/export-controls.js`, key `qr_image_to_vector_export`, KHÔNG nằm trong history): cỡ PNG 1×/2×/4× và cỡ in (mm). Có cỡ in: SVG ghi `width/height` bằng mm giữ nguyên `viewBox`, PNG xuất ở 300 DPI (`StageExporter.PRINT_DPI`), cạnh dài tối đa 8192px (`PngExporter.MAX_SIDE`).
+- **Xuất hàng loạt** (`qr-batch.js`, `common/zip-writer.js`): danh sách nội dung (mỗi dòng 1 QR) hoặc nhiều ảnh có QR → 1 file ZIP gồm các SVG, dùng đúng style/ECC/logo hiện tại và cỡ in; tối đa 200 mục; ảnh không có QR bị bỏ qua và báo số lượng. ZIP chỉ lưu (không nén), không dùng thư viện.
+- **Palette Pixel Art** (`pipeline/02c-pixelart-palette-edit.js`, `pixelart-palette-ui.js`): bảng màu mẫu (1-bit, Game Boy, C64, PICO-8, Sweetie 16), sửa màu, gộp màu. Mọi chỉnh sửa được khóa theo màu sau quantize (`baseHex`), nằm trong snapshot undo/history (`paletteEdits`) và xóa khi nạp ảnh mới. Gộp màu thật sự gộp chỉ số trong matrix (không chỉ đổi màu hiển thị). Có bảng mẫu thì thanh "Số lượng màu" bị khóa.
+- **Vector hóa Pixel Art chạy trong Web Worker** (`pipeline/pixelart-worker.js`): hằng `PIXELART_WORKER_URL` trong `pixelart-handler.js` mang `?v=`; khi sửa bất kỳ file pipeline nào worker import (contours, fillet, topology, pixelart-vectorizer) phải tăng `?v=` này. Worker lỗi hoặc không có thì tự chạy trên luồng chính. `_vectorSeq` bỏ kết quả cũ khi có lần vẽ mới hơn.
+- **Trang riêng tư** (`/privacy.html`): link trong header app và footer chung của site. Nội dung phải khớp code thật (bộ đếm `countapi.mileshilliard.com`, Google Fonts, lịch sử/cài đặt chỉ nằm trên máy); app này không có đăng nhập.
+- **Kiểm thử**: `node products/web-apps/qr-image-to-vector/tests/run-tests.js` (logic thuần: QR round trip mọi mức ECC, vectorizer, palette, ZIP) và mở `tests/smoke.html` qua HTTP (14 kịch bản trên trình duyệt thật: quét QR, ECC, xuất mm/PNG, ZIP, palette, undo, vector trùng bbox, history). Sửa pipeline thì chạy cả hai.
+- **Còn emoji làm icon**: 9 icon loại dữ liệu trong `qr-generator-types.js` (🌐 📝 📞...); chờ bộ icon mới.
+
+---
+
+## XI. RESPONSIVE: TABLET & PHONE
+
+- **Mọi luật responsive nằm ở `qr-image-to-vector-responsive.css`, nạp CUỐI** (sau controls/pixelart). Lý do: luật `@media` đặt ở file nạp trước bị `width: 320px` của file nạp sau ghi đè (lỗi dải tối 70px bên phải trên phone). Không viết `@media` bố cục vào các file khác.
+- **Ngưỡng:** từ 1250px: 3 cột (Cài đặt, Khung xem, Thông số + Lịch sử). Dưới 1250px (tablet và phone): hai panel gộp thành MỘT panel có thanh tab `Cài đặt / Thông số` (`.side-tabs`, `common/side-tabs.js`, nhớ tab trong `qr_image_to_vector_side_tab`). Hai `<aside>` giữ nguyên ID và nằm cùng một ô lưới, CSS bật/tắt theo `data-side-tab` trên `.app-layout`; không di chuyển hay nhân đôi phần tử.
+- **Tablet (769–1249px):** panel trái 320px (có tab), khung xem bên phải; footer dính đáy (`position: sticky`) và `.main-stage` cuộn dọc khi hai pane xếp dọc.
+- **Phone (≤768px):** thứ tự khung xem, thanh tab dính, nội dung panel; trang cuộn dọc; toast căn giữa đáy; link Quyền riêng tư ẩn khỏi header.
+- **Pane Pixel Art luôn ≥ 1:1:** vùng vẽ của mỗi pane không bao giờ thấp hơn bề rộng. Khung xem tự đo bằng `container: main-stage / inline-size`: dưới 640px thì 2 pane xếp dọc và mỗi pane cao `100cqw + var(--pane-chrome)` (`--pane-chrome` = header 36px + dải công cụ 32px, giữ khớp `PANE_TOOLBAR_HEIGHT`). Từ 640px trở lên đứng cạnh nhau. Không dùng `@media` theo cửa sổ để chia pane vì bề rộng khung xem phụ thuộc sidebar.
+- **Cảm ứng:** vùng bấm tối thiểu 44px và chữ ô nhập 16px khi `pointer: coarse`; bbox dùng Pointer Events (vùng bắt handle 26px cho ngón tay; ngón thứ hai hủy thao tác kéo box); `StageViewportController` có pinch hai ngón (zoom quanh điểm giữa) và chế độ di chuyển (`#btnPanMode`, chỉ hiện trên thiết bị cảm ứng) để kéo bằng một ngón. Vùng vẽ để `touch-action: pan-y` (một ngón cuộn trang), canvas bbox `touch-action: none`.
+- **Chưa kiểm chứng trên máy thật:** pinch và kéo chỉ được thử bằng Pointer Events giả lập; cần thử trên điện thoại/máy tính bảng thật vì trình duyệt có thể hủy con trỏ khi cuộn.
+- **Kiểm thử:** `tests/smoke.html` kiểm tra 360, 390, 768, 820, 1024, 1440px: không cuộn ngang, mỗi pane ≥ 1:1, tab đúng ngưỡng.

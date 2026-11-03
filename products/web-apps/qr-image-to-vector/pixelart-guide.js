@@ -48,10 +48,10 @@ class PixelArtGuide {
             <div class="guide-modal-card" role="dialog" aria-modal="true" aria-labelledby="guideModalTitle">
                 <div class="guide-modal-header">
                     <div class="guide-modal-title" id="guideModalTitle">
-                        <span class="guide-icon">💡</span>
+                        <span class="icon-mask icon-guide guide-icon" aria-hidden="true"></span>
                         <span data-i18n="guide.heading">Pixel Art to Vector Conversion Guide</span>
                     </div>
-                    <button type="button" class="guide-close-btn" id="btnGuideClose" aria-label="Close" data-i18n-attr="aria-label:guide.close">&times;</button>
+                    <button type="button" class="guide-close-btn" id="btnGuideClose" aria-label="Close" data-i18n-attr="aria-label:guide.close"><span class="icon-mask icon-close" aria-hidden="true"></span></button>
                 </div>
                 <div class="guide-modal-body">
                     <section class="guide-page is-active" data-page="0"><div class="guide-steps-row">${GUIDE_STEPS.slice(0, 2).map((s) => this._stepCard(s)).join('')}</div></section>
@@ -59,7 +59,7 @@ class PixelArtGuide {
                     <section class="guide-page" data-page="2">
                         <div class="guide-shortcuts-title" data-i18n="hud.title">Shortcuts & Gestures</div>
                         <div class="guide-shortcuts-list" id="guideShortcutsList"></div>
-                        <div class="guide-reopen-hint"><span class="guide-arrow-down" aria-hidden="true">⬇️</span><span data-i18n="guide.reopenHint">Reopen this guide anytime with the Guide button below</span></div>
+                        <div class="guide-reopen-hint"><span class="icon-mask icon-chevron-down guide-arrow-down" aria-hidden="true"></span><span data-i18n="guide.reopenHint">Reopen this guide anytime with the Guide button below</span></div>
                     </section>
                 </div>
                 <div class="guide-modal-footer">
@@ -94,12 +94,22 @@ class PixelArtGuide {
             if (e.target === modal) this.close();
         });
 
+        // Capture phase + stopPropagation keeps app shortcuts (Y, Ctrl+Z...) from firing behind the open modal
         window.addEventListener('keydown', (e) => {
             if (!this.isOpen()) return;
+            e.stopPropagation();
             if (e.key === 'Escape') this.close();
             else if (e.key === 'ArrowRight') this._goTo(this._page + 1);
             else if (e.key === 'ArrowLeft') this._goTo(this._page - 1);
-        });
+            else if (e.key === 'Tab') {
+                const focusable = [...modal.querySelectorAll('button:not([disabled])')];
+                const edge = e.shiftKey ? focusable[0] : focusable.at(-1);
+                if (document.activeElement === edge || !modal.contains(document.activeElement)) {
+                    e.preventDefault();
+                    (e.shiftKey ? focusable.at(-1) : focusable[0]).focus();
+                }
+            }
+        }, true);
     }
 
     static _goTo(page) {
@@ -125,9 +135,11 @@ class PixelArtGuide {
         const modal = document.getElementById('pixelArtGuideModal');
         if (!modal) return;
         this._goTo(0);
+        this._opener = document.activeElement;
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         window.QrImageToVectorI18n?.applyTranslations();
+        document.getElementById('btnGuideNext')?.focus();
     }
 
     static close() {
@@ -135,6 +147,8 @@ class PixelArtGuide {
         if (!modal) return;
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
+        this._opener?.focus?.();
+        this._opener = null;
     }
 
     static isOpen() {

@@ -110,7 +110,7 @@
     border: 1px solid var(--border-color, #3a3a3a);
     border-radius: var(--border-radius-sm, 4px);
     color: var(--text-secondary, #bbbbbb);
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 500;
     cursor: pointer;
     transition: border-color var(--transition-normal, 0.2s), background var(--transition-normal, 0.2s), color var(--transition-normal, 0.2s);
@@ -158,7 +158,7 @@
 }
 
 .gen-label {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-secondary, #bbbbbb);
 }
@@ -203,7 +203,7 @@
     border: 1px dashed var(--border-color, #3a3a3a);
     border-radius: var(--border-radius, 6px);
     color: var(--text-secondary, #bbbbbb);
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: border-color var(--transition-normal, 0.2s), color var(--transition-normal, 0.2s), background var(--transition-normal, 0.2s);
@@ -246,7 +246,7 @@
 }
 
 .logo-name {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-primary, #ffffff);
     white-space: nowrap;
     overflow: hidden;
@@ -258,7 +258,7 @@
     background: transparent;
     border: none;
     color: var(--accent-primary, #e50914);
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     padding: 4px 6px;

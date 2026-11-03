@@ -1,0 +1,128 @@
+/* ==========================================================================
+   Responsive layout (tablet + phone). Loaded LAST so these rules win over the base layout files.
+   Desktop (>= 1250px): 3 columns. Below that the settings and the specs/history panels merge into
+   ONE panel with two tabs (left of the stage on tablet, below it on phone).
+   ========================================================================== */
+
+/* Split pane chrome above the drawing area: header 36px + toolbar strip 32px (keep in step with PANE_TOOLBAR_HEIGHT) */
+:root { --pane-chrome: 68px; }
+
+/* The stage measures itself, so panes can pick side-by-side or stacked from the space they really have */
+.main-stage { container: main-stage / inline-size; }
+
+.side-tabs { display: none; }
+
+/* ---------- Tablet and phone: one panel, two tabs ---------- */
+@media (max-width: 1249px) {
+    .app-layout {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+    }
+    .main-stage { grid-column: 2; grid-row: 1 / span 2; overflow-x: hidden; overflow-y: auto; }
+    .stage-footer-bar { position: sticky; bottom: 0; }
+
+    .side-tabs {
+        display: flex;
+        grid-column: 1;
+        grid-row: 1;
+        gap: 4px;
+        padding: 8px;
+        box-sizing: border-box;
+        background: var(--bg-secondary, #222222);
+        border-right: 1px solid var(--border-color, #3a3a3a);
+        border-bottom: 1px solid var(--border-color, #3a3a3a);
+    }
+    .side-tab {
+        flex: 1;
+        height: 34px;
+        padding: 0 8px;
+        background: transparent;
+        border: none;
+        border-radius: var(--border-radius-sm, 6px);
+        color: var(--text-secondary, #bbbbbb);
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background var(--transition-fast, 0.12s), color var(--transition-fast, 0.12s);
+    }
+    .side-tab:hover { color: var(--text-primary, #ffffff); }
+    .side-tab.is-active { background: var(--accent-primary, #e50914); color: var(--text-on-accent, #ffffff); }
+
+    .control-panels, .inspector-panels {
+        grid-column: 1;
+        grid-row: 2;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        height: auto;
+        min-height: 0;
+        border-left: none;
+        border-right: 1px solid var(--border-color, #3a3a3a);
+    }
+    .app-layout[data-side-tab="settings"] .inspector-panels,
+    .app-layout[data-side-tab="info"] .control-panels { display: none; }
+}
+
+/* ---------- Phone: stage first, then the sticky tabs, then the panel ---------- */
+@media (max-width: 768px) {
+    html, body { height: auto; max-height: none; overflow-y: auto; }
+    .app-layout { display: flex; flex-direction: column; height: auto; overflow: visible; }
+    .main-stage { order: 1; height: auto; min-height: auto; overflow: visible; }
+    .stage-footer-bar { position: static; }
+    .side-tabs { order: 2; position: sticky; top: 0; z-index: 30; border-right: none; padding: 8px 12px; }
+    .side-tab { height: 40px; font-size: 13px; }
+    .control-panels, .inspector-panels { order: 3; width: 100%; height: auto; overflow: visible; border-right: none; }
+    .panels-scroll-area { overflow: visible; height: auto; padding: 14px; }
+    .inspector-section-stats { flex: none; height: auto; overflow: visible; }
+    .inspector-section-history { flex: none; overflow: visible; }
+
+    .stage-viewport { min-height: 420px; height: auto; overflow: visible; padding: 16px; flex-direction: column; gap: 20px; }
+    .stage-footer-bar { height: auto; padding: 8px 12px; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .footer-action-btn { flex: 1; min-width: 0; padding: 6px 10px; font-size: 12px; }
+    .footer-group-right { flex-wrap: wrap; justify-content: center; }
+
+    .toast { left: 50%; right: auto; bottom: 16px; transform: translate(-50%, 16px); max-width: calc(100vw - 32px); text-align: center; }
+    .toast.is-show { transform: translate(-50%, 0); }
+    .app-header .header-brand .brand-title { font-size: 15px; }
+    .header-text-link { display: none; }
+}
+
+/* ---------- Pixel Art panes: the drawing area of each pane is never shorter than it is wide (1:1 or taller) ---------- */
+@container main-stage (max-width: 639px) {
+    .stage-viewport:has(.stage-dual-wrapper.is-split-screen) { flex: none; padding: 0; min-height: calc(2 * (100cqw + var(--pane-chrome)) + 2px); }
+    .stage-viewport:has(.stage-dual-wrapper.is-split-screen.view-mode-source),
+    .stage-viewport:has(.stage-dual-wrapper.is-split-screen.view-mode-vector) { min-height: calc(100cqw + var(--pane-chrome)); }
+
+    .stage-dual-wrapper.is-split-screen { flex-direction: column; }
+    .stage-dual-wrapper.is-split-screen .split-pane {
+        flex: none;
+        width: 100%;
+        max-width: 100%;
+        height: calc(100cqw + var(--pane-chrome));
+    }
+    .stage-dual-wrapper.is-split-screen .split-pane-divider { width: 100%; height: 2px; }
+}
+
+/* ---------- Touch devices ---------- */
+.split-pane-content { touch-action: pan-y; }
+.pixelart-overlay-canvas { touch-action: none; }
+.stage-viewport.is-pan-mode, .stage-viewport.is-pan-mode .split-pane-content { touch-action: none; }
+#btnPanMode { display: none; }
+
+@media (pointer: coarse) {
+    #btnPanMode { display: inline-flex; }
+
+    .pixelart-btn-sm, .mode-btn, .footer-tool-btn, .pixelart-tool-btn, .pixelart-btn-auto,
+    .swap-colors-btn, .guide-nav-btn, .batch-btn { min-height: 44px; min-width: 44px; }
+    .control-field, .color-text-input, .lang-btn, .gen-input { min-height: 44px; }
+    .control-value-badge { min-height: 36px; min-width: 44px; display: inline-flex; align-items: center; justify-content: flex-end; }
+    .pixelart-palette-swatch { width: 40px; height: 40px; }
+    .range-slider::-webkit-slider-thumb { width: 22px; height: 30px; }
+    .range-slider::-moz-range-thumb { width: 22px; height: 30px; }
+
+    /* 16px keeps iPhone from zooming the page when a field gets focus */
+    .control-field, .color-text-input, .gen-input, .gen-textarea, input[type="number"], input[type="text"], select, textarea { font-size: 16px; }
+    .history-item-del { opacity: 1; width: 28px; height: 28px; }
+}

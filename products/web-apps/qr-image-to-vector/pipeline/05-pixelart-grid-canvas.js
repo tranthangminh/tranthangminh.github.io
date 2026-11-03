@@ -29,7 +29,7 @@ class PixelArtGridCanvas {
     /**
      * Hit test handles or inside bounding box
      */
-    static hitTest(clientX, clientY, bbox, gridCanvas, image) {
+    static hitTest(clientX, clientY, bbox, gridCanvas, image, hitScreenDist = 14) {
         if (!image || !gridCanvas || !bbox) return { handle: null, cursor: 'crosshair' };
         const imgW = image.naturalWidth || image.width, imgH = image.naturalHeight || image.height;
         const rect = gridCanvas.getBoundingClientRect();
@@ -38,8 +38,7 @@ class PixelArtGridCanvas {
         const imgX = ((clientX - rect.left) / rect.width) * imgW;
         const imgY = ((clientY - rect.top) / rect.height) * imgH;
 
-        // 14 screen pixels hit zone for handles
-        const hitScreenDist = 14;
+        // Screen-pixel hit zone for handles (bigger for a finger than for a mouse)
         const handles = this.getHandleCoords(bbox);
 
         for (const [key, h] of Object.entries(handles)) {
@@ -84,23 +83,30 @@ class PixelArtGridCanvas {
             if (e.code === 'Space') isSpaceHeld = false;
         });
 
-        overlayCanvas.addEventListener('mousemove', (e) => {
+        const hitZone = (e) => (e.pointerType === 'touch' ? 26 : 14);
+
+        overlayCanvas.addEventListener('pointermove', (e) => {
             if (isDragging) return;
             if (isSpaceHeld) {
                 overlayCanvas.style.cursor = 'grab';
                 return;
             }
 
-            const hit = PixelArtGridCanvas.hitTest(e.clientX, e.clientY, getBbox(), gridCanvas, getImage());
+            const hit = PixelArtGridCanvas.hitTest(e.clientX, e.clientY, getBbox(), gridCanvas, getImage(), hitZone(e));
             overlayCanvas.style.cursor = hit.cursor;
             activeHoverHandle = hit.handle;
         });
 
-        overlayCanvas.addEventListener('mousedown', (e) => {
-            // Only Left Click and NOT holding Space (Space + left click is reserved for pan)
+        overlayCanvas.addEventListener('pointerdown', (e) => {
+            // A second finger means pinch/pan: drop the box edit in progress instead of committing it
+            if (!e.isPrimary) {
+                if (isDragging) { isDragging = false; dragHandle = null; setBbox(startBox); onBboxChange(startBox); }
+                return;
+            }
+            // Only Left Click / touch and NOT holding Space (Space + left click is reserved for pan)
             if (e.button !== 0 || isSpaceHeld) return;
 
-            const hit = PixelArtGridCanvas.hitTest(e.clientX, e.clientY, getBbox(), gridCanvas, getImage());
+            const hit = PixelArtGridCanvas.hitTest(e.clientX, e.clientY, getBbox(), gridCanvas, getImage(), hitZone(e));
             const pos = getImgPos(e.clientX, e.clientY);
             startImgX = pos.x;
             startImgY = pos.y;
@@ -120,7 +126,7 @@ class PixelArtGridCanvas {
             e.preventDefault();
         });
 
-        window.addEventListener('mousemove', (e) => {
+        window.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
             const img = getImage();
             if (!img) return;
@@ -160,12 +166,14 @@ class PixelArtGridCanvas {
             onBboxChange(b);
         });
 
-        window.addEventListener('mouseup', () => {
+        const endDrag = () => {
             if (!isDragging) return;
             isDragging = false;
             dragHandle = null;
             onBboxCommit(getBbox());
-        });
+        };
+        window.addEventListener('pointerup', endDrag);
+        window.addEventListener('pointercancel', endDrag);
     }
 
     static render(baseCanvas, overlayCanvas, image, bbox, cols = 16, rows = 16, options = {}) {
@@ -259,8 +267,9 @@ class PixelArtGridCanvas {
 
             // 4. Eight Prominent Resize Handles
             if (options.showHandles !== false) {
-                const cornerR = Math.max(4, Math.round(5 * dpr)), cornerD = cornerR * 2;
-                const midR = Math.max(3, Math.round(4 * dpr)), midD = midR * 2;
+                const grip = window.matchMedia?.('(pointer: coarse)').matches ? 1.6 : 1; // chunkier handles for a finger
+                const cornerR = Math.max(4, Math.round(5 * dpr * grip)), cornerD = cornerR * 2;
+                const midR = Math.max(3, Math.round(4 * dpr * grip)), midD = midR * 2;
 
                 // Corners: nw, ne, se, sw
                 const corners = [

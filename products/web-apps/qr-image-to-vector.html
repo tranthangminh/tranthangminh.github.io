@@ -2,17 +2,17 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title data-i18n="brand.documentTitle">Chuyển & Tạo Mã QR Vector (SVG) Online Miễn Phí | Trần Thắng Minh</title>
-    <meta name="description" content="Công cụ trực tuyến miễn phí quét ảnh QR và tạo mã QR mới xuất file vector SVG siêu nét, không mờ vỡ, chèn logo trung tâm, sẵn sàng in ấn chất lượng cao bởi Trần Thắng Minh.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="brand.documentTitle">Chuyển QR/Ảnh Sang Vector (SVG) & Tạo Mã QR Online Miễn Phí | Trần Thắng Minh</title>
+    <meta name="description" content="Công cụ trực tuyến miễn phí chuyển mã QR và ảnh pixel art 8-bit sang file vector SVG siêu nét, tạo mã QR mới với logo trung tâm và màu gradient, sẵn sàng in ấn chất lượng cao bởi Trần Thắng Minh.">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://tranthangminh.github.io/products/web-apps/qr-image-to-vector.html">
 
     <!-- Open Graph & Meta -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tranthangminh.github.io/products/web-apps/qr-image-to-vector.html">
-    <meta property="og:title" content="Chuyển & Tạo Mã QR Vector (SVG) Online Miễn Phí | Trần Thắng Minh">
-    <meta property="og:description" content="Công cụ trực tuyến miễn phí quét ảnh QR và tạo mã QR mới xuất file vector SVG siêu nét bởi Trần Thắng Minh.">
+    <meta property="og:title" content="Chuyển QR/Ảnh Sang Vector (SVG) & Tạo Mã QR Online Miễn Phí | Trần Thắng Minh">
+    <meta property="og:description" content="Chuyển mã QR và ảnh pixel art sang vector SVG siêu nét, tạo mã QR mới miễn phí bởi Trần Thắng Minh.">
     <meta property="og:image" content="https://tranthangminh.github.io/svg/logo-MAX.svg">
     <meta property="og:locale" content="vi_VN">
     <meta property="og:site_name" content="Trần Thắng Minh Portfolio">
@@ -22,16 +22,18 @@
     <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
     <link rel="alternate icon" href="../../favicon.ico">
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://tranthangminh.github.io/products/web-apps/qr-image-to-vector.html","name":"QR/Image to Vector","description":"Quét và tạo mã QR SVG","author":{"@type":"Person","name":"Trần Thắng Minh"}}]}
+    {"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://tranthangminh.github.io/products/web-apps/qr-image-to-vector.html","name":"QR/Image to Vector","description":"Chuyển mã QR và ảnh pixel art 8-bit sang vector SVG, tạo mã QR SVG","author":{"@type":"Person","name":"Trần Thắng Minh"}}]}
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../common/theme.css?v=20261028-2">
     <link rel="stylesheet" href="./common/web-app-header.css?v=20261029-1">
-    <link rel="stylesheet" href="./qr-image-to-vector/qr-image-to-vector.css?v=20261102-19">
-    <link rel="stylesheet" href="./qr-image-to-vector/qr-image-to-vector-controls.css?v=20261102-11">
-    <link rel="stylesheet" href="./qr-image-to-vector/qr-generator.css?v=20261102-4">
-    <link rel="stylesheet" href="./qr-image-to-vector/pixelart.css?v=20261103-2">
+    <link rel="stylesheet" href="./qr-image-to-vector/qr-image-to-vector.css?v=20261103-18">
+    <link rel="stylesheet" href="./qr-image-to-vector/qr-image-to-vector-controls.css?v=20261103-18">
+    <link rel="stylesheet" href="./qr-image-to-vector/qr-generator.css?v=20261103-18">
+    <link rel="stylesheet" href="./qr-image-to-vector/pixelart.css?v=20261103-18">
+    <link rel="stylesheet" href="./qr-image-to-vector/qr-image-to-vector-icons.css?v=20261103-18">
+    <link rel="stylesheet" href="./qr-image-to-vector/qr-image-to-vector-responsive.css?v=20261103-18">
 </head>
 <body>
     <!-- Top Header -->
@@ -44,6 +46,7 @@
         </div>
 
         <div class="header-actions">
+            <a class="header-text-link" href="../../privacy.html" target="_blank" rel="noopener noreferrer" data-i18n="brand.privacy">Quyền riêng tư</a>
             <!-- Bilingual Switcher (Sticky Header CSS Flag Style) -->
             <div class="lang-switch">
                 <button type="button" class="lang-btn lang-btn--toggle" id="langToggleBtn" data-lang="en" aria-label="Chuyển sang Tiếng Anh">
@@ -57,9 +60,14 @@
     </header>
 
     <!-- Main 3-Column Layout -->
-    <main class="app-layout">
+    <main class="app-layout" data-side-tab="settings">
+        <!-- Tablet and phone: settings and specs/history share one panel, switched by these tabs -->
+        <div class="side-tabs" id="sideTabs" role="tablist">
+            <button type="button" class="side-tab is-active" id="sideTabSettings" role="tab" aria-selected="true" aria-controls="controlPanels" data-side-tab="settings"><span data-i18n="sideTabs.settings">Cài đặt</span></button>
+            <button type="button" class="side-tab" id="sideTabInfo" role="tab" aria-selected="false" aria-controls="inspectorPanels" data-side-tab="info"><span data-i18n="sideTabs.info">Thông số</span></button>
+        </div>
         <!-- 1. Left Sidebar: Vector Customization & More Settings -->
-        <aside class="control-panels" aria-label="Control Panels">
+        <aside class="control-panels" id="controlPanels" aria-label="Control Panels">
             <div class="panels-scroll-area">
                 <!-- Top Mode Switcher (2 Main Modes: Convert & Generate) -->
                 <div class="app-mode-switch" role="tablist">
@@ -73,7 +81,7 @@
                     <div class="card">
                         <div class="card-title">
                             <span data-i18n="controls.heading">Tùy Chỉnh Vector</span>
-                            <button type="button" id="btnResetDefaults" class="btn-ghost-sm" data-i18n="controls.resetDefaults" style="background:transparent; border:none; color:var(--text-tertiary,#888888); font-size:11px; cursor:pointer;">Đặt lại</button>
+                            <button type="button" id="btnResetDefaults" class="btn-ghost-sm" data-i18n="controls.resetDefaults">Đặt lại</button>
                         </div>
                         <div class="mode-toggle-group" role="tablist">
                             <button type="button" class="mode-btn is-active" id="btnModeUnifiedConnected" data-mode="unified-connected"><span data-i18n="controls.styleUnifiedConnected">Dính Giao Điểm</span></button>
@@ -92,9 +100,18 @@
                             <div class="control-label-row"><span data-i18n="controls.outerPadding">Viền Đệm Ngoài (Margin)</span><span class="control-value-badge" id="outerPaddingBadge">3 blocks</span></div>
                             <input type="range" id="outerPaddingSlider" class="range-slider" min="0" max="10" value="3">
                         </div>
-                        <div class="control-group" id="blockGapGroup" style="opacity: 0.4; pointer-events: none;">
+                        <div class="control-group is-disabled" id="blockGapGroup">
                             <div class="control-label-row"><span data-i18n="controls.blockGap">Khoảng Cách Giữa Các Block</span><span class="control-value-badge" id="blockGapBadge">0%</span></div>
                             <input type="range" id="blockGapSlider" class="range-slider" min="0" max="40" value="0">
+                        </div>
+                        <div class="control-group" id="eccGroup">
+                            <div class="control-label-row"><span data-i18n="controls.ecc">Mức sửa lỗi</span></div>
+                            <div class="mode-toggle-group is-inline" role="group">
+                                <button type="button" class="mode-btn" data-ecc="L" data-i18n-attr="title:tooltips.eccL"><span>L</span></button>
+                                <button type="button" class="mode-btn is-active" data-ecc="M" data-i18n-attr="title:tooltips.eccM"><span>M</span></button>
+                                <button type="button" class="mode-btn" data-ecc="Q" data-i18n-attr="title:tooltips.eccQ"><span>Q</span></button>
+                                <button type="button" class="mode-btn" data-ecc="H" data-i18n-attr="title:tooltips.eccH"><span>H</span></button>
+                            </div>
                         </div>
                         <div class="control-group">
                             <label class="toggle-row" for="transparentBgToggle">
@@ -133,7 +150,7 @@
                         <div class="control-group is-disabled" id="gradColorGroup">
                             <div class="color-picker-row">
                                 <span class="control-label-row" data-i18n="controls.gradColor2">Màu gradient 2</span>
-                                <button type="button" class="swap-colors-btn" id="btnSwapGradColors" title="Swap gradient colors 1 and 2" data-i18n-attr="title:tooltips.swapGradColors,aria-label:tooltips.swapGradColors"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16"></path><path d="M3 8l4-4 4 4"></path><path d="M17 20V4"></path><path d="M13 16l4 4 4-4"></path></svg></button>
+                                <button type="button" class="swap-colors-btn" id="btnSwapGradColors" title="Swap gradient colors 1 and 2" data-i18n-attr="title:tooltips.swapGradColors;aria-label:tooltips.swapGradColors"><span class="icon-mask icon-swap" aria-hidden="true"></span></button>
                                 <div class="color-input-wrapper">
                                     <input type="color" id="gradColorPicker" class="color-swatch-input" value="#2563eb">
                                     <input type="text" id="gradColorText" class="color-text-input" value="#2563EB" maxlength="7">
@@ -177,13 +194,13 @@
                     <div class="card" id="logoCard">
                         <div class="card-title"><span data-i18n="controls.logoHeading">Chèn Logo Trung Tâm</span></div>
                         <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/svg+xml,.svg" style="display: none;">
-                        <button type="button" id="btnUploadLogo" class="logo-upload-btn"><span aria-hidden="true">🖼️</span> <span data-i18n="controls.uploadLogo">Tải Logo (Ảnh / Vector SVG)</span></button>
+                        <button type="button" id="btnUploadLogo" class="logo-upload-btn"><span class="icon-mask icon-images" aria-hidden="true"></span> <span data-i18n="controls.uploadLogo">Tải Logo (Ảnh / Vector SVG)</span></button>
                         <div class="logo-preview-box" id="logoPreviewBox" style="display: none;">
                             <div class="logo-thumb-wrapper"><img id="logoThumb" class="logo-thumb" alt="Logo"></div>
                             <span class="logo-name" id="logoFileName">logo.png</span>
                             <button type="button" id="btnRemoveLogo" class="btn-remove-logo" data-i18n="controls.removeLogo">Xóa logo</button>
                         </div>
-                        <div id="logoSettingsGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color, #3a3a3a);">
+                        <div id="logoSettingsGroup" style="display: none;">
                             <div class="control-group">
                                 <div class="control-label-row"><span data-i18n="controls.logoBlocks">Vùng Chiếm Của Logo</span><span class="control-value-badge" id="logoBlocksBadge">5 blocks</span></div>
                                 <input type="range" id="logoBlocksSlider" class="range-slider" min="2" max="9" value="5" step="1">
@@ -195,6 +212,17 @@
                         </div>
                     </div>
 
+                    <!-- 3. Batch Export Card -->
+                    <div class="card" id="batchCard">
+                        <div class="card-title"><span data-i18n="batch.heading">Xuất hàng loạt (ZIP)</span></div>
+                        <textarea id="batchLines" class="gen-textarea batch-lines" rows="4" spellcheck="false" placeholder="One QR content per line" data-i18n-attr="placeholder:batch.placeholder;aria-label:batch.heading"></textarea>
+                        <div class="batch-actions">
+                            <button type="button" class="btn-secondary batch-btn" id="btnBatchFromText"><span data-i18n="batch.fromText">Tạo từ danh sách</span></button>
+                            <button type="button" class="btn-secondary batch-btn" id="btnBatchFromImages"><span data-i18n="batch.fromImages">Chọn nhiều ảnh QR</span></button>
+                            <input type="file" id="batchFileInput" accept="image/png,image/jpeg,image/webp" multiple style="display: none;">
+                        </div>
+                        <div class="batch-status" id="batchStatus" role="status"></div>
+                    </div>
                 </div>
 
                 <!-- 8-Bit Pixel Art Dedicated Settings Group -->
@@ -239,11 +267,21 @@
                             <button type="button" class="pixelart-btn-auto" id="btnPixelArtAutoPalette" data-i18n="pixelart.autoPalette">Tự Động</button>
                         </div>
                         <div class="control-group">
+                            <div class="control-label-row"><span data-i18n="pixelart.presetLabel">Bảng màu mẫu</span></div>
+                            <select id="pixelArtPaletteSelect" class="control-field" data-i18n-attr="aria-label:pixelart.presetLabel">
+                                <option value="" data-i18n="pixelart.presetAuto">Tự động (theo ảnh)</option>
+                                <option value="bw1">1-bit B/W</option>
+                                <option value="gameboy">Game Boy</option>
+                                <option value="c64">Commodore 64</option>
+                                <option value="pico8">PICO-8</option>
+                                <option value="sweetie16">Sweetie 16</option>
+                            </select>
+                        </div>                        <div class="control-group">
                             <div class="control-label-row"><span data-i18n="pixelart.maxColors">Số Lượng Màu</span><span class="control-value-badge" id="pixelArtColorsBadge">16/16&#10;Đẹp:16</span></div>
                             <div class="pixelart-stepper-row">
-                                <button type="button" class="pixelart-btn-sm" id="btnColorsMinus">-</button>
+                                <button type="button" class="pixelart-btn-sm" id="btnColorsMinus" aria-label="Remove 1 color" data-i18n-attr="aria-label:tooltips.colorsMinus">-</button>
                                 <input type="range" id="pixelArtColorsSlider" class="range-slider" min="1" max="16" value="16" step="1">
-                                <button type="button" class="pixelart-btn-sm" id="btnColorsPlus">+</button>
+                                <button type="button" class="pixelart-btn-sm" id="btnColorsPlus" aria-label="Add 1 color" data-i18n-attr="aria-label:tooltips.colorsPlus">+</button>
                             </div>
                         </div>
                         <div class="control-group">
@@ -253,6 +291,13 @@
                             </label>
                         </div>
                         <div class="pixelart-palette-list" id="pixelArtPaletteList"></div>
+                        <div class="palette-actions">
+                            <button type="button" class="pixelart-btn-auto" id="btnPaletteEdit" disabled><span data-i18n="pixelart.editColor">Sửa màu</span></button>
+                            <button type="button" class="pixelart-btn-auto" id="btnPaletteMerge" disabled><span data-i18n="pixelart.mergeInto">Gộp vào...</span></button>
+                            <button type="button" class="pixelart-btn-auto" id="btnPaletteReset" disabled><span data-i18n="pixelart.resetEdits">Hoàn nguyên</span></button>
+                            <input type="color" id="pixelArtSwatchColor" class="palette-color-input" tabindex="-1" aria-hidden="true">
+                        </div>
+                        <p class="export-hint" id="pixelArtPaletteHint" role="status"></p>
                     </div>
 
                     <!-- Card 2b: Color Adjust (Greyscale & HSL) -->
@@ -308,7 +353,24 @@
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- Export Card (shared by QR and Pixel Art) -->
+                <div class="card" id="exportCard" style="display: none;">
+                    <div class="card-title"><span data-i18n="export.heading">Xuất File</span></div>
+                    <div class="control-group" id="exportScaleGroup">
+                        <div class="control-label-row"><span data-i18n="export.pngScale">Cỡ PNG</span></div>
+                        <div class="mode-toggle-group is-inline" role="group">
+                            <button type="button" class="mode-btn" data-scale="1"><span>1×</span></button>
+                            <button type="button" class="mode-btn is-active" data-scale="2"><span>2×</span></button>
+                            <button type="button" class="mode-btn" data-scale="4"><span>4×</span></button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label-row"><span data-i18n="export.printWidth">Cỡ in (mm)</span></div>
+                        <input type="number" id="exportPrintMm" class="control-field" min="0" max="2000" step="0.5" inputmode="decimal" placeholder="Auto" data-i18n-attr="placeholder:export.auto;aria-label:export.printWidth">
+                    </div>
+                    <p class="export-hint" data-i18n="export.printHint">Để trống: giữ cỡ pixel. Có cỡ in: SVG ghi đúng mm, PNG xuất ở 300 DPI.</p>
+                </div>            </div>
         </aside>
 
         <!-- 2. Center Stage: Viewport & Decoded Content Banner -->
@@ -318,7 +380,7 @@
 
             <!-- Unified Stage Header Bar (QR, Pixel Art, Generator) -->
             <div class="qr-decoded-banner stage-header-bar" id="qrDecodedBanner">
-                <div class="qr-decoded-left"><span class="qr-decoded-tag" id="qrDecodedTag">TEXT</span><span class="qr-decoded-text" id="qrDecodedText">--</span></div>
+                <div class="qr-decoded-left"><span class="qr-decoded-tag" id="qrDecodedTag">TEXT</span><span class="qr-scan-badge" id="qrScanBadge" hidden></span><span class="qr-decoded-text" id="qrDecodedText">--</span></div>
                 <div class="qr-decoded-actions">
                     <a href="#" target="_blank" rel="noopener noreferrer" class="btn-banner-action" id="btnOpenQrUrl" style="display: none;"><span data-i18n="qrContent.open">Mở liên kết</span></a>
                     <button type="button" class="btn-banner-action" id="btnCopyQrText"><span data-i18n="qrContent.copy">Sao chép</span></button>
@@ -387,7 +449,7 @@
                         <!-- Split Pane Left: Source Image + Grid Overlay -->
                         <div class="split-pane split-pane-source" id="dualPaneSource" style="display: none;">
                             <div class="split-pane-header">
-                                <span class="split-pane-title">🖼️ <span data-i18n="pixelart.sourcePaneTitle">Ảnh Gốc & Lưới Thực Tế</span></span>
+                                <span class="split-pane-title"><span class="icon-mask icon-images" aria-hidden="true"></span><span data-i18n="pixelart.sourcePaneTitle">Ảnh Gốc & Lưới Thực Tế</span></span>
                                 <span class="split-pane-badge" id="sourceDimBadge">--</span>
                             </div>
                             <div class="split-pane-content" id="splitSourceContent">
@@ -398,7 +460,7 @@
                                     </div>
                                     <div class="pixelart-pane-toolbar-group" id="pixelArtToolbarRight">
                                         <button type="button" class="pixelart-tool-btn" id="btnPixelArtAutoGrid" title="Auto-calculate columns & rows" data-i18n-attr="title:tooltips.autoGrid"><span data-i18n="pixelart.autoGrid">Lưới Tự Động</span></button>
-                                        <button type="button" id="btnPixelArtGridToggle" class="pixelart-tool-btn grid-toggle-btn is-active" aria-pressed="true" title="Show / hide grid" data-i18n-attr="title:tooltips.gridToggle,aria-label:tooltips.gridToggle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1"></rect><path d="M9 3v18"></path><path d="M15 3v18"></path><path d="M3 9h18"></path><path d="M3 15h18"></path></svg></button>
+                                        <button type="button" id="btnPixelArtGridToggle" class="pixelart-tool-btn grid-toggle-btn is-active" aria-pressed="true" title="Show / hide grid" data-i18n-attr="title:tooltips.gridToggle;aria-label:tooltips.gridToggle"><span class="icon-mask icon-grid" aria-hidden="true"></span></button>
                                     </div>
                                 </div>
                                 <button type="button" id="btnBboxFloatingAutoGrid" class="floating-autogrid-btn" style="display: none;" data-i18n="pixelart.autoGrid">Lưới Tự Động</button>
@@ -415,7 +477,7 @@
                         <!-- Split Pane Right: Vector SVG Preview -->
                         <div class="split-pane split-pane-vector" id="dualPaneVector">
                             <div class="split-pane-header" id="dualVectorHeader" style="display: none;">
-                                <span class="split-pane-title">✨ <span data-i18n="pixelart.vectorPaneTitle">Vector SVG Kết Quả</span></span>
+                                <span class="split-pane-title"><span class="icon-mask icon-vectors" aria-hidden="true"></span><span data-i18n="pixelart.vectorPaneTitle">Vector SVG Kết Quả</span></span>
                                 <span class="split-pane-badge" id="vectorDimBadge">--</span>
                             </div>
                             <div class="split-pane-content" id="splitVectorContent">
@@ -432,41 +494,42 @@
                 <!-- Left: Droplist Phím Tắt & Nút Hướng Dẫn -->
                 <div class="footer-group-left">
                     <div class="shortcuts-dropdown-wrapper" id="shortcutsDropdownWrapper">
-                        <button type="button" class="footer-btn footer-btn--dropdown" id="btnToggleShortcutsHud" aria-expanded="false" title="View keyboard shortcuts" data-i18n-attr="title:tooltips.shortcuts">
-                            <span class="footer-btn-icon">⌨️</span>
+                        <button type="button" class="footer-btn footer-btn--dropdown" id="btnToggleShortcutsHud" aria-expanded="false" title="View keyboard shortcuts" data-i18n-attr="title:tooltips.shortcuts;aria-label:hud.titleShort">
+                            <span class="icon-mask icon-keyboard" aria-hidden="true"></span>
                             <span data-i18n="hud.titleShort">Phím Tắt</span>
-                            <span class="dropdown-chevron">▾</span>
+                            <span class="icon-mask icon-chevron-down dropdown-chevron" aria-hidden="true"></span>
                         </button>
                         <div class="shortcuts-dropdown-menu" id="shortcutsDropdownMenu">
                             <div class="shortcuts-menu-header"><span data-i18n="hud.title">Phím Tắt & Thao Tác</span></div>
                             <div class="shortcuts-menu-body" id="shortcutsHudBody"></div>
                         </div>
                     </div>
-                    <button type="button" class="footer-btn" id="btnToggleGuideModal" title="View the Pixel Art to Vector guide" data-i18n-attr="title:tooltips.guide">
-                        <span class="footer-btn-icon">💡</span>
+                    <button type="button" class="footer-btn" id="btnToggleGuideModal" title="View the Pixel Art to Vector guide" data-i18n-attr="title:tooltips.guide;aria-label:guide.btnTitle">
+                        <span class="icon-mask icon-guide" aria-hidden="true"></span>
                         <span data-i18n="guide.btnTitle">Hướng Dẫn</span>
                     </button>
                 </div>
 
                 <!-- Center: 3 Nút Hành Động -->
                 <div class="footer-group-center" id="stageActionBar">
-                    <button type="button" class="btn-primary footer-action-btn" id="btnDownloadSvg" disabled><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span data-i18n="actions.downloadSvg">Tải Vector</span></button>
-                    <button type="button" class="btn-primary footer-action-btn" id="btnDownloadPng" disabled><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg><span data-i18n="actions.downloadPng">Tải Ảnh</span></button>
-                    <button type="button" class="btn-secondary footer-action-btn" id="btnCopySvg" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span data-i18n="actions.copySvg">Copy Vector</span></button>
+                    <button type="button" class="btn-primary footer-action-btn" id="btnDownloadSvg" data-i18n-attr="title:actions.downloadSvg;aria-label:actions.downloadSvg" disabled><span class="icon-mask icon-download" aria-hidden="true"></span><span data-i18n="actions.downloadSvg">Tải Vector</span></button>
+                    <button type="button" class="btn-primary footer-action-btn" id="btnDownloadPng" data-i18n-attr="title:actions.downloadPng;aria-label:actions.downloadPng" disabled><span class="icon-mask icon-images" aria-hidden="true"></span><span data-i18n="actions.downloadPng">Tải Ảnh</span></button>
+                    <button type="button" class="btn-secondary footer-action-btn" id="btnCopySvg" data-i18n-attr="title:actions.copySvg;aria-label:actions.copySvg" disabled><span class="icon-mask icon-copy" aria-hidden="true"></span><span data-i18n="actions.copySvg">Copy Vector</span></button>
                 </div>
 
                 <!-- Right: Bộ Công Cụ Tương Tác -->
                 <div class="footer-group-right">
-                    <button type="button" class="footer-tool-btn" id="btnUndo" title="Undo (Ctrl+Z)" data-i18n-attr="title:tooltips.undo" aria-label="Undo" disabled>&#8630;</button>
-                    <button type="button" class="footer-tool-btn" id="btnRedo" title="Redo (Ctrl+Y)" data-i18n-attr="title:tooltips.redo" aria-label="Redo" disabled>&#8631;</button>
+                    <button type="button" class="footer-tool-btn" id="btnUndo" title="Undo (Ctrl+Z)" data-i18n-attr="title:tooltips.undo" aria-label="Undo" disabled><span class="icon-mask icon-undo" aria-hidden="true"></span></button>
+                    <button type="button" class="footer-tool-btn" id="btnRedo" title="Redo (Ctrl+Y)" data-i18n-attr="title:tooltips.redo" aria-label="Redo" disabled><span class="icon-mask icon-redo" aria-hidden="true"></span></button>
                     <div class="footer-tool-divider" aria-hidden="true"></div>
-                    <button type="button" class="footer-tool-btn" id="btnZoomOut" aria-label="Zoom out">&minus;</button>
+                    <button type="button" class="footer-tool-btn" id="btnZoomOut" aria-label="Zoom out"><span class="icon-mask icon-minus" aria-hidden="true"></span></button>
                     <span class="footer-zoom-badge" id="zoomLevelBadge">100%</span>
-                    <button type="button" class="footer-tool-btn" id="btnZoomIn" aria-label="Zoom in">&plus;</button>
-                    <button type="button" class="footer-tool-btn" id="btnZoomReset" aria-label="Reset zoom" title="Reset (100%)">&#8634;</button>
+                    <button type="button" class="footer-tool-btn" id="btnZoomIn" aria-label="Zoom in"><span class="icon-mask icon-add" aria-hidden="true"></span></button>
+                    <button type="button" class="footer-tool-btn" id="btnZoomReset" aria-label="Reset zoom" title="Reset (100%)"><span class="icon-mask icon-reset" aria-hidden="true"></span></button>
                     <div class="footer-tool-divider" aria-hidden="true"></div>
-                    <button type="button" class="footer-tool-btn" id="btnToggleGrid" aria-label="Toggle Checkerboard" title="Checkerboard background" data-i18n-attr="title:tooltips.checkerboard">&#9638;</button>
-                    <button type="button" class="footer-tool-btn" id="btnToggleViewMode" title="Switch view: Split / Source / Vector (Y key)" data-i18n-attr="title:tooltips.viewMode" aria-label="Toggle View Mode" style="display: none;">◧</button>
+                    <button type="button" class="footer-tool-btn" id="btnPanMode" aria-pressed="false" aria-label="Move mode" title="Move mode: drag with one finger" data-i18n-attr="title:tooltips.panMode;aria-label:tooltips.panMode"><span class="icon-mask icon-hand" aria-hidden="true"></span></button>
+                    <button type="button" class="footer-tool-btn" id="btnToggleGrid" aria-label="Toggle Checkerboard" title="Checkerboard background" data-i18n-attr="title:tooltips.checkerboard"><span class="icon-mask icon-grid" aria-hidden="true"></span></button>
+                    <button type="button" class="footer-tool-btn" id="btnToggleViewMode" title="Switch view: Split / Source / Vector (Y key)" data-i18n-attr="title:tooltips.viewMode" aria-label="Toggle View Mode" style="display: none;"><span class="icon-mask icon-split-view" aria-hidden="true"></span></button>
                 </div>
             </footer>
         </section>
@@ -523,37 +586,44 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <!-- Shared Utilities & Pipeline -->
-    <script src="./qr-image-to-vector/common/dom-utils.js?v=20261102-19"></script>
-    <script src="./qr-image-to-vector/common/png-exporter.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/common/stage-exporter.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/common/stage-viewport-controller.js?v=20261103-1"></script>
-    <script src="./qr-image-to-vector/common/history-manager.js?v=20261102-11"></script>
-    <script src="./qr-image-to-vector/common/stage-svg-renderer.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/common/shortcuts.js?v=20261102-7"></script>
-    <script src="./qr-image-to-vector/common/badge-editor.js?v=20261102-10"></script>
-    <script src="./qr-image-to-vector/pipeline/lib-jsqr.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/lib-qrcode.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/01-qr-scanner.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/02-qr-matrix.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/03-vectorizer-contours.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/04-vectorizer-fillet.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/05b-vectorizer-paint.js?v=20261102-18"></script>
-    <script src="./qr-image-to-vector/pipeline/05-vectorizer.js?v=20261102-18"></script>
-    <script src="./qr-image-to-vector/pipeline/01-pixelart-grid-detector.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/02-pixelart-quantizer.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/02b-pixelart-color-adjust.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/03-pixelart-topology.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pipeline/04-pixelart-vectorizer.js?v=20261102-15"></script>
-    <script src="./qr-image-to-vector/pipeline/05-pixelart-grid-canvas.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/pixelart-handler.js?v=20261103-4"></script>
-    <script src="./qr-image-to-vector/pixelart-guide.js?v=20261102-7"></script>
-    <script src="./qr-image-to-vector/qr-generator-types.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/qr-generator-ui.js?v=20261102-3"></script>
-    <script src="./qr-image-to-vector/qr-logo-handler.js?v=20261102-4"></script>
-    <script src="./qr-image-to-vector/qr-color-controls.js?v=20261102-20"></script>
-    <script src="./qr-image-to-vector/qr-image-to-vector-i18n.js?v=20261102-22"></script>
-    <script src="./qr-image-to-vector/qr-image-to-vector.js?v=20261103-1"></script>
-    <script src="../../common/shared-webapp-counter.js?v=20261102-3" data-webapp-id="webapp-qrimagetovector"></script>
+    <script src="./qr-image-to-vector/common/dom-utils.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/png-exporter.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/stage-exporter.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/zip-writer.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/export-controls.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/stage-viewport-controller.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/side-tabs.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/history-manager.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/stage-svg-renderer.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/shortcuts.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/common/badge-editor.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/lib-jsqr.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/lib-qrcode.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/01-qr-scanner.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/06-qr-scan-check.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/02-qr-matrix.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/03-vectorizer-contours.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/04-vectorizer-fillet.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/05b-vectorizer-paint.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/05-vectorizer.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/01-pixelart-grid-detector.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/02-pixelart-quantizer.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/02b-pixelart-color-adjust.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/02c-pixelart-palette-edit.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/03-pixelart-topology.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/04-pixelart-vectorizer.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pipeline/05-pixelart-grid-canvas.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pixelart-palette-ui.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pixelart-handler.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/pixelart-guide.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/qr-generator-types.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/qr-generator-ui.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/qr-logo-handler.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/qr-batch.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/qr-color-controls.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/qr-image-to-vector-i18n.js?v=20261103-18"></script>
+    <script src="./qr-image-to-vector/qr-image-to-vector.js?v=20261103-18"></script>
+    <script src="../../common/shared-webapp-counter.js?v=20261103-18" data-webapp-id="webapp-qrimagetovector"></script>
 </body>
 </html>
 

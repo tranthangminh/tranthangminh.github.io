@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smoke tests: running</title>
+<style>
+    body { margin: 0; font: 13px/1.5 monospace; background: #111; color: #ddd; }
+    pre { margin: 0; padding: 12px; white-space: pre-wrap; }
+    .pass { color: #34d399; } .fail { color: #ef4444; }
+    iframe { width: 1440px; height: 800px; border: 0; position: absolute; left: -9999px; }
+</style>
+</head>
+<body>
+<!--
+    Browser-level scenarios for QR/Image to Vector. Serve the repo over HTTP (a static server is enough), then open:
+    /products/web-apps/qr-image-to-vector/tests/smoke.html
+    The page title ends with "n/m passed"; each scenario logs PASS or FAIL below. Logic-only tests: tests/run-tests.js.
+-->
+<pre id="log"></pre>
+<iframe id="app" src="../../qr-image-to-vector.html" title="app under test"></iframe>
+<script>
+(async () => {
+    const log = document.getElementById('log');
+    const frame = document.getElementById('app');
+    const sleep = (ms = 900) => new Promise((r) => setTimeout(r, ms));
+    const results = [];
+    const check = (name, ok, detail = '') => { results.push(ok); log.insertAdjacentHTML('beforeend', `<span class="${ok ? 'pass' : 'fail'}">${ok ? 'PASS' : 'FAIL'}  ${name}${ok ? '' : '  ' + detail}</span>\n`); };
+
+    await new Promise((resolve) => { if (frame.contentDocument?.readyState === 'complete') resolve(); else frame.addEventListener('load', resolve, { once: true }); });
+    await sleep(800);
+    const win = frame.contentWindow, doc = frame.contentDocument;
+    const $ = (id) => doc.getElementById(id);
+    win.localStorage.clear();
+
+    const sampleImage = async () => {
+        const c = doc.createElement('canvas'); c.width = c.height = 160;
+        const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 160, 160);
+        const colors = ['#e11', '#1a1', '#22e', '#ec0', '#222'];
+        for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) if ((i * 3 + j * 5) % 4 < 3) { x.fillStyle = colors[(i + j * 2) % 5]; x.fillRect(20 + i * 15, 20 + j * 15, 15, 15); }
+        return new Promise((r) => c.toBlob(r, 'image/png'));
+    };
+    const loadFile = async (blob, name = 'a.png') => {
+        const dt = new win.DataTransfer(); dt.items.add(new win.File([blob], name, { type: 'image/png' }));
+        $('fileInput').files = dt.files; $('fileInput').dispatchEvent(new win.Event('change', { bubbles: true })); await sleep(2800);
+    };
+
+    try {
+        // ---- QR: generator, ECC, scan badge ----
+        $('tabModeGenerate').click(); await sleep(1200);
+        [...doc.querySelectorAll('.gen-type-btn')].find((b) => b.dataset.type === 'raw').click(); await sleep(500);
+        const ta = doc.querySelector('#genFormContainer textarea');
+        const type = (text) => { ta.value = text; ta.dispatchEvent(new win.Event('input', { bubbles: true })); };
+        const badge = $('qrScanBadge');
+
+        type('https://tranthangminh.github.io/'); await sleep(1600);
+        check('scan badge reports a normal QR as scannable', badge.dataset.state === 'ok', badge.dataset.state);
+        const grid = () => $('statGrid').textContent;
+        const gridM = grid();
+        doc.querySelector('#eccGroup [data-ecc="L"]').click(); await sleep(900); const gridL = grid();
+        doc.querySelector('#eccGroup [data-ecc="H"]').click(); await sleep(900); const gridH = grid();
+        check('error correction level changes the module count', gridL !== gridH, `${gridL} / ${gridM} / ${gridH}`);
+
+        const fg = $('fgColorPicker'); fg.value = '#e5e5e5'; fg.dispatchEvent(new win.Event('input', { bubbles: true })); fg.dispatchEvent(new win.Event('change', { bubbles: true })); await sleep(1800);
+        check('scan badge flags a low-contrast QR', badge.dataset.state === 'fail', badge.dataset.state);
+        fg.value = '#000000'; fg.dispatchEvent(new win.Event('input', { bubbles: true })); fg.dispatchEvent(new win.Event('change', { bubbles: true })); await sleep(1500);
+
+        type('"><img src=x onerror="window.__xss=1"></textarea>'); await sleep(900);
+        [...doc.querySelectorAll('.gen-type-btn')].find((b) => b.dataset.type === 'url').click(); await sleep(400);
+        [...doc.querySelectorAll('.gen-type-btn')].find((b) => b.dataset.type === 'raw').click(); await sleep(500);
+        check('form escapes hostile text (no injection, value kept)', !win.__xss && doc.querySelector('#genFormContainer textarea').value.startsWith('"><img'));
+
+        type(Array.from({ length: 90 }, (_, i) => `Line${i}-abcdef`).join(' ')); await sleep(1800);
+        check('long text (large QR version) still scans', badge.dataset.state === 'ok', badge.dataset.state);
+
+        // ---- Export options + batch ----
+        const captured = [];
+        const originalDownload = win.StageExporter.downloadBlob; win.StageExporter.downloadBlob = (blob, name) => captured.push({ blob, name });
+        type('https://example.com/a'); await sleep(1200);
+        const mm = $('exportPrintMm'); mm.value = '50'; mm.dispatchEvent(new win.Event('change', { bubbles: true })); await sleep(300);
+        $('btnDownloadSvg').click(); await sleep(300);
+        const svgText = await captured.at(-1).blob.text();
+        check('SVG export carries the print size in mm', /width="50mm"/.test(svgText) && /viewBox="0 0 \d+ \d+"/.test(svgText));
+        let pngWidth = 0; const originalPng = win.PngExporter.exportSvg;
+        win.PngExporter.exportSvg = async (svg, name, scale, widthPx) => { pngWidth = (await createImageBitmap(await win.PngExporter.renderBlob(svg, scale, widthPx))).width; return true; };
+        $('btnDownloadPng').click(); await sleep(1500);
+        check('PNG export at 50 mm uses 300 DPI (591 px)', pngWidth === 591, String(pngWidth));
+        mm.value = ''; mm.dispatchEvent(new win.Event('change', { bubbles: true })); doc.querySelector('#exportScaleGroup [data-scale="4"]').click(); await sleep(200);
+        $('btnDownloadPng').click(); await sleep(1500);
+        const native = Number($('svgDisplayWrapper').querySelector('svg').getAttribute('viewBox').split(' ')[2]);
+        check('PNG export at 4x is four times the SVG size', pngWidth === Math.min(8192, native * 4), `${pngWidth} vs ${native * 4}`);
+        win.PngExporter.exportSvg = originalPng;
+
+        $('batchLines').value = 'https://example.com/a\nXin chào Việt Nam\n\nWIFI:T:WPA;S:Net;P:pw;;'; $('btnBatchFromText').click(); await sleep(3000);
+        const zipBytes = new Uint8Array(await captured.at(-1).blob.arrayBuffer()); const view = new DataView(zipBytes.buffer);
+        const files = []; for (let p = 0; view.getUint32(p, true) === 0x04034B50;) { const size = view.getUint32(p + 18, true), nameLen = view.getUint16(p + 26, true); files.push(new TextDecoder().decode(zipBytes.slice(p + 30 + nameLen, p + 30 + nameLen + size))); p += 30 + nameLen + size; }
+        const expected = ['https://example.com/a', 'Xin chào Việt Nam', 'WIFI:T:WPA;S:Net;P:pw;;']; const decoded = [];
+        for (let i = 0; i < files.length; i++) decoded.push(await win.QrScanCheck.verify(files[i], expected[i], 800));
+        check('batch ZIP holds one scannable SVG per non-empty line', files.length === 3 && decoded.every(Boolean), `${files.length} files, decoded ${decoded}`);
+        win.StageExporter.downloadBlob = originalDownload;
+
+        // ---- Pixel Art: palette, undo, vector scale and position ----
+        $('tabModeConvert').click(); await sleep(600);
+        await loadFile(await sampleImage());
+        const swatches = () => [...doc.querySelectorAll('#pixelArtPaletteList .pixelart-palette-swatch')];
+        const svgNow = () => $('svgDisplayWrapper').innerHTML;
+        const select = $('pixelArtPaletteSelect'); select.value = 'gameboy'; select.dispatchEvent(new win.Event('change', { bubbles: true })); await sleep(1200);
+        check('Game Boy preset limits the SVG to its palette', swatches().length <= 4 && /#306230|#0F380F|#8BAC0F|#9BBC0F/i.test(svgNow()));
+        select.value = ''; select.dispatchEvent(new win.Event('change', { bubbles: true })); await sleep(1200);
+        const colorsBefore = swatches().length;
+        swatches()[0].click(); await sleep(200); swatches()[1].click(); await sleep(200);
+        $('btnPaletteMerge').click(); await sleep(200); swatches()[2].click(); await sleep(1300);
+        check('merging two palette colors removes one', swatches().length === colorsBefore - 1, `${colorsBefore} -> ${swatches().length}`);
+        $('btnUndo').click(); await sleep(1300);
+        check('undo restores the merged color', swatches().length === colorsBefore);
+        $('btnPaletteReset').click(); await sleep(800);
+
+        // crop to a 40x40 bbox at (20,20): the vector must be 1/4 of the image and sit where the bbox sits
+        $('pixelArtCropToBboxToggle').click(); await sleep(900); $('btnPixelArtAutoBbox').click(); await sleep(1000);
+        const overlay = $('pixelArtOverlayCanvas'); const rect = overlay.getBoundingClientRect();
+        const at = (ix, iy) => [rect.left + ix / 160 * rect.width, rect.top + iy / 160 * rect.height];
+        const mouse = (kind, [x, y], target) => target.dispatchEvent(new win.PointerEvent('pointer' + kind, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0, buttons: kind === 'up' ? 0 : 1, pointerId: 1, pointerType: 'mouse', isPrimary: true, view: win }));
+        const start = at(140, 140), end = at(60, 60);
+        mouse('move', start, overlay); mouse('down', start, overlay); mouse('move', end, win); mouse('up', end, win); await sleep(1200);
+        const o = overlay.getBoundingClientRect(), sp = $('splitSourceContent').getBoundingClientRect(), vp = $('splitVectorContent').getBoundingClientRect(), v = $('svgDisplayWrapper').getBoundingClientRect();
+        const bbox = [o.left + 20 / 160 * o.width - sp.left, o.top + 20 / 160 * o.height - sp.top, 40 / 160 * o.width];
+        const vec = [v.left - vp.left, v.top - vp.top, v.width];
+        check('vector matches the bbox in size and position', bbox.every((n, i) => Math.abs(n - vec[i]) <= 2), `bbox ${bbox.map(Math.round)} vs vector ${vec.map(Math.round)}`);
+
+        // ---- History restores color adjustments ----
+        const setRange = async (id, value) => { const el = $(id); el.value = value; el.dispatchEvent(new win.Event('input', { bubbles: true })); el.dispatchEvent(new win.Event('change', { bubbles: true })); await sleep(500); };
+        await setRange('pixelArtHueSlider', 60); $('pixelArtGreyscaleToggle').click(); await sleep(1500);
+        await loadFile(await sampleImage(), 'second.png');
+        const tiles = () => [...doc.querySelectorAll('.history-item')].filter((t) => !t.classList.contains('history-item-new'));
+        tiles()[1].click(); await sleep(2500);
+        check('reopening a history item restores Greyscale and Hue', $('pixelArtGreyscaleToggle').checked && $('pixelArtHueBadge').textContent === '60°', `${$('pixelArtGreyscaleToggle').checked} ${$('pixelArtHueBadge').textContent}`);
+        // ---- Responsive layout: no horizontal scroll, panes never shorter than wide, one merged panel with tabs below 1250px ----
+        const visible = (el) => Boolean(el && el.offsetParent);
+        const paneShapes = () => [...doc.querySelectorAll('.split-pane-content')].filter(visible).map((p) => [p.clientWidth, p.clientHeight]);
+        for (const width of [360, 390, 768, 820, 1024, 1440]) {
+            frame.style.width = `${width}px`; await sleep(1300);
+            check(`${width}px: no horizontal scroll`, doc.documentElement.scrollWidth <= width + 1, `${doc.documentElement.scrollWidth} > ${width}`);
+            const shapes = paneShapes();
+            check(`${width}px: each Pixel Art pane is at least 1:1`, shapes.length === 2 && shapes.every(([w, h]) => h >= w - 2), JSON.stringify(shapes));
+            if (width < 1250) {
+                const tabsShown = getComputedStyle($('sideTabs')).display !== 'none';
+                $('sideTabSettings').click(); await sleep(200);
+                const settingsOnly = visible($('controlPanels')) && !visible($('inspectorPanels'));
+                $('sideTabInfo').click(); await sleep(200);
+                const infoOnly = !visible($('controlPanels')) && visible($('inspectorPanels'));
+                $('sideTabSettings').click();
+                check(`${width}px: one panel with Settings/Specs tabs`, tabsShown && settingsOnly && infoOnly, `tabs ${tabsShown}, settings ${settingsOnly}, info ${infoOnly}`);
+            } else {
+                check(`${width}px: three columns, no tabs`, getComputedStyle($('sideTabs')).display === 'none' && visible($('controlPanels')) && visible($('inspectorPanels')));
+            }
+        }
+        frame.style.width = '1440px';
+    } catch (err) {
+        check('scenario run did not throw', false, String(err && err.stack || err));
+    }
+
+    const passed = results.filter(Boolean).length;
+    document.title = `Smoke tests: ${passed}/${results.length} passed`;
+    log.insertAdjacentText('beforeend', `\n${passed}/${results.length} passed\n`);
+})();
+</script>
+</body>
+</html>
