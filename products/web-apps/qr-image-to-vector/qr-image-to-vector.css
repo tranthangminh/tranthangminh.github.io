@@ -225,15 +225,6 @@ button, input, select, textarea {
 .qr-scan-badge[data-state="ok"] { color: var(--c-green, #34d399); background: var(--c-green-bg, rgba(52, 211, 153, 0.2)); }
 .qr-scan-badge[data-state="fail"] { color: var(--c-red, #ef4444); background: var(--c-red-bg, rgba(239, 68, 68, 0.2)); }
 
-.header-text-link {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary, #bbbbbb);
-    text-decoration: none;
-    white-space: nowrap;
-}
-.header-text-link:hover { color: var(--text-primary, #ffffff); text-decoration: underline; }
-
 .stage-viewport {
     flex: 1;
     display: flex;

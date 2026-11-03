@@ -202,7 +202,6 @@
             if (!this.currentUser || !this.database) return;
 
             clearTimeout(this.saveDebounceTimer);
-            this.setSyncIndicator('syncing');
 
             this.saveDebounceTimer = setTimeout(() => {
                 const appRef = this.database.ref(`users/${this.currentUser.uid}/apps/${this.appId}`);
@@ -212,12 +211,8 @@
                 };
 
                 appRef.set(payload)
-                    .then(() => {
-                        this.setSyncIndicator('synced');
-                    })
                     .catch((err) => {
                         console.error('[SharedAuth] Cloud save error:', err);
-                        this.setSyncIndicator('error');
                     });
             }, 600);
         }
@@ -228,20 +223,17 @@
         loadData() {
             if (!this.currentUser || !this.database) return;
 
-            this.setSyncIndicator('syncing');
             const appRef = this.database.ref(`users/${this.currentUser.uid}/apps/${this.appId}`);
 
             appRef.once('value')
                 .then((snapshot) => {
                     const val = snapshot.val();
-                    this.setSyncIndicator('synced');
                     if (val && this.onDataLoadedCallback) {
                         this.onDataLoadedCallback(val);
                     }
                 })
                 .catch((err) => {
                     console.error('[SharedAuth] Cloud load error:', err);
-                    this.setSyncIndicator('error');
                 });
         }
 
@@ -263,28 +255,6 @@
                         this.loadData();
                     }
                 }
-            }
-        }
-
-        /**
-         * Set the status icon on the profile badge
-         */
-        setSyncIndicator(status) {
-            const el = document.getElementById('sharedAuthSyncStatus');
-            if (!el) return;
-
-            if (status === 'syncing') {
-                el.innerHTML = '🔄';
-                el.className = 'sync-status-indicator is-syncing';
-                el.title = 'Syncing with cloud...';
-            } else if (status === 'error') {
-                el.innerHTML = '⚠️';
-                el.className = 'sync-status-indicator';
-                el.title = 'Sync failed. Local data preserved.';
-            } else {
-                el.innerHTML = '☁️';
-                el.className = 'sync-status-indicator';
-                el.title = 'All changes saved to cloud';
             }
         }
 
@@ -329,7 +299,6 @@
                     <div class="user-profile-pill" id="sharedUserProfilePill">
                         ${avatarHtml}
                         <span class="user-name-text">${escapeHtml(name)}</span>
-                        <span class="sync-status-indicator" id="sharedAuthSyncStatus">☁️</span>
                     </div>
 
                     <div class="user-dropdown-menu" id="sharedUserDropdownMenu">
@@ -338,10 +307,10 @@
                             <div class="dropdown-user-email">${escapeHtml(user.email || '')}</div>
                         </div>
                         <button type="button" class="dropdown-action-btn" id="btnDropdownSyncNow">
-                            <span>🔄</span> <span data-i18n="auth.syncNow">Sync Now</span>
+                            <span data-i18n="auth.syncNow">Sync Now</span>
                         </button>
                         <button type="button" class="dropdown-action-btn btn-signout" id="btnDropdownSignOut">
-                            <span>🚪</span> <span data-i18n="auth.signOut">Sign Out</span>
+                            <span data-i18n="auth.signOut">Sign Out</span>
                         </button>
                     </div>
                 </div>
@@ -385,9 +354,7 @@
             const modalHtml = `
                 <div class="shared-auth-modal-backdrop" id="sharedAuthModalBackdrop" role="dialog" aria-modal="true">
                     <div class="shared-auth-modal-card">
-                        <h3 class="shared-auth-modal-title">
-                            <span>☁️</span> Web Apps Cloud Setup
-                        </h3>
+                        <h3 class="shared-auth-modal-title">Web Apps Cloud Setup</h3>
                         <p class="shared-auth-modal-desc">
                             Paste your Firebase configuration below to enable Google Sign-In and cross-device cloud sync for all Web Apps.
                         </p>

@@ -11,6 +11,7 @@
         'en': {
             brand: {
                 title: 'Lucky Wheel',
+                privacy: 'Privacy',
                 documentTitle: 'Lucky Wheel - Random Picker & Decision Maker | Tran Thang Minh'
             },
             auth: {
@@ -133,6 +134,7 @@
         'vi': {
             brand: {
                 title: 'Vòng Xoay May Mắn',
+                privacy: 'Quyền riêng tư',
                 documentTitle: 'Vòng Xoay May Mắn - Vòng Quay Quyết Định | Trần Thắng Minh'
             },
             auth: {
@@ -338,6 +340,16 @@
                 if (translated && translated !== key) {
                     el.label = translated;
                 }
+            });
+
+            // Translate any attribute listed in data-i18n-attr="attr:key;attr2:key2"
+            document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+                (el.getAttribute('data-i18n-attr') || '').split(';').forEach(pair => {
+                    const [attr, key] = pair.split(':').map(s => s.trim());
+                    if (!attr || !key) return;
+                    const translated = this.t(key);
+                    if (translated && translated !== key) el.setAttribute(attr, translated);
+                });
             });
 
             // Update document title

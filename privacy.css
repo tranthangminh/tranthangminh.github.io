@@ -43,6 +43,79 @@
     color: var(--text-primary);
 }
 
+/* Group headings: common part, per-app part, contact */
+.privacy-card h2.privacy-part {
+    margin: 44px 0 6px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+    font-size: var(--font-xl, 20px);
+}
+
+.privacy-card h3 {
+    margin: 24px 0 8px;
+    font-family: var(--font-primary);
+    font-size: var(--font-md);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Jump list to the per-app sections */
+.privacy-toc {
+    margin: 20px 0 8px;
+    padding: 14px 18px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+}
+
+.privacy-card .privacy-toc-title {
+    margin: 0 0 8px;
+    font-size: var(--font-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.privacy-toc-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.privacy-card .privacy-toc-list li { margin: 0; }
+
+.privacy-toc-list a {
+    display: inline-block;
+    padding: 5px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-full, 9999px);
+    font-family: var(--font-primary);
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.privacy-toc-list a:hover { border-color: var(--border-hover); }
+
+/* One block per app; the header icon of each app links to its block */
+.privacy-app {
+    margin: 16px 0 0;
+    padding: 4px 18px 8px;
+    border-left: 3px solid var(--border-color);
+    scroll-margin-top: calc(var(--header-h, 56px) + 16px);
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.privacy-app:target {
+    border-left-color: var(--accent-primary);
+    background: var(--bg-secondary);
+}
+
+.privacy-app h3 { margin-top: 12px; }
+
 .privacy-card p,
 .privacy-card li {
     font-family: var(--font-primary);

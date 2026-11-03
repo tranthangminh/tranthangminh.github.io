@@ -4,6 +4,7 @@
  * Reference: lucky-wheel.html / _RULE-web-apps.md
  * Height: 52px fixed viewport budget
  * Theme: 100% Theme Tokens (var(--bg-secondary), var(--border-color), etc.)
+ * Right side order (right to left): #sharedAuthSlot, .lang-switch, Privacy link (a.icon-btn), other .icon-btn
  */
 
 /* 1. App Header Container */
@@ -49,9 +50,13 @@
     color: var(--text-primary, #ffffff);
     line-height: 1.2;
     margin: 0;
-    white-space: nowrap;
+    min-width: 0;
+    /* Wraps to at most 2 lines, then ellipsis */
     overflow: hidden;
-    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .brand-subtitle {
@@ -92,6 +97,16 @@
 .icon-btn:hover {
     background: var(--bg-elevated, #464646);
     border-color: var(--border-hover, #8a8a8a);
+}
+
+/* Link variant: <a class="icon-btn"> (e.g. Privacy policy) with a .icon-mask icon from common/web-app-icons.css */
+a.icon-btn {
+    text-decoration: none;
+}
+
+.icon-btn .icon-mask {
+    width: 18px;
+    height: 18px;
 }
 
 .icon-btn.is-active {

@@ -10,20 +10,22 @@
     font-family: var(--font-primary);
 }
 
-/* 1. Google Sign-In Button */
-.btn-google-auth {
+/* 1. Auth button: the signed-out "Sign in" button and the signed-in profile pill share ONE look and size */
+.btn-google-auth,
+.user-profile-pill {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    box-sizing: border-box;
     background: #ffffff;
     color: #1f2937;
     border: 1px solid #d1d5db;
     font-family: inherit;
     font-size: 12px;
     font-weight: 600;
-    padding: 5px 12px;
-    width: 148px;          /* Fixed width — prevents layout jump on lang switch */
-    min-height: 34px;
+    padding: 0 10px;
+    width: 120px;          /* Fixed width: no layout jump on lang switch or sign in/out */
+    height: 34px;
     border-radius: var(--border-radius-md, 4px);
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -32,13 +34,15 @@
     flex-shrink: 0;
 }
 
-.btn-google-auth:hover {
+.btn-google-auth:hover,
+.user-profile-pill:hover {
     background: #f3f4f6;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     border-color: #9ca3af;
 }
 
-.btn-google-auth:active {
+.btn-google-auth:active,
+.user-profile-pill:active {
     transform: scale(0.98);
 }
 
@@ -93,65 +97,40 @@
     border-style: solid;
 }
 
-/* 3. User Profile Pill (Logged In) */
+/* 3. User Profile Pill (Logged In): box styles are shared with .btn-google-auth above */
 .user-profile-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--bg-tertiary, #343434);
-    border: 1px solid var(--border-color, #3a3a3a);
-    padding: 3px 10px 3px 4px;
-    height: 34px;
-    border-radius: var(--border-radius-full, 9999px);
-    cursor: pointer;
-    transition: var(--transition-fast, all 0.15s ease);
-    user-select: none;
-}
-
-.user-profile-pill:hover {
-    background: var(--bg-elevated, #464646);
-    border-color: var(--border-hover, #8a8a8a);
+    text-align: left;
 }
 
 .user-avatar {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     object-fit: cover;
-    background: var(--accent-primary, #e50914);
+    flex-shrink: 0;
+    background: #e5e7eb;   /* Initial-letter fallback only; a photo covers it */
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: #1f2937;
     font-size: 11px;
     font-weight: 700;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Name wraps to at most 2 lines, like the 2-line sign-in label */
 .user-name-text {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-primary, #ffffff);
-    max-width: 110px;
+    flex: 1;
+    min-width: 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #1f2937;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sync-status-indicator {
-    font-size: 11px;
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
-}
-
-.sync-status-indicator.is-syncing {
-    animation: syncSpin 1s linear infinite;
-}
-
-@keyframes syncSpin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow-wrap: anywhere;
 }
 
 /* 4. User Dropdown Menu */

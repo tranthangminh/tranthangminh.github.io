@@ -1,24 +1,8 @@
 /* ==========================================================================
    Monochrome SVG icons (CSS mask): the icon takes the text color of its parent.
-   Usage: <span class="icon-mask icon-undo" aria-hidden="true"></span>
+   Usage: <span class="icon-mask icon-undo" aria-hidden="true"></span> (base .icon-mask lives in common/web-app-icons.css)
    Replace a file in ./svg/ and every use updates. Multi-color art stays as <img>.
    ========================================================================== */
-
-.icon-mask {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-    background-color: currentColor;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    pointer-events: none !important;
-    border-radius: 0 !important;
-}
 
 .icon-add { -webkit-mask-image: url('./svg/add.svg'); mask-image: url('./svg/add.svg'); }
 .icon-chevron-down { -webkit-mask-image: url('./svg/chevron-down.svg'); mask-image: url('./svg/chevron-down.svg'); }

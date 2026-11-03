@@ -13,6 +13,7 @@
         'en': {
             brand: {
                 title: '52 Cards Tracker',
+                privacy: 'Privacy',
                 documentTitle: '52 Cards Tracker - Card Counter & Odds Assistant | Tran Thang Minh',
                 tagline: 'Standard 52-card deck tracker & game odds'
             },
@@ -97,6 +98,7 @@
         'vi': {
             brand: {
                 title: 'Bộ Đếm Bài 52 Lá',
+                privacy: 'Quyền riêng tư',
                 documentTitle: '52 Cards Tracker - Đếm & Theo Dõi Bài 52 Lá | Trần Thắng Minh',
                 tagline: 'Theo dõi bài đã đánh & tính toán xác suất'
             },
@@ -257,6 +259,16 @@
                 if (translated && translated !== key) {
                     el.placeholder = translated;
                 }
+            });
+
+            // Translate any attribute listed in data-i18n-attr="attr:key;attr2:key2"
+            document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+                (el.getAttribute('data-i18n-attr') || '').split(';').forEach(pair => {
+                    const [attr, key] = pair.split(':').map(s => s.trim());
+                    if (!attr || !key) return;
+                    const translated = this.t(key);
+                    if (translated && translated !== key) el.setAttribute(attr, translated);
+                });
             });
 
             const docTitle = this.t('brand.documentTitle');

@@ -62,7 +62,9 @@ Toàn bộ ứng dụng trong `products/web-apps/` bắt buộc tuân theo cấu
 products/web-apps/
 ├── _RULE-web-apps.md                  # File quy chuẩn này
 ├── common/                            # Module dùng chung nội bộ cho các Web Apps
-│   └── web-app-header.css             # Fixed Header 52px chuẩn hóa (Cờ Pure CSS + SSO Slot)
+│   ├── web-app-header.css             # Fixed Header 52px chuẩn hóa (Cờ Pure CSS + SSO Slot + link Privacy)
+│   ├── web-app-icons.css              # Icon CSS mask dùng chung ở header (.icon-mask + .icon-privacy)
+│   └── svg/                           # File SVG của web-app-icons.css (privacy.svg...)
 ├── [app-name].html                    # File khởi chạy HTML duy nhất ở ngoài
 └── [app-name]/                        # Thư mục chứa toàn bộ logic, style của riêng app đó
     ├── [app-name].css                 # Stylesheet riêng của app (kế thừa common)
@@ -117,7 +119,7 @@ products/web-apps/
    - Khi đang ở **Tiếng Anh**: Hiển thị cờ Việt Nam (`.lang-flag--vi`) + chữ `VN` in hoa ở dưới (bấm vào để chuyển sang Tiếng Việt).
 4. **Vị trí trên thanh Header (`.header-actions`):**
    - Thứ tự các phần tử trên thanh Header bắt buộc xếp **từ phải qua trái (Right-to-Left)**:
-     `[Sign in / User Avatar (Góc phải cùng)]` ➔ `[Ngôn ngữ]` ➔ `[Âm thanh / Nút phụ]`
+     `[Sign in / User Avatar (Góc phải cùng)]` ➔ `[Ngôn ngữ]` ➔ `[Privacy]` ➔ `[Âm thanh / Nút phụ]`
 
 ### 5.5 Quy Định Tuyệt Đối Không Tự Ý Thêm Text Chú Thích Phụ (Zero Tooltips / Title Prohibition)
 - **CẤM TUYỆT ĐỐI** tự ý thêm thuộc tính `title="..."` hoặc popup/tooltip chú thích hover vào bất kỳ nút bấm, nhãn dán, trường nhập liệu hay biểu tượng nào trên giao diện nếu **người dùng không yêu cầu một cách tường minh**.
@@ -138,7 +140,24 @@ products/web-apps/
    - Khung bố cục chính `.app-layout` bắt buộc thiết lập chiều cao: `height: calc(100vh - 52px);` để khớp khít 100vh mà không sinh thanh cuộn ngoài.
 3. **Cấu trúc thành phần:**
    - **Bên trái (`.header-brand`):** `.brand-icon` (emoji kích thước 22-24px hoặc icon SVG inline) + `.brand-title` (`<h1>`, `font-size: var(--font-lg, 16px)`, `font-weight: 700`, `margin: 0;`).
-   - **Bên phải (`.header-actions`):** Xếp Right-to-Left chuẩn: `[#sharedAuthSlot]` (ngoài cùng bên phải) ➔ `[.lang-switch]` (cờ Pure CSS) ➔ `[.icon-btn]` (nút âm thanh hoặc công cụ phụ).
+   - **Bên phải (`.header-actions`):** Xếp Right-to-Left chuẩn: `[#sharedAuthSlot]` (ngoài cùng bên phải) ➔ `[.lang-switch]` (cờ Pure CSS) ➔ `[a.icon-btn Privacy]` ➔ `[.icon-btn]` (nút âm thanh hoặc công cụ phụ).
+4. **Tiêu đề `.brand-title`** được xuống dòng tối đa 2 hàng (`line-clamp: 2`), quá thì "…"; không ép `white-space: nowrap` trong CSS của app.
+5. **Link Privacy (bắt buộc ở mọi web app dùng `web-app-header.css`):**
+   - Nhúng thêm `<link rel="stylesheet" href="./common/web-app-icons.css">` (icon dùng mask, theo `ui-design-system.md` §6.6) và dùng đúng markup này, đổi `app-<id>` theo app:
+     ```html
+     <a class="icon-btn" href="../../privacy.html#app-<id>" target="_blank" rel="noopener noreferrer" aria-label="Quyền riêng tư" data-i18n-attr="aria-label:brand.privacy"><span class="icon-mask icon-privacy" aria-hidden="true"></span></a>
+     ```
+   - Không dùng link chữ, không viết CSS riêng cho nút này trong stylesheet của app. Mỗi app có khóa `brand.privacy` (vi: "Quyền riêng tư", en: "Privacy") và engine i18n của app phải hỗ trợ `data-i18n-attr` (cặp phân tách bằng dấu `;`).
+   - **App mới bắt buộc thêm mục riêng** `<section class="privacy-app" id="app-<id>">` vào `privacy.html` (kèm khóa vi/en trong `privacy-i18n.js` và một mục trong `.privacy-toc`): nêu dữ liệu lưu trên máy, dữ liệu gửi đi (đăng nhập, bộ đếm...) và cách xóa. Nội dung phải khớp code thật; đổi cách xử lý dữ liệu thì cập nhật cùng ngày "Cập nhật lần cuối".
+
+### 5.7 Quy Chuẩn Nút Đăng Nhập / Hồ Sơ (`common/shared-auth.css`)
+- Nút "Đăng nhập" (`.btn-google-auth`) và pill hồ sơ sau khi đăng nhập (`.user-profile-pill`) dùng **chung một rule**: nền trắng, viền `#d1d5db`, `border-radius-md`, **120 × 34px cố định**. Chuẩn là kiểu nút Đăng nhập; không viết kích thước/màu riêng cho pill.
+- Pill chỉ gồm avatar tròn 22px (không viền, ảnh không nền màu) + tên tối đa 2 dòng (`line-clamp: 2`). Cấm emoji hoặc icon thừa trong pill.
+
+### 5.8 Favicon Của Web App
+- App có file `[app-name]/svg/favicon.svg` thì tab dùng đúng file đó: `<link rel="icon" type="image/svg+xml" href="./[app-name]/svg/favicon.svg?v=...">` (không kèm `alternate icon` `favicon.ico` của site, để fallback không lệch icon).
+- Logo trong `.brand-icon` của header cũng dùng chính file này (`<img src="./[app-name]/svg/favicon.svg">`), không giữ file logo riêng.
+- App chưa có file này tiếp tục dùng `../../svg/logo-MAX-favicon.svg` (cùng `favicon.ico` và `apple-touch-icon` như hiện tại). Khi app có `favicon.svg` mới thì đổi theo quy tắc trên.
 
 ---
 
@@ -322,11 +341,9 @@ Payload đẩy lên Cloud bắt buộc chứa dấu thời gian cập nhật `up
   1. Tab A phát thông điệp `{ type: 'USER_LOGIN', uid: user.uid }` hoặc `{ type: 'USER_LOGOUT' }`.
   2. Tab B, Tab C nhận thông điệp, tự động cập nhật avatar đăng nhập và kích hoạt nạp dữ liệu Cloud tương ứng **mà không cần người dùng phải bấm F5**.
 
-### 9.5 Chỉ Báo Trạng Thái Đồng Bộ Giao Diện (Sync Indicator Standards)
-Cạnh avatar người dùng trên Header, bắt buộc hiển thị biểu tượng trạng thái đồng bộ:
-- 🔄 `is-syncing`: Đang đẩy dữ liệu lên mây (khi người dùng vừa thao tác xong).
-- ☁️ `synced`: Toàn bộ dữ liệu đã được lưu trữ an toàn trên Cloud.
-- ⚠️ `error`: Mất mạng hoặc lỗi Cloud (Dữ liệu cục bộ dưới máy vẫn được bảo toàn an toàn ở Tầng 1 `localStorage`).
+### 9.5 Không Hiển Thị Chỉ Báo Đồng Bộ Trên Header
+- **Không** hiện chỉ báo trạng thái đồng bộ (đám mây, quay, cảnh báo) cạnh avatar hay ở bất kỳ đâu trên Header; pill hồ sơ chỉ có avatar + tên (xem §5.7). `SharedAuth` không còn `setSyncIndicator`.
+- Lỗi lưu/nạp Cloud chỉ ghi `console.error`; dữ liệu cục bộ vẫn được bảo toàn ở Tầng 1 (`localStorage`). Người dùng muốn nạp lại thủ công dùng nút "Đồng bộ ngay" trong menu hồ sơ.
 
 ---
 
@@ -358,7 +375,8 @@ Khi tạo một Web App mới, AI Agent hãy sao chép trực tiếp khung mẫu
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title data-i18n="app.title">App Name</title>
-    <link rel="icon" type="image/svg+xml" href="../../svg/logo-MAX-favicon.svg">
+    <!-- Favicon riêng của app nếu có [app-name]/svg/favicon.svg, không thì dùng ../../svg/logo-MAX-favicon.svg (xem §5.8) -->
+    <link rel="icon" type="image/svg+xml" href="./[app-name]/svg/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -368,6 +386,7 @@ Khi tạo một Web App mới, AI Agent hãy sao chép trực tiếp khung mẫu
     <link rel="stylesheet" href="../../common/shared-auth.css">
     <!-- Shared Web App Header Component (Fixed 52px) -->
     <link rel="stylesheet" href="./common/web-app-header.css">
+    <link rel="stylesheet" href="./common/web-app-icons.css">
     <link rel="stylesheet" href="./[app-name]/[app-name].css">
 </head>
 <body>
@@ -383,6 +402,8 @@ Khi tạo một Web App mới, AI Agent hãy sao chép trực tiếp khung mẫu
         <div class="header-actions">
             <!-- Nút công cụ phụ / Âm thanh -->
             <button type="button" class="icon-btn" id="soundToggleBtn" aria-label="Toggle Sound">🔊</button>
+            <!-- Link Privacy chuẩn (mục riêng của app trong privacy.html) -->
+            <a class="icon-btn" href="../../privacy.html#app-[app-id]" target="_blank" rel="noopener noreferrer" aria-label="Quyền riêng tư" data-i18n-attr="aria-label:brand.privacy"><span class="icon-mask icon-privacy" aria-hidden="true"></span></a>
             <!-- Cụm chuyển đổi ngôn ngữ chuẩn (CSS Flag + EN/VN) -->
             <div class="lang-switch">
                 <button type="button" class="lang-btn lang-btn--toggle" id="langToggleBtn" data-lang="en" aria-label="Chuyển sang Tiếng Anh">

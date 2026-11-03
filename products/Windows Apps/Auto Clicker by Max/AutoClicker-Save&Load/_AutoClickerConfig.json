@@ -6,7 +6,7 @@
   "SmoothMouseMove": true,
   "MapOverlayOpacity": 60,
   "IsDarkTheme": true,
-  "IsAdvancedTab": false,
+  "IsAdvancedTab": true,
   "LastUpdateCheckDate": "1.1.3@2026-10-28",
   "Language": "vi",
   "AsianWindowWidth": 700,
@@ -95,7 +95,7 @@
     { "X": 849, "Y": 866 }
   ],
   "AdvancedProfile": {
-  "ActiveIndex": 2,
+  "ActiveIndex": 0,
   "Profiles": [
     {
       "Name": "All Action",

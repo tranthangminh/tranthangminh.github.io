@@ -11,6 +11,7 @@
         'en': {
             brand: {
                 title: '3D Dice Roller',
+                privacy: 'Privacy',
                 documentTitle: '3D Dice Roller - Polyhedral Physics Simulation | Tran Thang Minh'
             },
             auth: {
@@ -47,6 +48,7 @@
         'vi': {
             brand: {
                 title: 'Đổ Xí Ngầu 3D',
+                privacy: 'Quyền riêng tư',
                 documentTitle: 'Đổ Xí Ngầu 3D - Lắc Xúc Xắc Đa Diện Online | Trần Thắng Minh'
             },
             auth: {
@@ -153,6 +155,16 @@
                 if (translated && translated !== key) {
                     el.placeholder = translated;
                 }
+            });
+
+            // Translate any attribute listed in data-i18n-attr="attr:key;attr2:key2"
+            document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+                (el.getAttribute('data-i18n-attr') || '').split(';').forEach(pair => {
+                    const [attr, key] = pair.split(':').map(s => s.trim());
+                    if (!attr || !key) return;
+                    const translated = this.t(key);
+                    if (translated && translated !== key) el.setAttribute(attr, translated);
+                });
             });
 
             const docTitle = this.t('brand.documentTitle');

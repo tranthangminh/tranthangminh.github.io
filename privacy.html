@@ -42,14 +42,14 @@
 <link rel="stylesheet" href="common/shared-footer.css?v=20261026-2">
 <link rel="stylesheet" href="common/shared-surfaces.css?v=20261026-2">
 <link rel="stylesheet" href="common/shared-mobile-type-scale.css?v=20261026-2">
-<link rel="stylesheet" href="privacy.css?v=20261103-1">
+<link rel="stylesheet" href="privacy.css?v=20261103-2">
 
 <!-- Shared Core Scripts -->
 <script src="common/shared-utils.js?v=20261026-2"></script>
 <script src="common/shared-i18n.js?v=20261026-2"></script>
 <script src="common/i18n-vi.js?v=20261026-2"></script>
 <script src="common/i18n-en.js?v=20261026-2"></script>
-<script src="privacy-i18n.js?v=20261103-1"></script>
+<script src="privacy-i18n.js?v=20261103-2"></script>
 <script src="common/shared-header.js?v=20261026-2"></script>
 <script src="common/shared-contact.js?v=20261026-2"></script>
 <script src="common/shared-page.js?v=20261026-2"></script>
@@ -63,35 +63,99 @@
         <p class="privacy-updated" data-i18n="privacy.updated">Cập nhật lần cuối: 03/11/2026</p>
 
         <h2 data-i18n="privacy.summaryHeading">Tóm tắt</h2>
-        <p data-i18n="privacy.summary">Website và các web app của tôi chạy trực tiếp trên trình duyệt của bạn. Ảnh, mã QR và nội dung bạn nhập được xử lý ngay trên máy bạn, không được tải lên máy chủ nào của tôi. Tôi không dùng cookie quảng cáo và không theo dõi hành vi người dùng.</p>
+        <p data-i18n="privacy.summary">Website và các web app của tôi chạy trực tiếp trên trình duyệt của bạn. Ảnh, mã QR và nội dung bạn nhập được xử lý ngay trên máy bạn, không được tải lên máy chủ nào của tôi. Tôi không dùng cookie quảng cáo và không theo dõi hành vi người dùng. Trang này gồm phần chung cho cả website và phần riêng cho từng web app.</p>
 
-        <h2 data-i18n="privacy.localHeading">Dữ liệu lưu trên thiết bị của bạn</h2>
-        <p data-i18n="privacy.localIntro">Một số thông tin được lưu trong bộ nhớ của trình duyệt (localStorage, IndexedDB) để ứng dụng nhớ lựa chọn của bạn. Những dữ liệu này không rời khỏi máy bạn:</p>
+        <nav class="privacy-toc" aria-labelledby="privacyTocHeading">
+            <p class="privacy-toc-title" id="privacyTocHeading" data-i18n="privacy.tocHeading">Đi nhanh tới phần riêng của từng app</p>
+            <ul class="privacy-toc-list">
+                <li><a href="#app-qr-image-to-vector" data-i18n="privacy.tocQr">QR/Image to Vector</a></li>
+                <li><a href="#app-lucky-wheel" data-i18n="privacy.tocLucky">Lucky Wheel</a></li>
+                <li><a href="#app-dice-roller" data-i18n="privacy.tocDice">Dice Roller 3D</a></li>
+                <li><a href="#app-52-cards-tracker" data-i18n="privacy.tocCards">52 Cards Tracker</a></li>
+                <li><a href="#app-downloads" data-i18n="privacy.tocDownloads">Ứng dụng tải về</a></li>
+            </ul>
+        </nav>
+
+        <h2 class="privacy-part" data-i18n="privacy.commonHeading">Phần chung cho cả website</h2>
+
+        <h3 data-i18n="privacy.localHeading">Dữ liệu lưu trên thiết bị của bạn</h3>
+        <p data-i18n="privacy.localIntro">Một số thông tin được lưu trong bộ nhớ của trình duyệt (localStorage, IndexedDB) để website nhớ lựa chọn của bạn. Những dữ liệu này không rời khỏi máy bạn:</p>
         <ul>
             <li data-i18n="privacy.localLanguage">Ngôn ngữ giao diện bạn đã chọn.</li>
-            <li data-i18n="privacy.localSettings">Cài đặt của từng web app (màu, kích thước, kiểu hiển thị...).</li>
-            <li data-i18n="privacy.localHistory">Trong QR/Image to Vector: lịch sử tối đa 30 ảnh gần nhất cùng cài đặt của chúng, để bạn mở lại nhanh.</li>
+            <li data-i18n="privacy.localSettings">Cài đặt và dữ liệu làm việc của từng web app (chi tiết ở phần riêng của app đó).</li>
+            <li data-i18n="privacy.localCounters">Các con số lượt truy cập được lưu tạm để hiển thị nhanh hơn.</li>
         </ul>
-        <p data-i18n="privacy.localClear">Bạn có thể xóa từng mục hoặc toàn bộ lịch sử ngay trong ứng dụng, hoặc xóa dữ liệu trang trong cài đặt trình duyệt.</p>
+        <p data-i18n="privacy.localClear">Bạn có thể xóa dữ liệu trang bất cứ lúc nào trong cài đặt trình duyệt; mỗi app cũng có cách xóa riêng được nêu ở phần của app đó.</p>
 
-        <h2 data-i18n="privacy.thirdHeading">Dịch vụ của bên thứ ba</h2>
+        <h3 data-i18n="privacy.thirdHeading">Dịch vụ của bên thứ ba</h3>
         <p data-i18n="privacy.thirdIntro">Khi bạn mở trang, trình duyệt gửi yêu cầu đến các dịch vụ sau. Như mọi yêu cầu web, các dịch vụ này nhìn thấy địa chỉ IP và thông tin trình duyệt của bạn:</p>
         <ul>
-            <li data-i18n-html="privacy.thirdCounter"><strong>Bộ đếm lượt truy cập</strong> (countapi.mileshilliard.com): mỗi lượt mở một web app sẽ gửi một yêu cầu đếm. Kết quả chỉ là một con số lượt truy cập. Tôi không lưu thông tin cá nhân nào từ yêu cầu này.</li>
+            <li data-i18n-html="privacy.thirdCounter"><strong>Bộ đếm lượt truy cập và lượt tải</strong> (countapi.mileshilliard.com): mỗi lượt mở website, mở một web app hoặc bấm tải một sản phẩm sẽ gửi một yêu cầu đếm. Kết quả chỉ là một con số tổng. Tôi không lưu thông tin cá nhân nào từ yêu cầu này.</li>
             <li data-i18n-html="privacy.thirdFonts"><strong>Google Fonts</strong> (fonts.googleapis.com, fonts.gstatic.com): dùng để tải phông chữ hiển thị.</li>
+            <li data-i18n-html="privacy.thirdFirebaseSdk"><strong>Thư viện Google Firebase</strong> (www.gstatic.com): các web app có đăng nhập (Lucky Wheel, Dice Roller 3D, 52 Cards Tracker) tải thư viện này từ Google mỗi khi mở trang, kể cả khi bạn chưa đăng nhập.</li>
         </ul>
 
-        <h2 data-i18n="privacy.authHeading">Đăng nhập tùy chọn</h2>
-        <p data-i18n="privacy.auth">Một số web app khác (Lucky Wheel, Dice Roller 3D, 52 Cards Tracker) cho phép đăng nhập bằng Google để sao lưu dữ liệu của app đó. Chỉ khi bạn bấm đăng nhập thì mã định danh tài khoản và dữ liệu bạn chọn sao lưu mới được lưu trên Google Firebase. QR/Image to Vector không có chức năng đăng nhập và không gửi dữ liệu của bạn đi đâu.</p>
+        <h3 data-i18n="privacy.authHeading">Đăng nhập Google (tùy chọn)</h3>
+        <p data-i18n="privacy.authIntro">Lucky Wheel, Dice Roller 3D và 52 Cards Tracker cho phép đăng nhập bằng Google để đồng bộ dữ liệu giữa các thiết bị. Các app khác không có đăng nhập. Chỉ khi bạn bấm đăng nhập thì dữ liệu sau mới được lưu trên Google Firebase (dự án dùng chung của tôi):</p>
+        <ul>
+            <li data-i18n="privacy.authProfile">Thông tin hồ sơ Google: tên hiển thị, email, địa chỉ ảnh đại diện, mã định danh tài khoản và thời điểm đăng nhập gần nhất.</li>
+            <li data-i18n="privacy.authData">Dữ liệu của từng app mà app đó đồng bộ (nêu ở phần riêng của app), lưu tách riêng theo tài khoản và theo app.</li>
+        </ul>
+        <p data-i18n="privacy.authLogout">Khi bạn đăng xuất, dữ liệu vẫn nằm trên máy bạn. Dữ liệu đã đồng bộ lên Firebase chỉ bị xóa khi bạn yêu cầu.</p>
 
-        <h2 data-i18n="privacy.cookieHeading">Cookie</h2>
+        <h3 data-i18n="privacy.cookieHeading">Cookie</h3>
         <p data-i18n="privacy.cookie">Mã nguồn của website không tự đặt cookie. Các dịch vụ bên thứ ba nêu trên có thể áp dụng chính sách riêng của họ.</p>
 
-        <h2 data-i18n="privacy.rightsHeading">Quyền của bạn &amp; liên hệ</h2>
-        <p data-i18n="privacy.rights">Bạn có thể xóa dữ liệu lưu trên thiết bị bất cứ lúc nào như nêu ở trên. Nếu bạn đã đăng nhập sao lưu và muốn xóa dữ liệu đó, hoặc có bất kỳ câu hỏi nào về quyền riêng tư, hãy liên hệ qua nút Email ở cuối trang.</p>
+        <h2 class="privacy-part" data-i18n="privacy.appsHeading">Phần riêng của từng app</h2>
 
-        <h2 data-i18n="privacy.changesHeading">Thay đổi chính sách</h2>
-        <p data-i18n="privacy.changes">Khi website thay đổi cách xử lý dữ liệu, trang này sẽ được cập nhật cùng ngày cập nhật ở đầu trang.</p>
+        <section class="privacy-app" id="app-qr-image-to-vector">
+            <h3 data-i18n="privacy.appQrTitle">QR/Image to Vector</h3>
+            <p data-i18n="privacy.appQrIntro">Ảnh, mã QR, logo và nội dung bạn nhập chỉ được xử lý bằng trình duyệt trên máy bạn. Việc nhận diện QR, chuyển sang vector và xuất file (SVG, PNG, ZIP) đều diễn ra trên máy bạn; không có ảnh hay dữ liệu nào được tải lên máy chủ.</p>
+            <ul>
+                <li data-i18n="privacy.appQrLocal">Lưu trên máy: cài đặt giao diện và tạo mã (màu, kích thước, mức sửa lỗi...), lựa chọn xuất file, tab đang mở ở màn hình nhỏ, và lịch sử tối đa 30 ảnh gần nhất cùng cài đặt của chúng để bạn mở lại nhanh.</li>
+                <li data-i18n="privacy.appQrClear">Xóa từng mục hoặc toàn bộ lịch sử ngay trong phần Lịch sử của app.</li>
+                <li data-i18n="privacy.appQrAuth">App này không có đăng nhập và không đồng bộ dữ liệu lên đâu.</li>
+            </ul>
+        </section>
+
+        <section class="privacy-app" id="app-lucky-wheel">
+            <h3 data-i18n="privacy.appLuckyTitle">Lucky Wheel</h3>
+            <p data-i18n="privacy.appLuckyIntro">Vòng quay chạy hoàn toàn trên trình duyệt của bạn.</p>
+            <ul>
+                <li data-i18n="privacy.appLuckyLocal">Lưu trên máy: các ô của vòng quay, cài đặt, lịch sử quay, mẫu bạn tự tạo, mẫu đang chọn và tùy chọn âm thanh.</li>
+                <li data-i18n="privacy.appLuckyAuth">Khi đăng nhập: các dữ liệu trên được đồng bộ lên Firebase theo tài khoản của bạn.</li>
+                <li data-i18n="privacy.appLuckyCounter">Bộ đếm công khai: mỗi lượt quay làm tăng một con số tổng số lượt quay lưu trên Firebase, kể cả khi bạn chưa đăng nhập. Con số này không kèm bất kỳ thông tin nào về bạn.</li>
+            </ul>
+        </section>
+
+        <section class="privacy-app" id="app-dice-roller">
+            <h3 data-i18n="privacy.appDiceTitle">Dice Roller 3D</h3>
+            <p data-i18n="privacy.appDiceIntro">Mô phỏng vật lý xúc xắc chạy hoàn toàn trên trình duyệt của bạn.</p>
+            <ul>
+                <li data-i18n="privacy.appDiceLocal">Lưu trên máy: cài đặt xúc xắc, lịch sử các lần đổ và tùy chọn âm thanh.</li>
+                <li data-i18n="privacy.appDiceAuth">Khi đăng nhập: cài đặt và lịch sử đổ được đồng bộ lên Firebase theo tài khoản của bạn.</li>
+            </ul>
+        </section>
+
+        <section class="privacy-app" id="app-52-cards-tracker">
+            <h3 data-i18n="privacy.appCardsTitle">52 Cards Tracker</h3>
+            <p data-i18n="privacy.appCardsIntro">Việc theo dõi bài và tính xác suất chạy hoàn toàn trên trình duyệt của bạn.</p>
+            <ul>
+                <li data-i18n="privacy.appCardsLocal">Lưu trên máy: cài đặt, các lá bài đã đánh, bài của từng người chơi và trò chơi đang chọn.</li>
+                <li data-i18n="privacy.appCardsAuth">Khi đăng nhập: cài đặt, bài đã đánh và bài của từng người chơi được đồng bộ lên Firebase theo tài khoản của bạn.</li>
+            </ul>
+        </section>
+
+        <section class="privacy-app" id="app-downloads">
+            <h3 data-i18n="privacy.appDownloadsTitle">Ứng dụng và plugin tải về</h3>
+            <p data-i18n="privacy.appDownloads">Các ứng dụng Windows và plugin ở trang Sản phẩm chạy trên máy bạn. Trang tải chỉ gửi một yêu cầu đếm lượt tải (một con số tổng, không kèm thông tin cá nhân). Cam kết về dữ liệu của từng phần mềm được nêu trong phần mô tả sản phẩm đó.</p>
+        </section>
+
+        <h2 class="privacy-part" data-i18n="privacy.rightsHeading">Quyền của bạn &amp; liên hệ</h2>
+        <p data-i18n="privacy.rights">Bạn có thể xóa dữ liệu lưu trên thiết bị bất cứ lúc nào như nêu ở trên. Nếu bạn đã đăng nhập và muốn xóa dữ liệu đã đồng bộ, hoặc có bất kỳ câu hỏi nào về quyền riêng tư, hãy liên hệ qua nút Email ở cuối trang.</p>
+
+        <h3 data-i18n="privacy.changesHeading">Thay đổi chính sách</h3>
+        <p data-i18n="privacy.changes">Khi website hoặc một web app thay đổi cách xử lý dữ liệu, trang này sẽ được cập nhật cùng ngày cập nhật ở đầu trang.</p>
     </article>
 </main>
 

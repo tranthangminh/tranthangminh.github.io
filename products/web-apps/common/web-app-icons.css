@@ -1,0 +1,23 @@
+/* ==========================================================================
+   Shared monochrome SVG icons for the Web Apps header (CSS mask): the icon takes the text color of its parent.
+   Usage: <span class="icon-mask icon-privacy" aria-hidden="true"></span>
+   Replace a file in ./svg/ and every app updates. App-specific icons live in each app's own icons css.
+   ========================================================================== */
+
+.icon-mask {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    background-color: currentColor;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    pointer-events: none !important;
+    border-radius: 0 !important;
+}
+
+.icon-privacy { -webkit-mask-image: url('./svg/privacy.svg'); mask-image: url('./svg/privacy.svg'); }

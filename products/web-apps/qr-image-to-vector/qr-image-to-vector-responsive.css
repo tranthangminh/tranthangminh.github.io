@@ -86,7 +86,6 @@
     .toast { left: 50%; right: auto; bottom: 16px; transform: translate(-50%, 16px); max-width: calc(100vw - 32px); text-align: center; }
     .toast.is-show { transform: translate(-50%, 0); }
     .app-header .header-brand .brand-title { font-size: 15px; }
-    .header-text-link { display: none; }
 }
 
 /* ---------- Pixel Art panes: the drawing area of each pane is never shorter than it is wide (1:1 or taller) ---------- */
