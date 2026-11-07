@@ -13,7 +13,6 @@ namespace MaxApp.Common
     {
         public const int InfoTabIndex = 0;
 
-        private const string InfoIconName = "info.svg";
         private const int InfoIconSize = 16;
         private const int BarHeight = 34;
         private const int InfoGap = 6;
@@ -152,7 +151,7 @@ namespace MaxApp.Common
         private void ApplySelectionColors()
         {
             ApplyButtonColors(_btnInfo, _selectedIndex == InfoTabIndex);
-            _btnInfo.Image = SvgFileRenderer.GetCachedTintedIcon(InfoIconName, InfoIconSize, InfoIconSize, _btnInfo.ForeColor);
+            _btnInfo.Image = SvgFileRenderer.GetCachedTintedIcon(CommonIcons.Info, InfoIconSize, InfoIconSize, _btnInfo.ForeColor);
 
             for (int i = 0; i < _tabs.Count; i++)
             {

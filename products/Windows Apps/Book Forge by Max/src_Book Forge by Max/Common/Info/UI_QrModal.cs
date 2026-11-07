@@ -110,11 +110,11 @@ namespace MaxApp.Common
             int w = 240;
             int h = 240;
 
-            // 1. Render vector SVG QR_Vietcombank.svg
-            Bitmap bmpQr = SvgFileRenderer.RenderSvg("QR_Vietcombank.svg", 232, 232, null);
+            // 1. Render the vector QR
+            Bitmap bmpQr = SvgFileRenderer.RenderSvg(CommonIcons.QrVietcombank, 232, 232, null);
             if (bmpQr == null)
             {
-                bmpQr = SvgFileRenderer.RenderSvg("qr-bank.svg", 220, 220, Color.FromArgb(18, 18, 18));
+                bmpQr = SvgFileRenderer.RenderSvg(CommonIcons.QrBankFallback, 220, 220, Color.FromArgb(18, 18, 18));
             }
             if (bmpQr == null)
             {

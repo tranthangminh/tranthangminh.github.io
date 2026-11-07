@@ -47,6 +47,7 @@ Common/
 │   ├── GraphicsHelper.cs            # Toán học & hình học GDI+ (bo góc, fill, outline, anti-aliasing)
 │   ├── SvgFileRenderer.cs           # Bộ vẽ vector SVG ra Bitmap GDI+ siêu nét, hỗ trợ đổi màu (tint)
 │   ├── BuiltInSvgAssets.cs          # Chuỗi vector SVG nhúng sẵn (Zero-Resource Fallback, không sợ thiếu file)
+│   ├── CommonIcons.cs               # Nơi duy nhất khai báo tên icon của Common
 │   ├── AppLog.cs                    # Ghi lỗi vào error.log, không bao giờ ném lỗi, có giới hạn dung lượng
 │   ├── ExternalLink.cs              # Mở trang web, báo cho người dùng nếu không mở được
 │   ├── JobObjectHelper.cs           # Windows Job Object: tiến trình con tự tắt theo tiến trình cha
@@ -325,3 +326,5 @@ Trong `BuiltInSvgAssets.cs`, toàn bộ mã vector XML của `logo-MAX.svg`, `ad
 
 **Lợi ích đột phá:**  
 Dù file `build.bat` của dự án mới chưa được cấu hình dòng lệnh nhúng resource `/resource:*.svg`, **ứng dụng vẫn hiển thị 100% đầy đủ logo MAX, icon Dark/Light, icon Admin và mã QR Vietcombank** mà không bao giờ bị crash hay văng lỗi thiếu file!
+
+**Tên icon:** code trong `Common` gọi icon qua `CommonIcons` (ví dụ `CommonIcons.Admin`), không ghi tên file `.svg`. Thêm icon mới thì thả file vào `Assets/` và thêm 1 dòng vào `CommonIcons.cs`. Icon riêng của từng app khai báo ở app đó (Auto Clicker: `AppIcons` trong `UI_AppIcons.cs`).

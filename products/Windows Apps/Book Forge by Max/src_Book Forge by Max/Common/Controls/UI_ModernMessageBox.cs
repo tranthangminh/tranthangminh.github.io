@@ -93,7 +93,7 @@ namespace MaxApp.Common
             // The font's info sign renders as a tiny dot and stroke, so this one comes from the shared icon set
             if (_iconType == MessageBoxIcon.Information)
             {
-                Image info = SvgFileRenderer.GetCachedTintedIcon("info.svg", InfoIconSize, InfoIconSize, Theme.AccentPrimary);
+                Image info = SvgFileRenderer.GetCachedTintedIcon(CommonIcons.Info, InfoIconSize, InfoIconSize, Theme.AccentPrimary);
                 if (info != null)
                 {
                     int offset = (IconSize - InfoIconSize) / 2;
