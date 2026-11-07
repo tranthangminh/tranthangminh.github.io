@@ -27,10 +27,10 @@
                 note: 'Các website và tiện ích dưới đây <strong>không phải do tôi phát triển</strong>, đây là bộ sưu tập những công cụ hay và hữu ích được tôi chọn lọc từ internet để lưu lại và chia sẻ cùng mọi người.'
             },
             autoclicker: {
-                title: 'Auto Clicker by Max v1.1.3',
+                title: 'Auto Clicker by Max v1.1.4',
                 desc: 'Phần mềm Windows tự động click chuột theo tọa độ và kịch bản phím tắt tùy chỉnh, tối ưu thao tác lặp lại với hiệu năng cao và độ trễ cực thấp.',
-                downloadTitle: 'Tải về Auto Clicker by Max v1.1.3 (.exe)',
-                downloadAria: 'Tải về Auto Clicker by Max v1.1.3'
+                downloadTitle: 'Tải về Auto Clicker by Max v1.1.4 (.exe)',
+                downloadAria: 'Tải về Auto Clicker by Max v1.1.4'
             },
             bookforge: {
                 title: 'Book Forge by Max v1.0.1 (Beta)',
@@ -146,10 +146,10 @@
                 note: 'The websites and tools below were <strong>not developed by me</strong>; this is a hand-picked collection of interesting and useful web resources gathered from across the internet to share with the community.'
             },
             autoclicker: {
-                title: 'Auto Clicker by Max v1.1.3',
+                title: 'Auto Clicker by Max v1.1.4',
                 desc: 'Windows software for automated mouse clicks based on custom coordinates and hotkey macros, optimizing repetitive tasks with high performance and ultra-low latency.',
-                downloadTitle: 'Download Auto Clicker by Max v1.1.3 (.exe)',
-                downloadAria: 'Download Auto Clicker by Max v1.1.3'
+                downloadTitle: 'Download Auto Clicker by Max v1.1.4 (.exe)',
+                downloadAria: 'Download Auto Clicker by Max v1.1.4'
             },
             bookforge: {
                 title: 'Book Forge by Max v1.0.1 (Beta)',
