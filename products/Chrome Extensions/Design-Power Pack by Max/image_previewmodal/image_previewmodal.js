@@ -131,7 +131,7 @@ function initPreviewModal() {
     dialog.className = 'modal-backdrop discard-dialog-overlay hidden';
     dialog.innerHTML = `
       <div class="modal-dialog discard-dialog-box">
-        <div class="discard-dialog-icon">⚠️</div>
+        <div class="discard-dialog-icon"><span class="icon-mask icon-warning" aria-hidden="true"></span></div>
         <h3 class="discard-dialog-title" data-i18n="editor.discardTitle">Discard All Changes?</h3>
         <p class="discard-dialog-msg" data-i18n="editor.discardMessage">You have unsaved drawings or text edits. Are you sure you want to discard everything?</p>
         <div class="discard-dialog-actions">
@@ -817,15 +817,6 @@ function applyModalTheme(theme) {
   const modal = document.getElementById('image-preview-modal');
   const themeBtn = document.getElementById('modal-theme-toggle-btn');
   const iconMask = themeBtn ? themeBtn.querySelector('.icon-mask') : null;
-  const getSvgPath = (name) => {
-    try {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.runtime.getURL) {
-        return chrome.runtime.getURL(`svg/${name}`);
-      }
-    } catch (e) {}
-    return `svg/${name}`;
-  };
-
   const isStandalone = document.body && document.body.classList.contains('max-standalone-image-page');
 
   if (theme === 'light') {
@@ -839,17 +830,7 @@ function applyModalTheme(theme) {
         ? window.i18n.t('editor.switchToDark')
         : 'Switch to Dark Theme';
     }
-    if (iconMask) {
-      const darkSvg = getSvgPath('dark-mode.svg');
-      iconMask.style.maskImage = `url('${darkSvg}')`;
-      iconMask.style.webkitMaskImage = `url('${darkSvg}')`;
-      iconMask.style.maskRepeat = 'no-repeat';
-      iconMask.style.webkitMaskRepeat = 'no-repeat';
-      iconMask.style.maskSize = 'contain';
-      iconMask.style.webkitMaskSize = 'contain';
-      iconMask.style.maskPosition = 'center';
-      iconMask.style.webkitMaskPosition = 'center';
-    }
+    if (iconMask) iconMask.classList.replace('icon-light-mode', 'icon-dark-mode');
   } else {
     if (modal) modal.removeAttribute('data-theme');
     if (isStandalone) {
@@ -861,17 +842,7 @@ function applyModalTheme(theme) {
         ? window.i18n.t('editor.switchToLight')
         : 'Switch to Light Theme';
     }
-    if (iconMask) {
-      const lightSvg = getSvgPath('light-mode.svg');
-      iconMask.style.maskImage = `url('${lightSvg}')`;
-      iconMask.style.webkitMaskImage = `url('${lightSvg}')`;
-      iconMask.style.maskRepeat = 'no-repeat';
-      iconMask.style.webkitMaskRepeat = 'no-repeat';
-      iconMask.style.maskSize = 'contain';
-      iconMask.style.webkitMaskSize = 'contain';
-      iconMask.style.maskPosition = 'center';
-      iconMask.style.webkitMaskPosition = 'center';
-    }
+    if (iconMask) iconMask.classList.replace('icon-dark-mode', 'icon-light-mode');
   }
 }
 window.applyModalTheme = applyModalTheme;
@@ -940,10 +911,6 @@ function toggleHideHud(forceState = null) {
       : (isHidden ? 'Show HUD (H)' : 'Hide HUD (H)');
   }
 
-  try {
-    localStorage.setItem('hideHudState', isHidden ? 'true' : 'false');
-  } catch (e) {}
-
   if (typeof updateAppSettings === 'function') {
     updateAppSettings({ hideHudState: isHidden });
   } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
@@ -957,15 +924,6 @@ function toggleHideHud(forceState = null) {
 window.toggleHideHud = toggleHideHud;
 
 function applySavedHideHudState() {
-  let isHidden = false;
-  try {
-    isHidden = localStorage.getItem('hideHudState') === 'true';
-  } catch (e) {}
-
-  if (isHidden) {
-    toggleHideHud(true);
-  }
-
   if (typeof getAppSettings === 'function') {
     getAppSettings().then(settings => {
       if (settings && typeof settings.hideHudState === 'boolean') {

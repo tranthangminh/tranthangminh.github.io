@@ -46,36 +46,6 @@
     });
   }
 
-  // Direct Page Keyboard Shortcut Listener (Dual-Pass for 100% Reliability)
-  window.addEventListener('keydown', (e) => {
-    const activeEl = document.activeElement;
-    if (activeEl && (
-      activeEl.tagName === 'INPUT' ||
-      activeEl.tagName === 'TEXTAREA' ||
-      activeEl.tagName === 'SELECT' ||
-      activeEl.isContentEditable
-    )) {
-      return;
-    }
-
-    if (e.altKey && e.shiftKey) {
-      const key = (e.key || '').toLowerCase();
-      if (key === 'z') {
-        e.preventDefault();
-        safeSendMessage({ action: 'start_area_capture' });
-      } else if (key === 'x') {
-        e.preventDefault();
-        safeSendMessage({ action: 'trigger_capture_visible' });
-      } else if (key === 'c') {
-        e.preventDefault();
-        safeSendMessage({ action: 'trigger_capture_full' });
-      } else if (key === 'v') {
-        e.preventDefault();
-        safeSendMessage({ action: 'trigger_screen_recorder' });
-      }
-    }
-  }, true);
-
   // Main Action Handler
   async function handleContextMenuAction(menuItemId, nativeSrc) {
     const x = lastRightClickCoords.x;
@@ -685,4 +655,7 @@
     (document.body || document.documentElement).appendChild(container);
     setTimeout(() => container.remove(), 3000);
   }
+
+  // The background and page modules call this after capture and download actions
+  window.showToast = showToast;
 })();

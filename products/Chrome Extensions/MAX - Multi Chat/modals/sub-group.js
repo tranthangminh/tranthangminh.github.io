@@ -87,23 +87,8 @@ async function saveSubGroup() {
         const idsToDelete = new Set(Array.from(selectedDeleteCards).map(c => c.getAttribute("data-tab-id")));
         
         // Remove from memory hierarchy
-        sub.tabs = sub.tabs.filter(tab => {
-          if (idsToDelete.has(tab.id)) {
-            destroyIframe(tab.id);
-            if (appState.activeTabId === tab.id) {
-              appState.activeTabId = null;
-            }
-            return false;
-          }
-          return true;
-        });
-
-        // If active tab was deleted, reset iframe display to welcome screen
-        if (appState.activeTabId === null) {
-          document.getElementById("welcome-screen").style.display = "flex";
-          const header = document.getElementById("content-header");
-          if (header) header.style.display = "none";
-        }
+        idsToDelete.forEach(closeTabSession);
+        sub.tabs = sub.tabs.filter(tab => !idsToDelete.has(tab.id));
       }
     }
   } else {
@@ -127,23 +112,7 @@ async function deleteSubGroup(subId) {
 
   const sub = activeMainGroup.subGroups.find(s => s.id === subId);
   if (sub) {
-    sub.tabs.forEach(tab => {
-      destroyIframe(tab.id);
-    });
-
-    if (appState.activeTabId && sub.tabs.some(t => t.id === appState.activeTabId)) {
-      appState.activeTabId = null;
-    }
-    if (appState.leftTabId && sub.tabs.some(t => t.id === appState.leftTabId)) {
-      appState.leftTabId = null;
-    }
-    if (appState.rightTabId && sub.tabs.some(t => t.id === appState.rightTabId)) {
-      appState.rightTabId = null;
-    }
-
-    if (!appState.leftTabId && !appState.rightTabId) {
-      document.getElementById("welcome-screen").style.display = "flex";
-    }
+    sub.tabs.forEach(tab => closeTabSession(tab.id));
   }
 
   activeMainGroup.subGroups = activeMainGroup.subGroups.filter(s => s.id !== subId);

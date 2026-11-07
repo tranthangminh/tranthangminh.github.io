@@ -25,7 +25,7 @@ function parseSheetPayload(jsonData) {
 
   rawChannels.forEach(item => {
     const tabName = (item.tab_name || "").trim();
-    const tabUrl1 = (item.tab_url_1 || "").trim();
+    const tabUrl1 = normalizeHttpUrl(item.tab_url_1);
 
     if (!tabName || !tabUrl1) return;
 
@@ -62,7 +62,7 @@ function parseSheetPayload(jsonData) {
       channelObj.iconBgColor = parsedFavicon1.iconBgColor;
     }
 
-    const tabUrl2 = (item.tab_url_2 || "").trim();
+    const tabUrl2 = normalizeHttpUrl(item.tab_url_2);
     if (tabUrl2) {
       channelObj.isSplit = true;
       channelObj.urlRight = tabUrl2;
@@ -91,15 +91,15 @@ function parseSheetPayload(jsonData) {
     });
   });
 
-  // 2. Build ai_models array
+  // 2. Build ai_models array, dropping rows that could not be used as a pane
   const aiModels = rawAiModels.map(m => ({
-    id: m.id,
-    name: m.name || m.id,
-    url: m.url,
-    icon: m.icon || "",
-    active: String(m.active).trim().toUpperCase() === "TRUE" || String(m.active).trim() === "1" || m.active === true,
-    description: m.description || ""
-  }));
+    id: m.ai_id,
+    name: m.ai_name || m.ai_id,
+    url: m.ai_url,
+    icon: m.ai_icon || "",
+    active: String(m.ai_active).trim().toUpperCase() === "TRUE" || String(m.ai_active).trim() === "1" || m.ai_active === true,
+    description: m.ai_description || ""
+  })).filter(isValidAIModel);
 
   return { defaultChannelsList, tagsMap, aiModels };
 }
@@ -149,17 +149,23 @@ async function syncGoogleSheetManual(statusCallback) {
 
     // Apply Default Channels atomically to storage and global variables
     if (defaultChannelsList.length > 0) {
-      window.DEFAULT_CHANNELS_LIST = defaultChannelsList;
-      window.defaultChannelsByTag = tagsMap;
-      window.defaultTagsList = Object.keys(tagsMap).sort();
+      DEFAULT_CHANNELS_LIST = defaultChannelsList;
+      defaultChannelsByTag = tagsMap;
+      defaultTagsList = Object.keys(tagsMap).sort();
       await chrome.storage.local.set({ "default_channels": defaultChannelsList });
     }
 
     if (aiModels.length > 0) {
-      if (typeof appState !== "undefined") {
-        appState.aiModels = aiModels;
-      }
+      // The Sheet decides which bots exist, the user decides which ones are on
+      const { ai_models: savedModels = [] } = await chrome.storage.local.get("ai_models");
+      aiModels.forEach(model => {
+        const saved = savedModels.find(m => m.id === model.id);
+        if (saved) model.active = saved.active;
+      });
+      appState.aiModels = aiModels;
       await chrome.storage.local.set({ "ai_models": aiModels });
+      // The open checklist still points at the replaced objects, so its toggles would stop saving
+      if (appState.activeMainGroupId === SYSTEM_AI_GROUP_ID) renderSubSidebar();
     }
 
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -227,8 +233,8 @@ async function checkAndSyncGoogleSheetDaily() {
   const todayStr = new Date().toISOString().slice(0, 10);
 
   if (data.last_google_sheet_sync_date === todayStr) {
-    const channelsCount = data.last_google_sheet_sync_channels_count || (window.DEFAULT_CHANNELS_LIST ? window.DEFAULT_CHANNELS_LIST.length : 0);
-    const modelsCount = data.last_google_sheet_sync_models_count || (typeof appState !== "undefined" && appState.aiModels ? appState.aiModels.length : 0);
+    const channelsCount = data.last_google_sheet_sync_channels_count || DEFAULT_CHANNELS_LIST.length;
+    const modelsCount = data.last_google_sheet_sync_models_count || appState.aiModels.length;
     const successMsg = `Successfully updated on ${todayStr}\n(${channelsCount} Default Channels, ${modelsCount} AI Models)`;
     updateSyncStatusUI("success", successMsg);
     return;

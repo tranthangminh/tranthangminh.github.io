@@ -211,16 +211,16 @@ async function performFullPageCaptureDirectly(tab) {
     const results = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => {
-        window.__maxScreenCapture?.initContainers?.();
-        window.__maxScreenCapture?.initUniversalSnap?.();
-        if (window.__maxScreenCapture?.prepareLayout) return window.__maxScreenCapture.prepareLayout();
-        return {
+        // Measure first, because initUniversalSnap scrolls to the top and would lose the original position
+        const layout = window.__maxScreenCapture?.prepareLayout?.() ?? {
           scrollHeight: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
           clientHeight: window.innerHeight,
           clientWidth: window.innerWidth,
           devicePixelRatio: window.devicePixelRatio || 1,
           originalScrollTop: window.scrollY || document.documentElement.scrollTop
         };
+        window.__maxScreenCapture?.initUniversalSnap?.();
+        return layout;
       }
     });
 

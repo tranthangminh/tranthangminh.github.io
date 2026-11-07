@@ -2,10 +2,10 @@
   "manifest_version": 3,
   "name": "MAX - Multi Chat/AI, Multi Account & Tab Manager", 
   "short_name": "MAX Chat",
-  "version": "1.0.1",
-  "description": "Centralize all your messaging apps, multi-accounts, and custom websites into one powerful workspace. Bypass limits in real-time.",
+  "version": "1.0.2",
+  "minimum_chrome_version": "111",
+  "description": "Centralize all your messaging apps, multi-accounts, and custom websites into one powerful workspace.",
   "permissions": [
-    "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess",
     "storage",
     "cookies",
@@ -28,13 +28,6 @@
       "js": ["content.js"],
       "all_frames": true,
       "run_at": "document_start"
-    },
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content-main.js"],
-      "all_frames": true,
-      "run_at": "document_start",
-      "world": "MAIN"
     },
     {
       "matches": [

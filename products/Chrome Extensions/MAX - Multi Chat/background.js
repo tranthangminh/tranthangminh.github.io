@@ -1,17 +1,11 @@
 import {
-  isGoogleDomain,
-  extractUrlsFromHierarchy,
-  ensureGlobalAntiFrameDNRRule,
-  applySameSiteNoneToCookie,
-  syncAllDomainCookies
+  syncDashboardFrameRules,
+  removeLegacyDynamicFrameRules,
+  removeLegacySameSiteCookies
 } from "./connections/common.js";
 
-// Immediately activate Global Anti-Frame DNR Rules upon Service Worker startup
-ensureGlobalAntiFrameDNRRule();
-chrome.storage.local.get(["app_hierarchy", "ai_models"], (data) => {
-  const urls = extractUrlsFromHierarchy(data.app_hierarchy || [], data.ai_models || []);
-  syncAllDomainCookies(urls);
-});
+// Immediately refresh the dashboard-scoped DNR rules upon Service Worker startup
+syncDashboardFrameRules();
 
 // 1. Open Dashboard page when Extension Icon is clicked
 chrome.action.onClicked.addListener(async () => {
@@ -29,108 +23,102 @@ chrome.action.onClicked.addListener(async () => {
 
 // 2. LISTENERS
 
-// Listen for storage changes to sync DNR Rules and Cookies
+// Listen for storage changes to sync DNR Rules
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === "local" && (changes.app_hierarchy || changes.ai_models)) {
-    chrome.storage.local.get(["app_hierarchy", "ai_models"], (data) => {
-      const urls = extractUrlsFromHierarchy(data.app_hierarchy || [], data.ai_models || []);
-      ensureGlobalAntiFrameDNRRule();
-      syncAllDomainCookies(urls);
-    });
+    syncDashboardFrameRules();
   }
 });
 
-// Listen for cookie changes in the browser to immediately sync SameSite=None
-chrome.cookies.onChanged.addListener((changeInfo) => {
-  const cookie = changeInfo.cookie;
-  if (isGoogleDomain(cookie.domain)) return;
-  if (cookie.sameSite !== "no_restriction" || !cookie.secure) {
-    chrome.storage.local.get("app_hierarchy", (data) => {
-      const urls = extractUrlsFromHierarchy(data.app_hierarchy || []);
-      const isMonitored = urls.some(urlStr => {
-        try {
-          const url = new URL(urlStr);
-          return cookie.domain.includes(url.hostname) || url.hostname.includes(cookie.domain);
-        } catch {
-          return false;
-        }
-      });
-
-      if (isMonitored) {
-        applySameSiteNoneToCookie(cookie);
-      }
-    });
-  }
+// Dashboard asks for its rules before creating iframes
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type !== "SYNC_FRAME_RULES") return;
+  syncDashboardFrameRules().finally(() => sendResponse());
+  return true;
 });
 
-// Sync on installation/update and Service Worker wakeup
+// Header bypass must end as soon as a dashboard tab closes or navigates elsewhere
+chrome.tabs.onRemoved.addListener(() => syncDashboardFrameRules());
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.url) syncDashboardFrameRules();
+});
+
+// Sync on installation/update
 chrome.runtime.onInstalled.addListener(async (details) => {
-  const data = await chrome.storage.local.get(["app_hierarchy", "ai_models"]);
-  const urls = extractUrlsFromHierarchy(data.app_hierarchy || [], data.ai_models || []);
-  ensureGlobalAntiFrameDNRRule();
-  syncAllDomainCookies(urls);
+  await removeLegacyDynamicFrameRules();
+  syncDashboardFrameRules();
 
-  if (details && details.reason === "install") {
+  if (details.reason !== "install") {
+    await removeLegacySameSiteCookies();
+  } else {
+    await chrome.storage.local.set({ legacy_cookies_cleaned: true });
     const welcomeUrl = chrome.runtime.getURL("welcome.html");
     chrome.tabs.create({ url: welcomeUrl });
   }
 });
 
-// Listen for navigation errors in sub_frames (iframes) and notify Dashboard
-chrome.webNavigation.onErrorOccurred.addListener((details) => {
-  if (details.frameId > 0) {
-    // Broadcast the error message to the Dashboard tab
-    chrome.runtime.sendMessage({
-      type: "IFRAME_LOAD_ERROR",
-      url: details.url,
-      error: details.error
-    }).catch(() => {
-      // Catch error when no active dashboard tab is listening
-    });
+// Only a pane of a dashboard tab is ours: frames in the user's other tabs must stay untouched
+async function isDashboardPane(details) {
+  if (details.parentFrameId !== 0) return false;
+  try {
+    const tab = await chrome.tabs.get(details.tabId);
+    return (tab.pendingUrl || tab.url || "").startsWith(chrome.runtime.getURL("dashboard.html"));
+  } catch {
+    return false;
   }
+}
+
+// Listen for navigation errors in panes and notify Dashboard
+chrome.webNavigation.onErrorOccurred.addListener(async (details) => {
+  // ERR_ABORTED only means the pane was replaced or reloaded before it finished
+  if (details.error === "net::ERR_ABORTED" || !(await isDashboardPane(details))) return;
+  chrome.runtime.sendMessage({
+    type: "IFRAME_LOAD_ERROR",
+    url: details.url,
+    error: details.error
+  }).catch(() => {
+    // Catch error when no active dashboard tab is listening
+  });
 });
 
-// Listen for successful navigation in sub_frames to auto-detect actual site favicon
+// Listen for successful navigation in panes to auto-detect actual site favicon
 chrome.webNavigation.onCompleted.addListener(async (details) => {
-  if (details.frameId > 0) {
-    const url = details.url;
-    if (!url.startsWith("http")) return; // Skip extensions internal pages or errors
+  const url = details.url;
+  if (!url.startsWith("http") || !(await isDashboardPane(details))) return;
 
-    try {
-      // Inject script to extract the actual favicon from iframe document link tags
-      const results = await chrome.scripting.executeScript({
-        target: { tabId: details.tabId, frameIds: [details.frameId] },
-        func: () => {
-          let faviconUrl = '';
-          const rels = ['icon', 'shortcut icon', 'apple-touch-icon'];
-          for (const rel of rels) {
-            const link = document.querySelector(`link[rel*="${rel}"]`);
-            if (link && link.href) {
-              faviconUrl = link.href;
-              break;
-            }
+  try {
+    // Inject script to extract the actual favicon from iframe document link tags
+    const results = await chrome.scripting.executeScript({
+      target: { tabId: details.tabId, frameIds: [details.frameId] },
+      func: () => {
+        let faviconUrl = '';
+        const rels = ['icon', 'shortcut icon', 'apple-touch-icon'];
+        for (const rel of rels) {
+          const link = document.querySelector(`link[rel*="${rel}"]`);
+          if (link && link.href) {
+            faviconUrl = link.href;
+            break;
           }
-          if (!faviconUrl) {
-            // Fallback to domain root favicon.ico
-            faviconUrl = window.location.origin + '/favicon.ico';
-          }
-          return faviconUrl;
         }
-      });
-
-      if (results && results[0] && results[0].result) {
-        const detectedFavicon = results[0].result;
-        // Notify the Dashboard tab about the detected favicon
-        chrome.runtime.sendMessage({
-          type: "FAVICON_DETECTED",
-          url: url,
-          faviconUrl: detectedFavicon
-        }).catch(err => {
-          // Ignore when no dashboard tab is active/listening
-        });
+        if (!faviconUrl) {
+          // Fallback to domain root favicon.ico
+          faviconUrl = window.location.origin + '/favicon.ico';
+        }
+        return faviconUrl;
       }
-    } catch (err) {
-      // Suppress extraction failure on restricted or sandboxed frames
+    });
+
+    if (results && results[0] && results[0].result) {
+      // Notify the Dashboard tab about the detected favicon
+      chrome.runtime.sendMessage({
+        type: "FAVICON_DETECTED",
+        url: url,
+        faviconUrl: results[0].result
+      }).catch(() => {
+        // Ignore when no dashboard tab is active/listening
+      });
     }
+  } catch (err) {
+    console.debug("MAX: favicon not readable in this frame:", err.message);
   }
 });

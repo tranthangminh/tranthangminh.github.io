@@ -65,8 +65,9 @@
     if (modal && (!modal.classList.contains('hidden') || modal.classList.contains('editor-page-modal'))) return;
     if (window.isEditMode || window.selectedTextObj?.isEditingText) return;
 
-    const el = document.activeElement;
-    if (el && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable || el.classList.contains('max-shortcut-key-box'))) return;
+    // composedPath sees the real target inside Shadow DOM, where activeElement only returns the host
+    const el = e.composedPath()[0];
+    if (el && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable || el.classList?.contains('max-shortcut-key-box'))) return;
     if (e.ctrlKey || e.altKey || e.metaKey || !e.key) return;
 
     const key = e.key.toLowerCase();
@@ -155,7 +156,7 @@
     // Minus Button
     const minusBtn = document.createElement('button');
     minusBtn.className = 'max-speed-btn max-speed-minus';
-    minusBtn.textContent = '−';
+    minusBtn.innerHTML = '<span class="icon-mask icon-minus" aria-hidden="true"></span>';
     minusBtn.title = `Slower (${shortcutSettings.decrease.key.toUpperCase()})`;
     minusBtn.addEventListener('click', () => adjustSpeed(video, -1));
 
@@ -233,7 +234,7 @@
     // Plus Button
     const plusBtn = document.createElement('button');
     plusBtn.className = 'max-speed-btn max-speed-plus';
-    plusBtn.textContent = '+';
+    plusBtn.innerHTML = '<span class="icon-mask icon-plus" aria-hidden="true"></span>';
     plusBtn.title = `Faster (${shortcutSettings.increase.key.toUpperCase()})`;
     plusBtn.addEventListener('click', () => adjustSpeed(video, 1));
 

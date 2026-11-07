@@ -7,8 +7,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
   // 1. Sync Hierarchy (Groups, Sub-groups, and Channels)
   if (changes.app_hierarchy) {
-    const newValue = changes.app_hierarchy.newValue || [];
-    appState.hierarchy = newValue;
+    appState.hierarchy = normalizeHierarchy(changes.app_hierarchy.newValue);
 
     // Validate active main group ID
     const activeGroupExists = appState.hierarchy.some(g => g.id === appState.activeMainGroupId);

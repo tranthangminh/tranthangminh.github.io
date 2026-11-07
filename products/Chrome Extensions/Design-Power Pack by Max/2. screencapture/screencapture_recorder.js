@@ -26,6 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   initRecorderApp();
+
+  // Recorded data only lives in this window until it is saved, so closing it mid-recording would lose it
+  window.addEventListener('beforeunload', (e) => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') e.preventDefault();
+  });
 });
 
 function initTheme() {
@@ -330,6 +335,9 @@ async function startRecordingFlow() {
     } else if (MediaRecorder.isTypeSupported('video/webm')) {
       mimeType = 'video/webm';
     }
+    if (selectedFormat === 'mp4' && MediaRecorder.isTypeSupported('video/mp4')) {
+      mimeType = 'video/mp4';
+    }
 
     mediaRecorder = new MediaRecorder(recordingStream, { mimeType });
 
@@ -402,12 +410,12 @@ function togglePauseResume() {
   if (mediaRecorder.state === 'recording') {
     mediaRecorder.pause();
     isPaused = true;
-    if (pauseIcon) pauseIcon.textContent = '▶';
+    if (pauseIcon) pauseIcon.classList.replace('icon-pause', 'icon-play');
     if (pauseText) pauseText.textContent = t('recorder.resume', 'Resume');
   } else if (mediaRecorder.state === 'paused') {
     mediaRecorder.resume();
     isPaused = false;
-    if (pauseIcon) pauseIcon.textContent = '⏸';
+    if (pauseIcon) pauseIcon.classList.replace('icon-play', 'icon-pause');
     if (pauseText) pauseText.textContent = t('recorder.pause', 'Pause');
   }
 }
@@ -456,7 +464,8 @@ function saveRecordedVideo() {
     return;
   }
 
-  const ext = selectedFormat === 'webm' ? 'webm' : (MediaRecorder.isTypeSupported('video/mp4') ? 'mp4' : 'webm');
+  // The extension must match the container that was actually recorded
+  const ext = mediaRecorder.mimeType.startsWith('video/mp4') ? 'mp4' : 'webm';
   const mimeType = ext === 'mp4' ? 'video/mp4' : 'video/webm';
 
   const blob = new Blob(recordedChunks, { type: mimeType });

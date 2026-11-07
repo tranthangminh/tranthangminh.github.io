@@ -52,7 +52,8 @@ function buildTypographyProfile(fontSizesCount) {
 function formatRichChapterMarkdown(chapterNumber, chapterTitle, rawItems, typoProfile) {
     let md = `# ${chapterTitle}\n\n`;
 
-    const cleanTitleCompact = chapterTitle.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    const compactText = s => s.normalize('NFC').replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+    const cleanTitleCompact = compactText(chapterTitle);
 
     // 1. Filter out repetitive chapter title decor lines at the very beginning of the chapter
     let filteredItems = [...rawItems];
@@ -64,13 +65,15 @@ function formatRichChapterMarkdown(chapterNumber, chapterTitle, rawItems, typoPr
         if (it.isImage) break; // Don't strip initial images
 
         const lineText = (it.items || []).map(token => token.str).join(' ').trim();
-        const compact = lineText.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        const compact = compactText(lineText);
 
         const isSingleLetterDropCap = /^[“"‘'«‹]?[A-Z\u00C0-\u024F]$/u.test(lineText) && (it.maxFs >= typoProfile.h1Threshold || it.maxFs >= 18);
         if (isSingleLetterDropCap) {
             break; // Drop cap marks the start of chapter body text - do not strip!
         }
-        const isDuplicateTitle = compact.length > 3 && (cleanTitleCompact.includes(compact) || compact.includes(cleanTitleCompact));
+        // The last line of a wrapped title can be very short ("Log"), so heading-sized lines have no minimum.
+        const isLongEnough = compact.length > 3 || (compact.length > 0 && it.maxFs >= typoProfile.h3Threshold);
+        const isDuplicateTitle = isLongEnough && (cleanTitleCompact.includes(compact) || compact.includes(cleanTitleCompact));
         const isChapterNum = /^(chapter\s+\d+|\d+)$/i.test(lineText) && it.maxFs >= typoProfile.h2Threshold;
 
         if (isDuplicateTitle || isChapterNum) {
@@ -89,6 +92,7 @@ function formatRichChapterMarkdown(chapterNumber, chapterTitle, rawItems, typoPr
     const paragraphs = [];
     let curParagraphTokens = [];
     const footnoteState = { inFootnoteBlock: false };
+    let lastHeading = null;
 
     function addParagraphWithInlineFootnotes(tokens) {
         const pText = assembleParagraphTokens(tokens);
@@ -150,11 +154,22 @@ function formatRichChapterMarkdown(chapterNumber, chapterTitle, rawItems, typoPr
             }
 
             const cleanHeader = sanitizeText(rawLineText);
-            if (isH2 || isStandaloneSectionNumber) {
-                paragraphs.push(`## ${cleanHeader}`);
+            const prefix = (isH2 || isStandaloneSectionNumber) ? '##' : '###';
+
+            // A heading wrapped over two lines is one heading, not two.
+            const continuesHeading = lastHeading
+                && lastHeading.paragraphIndex === paragraphs.length - 1
+                && lastHeading.prefix === prefix
+                && lastHeading.pageNum === line.pageNum
+                && Math.abs(lastHeading.fs - lineFs) <= 0.5
+                && lastHeading.y - line.y <= lineFs * 1.7;
+
+            if (continuesHeading) {
+                paragraphs[lastHeading.paragraphIndex] += ` ${cleanHeader}`;
             } else {
-                paragraphs.push(`### ${cleanHeader}`);
+                paragraphs.push(`${prefix} ${cleanHeader}`);
             }
+            lastHeading = { paragraphIndex: paragraphs.length - 1, prefix, pageNum: line.pageNum, fs: lineFs, y: line.y };
             continue;
         }
 
@@ -243,12 +258,15 @@ function formatRichChapterMarkdown(chapterNumber, chapterTitle, rawItems, typoPr
         .map(p => sanitizeText(p).trim())
         .filter(p => p.length > 0 && !/^[A-Za-z]$/.test(p));
 
-    md = sanitizeText(md.trim()) + '\n\n' + cleanParagraphs.join('\n\n') + '\n';
-    return sanitizeText(md);
+    // Paragraphs are already sanitized one by one. Sanitizing the joined text would let the accents of
+    // the Vietnamese image captions switch on the glued-word splitter for a whole English chapter.
+    return sanitizeText(md.trim()) + '\n\n' + cleanParagraphs.join('\n\n') + '\n';
 }
 
 /**
- * Normalizes consecutive H2 headings without content in between into prominent centered text
+ * Normalizes consecutive H2 headings without content in between into prominent centered text.
+ * The last one stays a heading when body text follows, because it is the section that text belongs to
+ * and the chunk writer needs it to split a long chapter.
  */
 function normalizeConsecutiveH2Headings(paragraphs) {
     const result = [];
@@ -262,11 +280,15 @@ function normalizeConsecutiveH2Headings(paragraphs) {
             }
             const count = j - i;
             if (count >= 2) {
-                for (let k = i; k < j; k++) {
+                const lastCentered = j < paragraphs.length ? j - 1 : j;
+                for (let k = i; k < lastCentered; k++) {
                     const headingText = paragraphs[k].replace(/^##\s+/, '').trim();
                     result.push(`<p align="center" style="font-size: 1.4em;"><strong>${headingText}</strong></p>`);
                 }
-                i = j;
+                i = lastCentered;
+                if (i === j) continue;
+                result.push(paragraphs[i]);
+                i++;
                 continue;
             }
         }

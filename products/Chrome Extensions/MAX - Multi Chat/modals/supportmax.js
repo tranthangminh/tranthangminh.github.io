@@ -11,7 +11,7 @@ function openSupportLink() {
   if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
     chrome.tabs.create({ url: KOFI_URL, active: true });
   } else {
-    window.open(KOFI_URL, '_blank');
+    window.open(KOFI_URL, '_blank', 'noopener');
   }
 }
 

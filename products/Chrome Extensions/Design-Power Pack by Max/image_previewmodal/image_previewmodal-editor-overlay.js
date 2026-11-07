@@ -1,12 +1,14 @@
 // Preview Modal Image Editor - SVG Overlay & Controls Module (image_previewmodal-editor-overlay.js)
 
-function getOverlayIconUrl(name) {
-  try {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.runtime.getURL) {
-      return chrome.runtime.getURL(`svg/${name}`);
-    }
-  } catch (e) {}
-  return `svg/${name}`;
+// SVG <image> and <mask> cannot use icons.css classes, so overlay icons are HTML spans inside foreignObject
+function overlayIcon(name, size, id = '') {
+  const offset = -size / 2;
+  return `<foreignObject x="${offset}" y="${offset}" width="${size}" height="${size}"><span ${id ? `id="${id}" ` : ''}class="icon-mask icon-${name}" aria-hidden="true"></span></foreignObject>`;
+}
+
+function setOverlayAlignIcon(icon, align) {
+  icon.classList.remove('icon-align-left', 'icon-align-center', 'icon-align-right');
+  icon.classList.add(`icon-align-${align}`);
 }
 
 function updateVectorUiOverlay() {
@@ -52,15 +54,6 @@ function updateVectorUiOverlay() {
     svg.id = 'edit-ui-vector-overlay';
 
     svg.innerHTML = `
-      <defs>
-        <mask id="vector-stroke-mask">
-          <image href="${getOverlayIconUrl('stroke.svg')}" width="18" height="18" x="-9" y="-9" style="filter: brightness(0) invert(1);" />
-        </mask>
-        <mask id="vector-text-color-mask">
-          <image href="${getOverlayIconUrl('text-color.svg')}" width="16" height="16" x="-8" y="-8" style="filter: brightness(0) invert(1);" />
-        </mask>
-      </defs>
-
       <g id="vector-selection-group">
         <rect id="vector-hit-rect" fill="transparent" pointer-events="none" />
         <rect id="vector-shadow-rect" />
@@ -68,12 +61,12 @@ function updateVectorUiOverlay() {
 
         <g id="vector-rotate-handle" class="vector-handle" style="cursor: grab;" title="${t('editor.rotateObject', 'Rotate Object')}">
           <circle r="12" />
-          <image id="vector-rotate-icon" href="${getOverlayIconUrl('rotate.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          ${overlayIcon('rotate', 14)}
         </g>
 
         <g id="vector-scale-handle" class="vector-handle" style="cursor: nwse-resize;" title="${t('editor.scaleObject', 'Scale Object')}">
           <circle r="12" />
-          <image id="vector-scale-icon" href="${getOverlayIconUrl('scale.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          ${overlayIcon('scale', 14)}
         </g>
       </g>
 
@@ -84,12 +77,12 @@ function updateVectorUiOverlay() {
         
         <g id="vector-text-color-btn" class="vector-toolbar-btn" title="${t('editor.textColor', 'Text Color')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <rect id="vector-text-color-indicator" width="16" height="16" x="-8" y="-8" fill="#ffffff" mask="url(#vector-text-color-mask)" />
+          ${overlayIcon('text-color', 16, 'vector-text-color-indicator')}
         </g>
 
         <g id="vector-color-btn" class="vector-toolbar-btn" title="${t('editor.strokeColor', 'Stroke Color')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <rect id="vector-stroke-color-indicator" width="18" height="18" x="-9" y="-9" fill="#67e8f9" mask="url(#vector-stroke-mask)" />
+          ${overlayIcon('stroke', 18, 'vector-stroke-color-indicator')}
         </g>
 
         <g id="vector-bg-color-btn" class="vector-toolbar-btn" title="${t('editor.bgColor', 'Background Color (Right-click: Transparent)')}">
@@ -100,22 +93,22 @@ function updateVectorUiOverlay() {
 
         <g id="vector-align-btn" class="vector-toolbar-btn" title="${t('editor.align', 'Text Alignment')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <image id="vector-align-icon" href="${getOverlayIconUrl('align-left.svg')}" width="16" height="16" x="-8" y="-8" style="filter: invert(1);" />
+          ${overlayIcon('align-left', 16, 'vector-align-icon')}
         </g>
 
         <g id="vector-bold-btn" class="vector-toolbar-btn" title="${t('editor.bold', 'Toggle Bold')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <image href="${getOverlayIconUrl('text-bold.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          ${overlayIcon('text-bold', 14)}
         </g>
 
         <g id="vector-italic-btn" class="vector-toolbar-btn" title="${t('editor.italic', 'Toggle Italic')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <image href="${getOverlayIconUrl('text-italic.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          ${overlayIcon('text-italic', 14)}
         </g>
 
         <g id="vector-underline-btn" class="vector-toolbar-btn" title="${t('editor.underline', 'Toggle Underline')}">
           <rect width="28" height="28" x="-14" y="-14" fill="transparent" rx="6" />
-          <image href="${getOverlayIconUrl('text-underline.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          ${overlayIcon('text-underline', 14)}
         </g>
 
         <g id="vector-brush-size-btn" class="vector-toolbar-btn hidden" title="${t('editor.brushSize', 'Brush Size (Click to type or cycle presets)')}">
@@ -136,7 +129,7 @@ function updateVectorUiOverlay() {
         <!-- Standalone Delete Button on the Same Horizontal Row -->
         <g id="vector-delete-handle" class="vector-handle" title="${t('editor.deleteObject', 'Delete Object')}">
           <circle r="14" />
-          <image href="${getOverlayIconUrl('close.svg')}" width="14" height="14" x="-7" y="-7" style="filter: invert(1);" />
+          ${overlayIcon('close', 14)}
         </g>
       </g>
     `;
@@ -169,7 +162,7 @@ function updateVectorUiOverlay() {
           saveEditorSettingsToStorage({ textAlign: nextAlign });
         }
         const alignIcon = svg.querySelector('#vector-align-icon');
-        if (alignIcon) alignIcon.setAttribute('href', getOverlayIconUrl(`align-${nextAlign}.svg`));
+        if (alignIcon) setOverlayAlignIcon(alignIcon, nextAlign);
         renderCompositeCanvas();
       });
     }
@@ -586,8 +579,7 @@ window.openInlineVectorSidesInput = openInlineVectorSidesInput;
 
   const alignIcon = svg.querySelector('#vector-align-icon');
   if (alignIcon && selectedObj.type !== 'brush') {
-    const alignSvgUrl = getOverlayIconUrl(`align-${selectedObj.align || 'left'}.svg`);
-    alignIcon.setAttribute('href', alignSvgUrl);
+    setOverlayAlignIcon(alignIcon, selectedObj.align || 'left');
   }
 
   // Configure Toolbar Capsule buttons declaratively based on tool type
@@ -633,11 +625,11 @@ window.openInlineVectorSidesInput = openInlineVectorSidesInput;
   // Update component states & indicators
   if (colorBtn && !colorBtn.classList.contains('hidden')) {
     const strokeIndicator = colorBtn.querySelector('#vector-stroke-color-indicator');
-    if (strokeIndicator) strokeIndicator.setAttribute('fill', selectedObj.color || brushColor || '#67e8f9');
+    if (strokeIndicator) strokeIndicator.style.color = selectedObj.color || brushColor || '#67e8f9';
   }
   if (textColorBtn && !textColorBtn.classList.contains('hidden')) {
     const textIndicator = textColorBtn.querySelector('#vector-text-color-indicator');
-    if (textIndicator) textIndicator.setAttribute('fill', selectedObj.color || textColor || '#ffffff');
+    if (textIndicator) textIndicator.style.color = selectedObj.color || textColor || '#ffffff';
   }
   if (bgColorBtn && !bgColorBtn.classList.contains('hidden')) {
     const rectEl = bgColorBtn.querySelector('#vector-bg-color-rect');

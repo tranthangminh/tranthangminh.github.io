@@ -32,68 +32,11 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
-// Auto-detect blob: image tabs (Messenger, WhatsApp, Discord) and inject auto-open-image-studio.js
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (tab && tab.url && tab.url.startsWith('blob:')) {
-    chrome.storage.local.get({ directImageStudioEnabled: true }, (data) => {
-      if (data.directImageStudioEnabled !== false) {
-        chrome.scripting.executeScript({
-          target: { tabId: tabId },
-          files: ['4. tools-features/auto-open-image-studio.js']
-        }).catch(() => {});
-      }
-    });
-  }
-});
-
 function syncPanelBehavior() {
   chrome.storage.local.get({ currentViewMode: 'sidepanel' }, (data) => {
     const isSidePanel = data.currentViewMode === 'sidepanel';
     chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: isSidePanel })
       .catch((err) => console.error('Failed to set panel behavior on startup:', err));
-  });
-}
-// Handle extension global keyboard shortcuts (Alt+Shift+Z/X/C/V)
-if (typeof chrome !== 'undefined' && chrome.commands && chrome.commands.onCommand) {
-  chrome.commands.onCommand.addListener((command) => {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-      let tab = tabs && tabs[0];
-
-      const executeCommand = (activeTab) => {
-        if (!activeTab || !activeTab.id) return;
-
-        if (command === 'capture_area') {
-          if (typeof createSelectionOverlay === 'function') {
-            chrome.scripting.executeScript({
-              target: { tabId: activeTab.id },
-              func: createSelectionOverlay
-            }).catch((err) => console.error('Area capture command error:', err));
-          }
-        } else if (command === 'capture_visible') {
-          if (typeof performVisibleCaptureDirectly === 'function') {
-            performVisibleCaptureDirectly(activeTab);
-          }
-        } else if (command === 'capture_full') {
-          if (typeof performFullPageCaptureDirectly === 'function') {
-            performFullPageCaptureDirectly(activeTab);
-          }
-        } else if (command === 'capture_record') {
-          if (typeof openScreenRecorderWindow === 'function') {
-            openScreenRecorderWindow();
-          }
-        }
-      };
-
-      if (tab) {
-        executeCommand(tab);
-      } else {
-        chrome.tabs.query({ active: true, currentWindow: true }, (fallbackTabs) => {
-          if (fallbackTabs && fallbackTabs[0]) {
-            executeCommand(fallbackTabs[0]);
-          }
-        });
-      }
-    });
   });
 }
 
@@ -151,7 +94,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.scripting.executeScript({
           target: { tabId: tabId },
           func: createSelectionOverlay
-        }).catch(err => console.error('Overlay injection error:', err));
+        }).catch((err) => {
+          console.error('Overlay injection error:', err);
+          if (scale > 1 && chrome.debugger) {
+            chrome.debugger.detach({ tabId }, () => { void chrome.runtime.lastError; });
+          }
+        });
       });
     };
 
@@ -509,19 +457,30 @@ function createSelectionOverlay() {
         } catch (err) {}
       }, 80);
     } else {
-      if (floatingHost) floatingHost.style.removeProperty('display');
+      cancelSelection();
     }
   };
 
   const onKeyDown = (e) => {
     if (e.key === 'Escape') {
       cleanup();
-      if (floatingHost) floatingHost.style.removeProperty('display');
-      try {
-        chrome.runtime.sendMessage({ action: 'area_cancelled' }, () => { void chrome.runtime?.lastError; });
-      } catch(err) {
-        // Safe fallback if extension context is invalidated
-      }
+      cancelSelection();
+    }
+  };
+
+  // Leaving or reloading the page destroys the overlay, so it counts as cancelling.
+  const onPageHide = () => {
+    cleanup();
+    cancelSelection();
+  };
+
+  // The background attaches the debugger before this overlay opens at scale > 1, so every exit must notify it.
+  const cancelSelection = () => {
+    if (floatingHost) floatingHost.style.removeProperty('display');
+    try {
+      chrome.runtime.sendMessage({ action: 'area_cancelled' }, () => { void chrome.runtime?.lastError; });
+    } catch(err) {
+      // Safe fallback if extension context is invalidated
     }
   };
 
@@ -530,6 +489,7 @@ function createSelectionOverlay() {
     window.removeEventListener('mousemove', onMouseMove, true);
     window.removeEventListener('mouseup', onMouseUp, true);
     window.removeEventListener('keydown', onKeyDown, true);
+    window.removeEventListener('pagehide', onPageHide, true);
     if (document.body) document.body.style.overflow = originalOverflow;
     overlay.remove();
     style.remove();
@@ -537,6 +497,7 @@ function createSelectionOverlay() {
 
   overlay.addEventListener('mousedown', onMouseDown, true);
   window.addEventListener('keydown', onKeyDown, true);
+  window.addEventListener('pagehide', onPageHide, true);
 }
 
 // Cropping and Web Toast Injection Script
@@ -644,7 +605,8 @@ function cropAndDownloadInTab(dataUrl, coords, formatConfig, folderPrefix, times
       let copied = false;
       if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
         try {
-          const item = new ClipboardItem({ 'image/png': blob });
+          // The clipboard only accepts PNG, while blob uses the chosen capture format
+          const item = new ClipboardItem({ 'image/png': new Promise((resolve) => canvas.toBlob(resolve, 'image/png')) });
           navigator.clipboard.write([item]).then(() => {
             showWebToast('Area captured & copied!');
           }).catch(() => {
@@ -664,33 +626,31 @@ function cropAndDownloadInTab(dataUrl, coords, formatConfig, folderPrefix, times
   img.src = dataUrl;
 
   function showWebToast(msg) {
-    let toast = document.getElementById('max-web-toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'max-web-toast';
-      toast.style.cssText = `
-        position: fixed !important;
-        bottom: 30px !important;
-        left: 50% !important;
-        transform: translateX(-50%) translateY(20px) !important;
-        background: var(--accent-primary, #00f2fe) !important;
-        color: var(--text-on-accent, #0f172a) !important;
-        border: 1px solid var(--accent-primary, #00f2fe) !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
-        padding: 12px 24px !important;
-        border-radius: 24px !important;
-        z-index: 2147483647 !important;
-        font-family: system-ui, -apple-system, sans-serif !important;
-        font-size: 13px !important;
-        font-weight: 600 !important;
-        opacity: 0 !important;
-        transition: all 0.3s ease !important;
-        pointer-events: auto !important;
-      `;
-      (document.body || document.documentElement).appendChild(toast);
-    }
+    document.getElementById('max-web-toast')?.remove();
 
+    const toast = document.createElement('div');
+    toast.id = 'max-web-toast';
+    toast.style.cssText = `
+      position: fixed !important;
+      bottom: 30px !important;
+      left: 50% !important;
+      transform: translateX(-50%) translateY(20px) !important;
+      background: var(--accent-primary, #00f2fe) !important;
+      color: var(--text-on-accent, #0f172a) !important;
+      border: 1px solid var(--accent-primary, #00f2fe) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+      padding: 12px 24px !important;
+      border-radius: 24px !important;
+      z-index: 2147483647 !important;
+      font-family: system-ui, -apple-system, sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      opacity: 0 !important;
+      transition: all 0.3s ease !important;
+      pointer-events: none !important;
+    `;
     toast.textContent = msg;
+    (document.body || document.documentElement).appendChild(toast);
 
     setTimeout(() => {
       toast.style.transform = 'translateX(-50%) translateY(0)';
@@ -701,6 +661,8 @@ function cropAndDownloadInTab(dataUrl, coords, formatConfig, folderPrefix, times
       toast.style.transform = 'translateX(-50%) translateY(20px)';
       toast.style.opacity = '0';
     }, 3000);
+
+    setTimeout(() => toast.remove(), 3400);
 
     // Reuse existing Support MAX module (7-day throttled)
     if (typeof showDonateNudge === 'function') {

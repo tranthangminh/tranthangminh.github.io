@@ -16,7 +16,7 @@ function exportHierarchyToCSV() {
     return;
   }
 
-  // Header row matching standard specification (12 columns)
+  // Header row matching standard specification (13 columns)
   const headers = [
     "main_group",
     "main_group_icon",
@@ -29,7 +29,8 @@ function exportHierarchyToCSV() {
     "tab_url_2",
     "custom_favicon_2",
     "open_external_2",
-    "is_dual_acc_2"
+    "is_dual_acc_2",
+    "allow_devices"
   ];
 
   const csvRows = [headers.join(",")];
@@ -41,6 +42,10 @@ function exportHierarchyToCSV() {
     if (mainGroup.subGroups && Array.isArray(mainGroup.subGroups)) {
       mainGroup.subGroups.forEach(subGroup => {
         const subName = subGroup.name || "Channels";
+        // A row without a channel keeps empty groups in the backup
+        if (subGroup.tabs?.length === 0) {
+          csvRows.push([mainName, mainIcon, subName].map(escapeCSVField).join(","));
+        }
         if (subGroup.tabs && Array.isArray(subGroup.tabs)) {
           subGroup.tabs.forEach(tab => {
             const favicon1Export = window.encodeCustomFavicon ? window.encodeCustomFavicon(tab.iconType, tab.customFavicon, tab.iconText, tab.iconBgColor) : (tab.customFavicon || "");
@@ -57,7 +62,8 @@ function exportHierarchyToCSV() {
               escapeCSVField(tab.urlRight || ""),
               escapeCSVField(favicon2Export),
               escapeCSVField(tab.openExternalRight ? "true" : "false"),
-              escapeCSVField(tab.isDualAccRight ? "true" : "false")
+              escapeCSVField(tab.isDualAccRight ? "true" : "false"),
+              escapeCSVField(tab.allowDevices === false ? "false" : "true")
             ];
             csvRows.push(row.join(","));
           });
@@ -129,6 +135,7 @@ function importHierarchyFromCSV(csvText) {
   const customFavicon2Idx = headers.indexOf("custom_favicon_2");
   const openExternal2Idx = headers.indexOf("open_external_2");
   const isDualAcc2Idx = headers.indexOf("is_dual_acc_2");
+  const allowDevicesIdx = headers.indexOf("allow_devices");
 
   if (tabNameIdx === -1 || tabUrl1Idx === -1) {
     alert("Invalid CSV format: missing required columns (tab_name or tab_url_1).");
@@ -145,14 +152,14 @@ function importHierarchyFromCSV(csvText) {
       const mainIcon = mainGroupIconIdx !== -1 && cols[mainGroupIconIdx] ? cols[mainGroupIconIdx].trim() : "Folder";
       const subName = subGroupIdx !== -1 && cols[subGroupIdx] ? cols[subGroupIdx].trim() : "Channels";
       const tabName = cols[tabNameIdx] ? cols[tabNameIdx].trim() : "";
-      const tabUrl = cols[tabUrl1Idx] ? cols[tabUrl1Idx].trim() : "";
+      const tabUrl = normalizeHttpUrl(cols[tabUrl1Idx]);
       const customFavicon = customFavicon1Idx !== -1 && cols[customFavicon1Idx] ? cols[customFavicon1Idx].trim() : "";
       const openExtVal = openExternal1Idx !== -1 && cols[openExternal1Idx] ? cols[openExternal1Idx].trim().toLowerCase() : "";
       const openExternal = openExtVal === "true" || openExtVal === "x" || openExtVal === "1";
       const isDualAcc1Val = isDualAcc1Idx !== -1 && cols[isDualAcc1Idx] ? cols[isDualAcc1Idx].trim().toLowerCase() : "";
       const isDualAcc1 = isDualAcc1Val === "true" || isDualAcc1Val === "x" || isDualAcc1Val === "1";
 
-      const tabUrl2 = tabUrl2Idx !== -1 && cols[tabUrl2Idx] ? cols[tabUrl2Idx].trim() : "";
+      const tabUrl2 = tabUrl2Idx !== -1 ? normalizeHttpUrl(cols[tabUrl2Idx]) : "";
       const customFavicon2 = customFavicon2Idx !== -1 && cols[customFavicon2Idx] ? cols[customFavicon2Idx].trim() : "";
       const openExt2Val = openExternal2Idx !== -1 && cols[openExternal2Idx] ? cols[openExternal2Idx].trim().toLowerCase() : "";
       const openExternal2 = openExt2Val === "true" || openExt2Val === "x" || openExt2Val === "1";
@@ -160,8 +167,10 @@ function importHierarchyFromCSV(csvText) {
       const isDualAcc2 = isDualAcc2Val === "true" || isDualAcc2Val === "x" || isDualAcc2Val === "1";
 
       const isSplit = !!tabUrl2;
+      const hasChannel = tabName && tabUrl;
 
-      if (!tabName || !tabUrl) continue;
+      // A named group without a channel is a kept empty group; anything else unusable is skipped
+      if (!hasChannel && !(mainGroupIdx !== -1 && cols[mainGroupIdx]?.trim())) continue;
 
       const mainGroupId = "main_" + (mainName ? mainName.toLowerCase().replace(/[^a-z0-9]/g, "_") : "general");
 
@@ -188,6 +197,8 @@ function importHierarchyFromCSV(csvText) {
         mainGroupObj.subGroups.push(subGroupObj);
       }
 
+      if (!hasChannel) continue;
+
       const parsedFavicon1 = window.parseCustomFaviconString ? window.parseCustomFaviconString(customFavicon) : { isText: false, customFavicon: customFavicon };
       const tabObj = {
         id: "tab_" + Date.now() + "_" + Math.floor(Math.random() * 10000),
@@ -200,10 +211,17 @@ function importHierarchyFromCSV(csvText) {
         tabObj.iconType = "text";
         tabObj.iconText = parsedFavicon1.iconText;
         tabObj.iconBgColor = parsedFavicon1.iconBgColor;
+        tabObj.iconTextColor = getContrastColor(parsedFavicon1.iconBgColor);
       }
 
       if (isDualAcc1) {
         tabObj.isDualAcc = true;
+      }
+
+      // Backups made before this column existed keep the access those links already had
+      const allowDevicesVal = allowDevicesIdx !== -1 ? (cols[allowDevicesIdx] || "").trim().toLowerCase() : "";
+      if (allowDevicesVal) {
+        tabObj.allowDevices = allowDevicesVal === "true" || allowDevicesVal === "x" || allowDevicesVal === "1";
       }
 
       if (isSplit) {
@@ -214,6 +232,7 @@ function importHierarchyFromCSV(csvText) {
           tabObj.iconTypeRight = "text";
           tabObj.iconTextRight = parsedFavicon2.iconText;
           tabObj.iconBgColorRight = parsedFavicon2.iconBgColor;
+          tabObj.iconTextColorRight = getContrastColor(parsedFavicon2.iconBgColor);
         } else if (parsedFavicon2.customFavicon) {
           tabObj.customFaviconRight = parsedFavicon2.customFavicon;
         }
@@ -230,19 +249,19 @@ function importHierarchyFromCSV(csvText) {
     return;
   }
 
-  const SYSTEM_AI_ID = window.SYSTEM_AI_GROUP_ID || (typeof SYSTEM_AI_GROUP_ID !== "undefined" ? SYSTEM_AI_GROUP_ID : "system-ai-chat");
-  const existingAIGroup = typeof appState !== "undefined" && appState.hierarchy ? appState.hierarchy.find(g => g.id === SYSTEM_AI_ID) : null;
+  if (!confirm("Importing replaces all your current groups and channels. Continue?")) return;
+
+  // Open panes belong to tabs that are about to disappear
+  [appState.leftTabId, appState.rightTabId].forEach(closeTabSession);
+  document.querySelectorAll(".iframe-wrapper").forEach(wrapper => wrapper.remove());
+  appState.isSplitLinkActive = false;
+  setSplitViewActive(false);
 
   appState.hierarchy = importedHierarchy;
-  if (existingAIGroup && !appState.hierarchy.some(g => g.id === SYSTEM_AI_ID)) {
-    appState.hierarchy.unshift(existingAIGroup);
-  }
+  ensureSystemAIGroup();
 
-  if (typeof ensureSystemAIGroup === "function") ensureSystemAIGroup();
-
-  if (appState.hierarchy.length > 0) {
-    appState.activeMainGroupId = appState.hierarchy[0].id;
-  }
+  const firstGroup = appState.hierarchy.find(g => g.id !== SYSTEM_AI_GROUP_ID);
+  appState.activeMainGroupId = firstGroup ? firstGroup.id : SYSTEM_AI_GROUP_ID;
 
   if (typeof saveHierarchyToStorage === "function") saveHierarchyToStorage();
   if (typeof saveSessionState === "function") saveSessionState();

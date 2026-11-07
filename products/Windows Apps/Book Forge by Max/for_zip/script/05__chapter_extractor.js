@@ -128,10 +128,17 @@ async function run() {
 
     console.log(`[3/4] Detecting chapters (TOC & Font Size Hierarchies)...`);
     const chapters = await detectChapters(geom.pagesData, typoProfile.dominantFs);
+    if (chapters.length === 0) {
+        console.log('  -> No chapter headings found. Keeping the whole book as one chapter.');
+        chapters.push({ title: path.basename(pdfPath, path.extname(pdfPath)), pageIndex: 0 });
+    }
 
     console.log(`[4/4] Generating Complete Book Files into "chapters_original/"...`);
     const pagesData = geom.pagesData;
-    let fileSeq = 0;
+    const startItemOf = c => {
+        const idx = c.startLine ? pagesData[c.pageIndex].pageItems.indexOf(c.startLine) : 0;
+        return idx < 0 ? 0 : idx;
+    };
     let totalSavedFiles = 0;
 
     // Chunk names depend on the split settings, so leftovers from an earlier run would be compiled twice.
@@ -140,9 +147,11 @@ async function run() {
     }
 
     // --- STEP A: Extract Front Matter (Excluding TOC Pages) ---
-    const firstChapterPageIndex = chapters.length > 0 ? chapters[0].pageIndex : 0;
-    if (firstChapterPageIndex > 0) {
+    const firstChapterPageIndex = chapters[0].pageIndex;
+    const itemsAboveFirstChapter = pagesData[firstChapterPageIndex].pageItems.slice(0, startItemOf(chapters[0]));
+    if (firstChapterPageIndex > 0 || itemsAboveFirstChapter.length > 0) {
         const { cleanItems: frontMatterItems } = extractCleanFrontMatterItems(pagesData, firstChapterPageIndex, chapters);
+        frontMatterItems.push(...itemsAboveFirstChapter);
 
         let frontMatterMd = `# Front Matter\n\n`;
 
@@ -167,25 +176,27 @@ async function run() {
 
         const frontMatterFileName = `00-front-matter.md`;
         fs.writeFileSync(path.join(chaptersOriginalDir, frontMatterFileName), frontMatterMd, 'utf8');
-        console.log(`  [${String(fileSeq).padStart(2, '0')}] Saved: chapters_original/${frontMatterFileName} (${frontMatterMd.length} chars)`);
-        fileSeq++;
+        console.log(`  [00] Saved: chapters_original/${frontMatterFileName} (${frontMatterMd.length} chars)`);
         totalSavedFiles++;
     }
 
-    // --- STEP B: Extract Content Chapters ---
+    // --- STEP B: Extract Content Chapters (numbered from 01, with or without a front matter file) ---
     for (let c = 0; c < chapters.length; c++) {
         const startP = chapters[c].pageIndex;
-        const endP = c < chapters.length - 1 ? chapters[c + 1].pageIndex : pagesData.length;
+        const nextChapter = chapters[c + 1];
+        const endP = nextChapter ? nextChapter.pageIndex : pagesData.length;
 
         const chapterItems = [];
-        for (let pIdx = startP; pIdx < endP; pIdx++) {
-            chapterItems.push(...pagesData[pIdx].pageItems);
+        for (let pIdx = startP; pIdx <= endP && pIdx < pagesData.length; pIdx++) {
+            const items = pagesData[pIdx].pageItems;
+            const from = pIdx === startP ? startItemOf(chapters[c]) : 0;
+            const to = (nextChapter && pIdx === endP) ? startItemOf(nextChapter) : items.length;
+            chapterItems.push(...items.slice(from, to));
         }
 
         const mdContent = formatRichChapterMarkdown(c, chapters[c].title, chapterItems, typoProfile);
 
-        totalSavedFiles += writeChapterFiles(chaptersOriginalDir, String(fileSeq).padStart(2, '0'), chapters[c].title, mdContent.split('\n'), splitThreshold, splitMode);
-        fileSeq++;
+        totalSavedFiles += writeChapterFiles(chaptersOriginalDir, String(c + 1).padStart(2, '0'), chapters[c].title, mdContent.split('\n'), splitThreshold, splitMode);
     }
 
     console.log(`\n🎉 EXTRACTION COMPLETE! Successfully saved ${totalSavedFiles} files (${chapters.length} Chapters) to "chapters_original/".\n`);

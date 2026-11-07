@@ -16,7 +16,7 @@ async function saveSessionState() {
     };
     await chrome.storage.local.set({ "app_session_state": sessionData });
   } catch (err) {
-    // Session state save failed silently
+    console.error("MAX: could not save session state", err);
   }
 }
 
@@ -57,7 +57,10 @@ async function loadSessionState() {
       }
     }
 
-    if (ownerMainGroupId) {
+    // AI Multi-Chat is a view of its own and owns no links, so a reload must stay on it
+    if (session.activeMainGroupId === SYSTEM_AI_GROUP_ID) {
+      appState.activeMainGroupId = SYSTEM_AI_GROUP_ID;
+    } else if (ownerMainGroupId) {
       appState.activeMainGroupId = ownerMainGroupId;
     } else if (session.activeMainGroupId && appState.hierarchy.some(g => g.id === session.activeMainGroupId)) {
       appState.activeMainGroupId = session.activeMainGroupId;

@@ -131,6 +131,7 @@ function filterAndRenderVectors() {
   }
 
   const t = (k, def) => (window.i18n ? window.i18n.t(k, def) : def);
+  const previewColor = getComputedStyle(document.body).color;
 
   grid.innerHTML = filtered.map(vec => {
     const idx = String(vec.originalIndex);
@@ -138,7 +139,7 @@ function filterAndRenderVectors() {
     let previewHtml = '';
 
     if (vec.type === 'inline') {
-      previewHtml = `<div class="vector-preview-inline">${vec.content}</div>`;
+      previewHtml = `<img class="vector-preview-img checkerboard-bg" src="${window.escAttr(getInlineVectorPreviewUrl(vec.content, previewColor))}" alt="${window.escAttr(vec.filename)}" loading="lazy" />`;
     } else {
       previewHtml = `<img class="vector-preview-img checkerboard-bg" src="${window.escAttr(vec.url)}" alt="${window.escAttr(vec.filename)}" loading="lazy" />`;
     }
@@ -155,10 +156,10 @@ function filterAndRenderVectors() {
       badgeLeft: typeLabel,
       badgeRight: sizeLabel,
       actionsHtml: `
-        <button class="btn btn-ghost btn-icon preview-btn" title="${t('downloader.previewVector', 'Preview vector')}"><span class="icon-mask" style="mask-image: url('svg/eye.svg'); -webkit-mask-image: url('svg/eye.svg');"></span></button>
-        <button class="btn btn-ghost btn-icon copy-code-btn" title="${t('downloader.copySvgCode', 'Copy SVG code')}"><span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span></button>
-        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}"><span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span></button>
-        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadImmediate', 'Download immediately')}"><span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span></button>
+        <button class="btn btn-ghost btn-icon preview-btn" title="${t('downloader.previewVector', 'Preview vector')}"><span class="icon-mask icon-eye" aria-hidden="true"></span></button>
+        <button class="btn btn-ghost btn-icon copy-code-btn" title="${t('downloader.copySvgCode', 'Copy SVG code')}"><span class="icon-mask icon-copy" aria-hidden="true"></span></button>
+        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}"><span class="icon-mask icon-open-tab" aria-hidden="true"></span></button>
+        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadImmediate', 'Download immediately')}"><span class="icon-mask icon-download" aria-hidden="true"></span></button>
       `
     });
   }).join('');
@@ -176,6 +177,13 @@ function filterAndRenderVectors() {
 
   resolveVectorDimensions(filtered);
   updateVectorFilterCounts();
+}
+
+// Page-controlled SVG markup must never enter the popup DOM, so inline vectors render through <img>.
+// An <img> cannot inherit currentColor, so the popup text color is passed in to keep icons visible.
+function getInlineVectorPreviewUrl(content, color) {
+  const themed = /^<svg[^>]*\scolor=/.test(content) ? content : content.replace('<svg', `<svg color="${color}"`);
+  return window.svgContentToDataUrl(themed);
 }
 
 function updateVectorFilterCounts() {

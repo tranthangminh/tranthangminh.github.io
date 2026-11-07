@@ -164,9 +164,9 @@ function filterAndRenderVideos() {
       badgeCenter: formatDuration(vid.duration),
       badgeRight: sizeLabel,
       actionsHtml: `
-        <button class="btn btn-ghost btn-icon copy-link-btn" title="${t('downloader.copyVideoUrl', 'Copy video URL')}"><span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span></button>
-        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}"><span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span></button>
-        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadVideoFile', 'Download video file')}"><span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span></button>
+        <button class="btn btn-ghost btn-icon copy-link-btn" title="${t('downloader.copyVideoUrl', 'Copy video URL')}"><span class="icon-mask icon-copy" aria-hidden="true"></span></button>
+        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}"><span class="icon-mask icon-open-tab" aria-hidden="true"></span></button>
+        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadVideoFile', 'Download video file')}"><span class="icon-mask icon-download" aria-hidden="true"></span></button>
       `
     });
   }).join('');

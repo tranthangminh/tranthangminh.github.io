@@ -4,7 +4,7 @@
   const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.m3u8', '.mkv', '.avi', '.flv'];
   const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'];
 
-  const EXTENSION_UI_SELECTORS = '#image-preview-modal, #edit-ui-vector-overlay, #modal-edit-toolbar, #vector-color-popover, #vector-size-popover, .discard-dialog-box, .app-container, .tab-controls, .tab-bar, .vector-popover, .edit-tool-popover-wrapper, #image-previewmodal-editcanvas';
+  const EXTENSION_UI_SELECTORS = '#image-preview-modal, #edit-ui-vector-overlay, #modal-edit-toolbar, #vector-color-popover, #vector-size-popover, .discard-dialog-box, .vector-popover, .edit-tool-popover-wrapper, #image-previewmodal-editcanvas';
 
   function isExtensionElement(el) {
     if (!el) return false;

@@ -68,18 +68,7 @@ function syncToggleSwitchesUI() {
 
 function openSettingsModal() {
   const versionEl = document.getElementById("app-info-version");
-  if (versionEl) {
-    if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.getManifest) {
-      try {
-        const manifest = chrome.runtime.getManifest();
-        if (manifest && manifest.version) {
-          versionEl.textContent = `v${manifest.version}`;
-        }
-      } catch (e) {
-        // Manifest version unavailable
-      }
-    }
-  }
+  if (versionEl) versionEl.textContent = `v${chrome.runtime.getManifest().version}`;
   syncToggleSwitchesUI();
   if (typeof openModal === "function") {
     openModal("settings-modal");
@@ -99,7 +88,7 @@ function closeSettingsModal() {
 function initSettingsModal() {
   loadFeatureVisibility();
 
-  const openBtn = document.getElementById("btn-open-settings-modal") || document.getElementById("btn-open-info-modal");
+  const openBtn = document.getElementById("btn-open-settings-modal");
   if (openBtn) {
     openBtn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -107,7 +96,7 @@ function initSettingsModal() {
     });
   }
 
-  const closeBtn = document.getElementById("close-settings-modal") || document.getElementById("close-info-modal");
+  const closeBtn = document.getElementById("close-settings-modal");
   if (closeBtn) {
     closeBtn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -115,7 +104,7 @@ function initSettingsModal() {
     });
   }
 
-  const closeBtnFooter = document.getElementById("close-settings-modal-btn") || document.getElementById("close-info-modal-btn");
+  const closeBtnFooter = document.getElementById("close-settings-modal-btn");
   if (closeBtnFooter) {
     closeBtnFooter.addEventListener("click", (e) => {
       e.preventDefault();
@@ -166,5 +155,3 @@ if (document.readyState === "loading") {
 
 window.openSettingsModal = openSettingsModal;
 window.closeSettingsModal = closeSettingsModal;
-window.openInfoModal = openSettingsModal;
-window.closeInfoModal = closeSettingsModal;

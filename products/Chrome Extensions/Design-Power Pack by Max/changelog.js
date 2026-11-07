@@ -213,15 +213,15 @@ function getCategoryBadge(cat) {
   const category = (cat || '').toLowerCase().trim();
   const t = (k, def) => ((window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t(k, def) : def);
   if (category === 'feature' || category === 'new') {
-    return `<span class="badge changelog-type-badge feature" title="${t('changelog.badgeFeature', 'New Feature')}">✨</span>`;
+    return `<span class="badge changelog-type-badge feature" title="${t('changelog.badgeFeature', 'New Feature')}"><span class="icon-mask icon-sparkles" aria-hidden="true"></span></span>`;
   } else if (category === 'tweak' || category === 'adjust' || category === 'improvement') {
-    return `<span class="badge changelog-type-badge tweak" title="${t('changelog.badgeTweak', 'Feature Tweak & Improvement')}">🛠️</span>`;
+    return `<span class="badge changelog-type-badge tweak" title="${t('changelog.badgeTweak', 'Feature Tweak & Improvement')}"><span class="icon-mask icon-tool" aria-hidden="true"></span></span>`;
   } else if (category === 'bug' || category === 'fix') {
-    return `<span class="badge changelog-type-badge bug" title="${t('changelog.badgeBug', 'Bug Fix')}">🐛</span>`;
+    return `<span class="badge changelog-type-badge bug" title="${t('changelog.badgeBug', 'Bug Fix')}"><span class="icon-mask icon-bug" aria-hidden="true"></span></span>`;
   } else if (category === 'optimize' || category === 'perf' || category === 'speed') {
-    return `<span class="badge changelog-type-badge optimize" title="${t('changelog.badgeOptimize', 'Performance Optimization')}">⚡</span>`;
+    return `<span class="badge changelog-type-badge optimize" title="${t('changelog.badgeOptimize', 'Performance Optimization')}"><span class="icon-mask icon-zap" aria-hidden="true"></span></span>`;
   }
-  return `<span class="badge changelog-type-badge other" title="${t('changelog.badgeOther', 'Other Updates')}">📌</span>`;
+  return `<span class="badge changelog-type-badge other" title="${t('changelog.badgeOther', 'Other Updates')}"><span class="icon-mask icon-pin" aria-hidden="true"></span></span>`;
 }
 
 function escapeHTML(str) {

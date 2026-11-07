@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="1. colorpicker/colorstudio.css">
   <link rel="stylesheet" href="common_grid.css">
   <link rel="stylesheet" href="3. multimediadownloader/multimediadownloader.css">
+  <link rel="stylesheet" href="icons.css">
   <link rel="stylesheet" href="image_previewmodal/image_previewmodal.css">
   <link rel="stylesheet" href="image_previewmodal/image_previewmodal-editor.css">
   <link rel="stylesheet" href="3. multimediadownloader/videoextractor.css">
@@ -32,16 +33,16 @@
       </div>
       <div class="header-actions">
         <button id="open-popup-btn" class="btn btn-ghost btn-icon" title="Switch to Popup" data-i18n-title="header.switchPopup">
-          <span class="icon-mask" style="mask-image: url('svg/popup-mode.svg'); -webkit-mask-image: url('svg/popup-mode.svg');"></span>
+          <span class="icon-mask icon-popup-mode" aria-hidden="true"></span>
         </button>
         <button id="open-sidepanel-btn" class="btn btn-ghost btn-icon" title="Open in Side Panel" data-i18n-title="header.openSidepanel">
-          <span class="icon-mask" style="mask-image: url('svg/sidepanel.svg'); -webkit-mask-image: url('svg/sidepanel.svg');"></span>
+          <span class="icon-mask icon-sidepanel" aria-hidden="true"></span>
         </button>
         <button id="theme-toggle-btn" class="btn btn-ghost btn-icon" title="Toggle Theme" data-i18n-title="header.toggleTheme">
-          <span class="icon-mask" style="mask-image: url('svg/light-mode.svg'); -webkit-mask-image: url('svg/light-mode.svg');"></span>
+          <span class="icon-mask icon-light-mode" aria-hidden="true"></span>
         </button>
         <button id="changelog-btn" class="btn btn-ghost btn-icon" title="Changelog" data-i18n-title="header.changelog">
-          <span class="icon-mask" style="mask-image: url('svg/log.svg'); -webkit-mask-image: url('svg/log.svg');"></span>
+          <span class="icon-mask icon-log" aria-hidden="true"></span>
         </button>
         <button id="lang-toggle-btn" class="btn lang-toggle-btn" title="Switch Language (Tiếng Việt)" data-i18n-title="header.langToggle" aria-label="Language Toggle"><img class="lang-flag-icon" src="svg/lang-VN.svg" alt="VI"></button>
       </div>
@@ -50,19 +51,19 @@
     <!-- Tab Bar (4 Main Tabs) -->
     <nav class="tab-bar">
       <button class="tab-btn active" data-tab="colorpicker">
-        <span class="tab-icon icon-mask" style="mask-image: url('svg/colorpicker.svg'); -webkit-mask-image: url('svg/colorpicker.svg');"></span>
+        <span class="tab-icon icon-mask icon-colorpicker" aria-hidden="true"></span>
         <span data-i18n="tabs.colorpicker">Color Picker</span>
       </button>
       <button class="tab-btn" data-tab="screencapture">
-        <span class="tab-icon icon-mask" style="mask-image: url('svg/camera.svg'); -webkit-mask-image: url('svg/camera.svg');"></span>
+        <span class="tab-icon icon-mask icon-camera" aria-hidden="true"></span>
         <span data-i18n="tabs.screencapture">Screen Capture</span>
       </button>
       <button class="tab-btn" data-tab="multimedia">
-        <span class="tab-icon icon-mask" style="mask-image: url('svg/images.svg'); -webkit-mask-image: url('svg/images.svg');"></span>
+        <span class="tab-icon icon-mask icon-images" aria-hidden="true"></span>
         <span data-i18n="tabs.downloader">Downloader</span>
       </button>
       <button class="tab-btn" data-tab="contexttool">
-        <span class="tab-icon icon-mask" style="mask-image: url('svg/tool.svg'); -webkit-mask-image: url('svg/tool.svg');"></span>
+        <span class="tab-icon icon-mask icon-tool" aria-hidden="true"></span>
         <span data-i18n="tabs.tools">Tools/Features</span>
       </button>
     </nav>
@@ -74,11 +75,11 @@
         <div class="color-picker-container">
           <div class="color-picker-actions-row">
             <button id="eyedropper-btn" class="btn btn-primary">
-              <span class="icon-mask" style="mask-image: url('svg/colorpicker.svg'); -webkit-mask-image: url('svg/colorpicker.svg');"></span>
+              <span class="icon-mask icon-colorpicker" aria-hidden="true"></span>
               <span data-i18n="colorpicker.pickColor">Pick Color</span>
             </button>
             <button id="color-studio-btn" class="btn btn-primary">
-              <span class="icon-mask" style="mask-image: url('svg/palette.svg'); -webkit-mask-image: url('svg/palette.svg');"></span>
+              <span class="icon-mask icon-palette" aria-hidden="true"></span>
               <span data-i18n="colorpicker.paletteStudio">Color Studio</span>
             </button>
           </div>
@@ -106,7 +107,7 @@
         <!-- Row 1: Page Info Container (Shared) -->
         <div class="page-info-container">
           <button id="refresh-multimedia-btn" class="btn-icon refresh-btn" title="Rescan Resources" data-i18n-title="common.rescan">
-            <span class="icon-mask" style="mask-image: url('svg/refresh.svg'); -webkit-mask-image: url('svg/refresh.svg');"></span>
+            <span class="icon-mask icon-refresh" aria-hidden="true"></span>
           </button>
           <img class="page-favicon" src="svg/icon16.png" alt="site favicon" />
           <div class="page-meta">
@@ -116,19 +117,19 @@
 
         <nav class="sub-tab-bar">
           <button class="sub-tab-btn active" data-subtab="images">
-            <span class="sub-tab-icon icon-mask" style="mask-image: url('svg/images.svg'); -webkit-mask-image: url('svg/images.svg');"></span>
+            <span class="sub-tab-icon icon-mask icon-images" aria-hidden="true"></span>
             <span class="sub-tab-count" id="subtab-images-count">0 Images</span>
           </button>
           <button class="sub-tab-btn" data-subtab="vectors">
-            <span class="sub-tab-icon icon-mask" style="mask-image: url('svg/vectors.svg'); -webkit-mask-image: url('svg/vectors.svg');"></span>
+            <span class="sub-tab-icon icon-mask icon-vectors" aria-hidden="true"></span>
             <span class="sub-tab-count" id="subtab-vectors-count">0 Vectors</span>
           </button>
           <button class="sub-tab-btn" data-subtab="videos">
-            <span class="sub-tab-icon icon-mask" style="mask-image: url('svg/videos.svg'); -webkit-mask-image: url('svg/videos.svg');"></span>
+            <span class="sub-tab-icon icon-mask icon-videos" aria-hidden="true"></span>
             <span class="sub-tab-count" id="subtab-videos-count">0 Videos</span>
           </button>
           <button class="sub-tab-btn" data-subtab="sounds">
-            <span class="sub-tab-icon icon-mask" style="mask-image: url('svg/sounds.svg'); -webkit-mask-image: url('svg/sounds.svg');"></span>
+            <span class="sub-tab-icon icon-mask icon-sounds" aria-hidden="true"></span>
             <span class="sub-tab-count" id="subtab-sounds-count">0 Sounds</span>
           </button>
         </nav>
@@ -145,13 +146,13 @@
               </label>
               <div class="col-switcher">
                 <button class="col-btn" data-cols="1" title="1 Column" data-i18n-title="common.col1">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                  <span class="icon-mask icon-grid-1" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn" data-cols="2" title="2 Columns" data-i18n-title="common.col2">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                  <span class="icon-mask icon-grid-2" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn active" data-cols="3" title="3 Columns" data-i18n-title="common.col3">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                  <span class="icon-mask icon-grid-3" aria-hidden="true"></span>
                 </button>
               </div>
               <button id="download-images-btn" class="btn btn-primary action-btn disabled" disabled data-i18n="downloader.downloadSelected">Download (0)</button>
@@ -202,13 +203,13 @@
               </label>
               <div class="col-switcher">
                 <button class="col-btn" data-cols="1" title="1 Column" data-i18n-title="common.col1">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                  <span class="icon-mask icon-grid-1" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn" data-cols="2" title="2 Columns" data-i18n-title="common.col2">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                  <span class="icon-mask icon-grid-2" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn active" data-cols="3" title="3 Columns" data-i18n-title="common.col3">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                  <span class="icon-mask icon-grid-3" aria-hidden="true"></span>
                 </button>
               </div>
               <button id="download-vectors-btn" class="btn btn-primary action-btn disabled" disabled data-i18n="downloader.downloadSelected">Download (0)</button>
@@ -249,13 +250,13 @@
               </label>
               <div class="col-switcher">
                 <button class="col-btn active" data-cols="1" title="1 Column" data-i18n-title="common.col1">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                  <span class="icon-mask icon-grid-1" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn" data-cols="2" title="2 Columns" data-i18n-title="common.col2">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                  <span class="icon-mask icon-grid-2" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn" data-cols="3" title="3 Columns" data-i18n-title="common.col3">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                  <span class="icon-mask icon-grid-3" aria-hidden="true"></span>
                 </button>
               </div>
               <button id="download-videos-btn" class="btn btn-primary action-btn disabled" disabled data-i18n="downloader.downloadSelected">Download (0)</button>
@@ -304,13 +305,13 @@
               </label>
               <div class="col-switcher">
                 <button class="col-btn" data-cols="1" title="1 Column" data-i18n-title="common.col1">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                  <span class="icon-mask icon-grid-1" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn active" data-cols="2" title="2 Columns" data-i18n-title="common.col2">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                  <span class="icon-mask icon-grid-2" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn" data-cols="3" title="3 Columns" data-i18n-title="common.col3">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                  <span class="icon-mask icon-grid-3" aria-hidden="true"></span>
                 </button>
               </div>
               <button id="download-sounds-btn" class="btn btn-primary action-btn disabled" disabled data-i18n="downloader.downloadSelected">Download (0)</button>
@@ -375,11 +376,10 @@
           <!-- Mode 1: Custom Area -->
           <div class="capture-mode-card" data-mode="area">
             <div class="capture-mode-icon-wrapper">
-              <span class="capture-mode-icon icon-mask" style="mask-image: url('svg/crop.svg'); -webkit-mask-image: url('svg/crop.svg');"></span>
+              <span class="capture-mode-icon icon-mask icon-crop" aria-hidden="true"></span>
             </div>
             <div class="capture-mode-info">
               <h3 class="capture-mode-title" data-i18n="screencapture.areaCapture">Custom Area</h3>
-              <div class="shortcut-badge-wrapper"><span class="shortcut-badge">Alt+Shift+Z</span></div>
               <p class="capture-mode-desc" data-i18n="screencapture.areaDesc">Drag to crop region</p>
             </div>
           </div>
@@ -387,11 +387,10 @@
           <!-- Mode 2: Visible Area -->
           <div class="capture-mode-card selected" data-mode="visible">
             <div class="capture-mode-icon-wrapper">
-              <span class="capture-mode-icon icon-mask" style="mask-image: url('svg/camera.svg'); -webkit-mask-image: url('svg/camera.svg');"></span>
+              <span class="capture-mode-icon icon-mask icon-camera" aria-hidden="true"></span>
             </div>
             <div class="capture-mode-info">
               <h3 class="capture-mode-title" data-i18n="screencapture.visibleCapture">Visible Area</h3>
-              <div class="shortcut-badge-wrapper"><span class="shortcut-badge">Alt+Shift+X</span></div>
               <p class="capture-mode-desc" data-i18n="screencapture.visibleDesc">Capture current view</p>
             </div>
           </div>
@@ -399,11 +398,10 @@
           <!-- Mode 3: Full Page -->
           <div class="capture-mode-card" data-mode="full">
             <div class="capture-mode-icon-wrapper">
-              <span class="capture-mode-icon icon-mask" style="mask-image: url('svg/fullscreen.svg'); -webkit-mask-image: url('svg/fullscreen.svg');"></span>
+              <span class="capture-mode-icon icon-mask icon-fullscreen" aria-hidden="true"></span>
             </div>
             <div class="capture-mode-info">
               <h3 class="capture-mode-title" data-i18n="screencapture.fullCapture">Full Page</h3>
-              <div class="shortcut-badge-wrapper"><span class="shortcut-badge">Alt+Shift+C</span></div>
               <p class="capture-mode-desc" data-i18n="screencapture.fullDesc">Auto-scroll page</p>
             </div>
           </div>
@@ -411,11 +409,10 @@
           <!-- Mode 4: Screen Recorder -->
           <div class="capture-mode-card" data-mode="record">
             <div class="capture-mode-icon-wrapper">
-              <span class="capture-mode-icon icon-mask" style="mask-image: url('svg/videos.svg'); -webkit-mask-image: url('svg/videos.svg');"></span>
+              <span class="capture-mode-icon icon-mask icon-videos" aria-hidden="true"></span>
             </div>
             <div class="capture-mode-info">
               <h3 class="capture-mode-title" data-i18n="screencapture.recorder">Screen Recorder</h3>
-              <div class="shortcut-badge-wrapper"><span class="shortcut-badge">Alt+Shift+V</span></div>
               <p class="capture-mode-desc" data-i18n="screencapture.recordDesc">Record tab / screen</p>
             </div>
           </div>
@@ -508,20 +505,21 @@
               <!-- Column Switcher -->
               <div class="col-switcher" id="capture-history-col-switcher">
                 <button class="col-btn" data-cols="1" title="1 Column" data-i18n-title="common.col1">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-1.svg'); -webkit-mask-image: url('svg/grid-1.svg');"></span>
+                  <span class="icon-mask icon-grid-1" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn active" data-cols="2" title="2 Columns" data-i18n-title="common.col2">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-2.svg'); -webkit-mask-image: url('svg/grid-2.svg');"></span>
+                  <span class="icon-mask icon-grid-2" aria-hidden="true"></span>
                 </button>
                 <button class="col-btn" data-cols="3" title="3 Columns" data-i18n-title="common.col3">
-                  <span class="icon-mask" style="mask-image: url('svg/grid-3.svg'); -webkit-mask-image: url('svg/grid-3.svg');"></span>
+                  <span class="icon-mask icon-grid-3" aria-hidden="true"></span>
                 </button>
               </div>
 
               <button id="clear-capture-history-btn" class="clear-history-btn" data-i18n="common.clearAll">Clear All</button>
             </div>
             <div id="file-access-warning" class="file-access-warning hidden">
-              <p data-i18n="screencapture.fileAccessWarning" data-i18n-html="screencapture.fileAccessWarning">⚠️ To preview local files directly in original quality, please enable <strong>"Allow access to file URLs"</strong> in <a href="#" id="open-extensions-link">extension settings</a>.</p>
+              <span class="icon-mask icon-warning" aria-hidden="true"></span>
+              <p data-i18n="screencapture.fileAccessWarning" data-i18n-html="screencapture.fileAccessWarning">To preview local files directly in original quality, please enable <strong>"Allow access to file URLs"</strong> in <a href="#" id="open-extensions-link">extension settings</a>.</p>
             </div>
 
             <div id="capture-history-grid" class="capture-history-grid cols-2">
@@ -544,7 +542,7 @@
             <div class="context-tool-card context-tool-card-with-options">
               <div class="context-tool-main-row">
                 <div class="context-tool-icon-wrapper">
-                  <img src="svg/download.svg" class="tool-icon-svg" alt="Save Image As" />
+                  <span class="icon-mask icon-download" aria-hidden="true"></span>
                 </div>
                 <div class="context-tool-info">
                   <span class="context-tool-title" data-i18n="tools.saveAsTypeTitle">Save Image As Type...</span>
@@ -570,7 +568,7 @@
             <div class="context-tool-card context-tool-card-with-options">
               <div class="context-tool-main-row">
                 <div class="context-tool-icon-wrapper">
-                  <img src="svg/search.svg" class="tool-icon-svg" alt="Search Image" />
+                  <span class="icon-mask icon-search" aria-hidden="true"></span>
                 </div>
                 <div class="context-tool-info">
                   <span class="context-tool-title" data-i18n="tools.searchMasterTitle">Search Image on...</span>
@@ -593,7 +591,7 @@
             <div class="context-tool-card context-tool-card-with-options">
               <div class="context-tool-main-row">
                 <div class="context-tool-icon-wrapper">
-                  <img src="svg/camera.svg" class="tool-icon-svg" alt="Screen Capture" />
+                  <span class="icon-mask icon-camera" aria-hidden="true"></span>
                 </div>
                 <div class="context-tool-info">
                   <span class="context-tool-title" data-i18n="tools.captureToolsTitle">Screen Capture Tools</span>
@@ -620,7 +618,7 @@
             <div class="context-tool-card">
               <div class="context-tool-main-row">
                 <div class="context-tool-icon-wrapper">
-                  <img src="svg/videos.svg" class="tool-icon-svg" alt="Video / Sound Controller" />
+                  <span class="icon-mask icon-videos" aria-hidden="true"></span>
                 </div>
                 <div class="context-tool-info">
                   <span class="context-tool-title" data-i18n="tools.speedControllerTitle">Video / Sound Controller</span>
@@ -639,7 +637,7 @@
             <div class="context-tool-card">
               <div class="context-tool-main-row">
                 <div class="context-tool-icon-wrapper">
-                  <img src="svg/open-tab.svg" class="tool-icon-svg" alt="Direct Image Auto-Studio" />
+                  <span class="icon-mask icon-open-tab" aria-hidden="true"></span>
                 </div>
                 <div class="context-tool-info">
                   <span class="context-tool-title" data-i18n="tools.directStudioTitle">Auto-Open Image Studio</span>
@@ -658,7 +656,7 @@
             <div class="context-tool-card">
               <div class="context-tool-main-row">
                 <div class="context-tool-icon-wrapper">
-                  <img src="svg/logo-MAX.svg" class="tool-icon-svg" alt="Floating Quick Tools" />
+                  <span class="icon-mask icon-logo-MAX" aria-hidden="true"></span>
                 </div>
                 <div class="context-tool-info">
                   <span class="context-tool-title" data-i18n="tools.floatingToolsTitle">Floating Quick Tools</span>
@@ -686,9 +684,9 @@
     <!-- Donate Nudge Popup Window (Powered by supportmax.css & supportmax.js) -->
     <div id="donate-nudge" class="donate-nudge-popup hidden">
       <div class="donate-card support-max-nudge-card">
-        <button id="donate-nudge-close" class="btn btn-ghost donate-nudge-close-btn" title="Close" data-i18n-title="common.close">✕</button>
+        <button id="donate-nudge-close" class="btn btn-ghost donate-nudge-close-btn" title="Close" data-i18n-title="common.close"><span class="icon-mask icon-close" aria-hidden="true"></span></button>
         <div class="support-max-header">
-          <span class="settings-section-icon icon-mask support-max-heart-icon" style="mask-image: url('svg/heart.svg'); -webkit-mask-image: url('svg/heart.svg'); width: 16px; height: 16px; background-color: #fbbf24 !important; color: #fbbf24 !important;"></span>
+          <span class="settings-section-icon icon-mask icon-heart support-max-heart-icon" aria-hidden="true"></span>
           <span class="support-max-title" data-i18n="tools.donateTitle">Enjoying MAX?</span>
         </div>
         <p class="donate-desc" data-i18n="tools.donateDesc">If MAX saves you time, consider buying me a coffee ☕ — it helps keep the tool free and updated!</p>
@@ -714,22 +712,22 @@
       <div class="edit-toolbar-row">
         <!-- Idle / Selection Mode Button -->
         <button id="edit-idle-mode-btn" class="btn-modal-edit btn-icon active" title="Select (A)" data-i18n-title="editor.select">
-          <span class="icon-mask" style="mask-image: url('svg/cursor.svg'); -webkit-mask-image: url('svg/cursor.svg');"></span>
+          <span class="icon-mask icon-cursor" aria-hidden="true"></span>
         </button>
 
         <!-- Brush Tool Popover Trigger -->
         <div class="edit-tool-popover-wrapper">
           <button id="edit-brush-tool-btn" class="btn-modal-edit btn-dropdown" title="Brush Tool (B)" data-i18n-title="editor.brush">
-            <span class="icon-mask" style="mask-image: url('svg/brush.svg'); -webkit-mask-image: url('svg/brush.svg');"></span>
-            <span class="dropdown-arrow">▼</span>
+            <span class="icon-mask icon-brush" aria-hidden="true"></span>
+            <span class="icon-mask icon-dropdown-arrow dropdown-arrow" aria-hidden="true"></span>
           </button>
         </div>
 
         <!-- Shape Tool Popover Trigger -->
         <div class="edit-tool-popover-wrapper">
           <button id="edit-shape-tool-btn" class="btn-modal-edit btn-dropdown" title="Shapes (M)" data-i18n-title="editor.shapes">
-            <span class="icon-mask" style="mask-image: url('svg/square.svg'); -webkit-mask-image: url('svg/square.svg');"></span>
-            <span class="dropdown-arrow">▼</span>
+            <span class="icon-mask icon-square" aria-hidden="true"></span>
+            <span class="icon-mask icon-dropdown-arrow dropdown-arrow" aria-hidden="true"></span>
           </button>
 
           <!-- Shape Settings Popover Panel -->
@@ -740,15 +738,15 @@
               </div>
               <div class="shape-type-grid">
                 <button id="shape-type-rect-btn" class="btn-radio shape-type-btn active" data-shape="rect">
-                  <span class="icon-mask" style="mask-image: url('svg/square.svg'); -webkit-mask-image: url('svg/square.svg');"></span>
+                  <span class="icon-mask icon-square" aria-hidden="true"></span>
                   <span data-i18n="editor.polygon">Polygon (M)</span>
                 </button>
                 <button id="shape-type-ellipse-btn" class="btn-radio shape-type-btn" data-shape="ellipse">
-                  <span class="icon-mask" style="mask-image: url('svg/circle.svg'); -webkit-mask-image: url('svg/circle.svg');"></span>
+                  <span class="icon-mask icon-circle" aria-hidden="true"></span>
                   <span data-i18n="editor.ellipse">Ellipse (O)</span>
                 </button>
                 <button id="shape-type-polygonal-btn" class="btn-radio shape-type-btn" data-shape="polygonal">
-                  <span class="icon-mask" style="mask-image: url('svg/polygonal.svg'); -webkit-mask-image: url('svg/polygonal.svg');"></span>
+                  <span class="icon-mask icon-polygonal" aria-hidden="true"></span>
                   <span data-i18n="editor.linePath">Line Path (P)</span>
                 </button>
               </div>
@@ -758,42 +756,42 @@
 
         <!-- Text Tool Trigger (Direct Edit Text Mode) -->
         <button id="edit-text-tool-btn" class="btn-modal-edit btn-icon" title="Text Tool (T)" data-i18n-title="editor.text">
-          <span class="icon-mask" style="mask-image: url('svg/text-tool.svg'); -webkit-mask-image: url('svg/text-tool.svg');"></span>
+          <span class="icon-mask icon-text-tool" aria-hidden="true"></span>
         </button>
 
         <div class="edit-toolbar-divider"></div>
 
         <!-- Square 1:1 Action Icon Buttons -->
         <button id="edit-undo-btn" class="btn-modal-edit btn-icon" title="Undo (Ctrl+Z)" data-i18n-title="editor.undo">
-          <span class="icon-mask" style="mask-image: url('svg/undo.svg'); -webkit-mask-image: url('svg/undo.svg');"></span>
+          <span class="icon-mask icon-undo" aria-hidden="true"></span>
         </button>
 
         <button id="edit-redo-btn" class="btn-modal-edit btn-icon" title="Redo (Ctrl+Y)" data-i18n-title="editor.redo">
-          <span class="icon-mask" style="mask-image: url('svg/redo.svg'); -webkit-mask-image: url('svg/redo.svg');"></span>
+          <span class="icon-mask icon-redo" aria-hidden="true"></span>
         </button>
 
         <button id="edit-clear-btn" class="btn-modal-edit btn-icon" title="Clear Canvas" data-i18n-title="editor.clear">
-          <span class="icon-mask" style="mask-image: url('svg/clear.svg'); -webkit-mask-image: url('svg/clear.svg');"></span>
+          <span class="icon-mask icon-clear" aria-hidden="true"></span>
         </button>
       </div>
 
       <!-- Row 2 for Download Edited & Close Modal -->
       <div class="edit-toolbar-row edit-toolbar-row-2">
         <button id="edit-stop-brush-btn" class="edit-btn stop-brush-btn hidden" title="Stop Drawing" data-i18n-title="editor.stopDrawing">
-          <span class="icon-mask" style="mask-image: url('svg/close.svg'); -webkit-mask-image: url('svg/close.svg');"></span> <span data-i18n="editor.stop">Stop</span>
+          <span class="icon-mask icon-close" aria-hidden="true"></span> <span data-i18n="editor.stop">Stop</span>
         </button>
         <div class="edit-save-group">
           <button id="edit-copy-btn" class="edit-btn copy-btn">
-            <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span> <span data-i18n="editor.copyEdited" data-i18n-html="editor.copyEdited">Copy<br>Edited</span>
+            <span class="icon-mask icon-copy" aria-hidden="true"></span> <span data-i18n="editor.copyEdited" data-i18n-html="editor.copyEdited">Copy<br>Edited</span>
           </button>
           <button id="edit-save-btn" class="edit-btn save-btn">
-            <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span> <span data-i18n="editor.downloadEdited" data-i18n-html="editor.downloadEdited">Download<br>Edited</span>
+            <span class="icon-mask icon-download" aria-hidden="true"></span> <span data-i18n="editor.downloadEdited" data-i18n-html="editor.downloadEdited">Download<br>Edited</span>
           </button>
           <button id="edit-toggle-drawings-btn" class="edit-btn toggle-drawings-btn" title="Hide Drawings" data-i18n-title="editor.hideDrawings">
-            <span class="icon-mask" style="mask-image: url('svg/hide.svg'); -webkit-mask-image: url('svg/hide.svg');"></span> <span class="toggle-drawings-text" data-i18n-html="editor.hideDrawingsHtml">Hide<br>Drawings</span>
+            <span class="icon-mask icon-hide" aria-hidden="true"></span> <span class="toggle-drawings-text" data-i18n-html="editor.hideDrawingsHtml">Hide<br>Drawings</span>
           </button>
           <button id="edit-close-modal-btn" class="btn btn-icon edit-close-btn modal-close-btn" title="Close (Esc)" data-i18n-title="editor.close">
-            <span class="icon-mask" style="mask-image: url('svg/close.svg'); -webkit-mask-image: url('svg/close.svg');"></span>
+            <span class="icon-mask icon-close" aria-hidden="true"></span>
           </button>
         </div>
       </div>
@@ -803,10 +801,10 @@
     <div class="modal-info-wrapper">
       <div class="modal-hud-controls">
         <button id="modal-theme-toggle-btn" class="btn-icon hide-hud-btn modal-theme-toggle-btn" title="Toggle Studio Theme" data-i18n-title="editor.toggleTheme">
-          <span class="icon-mask" style="mask-image: url('svg/light-mode.svg'); -webkit-mask-image: url('svg/light-mode.svg');"></span>
+          <span class="icon-mask icon-light-mode" aria-hidden="true"></span>
         </button>
         <button id="modal-hide-hud-btn" class="btn-icon hide-hud-btn" title="Hide HUD (H)" data-i18n-title="editor.hideHud">
-          <span class="icon-mask" style="mask-image: url('svg/hide.svg'); -webkit-mask-image: url('svg/hide.svg');"></span>
+          <span class="icon-mask icon-hide" aria-hidden="true"></span>
         </button>
       </div>
       <div class="modal-info">
@@ -817,62 +815,62 @@
       <!-- Expandable Hotkey Hint Chips Container (14 Ordered Chips) -->
       <div class="modal-info-row modal-info-row-hints modal-info-row-expandable">
         <span class="modal-hint-chip">
-          <img src="svg/cursor.svg" alt="Select" class="hint-icon-svg" />
+          <span class="icon-mask icon-cursor hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipSelect">A: Select</span>
         </span>
         <span class="modal-hint-chip">
-          <img src="svg/brush.svg" alt="Brush" class="hint-icon-svg" />
+          <span class="icon-mask icon-brush hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipBrush">B: Brush</span>
         </span>
         <span class="modal-hint-chip">
-          <img src="svg/text-tool.svg" alt="Text" class="hint-icon-svg" />
+          <span class="icon-mask icon-text-tool hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipText">T: Text</span>
         </span>
         <span class="modal-hint-chip">
-          <img src="svg/square.svg" alt="Polygon" class="hint-icon-svg" />
+          <span class="icon-mask icon-square hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipPolygon">M: Polygon</span>
         </span>
         <span class="modal-hint-chip">
-          <img src="svg/circle.svg" alt="Ellipse" class="hint-icon-svg" />
+          <span class="icon-mask icon-circle hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipEllipse">O: Ellipse</span>
         </span>
         <span class="modal-hint-chip">
-          <img src="svg/polygonal.svg" alt="Line Path" class="hint-icon-svg" />
+          <span class="icon-mask icon-polygonal hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipLinePath">P: Line Path</span>
         </span>
 
         <span class="modal-hint-chip chip-purple">
-          <img src="svg/hide.svg" alt="Hide HUD" class="hint-icon-svg" />
+          <span class="icon-mask icon-hide hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipHideHud">H: Hide HUD</span>
         </span>
         <span class="modal-hint-chip chip-purple">
-          <img src="svg/copy.svg" alt="Copy" class="hint-icon-svg" />
+          <span class="icon-mask icon-copy hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipCopyEdited">Ctrl C: Copy Edited</span>
         </span>
 
         <span class="modal-hint-chip chip-cyan">
-          <img src="svg/mouse.svg" alt="Pan" class="hint-icon-svg" />
+          <span class="icon-mask icon-mouse hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipPan">Middle: Pan</span>
         </span>
         <span class="modal-hint-chip chip-cyan">
-          <img src="svg/zoom.svg" alt="Zoom" class="hint-icon-svg" />
+          <span class="icon-mask icon-zoom hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipZoom">Scroll: Zoom</span>
         </span>
         <span class="modal-hint-chip chip-cyan">
-          <img src="svg/double-click.svg" alt="Fast Zoom" class="hint-icon-svg" />
+          <span class="icon-mask icon-double-click hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipFastZoom">DblClick: Fast Zoom</span>
         </span>
         <span class="modal-hint-chip chip-cyan">
-          <img src="svg/zoom.svg" alt="100%" class="hint-icon-svg" />
+          <span class="icon-mask icon-zoom hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipZoom100">1: 100%</span>
         </span>
         <span class="modal-hint-chip chip-cyan">
-          <img src="svg/fullscreen.svg" alt="Fit" class="hint-icon-svg" />
+          <span class="icon-mask icon-fullscreen hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipFitScreen">2: Fit Screen</span>
         </span>
 
         <span class="modal-hint-chip chip-red">
-          <img src="svg/close.svg" alt="Close" class="hint-icon-svg" />
+          <span class="icon-mask icon-close hint-icon-svg" aria-hidden="true"></span>
           <span data-i18n="editor.chipClose">ESC: Close</span>
         </span>
       </div>
@@ -886,13 +884,13 @@
       <div class="modal-info-row modal-info-row-actions">
         <div class="modal-actions">
           <button id="modal-open-tab-btn" class="btn btn-secondary action-btn secondary-action-btn">
-            <span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg'); width: 14px; height: 14px;"></span> <span data-i18n="editor.openTab">Open Tab</span>
+            <span class="icon-mask icon-open-tab" aria-hidden="true"></span> <span data-i18n="editor.openTab">Open Tab</span>
           </button>
           <button id="modal-copy-btn" class="btn btn-secondary action-btn secondary-action-btn">
-            <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg'); width: 14px; height: 14px;"></span> <span data-i18n="editor.copy">Copy</span>
+            <span class="icon-mask icon-copy" aria-hidden="true"></span> <span data-i18n="editor.copy">Copy</span>
           </button>
           <button id="modal-download-btn" class="btn btn-primary action-btn">
-            <span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span> <span data-i18n="editor.download">Download</span>
+            <span class="icon-mask icon-download" aria-hidden="true"></span> <span data-i18n="editor.download">Download</span>
           </button>
         </div>
       </div>
@@ -902,10 +900,10 @@
         <span class="search-image-label" data-i18n="editor.searchOn">Search Image on:</span>
         <div class="search-image-actions">
           <button id="modal-yandex-search-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Search on Yandex" data-i18n-title="editor.searchYandex">
-            <span class="icon-mask" style="mask-image: url('svg/yandex.svg'); -webkit-mask-image: url('svg/yandex.svg'); width: 14px; height: 14px;"></span> Yandex
+            <span class="icon-mask icon-yandex" aria-hidden="true"></span> Yandex
           </button>
           <button id="modal-tineye-search-btn" class="btn btn-secondary action-btn secondary-action-btn">
-            <span class="icon-mask" style="mask-image: url('svg/tineye.svg'); -webkit-mask-image: url('svg/tineye.svg'); width: 14px; height: 14px;"></span> TinEye
+            <span class="icon-mask icon-tineye-mono" aria-hidden="true"></span> TinEye
           </button>
         </div>
       </div>
@@ -925,7 +923,7 @@
         <div class="changelog-version-badge current">v1.3.0</div>
       </div>
       <button id="changelog-close-btn" class="btn btn-ghost btn-icon" title="Close" data-i18n-title="common.close">
-        <span class="icon-mask" style="mask-image: url('svg/close.svg'); -webkit-mask-image: url('svg/close.svg');"></span>
+        <span class="icon-mask icon-close" aria-hidden="true"></span>
       </button>
     </div>
 
@@ -938,7 +936,7 @@
     <div class="color-studio-header">
       <h2 class="color-studio-title" data-i18n="colorstudio.title">Color Studio</h2>
       <button id="color-studio-close-btn" class="btn btn-ghost btn-icon" title="Close" data-i18n-title="common.close">
-        <span class="icon-mask" style="mask-image: url('svg/close.svg'); -webkit-mask-image: url('svg/close.svg');"></span>
+        <span class="icon-mask icon-close" aria-hidden="true"></span>
       </button>
     </div>
 

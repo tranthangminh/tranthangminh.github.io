@@ -98,6 +98,11 @@
   animation: maxBtnFadeIn 0.15s ease !important;
 }
 
+.max-speed-btn .icon-mask {
+  width: 14px !important;
+  height: 14px !important;
+}
+
 .max-speed-btn:hover {
   background: var(--c-cyan-bg) !important;
   border-color: var(--accent-primary) !important;

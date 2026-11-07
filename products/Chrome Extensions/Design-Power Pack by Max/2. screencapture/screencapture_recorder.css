@@ -557,6 +557,12 @@ input:checked + .toggle-slider:before {
   color: var(--text-primary);
 }
 
+.act-btn .icon-mask,
+.recorder-close-btn .icon-mask {
+  width: 12px;
+  height: 12px;
+}
+
 .pause-btn {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);

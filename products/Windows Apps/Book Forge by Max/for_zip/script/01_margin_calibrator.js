@@ -11,43 +11,61 @@
  * - Merges text lines and images into pageItems (sorted Y descending).
  */
 
-function calibrateMarginsAndFilterHeaders(pagesData, numPages) {
-    const topGaps = [];
-    const bottomGaps = [];
-    const headerLinesFreq = {};
-    const footerLinesFreq = {};
+const PAGE_NUMBER = /^\s*([0-9]+|[ivxlcdm]+)\s*$/i;
 
-    for (let p of pagesData.slice(0, Math.min(40, numPages))) {
+/** Page numbers aside, a running header or footer repeats the same text from page to page. */
+function runningMarkKey(text) {
+    return text.replace(/\d+/g, '#').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+/**
+ * Finds the running band from the line separated from the page body on each page.
+ * A heading that opens a page is also set apart by a large gap, but its text does not repeat
+ * and it is larger than body text. Counting those would move the band into the body and
+ * drop the first line of every page, so only repeated lines of body size or smaller count.
+ */
+function findRunningBand(candidates, dominantFs) {
+    const freq = {};
+    for (const line of candidates) {
+        const key = runningMarkKey(line.text);
+        freq[key] = (freq[key] || 0) + 1;
+    }
+    const marks = candidates.filter(line => {
+        if (line.maxFs > dominantFs * 1.1) return false;
+        return freq[runningMarkKey(line.text)] > 1 || PAGE_NUMBER.test(line.text);
+    });
+    return { marks, freq };
+}
+
+function calibrateMarginsAndFilterHeaders(pagesData, dominantFs) {
+    const topCandidates = [];
+    const bottomCandidates = [];
+
+    for (let p of pagesData) {
         if (p.lines.length < 5) continue;
         const l0 = p.lines[0];
         const l1 = p.lines[1];
         const lLast = p.lines[p.lines.length - 1];
         const lPrev = p.lines[p.lines.length - 2];
 
-        const topGap = l0.y - l1.y;
-        if (topGap > 18) {
-            topGaps.push({ headerY: l0.y, bodyTopY: l1.y, gap: topGap });
-            headerLinesFreq[l0.text] = (headerLinesFreq[l0.text] || 0) + 1;
-        }
-
-        const bottomGap = lPrev.y - lLast.y;
-        if (bottomGap > 18) {
-            bottomGaps.push({ bodyBottomY: lPrev.y, footerY: lLast.y, gap: bottomGap });
-            footerLinesFreq[lLast.text] = (footerLinesFreq[lLast.text] || 0) + 1;
-        }
+        if (l0.y - l1.y > 18) topCandidates.push(l0);
+        if (lPrev.y - lLast.y > 18) bottomCandidates.push(lLast);
     }
 
-    const avgHeaderY = topGaps.length >= 3 ? topGaps.reduce((acc, g) => acc + g.headerY, 0) / topGaps.length : 0;
-    const avgFooterY = bottomGaps.length >= 3 ? bottomGaps.reduce((acc, g) => acc + g.footerY, 0) / bottomGaps.length : 0;
+    const header = findRunningBand(topCandidates, dominantFs);
+    const footer = findRunningBand(bottomCandidates, dominantFs);
+    const avgHeaderY = header.marks.length >= 3 ? Math.min(...header.marks.map(l => l.y)) : 0;
+    const avgFooterY = footer.marks.length >= 3 ? Math.max(...footer.marks.map(l => l.y)) : 0;
 
     for (let p of pagesData) {
         // Filter Running Headers and Footers
         p.bodyLines = p.lines.filter((l, idx) => {
-            if (avgHeaderY > 0 && l.y >= avgHeaderY) {
-                if (l.text.length < 70 && (headerLinesFreq[l.text] > 1 || idx === 0)) return false;
+            const key = runningMarkKey(l.text);
+            if (avgHeaderY > 0 && l.y >= avgHeaderY && l.maxFs <= dominantFs * 1.1) {
+                if (l.text.length < 70 && (header.freq[key] > 1 || idx === 0)) return false;
             }
             if (avgFooterY > 0 && l.y <= avgFooterY) {
-                if (/^\s*([0-9]+|[ivxlcdm]+)\s*$/i.test(l.text) || footerLinesFreq[l.text] > 1) return false;
+                if (PAGE_NUMBER.test(l.text) || footer.freq[key] > 1) return false;
             }
             return true;
         });

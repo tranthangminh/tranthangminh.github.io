@@ -67,6 +67,7 @@
       ],
       "css": [
         "theme.css",
+        "icons.css",
         "image_previewmodal/image_previewmodal.css",
         "image_previewmodal/image_previewmodal-editor.css",
         "4. tools-features/supportmax.css",
@@ -87,47 +88,8 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "svg/*",
-        "theme.css",
-        "common/*",
-        "image_previewmodal/*",
-        "1. colorpicker/*",
-        "2. screencapture/*",
-        "3. multimediadownloader/*",
-        "4. tools-features/*"
-      ],
+      "resources": ["svg/*", "icons.css"],
       "matches": ["<all_urls>"]
     }
-  ],
-  "commands": {
-    "capture_area": {
-      "suggested_key": {
-        "default": "Alt+Shift+Z",
-        "mac": "Alt+Shift+Z"
-      },
-      "description": "Capture Custom Area"
-    },
-    "capture_visible": {
-      "suggested_key": {
-        "default": "Alt+Shift+X",
-        "mac": "Alt+Shift+X"
-      },
-      "description": "Capture Visible Area"
-    },
-    "capture_full": {
-      "suggested_key": {
-        "default": "Alt+Shift+C",
-        "mac": "Alt+Shift+C"
-      },
-      "description": "Capture Full Page"
-    },
-    "capture_record": {
-      "suggested_key": {
-        "default": "Alt+Shift+V",
-        "mac": "Alt+Shift+V"
-      },
-      "description": "Record Screen Video"
-    }
-  }
+  ]
 }

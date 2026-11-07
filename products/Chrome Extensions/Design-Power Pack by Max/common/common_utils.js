@@ -263,11 +263,14 @@ function ensureSvgNamespace(content) {
     content = content.replace(/mode=["']plus-darker["']/gi, 'mode="darken"')
                      .replace(/mode=["']plus-lighter["']/gi, 'mode="lighten"');
   }
-  if (content.includes('xmlns=')) return content;
-  if (content.startsWith('<svg')) {
-    return content.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+  if (!content.startsWith('<svg')) {
+    return content.includes('xmlns=') ? content : `<svg xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
+  const missing = [];
+  if (!content.includes('xmlns=')) missing.push('xmlns="http://www.w3.org/2000/svg"');
+  // Inline SVG may use xlink:href without declaring it, which is invalid XML and breaks img rendering
+  if (content.includes('xlink:') && !content.includes('xmlns:xlink')) missing.push('xmlns:xlink="http://www.w3.org/1999/xlink"');
+  return missing.length ? content.replace('<svg', `<svg ${missing.join(' ')}`) : content;
 }
 _global.ensureSvgNamespace = ensureSvgNamespace;
 

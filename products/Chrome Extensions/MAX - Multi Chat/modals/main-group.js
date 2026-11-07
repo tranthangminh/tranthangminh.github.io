@@ -2,7 +2,7 @@
 // Icons are loaded dynamically from svg/main-icons/index.json
 // To add a new icon: drop the .svg into svg/main-icons/ and add its name to index.json
 
-const DEFAULT_MAIN_ICON = "Robot";
+const DEFAULT_MAIN_ICON = "Folder";
 
 /** Trả về path SVG của icon */
 function mainIconPath(name) {
@@ -34,7 +34,7 @@ async function loadAndRenderIconSelector() {
         }
       }
     } catch (e2) {
-      // index.json fallback unavailable, continue with default icons
+      console.warn("MAX: icon list unavailable, using the built-in list", e2);
     }
   }
   renderEmojiSelector();
@@ -112,12 +112,11 @@ function openEditMainGroupModal() {
   document.getElementById("edit-main-group-id").value = activeMainGroup.id;
   document.getElementById("main-group-name").value = activeMainGroup.name;
 
-  // icon có thể là tên SVG ("Robot") hoặc emoji cũ ("🤖") — fallback về default nếu không match
+  // icon có thể là tên SVG hoặc emoji cũ ("💬") — giữ nguyên cho tới khi người dùng chọn icon khác
   const savedIcon = activeMainGroup.icon || DEFAULT_MAIN_ICON;
-  const iconName = MAIN_ICON_LIST.includes(savedIcon) ? savedIcon : DEFAULT_MAIN_ICON;
-  document.getElementById("main-group-emoji").value = iconName;
+  document.getElementById("main-group-emoji").value = savedIcon;
 
-  _selectIconEl(iconName, /*autoFillName=*/false);
+  _selectIconEl(savedIcon, /*autoFillName=*/false);
   openModal("main-group-modal");
 
   setTimeout(() => {
@@ -179,10 +178,11 @@ async function deleteMainGroup() {
   }
   if (!confirm("Are you sure you want to delete this Main Group? All sub-groups and channels inside will be lost permanently!")) return;
 
+  // The open pane can belong to another group, which must stay untouched
   const activeMainGroup = appState.hierarchy.find(g => g.id === appState.activeMainGroupId);
   if (activeMainGroup) {
     activeMainGroup.subGroups.forEach(sub => {
-      sub.tabs.forEach(tab => destroyIframe(tab.id));
+      sub.tabs.forEach(tab => closeTabSession(tab.id));
     });
   }
 
@@ -196,11 +196,6 @@ async function deleteMainGroup() {
   } else {
     appState.activeMainGroupId = null;
   }
-
-  appState.activeTabId = null;
-  appState.leftTabId = null;
-  appState.rightTabId = null;
-  document.getElementById("welcome-screen").style.display = "flex";
 
   await saveHierarchyToStorage();
   renderMainSidebar();
@@ -285,9 +280,7 @@ function renderEmojiSelector() {
 
 /** Highlight icon được chọn + tuỳ chọn auto-fill tên group */
 function _selectIconEl(name, autoFillName) {
-  document.querySelectorAll(".emoji-option").forEach(item => item.classList.remove("selected"));
-  const target = document.querySelector(`.emoji-option[data-emoji="${name}"]`);
-  if (target) target.classList.add("selected");
+  document.querySelectorAll(".emoji-option").forEach(item => item.classList.toggle("selected", item.dataset.emoji === name));
 
   document.getElementById("main-group-emoji").value = name;
 

@@ -156,11 +156,7 @@ function renderSoundsGrid() {
 
     const preview = `
       <div class="sound-preview-wrapper">
-        <svg class="sound-wave-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4" y="9" width="4" height="6" rx="1"></rect>
-          <rect x="10" y="4" width="4" height="16" rx="1"></rect>
-          <rect x="16" y="7" width="4" height="10" rx="1"></rect>
-        </svg>
+        <span class="icon-mask icon-sound-wave sound-wave-icon" aria-hidden="true"></span>
         <div class="sound-title" title="${window.escAttr(sound.filename)}">${window.escAttr(sound.filename)}</div>
         <audio class="sound-preview" src="${window.escAttr(sound.url)}" loop playsinline preload="metadata"></audio>
         <div class="sound-scrubber-container">
@@ -178,8 +174,8 @@ function renderSoundsGrid() {
       badgeLeft: formatLabel,
       badgeRight: durationText,
       actionsHtml: `
-        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}"><span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span></button>
-        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadImmediate', 'Download immediately')}"><span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span></button>
+        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}"><span class="icon-mask icon-open-tab" aria-hidden="true"></span></button>
+        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadImmediate', 'Download immediately')}"><span class="icon-mask icon-download" aria-hidden="true"></span></button>
       `
     });
   }).join('');

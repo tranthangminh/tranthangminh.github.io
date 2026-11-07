@@ -104,21 +104,6 @@ button, input, select, textarea {
   background-color: var(--bg-tertiary);
 }
 
-/* Master Mask Icon (.icon-mask) */
-.icon-mask {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  background-color: currentColor;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  flex-shrink: 0;
-}
-
 /* Inner Icon Graphic System (Reset for icons inside any button) */
 .btn .icon-mask,
 .btn svg,
@@ -251,18 +236,6 @@ button, input, select, textarea {
   background-color: var(--accent-primary) !important;
 }
 
-.btn .tool-icon-svg,
-.btn-action .tool-icon-svg {
-  width: 14px;
-  height: 14px;
-  object-fit: contain;
-  transition: var(--transition-fast);
-}
-
-.btn-primary .tool-icon-svg {
-  filter: var(--icon-filter-active);
-}
-
 /* --------------------------------------------------------------------------
    3. RADIO & SEGMENTED CONTROL BUTTONS (.btn-radio, .radio-group, .segmented-control)
    -------------------------------------------------------------------------- */
@@ -313,10 +286,6 @@ button, input, select, textarea {
   color: var(--accent-primary);
   font-weight: 700;
   box-shadow: var(--shadow-sm);
-}
-
-.btn-radio.active .tool-icon-svg {
-  filter: var(--icon-filter-active);
 }
 
 /* --------------------------------------------------------------------------
@@ -428,7 +397,6 @@ button, input, select, textarea {
 }
 
 .dropdown-arrow {
-  font-size: var(--font-xs);
   color: var(--text-secondary);
   transition: transform 0.2s ease;
 }
@@ -556,7 +524,7 @@ button, input, select, textarea {
   height: 22px;
   padding: 0 24px 0 10px;
   background-color: var(--bg-tertiary);
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url('../svg/chevron-down.svg');
   background-repeat: no-repeat;
   background-position: right 6px center;
   background-size: 12px 12px;

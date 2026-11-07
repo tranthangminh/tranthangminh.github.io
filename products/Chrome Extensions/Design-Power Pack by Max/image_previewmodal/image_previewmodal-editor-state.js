@@ -221,11 +221,6 @@ function saveEditorSettingsToStorage(partialSettings) {
         if (chrome.runtime && chrome.runtime.lastError) {}
       });
     }
-    try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('imageEditorSettings', JSON.stringify(dataToSave));
-      }
-    } catch (e) {}
   }, 100);
 }
 window.saveEditorSettingsToStorage = saveEditorSettingsToStorage;

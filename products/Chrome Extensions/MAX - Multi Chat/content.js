@@ -1,21 +1,25 @@
 // Content Script running inside all iframes (sub_frames) to track URL navigation dynamically
 (function() {
-  // Run strictly inside sub-frames (iframes)
-  if (window.self !== window.top) {
+  const EXTENSION_ORIGIN = new URL(chrome.runtime.getURL("")).origin;
+
+  // Only a pane directly inside the MAX dashboard runs this: other sites' iframes and frames nested in a pane stay inert
+  if (location.ancestorOrigins?.[0] === EXTENSION_ORIGIN) {
     let lastUrl = window.location.href;
 
+    function sendPaneUrl() {
+      chrome.runtime.sendMessage({
+        type: "SUBFRAME_URL_CHANGED",
+        url: window.location.href,
+        tabId: window.name
+      }).catch(() => {
+        // The dashboard may not be listening while it reloads
+      });
+    }
+
     function notifyUrlChange() {
-      const currentUrl = window.location.href;
-      
-      // Only send message if URL has actually changed
-      if (currentUrl !== lastUrl) {
-        lastUrl = currentUrl;
-        chrome.runtime.sendMessage({
-          type: "SUBFRAME_URL_CHANGED",
-          url: currentUrl
-        }).catch(() => {
-          // Silent catch to handle context invalidation on extension reloads
-        });
+      if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href;
+        sendPaneUrl();
       }
     }
 
@@ -34,14 +38,7 @@
     }
 
     function notifyAudioStatus(playing) {
-      try {
-        window.parent.postMessage({
-          type: "MAX_AUDIO_STATE",
-          isAudible: playing,
-          tabId: window.name || "",
-          url: window.location.href
-        }, "*");
-      } catch (e) {}
+      window.parent.postMessage({ type: "MAX_AUDIO_STATE", isAudible: playing }, EXTENSION_ORIGIN);
     }
 
     document.addEventListener("play", () => notifyAudioStatus(true), true);
@@ -62,36 +59,21 @@
     }, 1000);
 
     // Send the initial URL as soon as the content script injects
-    chrome.runtime.sendMessage({
-      type: "SUBFRAME_URL_CHANGED",
-      url: window.location.href
-    }).catch(() => {});
+    sendPaneUrl();
 
-    // Listen to hash (anchor) changes
-    window.addEventListener("hashchange", notifyUrlChange);
-    
-    // Listen to popstate (back/forward browser action in SPA)
-    window.addEventListener("popstate", notifyUrlChange);
+    // Covers pushState, replaceState, hash changes and back/forward without polling
+    window.navigation.addEventListener("currententrychange", notifyUrlChange);
 
-    // Periodic check (every 600ms) to detect pushState/replaceState changes in SPAs (Reddit, Facebook, etc.)
-    setInterval(notifyUrlChange, 600);
-
-    let lastHandledPromptId = null;
-    let lastHandledPromptTime = 0;
-
-    // Listen for AI Prompt synchronization messages via Extension API
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message && message.type === "AI_SYNC_PROMPT") {
-        handleAISyncPrompt(message.prompt, message.promptId);
-      }
-    });
-
-    // Also listen for direct window postMessage from parent Dashboard tab
+    // Only the Dashboard page itself may send prompts
     window.addEventListener("message", (event) => {
-      if (event && event.data && event.data.type === "AI_SYNC_PROMPT") {
+      if (event.origin === EXTENSION_ORIGIN && event.data?.type === "AI_SYNC_PROMPT") {
         handleAISyncPrompt(event.data.prompt, event.data.promptId);
       }
     });
+
+    function reportPromptResult(promptId, delivered) {
+      window.parent.postMessage({ type: "AI_PROMPT_RESULT", promptId, delivered }, EXTENSION_ORIGIN);
+    }
 
     // Helper: Bypass React value setter tracking on HTMLTextAreaElement/HTMLInputElement
     function setNativeInputValue(element, value) {
@@ -163,15 +145,6 @@
     ];
 
     function handleAISyncPrompt(prompt, promptId) {
-      if (!prompt) return;
-
-      const now = Date.now();
-      if ((promptId && promptId === lastHandledPromptId) || (now - lastHandledPromptTime < 600)) {
-        return; // Deduplicate execution within 600ms
-      }
-      if (promptId) lastHandledPromptId = promptId;
-      lastHandledPromptTime = now;
-
       const host = window.location.hostname.toLowerCase();
       const siteConfig = AI_SITE_SELECTORS.find(c => host.includes(c.match));
 
@@ -179,7 +152,10 @@
       const btnSelector = siteConfig ? siteConfig.btn : 'button[type="submit"], button[aria-label*="send" i]';
 
       const inputEl = document.querySelector(inputSelector);
-      if (!inputEl) return;
+      if (!prompt || !inputEl) {
+        reportPromptResult(promptId, false);
+        return;
+      }
 
       if (inputEl.tagName === 'TEXTAREA' || inputEl.tagName === 'INPUT') {
         setNativeInputValue(inputEl, prompt);
@@ -189,11 +165,13 @@
 
       setTimeout(() => {
         const submitBtn = document.querySelector(btnSelector);
-        if (submitBtn && !submitBtn.disabled && !isStopButton(submitBtn)) {
+        const canClick = submitBtn && !submitBtn.disabled && !isStopButton(submitBtn);
+        if (canClick) {
           submitBtn.click();
         } else if (!submitBtn) {
           simulateEnterKey(inputEl);
         }
+        reportPromptResult(promptId, canClick || !submitBtn);
       }, 200);
     }
 

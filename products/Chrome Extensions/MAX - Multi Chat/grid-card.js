@@ -2,17 +2,47 @@
 // Thứ tự ưu tiên:
 //   1. customFavicon — được set từ channels.csv (icon column) hoặc user tự nhập
 //   2. Google Favicon API fallback dựa vào domain của URL
-function getTabFaviconUrl(tab) {
-  if (tab.customFavicon) return tab.customFavicon;
-
-  if (tab.url) {
-    try {
-      return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(tab.url).hostname}`;
-    } catch (e) {
-      return `https://www.google.com/s2/favicons?sz=64&domain=${tab.url}`;
-    }
+function getGoogleFaviconUrl(url) {
+  try {
+    return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`;
+  } catch {
+    return "";
   }
-  return "";
+}
+
+function getTabFaviconUrl(tab) {
+  return tab.customFavicon || getGoogleFaviconUrl(tab.url);
+}
+
+const BASE_FRAME_PERMISSIONS = "encrypted-media; clipboard-write; autoplay";
+// One grant to the dashboard reaches every frame listing these, so each link has to opt in
+const DEVICE_FRAME_PERMISSIONS = "camera; microphone; geolocation; clipboard-read";
+
+// Returns a usable http(s) URL, adding https:// when the scheme is missing, or "" when it cannot be used
+function normalizeHttpUrl(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  const candidate = /^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : `https://${text}`;
+  try {
+    return /^https?:$/.test(new URL(candidate).protocol) ? candidate : "";
+  } catch {
+    return "";
+  }
+}
+
+// A bundled icon can be missing, so try the site's favicon from Google before showing the globe
+function bindFaviconFallback(img, fallbackEl, siteUrl) {
+  let triedGoogle = false;
+  img.addEventListener("error", () => {
+    const googleUrl = getGoogleFaviconUrl(siteUrl);
+    if (!triedGoogle && googleUrl) {
+      triedGoogle = true;
+      img.src = googleUrl;
+      return;
+    }
+    img.style.display = "none";
+    fallbackEl.style.display = "inline-block";
+  });
 }
 
 // Helper to create a unified icon element (can be a standard favicon img, a text avatar, or a split-favicon)
@@ -36,10 +66,7 @@ function createTabIconElement(tab) {
       leftFallback.className = "tab-favicon";
       leftFallback.textContent = "🌐";
       leftFallback.style.display = "none";
-      leftImg.addEventListener("error", () => {
-        leftImg.style.display = "none";
-        leftFallback.style.display = "inline-block";
-      });
+      bindFaviconFallback(leftImg, leftFallback, tab.url);
       topLeft.appendChild(leftImg);
       topLeft.appendChild(leftFallback);
     }
@@ -61,10 +88,7 @@ function createTabIconElement(tab) {
       rightFallback.className = "tab-favicon";
       rightFallback.textContent = "🌐";
       rightFallback.style.display = "none";
-      rightImg.addEventListener("error", () => {
-        rightImg.style.display = "none";
-        rightFallback.style.display = "inline-block";
-      });
+      bindFaviconFallback(rightImg, rightFallback, tab.urlRight);
       bottomRight.appendChild(rightImg);
       bottomRight.appendChild(rightFallback);
     }
@@ -130,10 +154,7 @@ function createTabIconElement(tab) {
     fallback.style.display = "none";
     fallback.style.margin = "0";
 
-    img.addEventListener("error", () => {
-      img.style.display = "none";
-      fallback.style.display = "inline-block";
-    });
+    bindFaviconFallback(img, fallback, tab.url);
     wrapper.appendChild(img);
     wrapper.appendChild(fallback);
     return wrapper;

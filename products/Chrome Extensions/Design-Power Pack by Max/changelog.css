@@ -133,6 +133,11 @@
   transition: transform 0.15s ease;
 }
 
+.changelog-type-badge .icon-mask {
+  width: 14px;
+  height: 14px;
+}
+
 .changelog-type-badge:hover {
   transform: scale(1.12);
 }

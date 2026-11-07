@@ -1,0 +1,422 @@
+/* ==========================================================================
+   WINDOWS APP PAGE STYLESHEET (products/Windows Apps/common/windows-app-page.css)
+   Shared by the product page of every Windows app. See README.md in this folder.
+   Load after common/shared-product-detail.css. Uses theme tokens from theme.css.
+   ========================================================================== */
+
+/* Full-flow layout override */
+.tools-panels,
+.tools-panel,
+.tools-panel.surface-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+
+/* Header Title with App Icon */
+.app-header-title {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.app-title-icon {
+    width: 57px;
+    height: 57px;
+    object-fit: contain;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+
+/* Segmented Tabs Wrap & Desktop 100% Full-Width */
+.app-detail-tabs-wrap {
+    width: 100%;
+    margin: 16px 0 20px 0;
+    position: sticky;
+    top: var(--header-h, 56px);
+    z-index: 30;
+    background: var(--bg-100);
+    padding: 8px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="light"] .app-detail-tabs-wrap,
+.light-theme .app-detail-tabs-wrap {
+    box-shadow: 0 4px 12px var(--bg-100);
+}
+
+@media (min-width: 681px) {
+    .app-detail-tabs-wrap .segmented-tabs,
+    .app-detail-tabs {
+        width: 100%;
+        max-width: 100%;
+        display: inline-flex;
+        box-sizing: border-box;
+    }
+
+    .app-detail-tabs .segmented-tabs-nav {
+        width: 100%;
+        display: inline-flex;
+        gap: 4px;
+    }
+
+    .app-detail-tabs .segmented-tabs-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
+        padding: 10px 14px;
+        font-size: var(--font-md);
+    }
+
+    .app-detail-tabs .segmented-tabs-text {
+        font-size: var(--font-md);
+    }
+}
+
+/* Step and Tip Cards: titles line up across a row, links stay readable */
+.app-step-card,
+.app-tip-card {
+    align-content: start;
+}
+
+.app-step-desc a {
+    color: var(--accent-primary);
+    font-weight: 700;
+}
+
+/* Text beside a Screenshot */
+.app-mode-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+@media (max-width: 860px) {
+    .app-mode-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+.app-mode-media {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.app-mode-media img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform var(--transition-normal);
+}
+
+.app-mode-media:hover img {
+    transform: scale(1.02);
+}
+
+/* Numbered Action Cards */
+.app-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.app-action-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 14px 16px;
+    display: grid;
+    gap: 6px;
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.app-action-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+.app-action-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-action-num {
+    font-family: Consolas, Monaco, monospace;
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--accent-primary);
+    background: var(--accent-subtle);
+    padding: 2px 7px;
+    border-radius: var(--border-radius-sm);
+}
+
+.app-action-name {
+    margin: 0;
+    font-size: var(--font-md);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.app-action-desc {
+    margin: 0;
+    font-size: var(--font-md);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* Color Variants for Action Cards */
+.app-action-card--white .app-action-name { color: var(--text-primary); }
+.app-action-card--white .app-action-num { color: var(--text-secondary); background: var(--bg-tertiary); }
+.app-action-card--white:hover { border-color: var(--border-hover); }
+
+.app-action-card--orange .app-action-name { color: var(--c-orange); }
+.app-action-card--orange .app-action-num { color: var(--c-orange); background: var(--c-orange-bg); }
+.app-action-card--orange:hover { border-color: var(--c-orange); }
+
+.app-action-card--green .app-action-name { color: var(--c-green); }
+.app-action-card--green .app-action-num { color: var(--c-green); background: var(--c-green-bg); }
+.app-action-card--green:hover { border-color: var(--c-green); }
+
+.app-action-card--blue .app-action-name { color: var(--c-blue); }
+.app-action-card--blue .app-action-num { color: var(--c-blue); background: var(--c-blue-bg); }
+.app-action-card--blue:hover { border-color: var(--c-blue); }
+
+.app-action-card--purple .app-action-name { color: var(--c-purple); }
+.app-action-card--purple .app-action-num { color: var(--c-purple); background: var(--c-purple-bg); }
+.app-action-card--purple:hover { border-color: var(--c-purple); }
+
+.app-action-card--yellow .app-action-name { color: var(--c-yellow); }
+.app-action-card--yellow .app-action-num { color: var(--c-yellow); background: var(--c-yellow-bg); }
+.app-action-card--yellow:hover { border-color: var(--c-yellow); }
+
+/* Parameter Grid */
+.app-params-grid-card {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    gap: 1px;
+    margin-top: 18px;
+}
+
+@media (max-width: 992px) {
+    .app-params-grid-card {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .app-params-grid-card {
+        grid-template-columns: 1fr;
+    }
+}
+
+.app-param-cell {
+    background: var(--bg-primary);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: background var(--transition-fast);
+}
+
+.app-param-cell:hover {
+    background: var(--bg-secondary);
+}
+
+.app-param-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-param-badge {
+    font-family: Consolas, Monaco, monospace;
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--c-green);
+    background: var(--c-green-bg);
+    padding: 2px 7px;
+    border-radius: var(--border-radius-sm);
+    flex-shrink: 0;
+}
+
+.app-param-name {
+    margin: 0;
+    font-size: var(--font-md);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.app-param-desc {
+    margin: 0;
+    font-size: var(--font-md);
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.app-param-cell--utility {
+    font-size: var(--font-md);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    display: block;
+    gap: 0;
+}
+
+.app-param-cell--utility strong {
+    color: var(--text-primary);
+}
+
+/* Tips Card (1 row x 4 columns with grid dividers) */
+.app-tips-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    padding: 0;
+    margin-top: 14px;
+    margin-bottom: 20px;
+}
+
+.app-tips-title {
+    font-size: var(--font-md);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    flex-wrap: wrap;
+    line-height: 1.35;
+}
+
+.app-tips-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--border-color);
+    gap: 1px;
+}
+
+@media (max-width: 1024px) {
+    .app-tips-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .app-tips-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.app-tip-item {
+    background: var(--bg-primary);
+    padding: 14px 16px;
+    font-size: var(--font-md);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    transition: background var(--transition-fast);
+}
+
+.app-tip-item:hover {
+    background: var(--bg-secondary);
+}
+
+.app-tip-item strong {
+    color: var(--text-primary);
+}
+
+/* Keycaps inside Tables */
+.app-table td .app-kbd {
+    font-size: 15px;
+    font-weight: 700;
+    padding: 6px 14px;
+    min-width: 48px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 0 var(--border-color), var(--shadow-sm);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .section-title-bar {
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .section-title-bar-heading {
+        white-space: normal !important;
+        line-height: 1.25 !important;
+        font-size: var(--font-lg) !important;
+    }
+    .section-title-bar-line {
+        min-width: 16px !important;
+    }
+}
+
+@media (max-width: 680px) {
+    .app-table-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .app-table th:first-child,
+    .app-table td:first-child {
+        width: 105px !important;
+        min-width: 105px !important;
+        padding: 10px 8px !important;
+    }
+    .app-table td {
+        padding: 10px 8px !important;
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+    }
+    .app-table td .app-kbd {
+        font-size: 13px !important;
+        padding: 4px 8px !important;
+        min-width: 36px !important;
+    }
+
+    .app-tips-title {
+        padding: 10px 14px;
+        font-size: 13.5px;
+    }
+    .app-tip-item {
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+    .app-param-cell {
+        padding: 12px 14px;
+    }
+    .app-param-desc,
+    .app-param-cell--utility {
+        font-size: 13px;
+    }
+
+    .app-header-title {
+        gap: 8px;
+    }
+    .app-title-icon {
+        width: 42px;
+        height: 42px;
+    }
+}

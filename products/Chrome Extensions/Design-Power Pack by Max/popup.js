@@ -70,10 +70,7 @@ function applyTheme(theme) {
         ? window.i18n.t('header.switchToDark')
         : 'Switch to Dark Theme';
     }
-    if (iconMask) {
-      iconMask.style.maskImage = "url('svg/dark-mode.svg')";
-      iconMask.style.webkitMaskImage = "url('svg/dark-mode.svg')";
-    }
+    if (iconMask) iconMask.classList.replace('icon-light-mode', 'icon-dark-mode');
   } else {
     document.documentElement.removeAttribute('data-theme');
     if (themeToggleBtn) {
@@ -81,10 +78,7 @@ function applyTheme(theme) {
         ? window.i18n.t('header.switchToLight')
         : 'Switch to Light Theme';
     }
-    if (iconMask) {
-      iconMask.style.maskImage = "url('svg/light-mode.svg')";
-      iconMask.style.webkitMaskImage = "url('svg/light-mode.svg')";
-    }
+    if (iconMask) iconMask.classList.replace('icon-dark-mode', 'icon-light-mode');
   }
 }
 

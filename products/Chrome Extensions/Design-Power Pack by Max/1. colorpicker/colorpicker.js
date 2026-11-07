@@ -117,7 +117,7 @@ function renderHistory(history) {
     return `
       <div class="color-card" data-hex="${hex}">
         <div class="color-swatch-square" style="background-color: ${hex};" title="${t('colorpicker.clickCopyHex', 'Click to copy HEX')}">
-          <button class="delete-color-btn" title="${t('colorpicker.deleteColor', 'Delete color')}">✕</button>
+          <button class="delete-color-btn" title="${t('colorpicker.deleteColor', 'Delete color')}"><span class="icon-mask icon-close" aria-hidden="true"></span></button>
           <span class="color-hex" style="color: ${textColor};" title="${t('colorpicker.clickCopyHex', 'Click to copy HEX')}">${hex.toUpperCase()}</span>
         </div>
         <div class="color-info">

@@ -7,6 +7,7 @@ v1.3.0,TRUE,tweak,Rename Menu,"ㆍRename ""Multimedia Downloader"" -> ""Download
 ㆍRename ""Context Menu"" -> ""Tools/Features"""
 v1.3.0,TRUE,tweak,Update UI,"ㆍVideo Speed Controller: Minimal UI, hid +, -, and settings icons
 ㆍUpdate whole extension Visual"
+v1.3.0,TRUE,tweak,Remove Keyboard Shortcuts,"ㆍRemoved the Alt+Shift+Z/X/C/V shortcuts. Capture and record from Floating Tools, the popup, or the right-click menu."
 v1.3.0,TRUE,optimize,Optimized,"ㆍFaster startup speed and reduced memory usage.
 ㆍRefactored high-resolution image rendering pipeline."
 v1.3.0,TRUE,bug,Fix Bugs,ㆍFixed minor bugs.

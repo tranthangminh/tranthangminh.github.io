@@ -15,23 +15,6 @@
 
   let scrollTicking = false;
 
-  function isExtensionAlive() {
-    try {
-      return Boolean(typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id);
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function getIconUrl(name) {
-    try {
-      if (isExtensionAlive() && chrome.runtime && chrome.runtime.getURL) {
-        return chrome.runtime.getURL(`svg/${name}`);
-      }
-    } catch (e) {}
-    return `svg/${name}`;
-  }
-
   function ensureModalMounted() {
     let modal = document.getElementById('image-preview-modal');
     if (!modal) {
@@ -84,21 +67,13 @@
     const iconSpan = toggleBtn.querySelector('.icon-mask');
     const textSpan = toggleBtn.querySelector('.toggle-drawings-text');
     if (window.isDrawingsHidden) {
-      if (iconSpan) {
-        const eyeSvg = getIconUrl('eye.svg');
-        iconSpan.style.maskImage = `url('${eyeSvg}')`;
-        iconSpan.style.webkitMaskImage = `url('${eyeSvg}')`;
-      }
+      if (iconSpan) iconSpan.classList.replace('icon-hide', 'icon-eye');
       const text = window.i18n ? window.i18n.t('editor.showDrawingsHtml', 'Show<br>Drawings') : 'Show<br>Drawings';
       const title = window.i18n ? window.i18n.t('editor.showDrawings', 'Show Drawings') : 'Show Drawings';
       if (textSpan) textSpan.innerHTML = text;
       toggleBtn.title = title;
     } else {
-      if (iconSpan) {
-        const hideSvg = getIconUrl('hide.svg');
-        iconSpan.style.maskImage = `url('${hideSvg}')`;
-        iconSpan.style.webkitMaskImage = `url('${hideSvg}')`;
-      }
+      if (iconSpan) iconSpan.classList.replace('icon-eye', 'icon-hide');
       const text = window.i18n ? window.i18n.t('editor.hideDrawingsHtml', 'Hide<br>Drawings') : 'Hide<br>Drawings';
       const title = window.i18n ? window.i18n.t('editor.hideDrawings', 'Hide Drawings') : 'Hide Drawings';
       if (textSpan) textSpan.innerHTML = text;

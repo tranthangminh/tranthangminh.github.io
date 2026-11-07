@@ -53,14 +53,10 @@
   flex-shrink: 0;
 }
 
-.context-tool-icon-wrapper .tool-icon-svg {
+.context-tool-icon-wrapper .icon-mask {
   width: 20px;
   height: 20px;
-  filter: var(--icon-filter);
-}
-
-.context-tool-card .tool-icon-svg {
-  filter: var(--icon-filter);
+  background-color: var(--text-primary);
 }
 
 .context-tool-info {

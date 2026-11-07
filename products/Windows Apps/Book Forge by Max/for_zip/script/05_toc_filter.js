@@ -9,26 +9,7 @@
  * - Prevents raw static TOC leakage into 00-front-matter.md across all books.
  */
 
-const TOC_KEYWORDS = [
-    'contents',
-    'tableofcontents',
-    'generalcontents',
-    'indexofchapters',
-    'tabledesmatieres',
-    'sommaire',
-    'mucluc',
-    'inhalt',
-    'inhaltsverzeichnis'
-];
-
-/**
- * Checks if a specific line is a TOC header keyword
- */
-function isTocHeadingLine(text) {
-    if (!text) return false;
-    const clean = text.replace(/[^a-zA-Z]/g, '').toLowerCase();
-    return TOC_KEYWORDS.includes(clean);
-}
+const { isTocHeader } = require('./02__toc_parser');
 
 /**
  * Checks if a line matches typical TOC structural patterns (dot leaders, trailing page numbers, chapter labels)
@@ -63,7 +44,7 @@ function isTableOfContentsPage(pageData, chapters, isPrevPageToc = false) {
     // --- GATE 1: Keyword Signature (Top 3 lines) ---
     const topLines = rawLines.slice(0, 3);
     for (const l of topLines) {
-        if (isTocHeadingLine(l)) {
+        if (isTocHeader(l)) {
             return { isToc: true, reason: `Gate 1: Keyword "${l}"` };
         }
     }

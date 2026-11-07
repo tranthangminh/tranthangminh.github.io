@@ -197,6 +197,7 @@ function openAddTabModal(subGroupId, startTab = "tab-pane-custom") {
   if (dualAcc1Checkbox) dualAcc1Checkbox.checked = false;
   const dualAcc2Checkbox = document.getElementById("tab-is-dual-acc-2");
   if (dualAcc2Checkbox) dualAcc2Checkbox.checked = false;
+  document.getElementById("tab-allow-devices").checked = false;
   toggleSplitLinkForm(false);
   
   // Kích hoạt tab mặc định
@@ -241,6 +242,8 @@ function openEditTabModal(subGroupId, tabId, name, url) {
   const isDualAcc2 = tab && tab.isDualAccRight ? true : false;
   const dualAcc2Checkbox = document.getElementById("tab-is-dual-acc-2");
   if (dualAcc2Checkbox) dualAcc2Checkbox.checked = isDualAcc2;
+
+  document.getElementById("tab-allow-devices").checked = tab?.allowDevices !== false;
 
   const isSplit = tab && tab.isSplit ? true : false;
   
@@ -327,6 +330,8 @@ async function saveTab() {
   const isDualAcc2Checkbox = document.getElementById("tab-is-dual-acc-2");
   const isDualAcc2 = isDualAcc2Checkbox ? isDualAcc2Checkbox.checked : false;
 
+  const allowDevices = document.getElementById("tab-allow-devices").checked;
+
   const isSplitCheckbox = document.getElementById("tab-is-split");
   const isSplit = isSplitCheckbox ? isSplitCheckbox.checked : false;
   let urlRight = "";
@@ -338,9 +343,7 @@ async function saveTab() {
       alert("Please enter display name and both Left & Right URL addresses.");
       return;
     }
-    if (!/^https?:\/\//i.test(urlRight)) {
-      urlRight = "https://" + urlRight;
-    }
+    urlRight = normalizeHttpUrl(urlRight);
   } else {
     if (!name || !url) {
       alert("Please enter both the display name and URL address.");
@@ -348,8 +351,10 @@ async function saveTab() {
     }
   }
 
-  if (!/^https?:\/\//i.test(url)) {
-    url = "https://" + url;
+  url = normalizeHttpUrl(url);
+  if (!url || (isSplit && !urlRight)) {
+    alert("Please enter a valid web address starting with http or https.");
+    return;
   }
 
   const activeMainGroup = appState.hierarchy.find(g => g.id === appState.activeMainGroupId);
@@ -386,7 +391,9 @@ async function saveTab() {
       const oldIsDualAcc1 = !!tab.isDualAcc;
       const oldIsDualAcc2 = !!tab.isDualAccRight;
       const oldIsSplit = !!tab.isSplit;
-      
+      const devicesChanged = (tab.allowDevices !== false) !== allowDevices;
+
+      tab.allowDevices = allowDevices;
       tab.name = name;
       tab.url = url;
       tab.iconType = iconType;
@@ -431,8 +438,9 @@ async function saveTab() {
       }
 
       // Tối ưu hóa Reload iframe: Chỉ tiêu hủy đúng pane có thay đổi URL hoặc Dual Account
-      const recreateLeft = (oldUrl !== url || oldIsDualAcc1 !== isDualAcc1);
-      const recreateRight = isSplit && (oldUrlRight !== urlRight || oldIsDualAcc2 !== isDualAcc2);
+      // An iframe's permissions are fixed when it loads, so changing them needs a new one
+      const recreateLeft = (oldUrl !== url || oldIsDualAcc1 !== isDualAcc1 || devicesChanged);
+      const recreateRight = isSplit && (oldUrlRight !== urlRight || oldIsDualAcc2 !== isDualAcc2 || devicesChanged);
       const splitToggledOff = oldIsSplit && !isSplit;
 
       if (recreateLeft) {
@@ -453,9 +461,6 @@ async function saveTab() {
       if (appState.activeTabId === tabId) {
         setTimeout(() => {
           selectTab(tabId, url);
-          if (typeof updateAddressBarUI === "function") {
-            updateAddressBarUI();
-          }
         }, 50);
       }
     }
@@ -465,6 +470,7 @@ async function saveTab() {
       id: "tab_" + Date.now(),
       name: name,
       url: url,
+      allowDevices: allowDevices,
       isActive: false,
       iconType: iconType,
       iconText: iconText,
@@ -508,22 +514,8 @@ async function deleteTab(subGroupId, tabId) {
   const subGroup = activeMainGroup.subGroups.find(s => s.id === subGroupId);
   if (!subGroup) return;
 
+  closeTabSession(tabId);
   subGroup.tabs = subGroup.tabs.filter(t => t.id !== tabId);
-  destroyIframe(tabId);
-
-  if (appState.activeTabId === tabId) {
-    appState.activeTabId = null;
-  }
-  if (appState.leftTabId === tabId) {
-    appState.leftTabId = null;
-  }
-  if (appState.rightTabId === tabId) {
-    appState.rightTabId = null;
-  }
-
-  if (!appState.leftTabId && !appState.rightTabId) {
-    document.getElementById("welcome-screen").style.display = "flex";
-  }
 
   await saveHierarchyToStorage();
   renderSubSidebar();
@@ -636,6 +628,7 @@ async function submitDefaultChannelsSetup() {
         customFavicon: defaultTab.customFavicon || "",
         openExternal: defaultTab.openExternal || false,
         isDualAcc: defaultTab.isDualAcc || false,
+        allowDevices: false,
         isActive: false
       };
       if (defaultTab.iconType) newTab.iconType = defaultTab.iconType;

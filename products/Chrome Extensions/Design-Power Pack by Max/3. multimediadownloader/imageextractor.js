@@ -163,10 +163,10 @@ function filterAndRenderImages() {
       badgeLeft: typeLabel,
       badgeRight: sizeLabel,
       actionsHtml: `
-        <button class="btn btn-ghost btn-icon preview-btn" title="${t('downloader.previewImage', 'Preview image')}"><span class="icon-mask" style="mask-image: url('svg/eye.svg'); -webkit-mask-image: url('svg/eye.svg');"></span></button>
-        <button class="btn btn-ghost btn-icon copy-btn" title="${t('downloader.copyImageClipboard', 'Copy image to clipboard')}"><span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span></button>
-        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}"><span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span></button>
-        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadImmediate', 'Download immediately')}"><span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span></button>
+        <button class="btn btn-ghost btn-icon preview-btn" title="${t('downloader.previewImage', 'Preview image')}"><span class="icon-mask icon-eye" aria-hidden="true"></span></button>
+        <button class="btn btn-ghost btn-icon copy-btn" title="${t('downloader.copyImageClipboard', 'Copy image to clipboard')}"><span class="icon-mask icon-copy" aria-hidden="true"></span></button>
+        <button class="btn btn-ghost btn-icon open-tab-btn" title="${t('downloader.openNewTab', 'Open in new tab')}"><span class="icon-mask icon-open-tab" aria-hidden="true"></span></button>
+        <button class="btn btn-ghost btn-icon download-btn" title="${t('downloader.downloadImmediate', 'Download immediately')}"><span class="icon-mask icon-download" aria-hidden="true"></span></button>
       `
     });
   }).join('');

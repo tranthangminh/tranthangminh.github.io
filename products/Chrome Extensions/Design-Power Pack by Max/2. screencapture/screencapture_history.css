@@ -88,6 +88,11 @@
   color: var(--accent-primary);
 }
 
+.rec-video-placeholder .icon-mask {
+  width: 24px;
+  height: 24px;
+}
+
 .rec-video-placeholder svg {
   width: 26px;
   height: 26px;
@@ -119,6 +124,14 @@
   line-height: 1.4;
   margin-top: 8px;
   margin-bottom: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.file-access-warning .icon-mask {
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
 }
 
 .file-access-warning a {

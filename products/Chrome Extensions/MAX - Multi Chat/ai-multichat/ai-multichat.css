@@ -235,6 +235,13 @@
   color: var(--text-muted);
 }
 
+.ai-sync-status {
+  margin-left: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger-color);
+}
+
 .ai-input-footer-hints {
   display: flex;
   align-items: center;

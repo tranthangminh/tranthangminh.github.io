@@ -8,7 +8,7 @@ window.MAIN_ICON_LIST = [
   "Achievement", "AI", "Book", "Business", "Chart", "Chat", "Code",
   "Creative", "Folder", "Game", "Health", "Idea",
   "Location", "Money", "Movie", "Music", "Personal",
-  "Photo", "Quick", "Robot", "Science", "Shopping", "Social", "Star"
+  "Photo", "Quick", "Science", "Shopping", "Social", "Star"
 ];
 
 window.SWATCH_COLORS = [
@@ -24,7 +24,7 @@ window.SWATCH_COLORS = [
 ];
 
 window.encodeCustomFavicon = function(iconType, customFavicon, iconText, iconBgColor) {
-  if (iconType === "text" || iconText) {
+  if (iconType === "text") {
     const text = iconText || "";
     const colorHex = (iconBgColor || "#6366f1").toLowerCase();
     let idx = window.SWATCH_COLORS.indexOf(colorHex);
@@ -254,7 +254,12 @@ async function loadDefaultChannelsFromCSV() {
 document.addEventListener("DOMContentLoaded", async () => {
   renderWelcomeGuide("welcome-screen");
   await loadDefaultChannelsFromCSV();
-  await initApp();
+  try {
+    await initApp();
+  } catch (error) {
+    // The controls below must still work, or the user could not even reach Import CSV
+    console.error("MAX: dashboard failed to initialize", error);
+  }
   registerEvents();
   setupSidebarHoverGroup(); // hover cả sidebar-main + sidebar-sub → expand
   setupAutohideHoverEvents(); // hover autohide-bar để hiện sidebar
@@ -340,6 +345,7 @@ function applyAutohideState() {
 
 // 1. Initial configuration & storage load
 async function initApp() {
+  await chrome.runtime.sendMessage({ type: "SYNC_FRAME_RULES" }).catch(() => {});
   const result = await chrome.storage.local.get(["app_hierarchy", "app_settings", "ai_models"]);
   
   // Settings initialization (Theme)
@@ -347,10 +353,11 @@ async function initApp() {
     appState.theme = result.app_settings.theme;
   }
 
-  if (typeof loadAIModelsFromCSV === "function") {
-    await loadAIModelsFromCSV();
-  } else if (result.ai_models && Array.isArray(result.ai_models) && result.ai_models.length > 0) {
+  // Saved models come from the Google Sheet; the bundled CSV covers first runs and damaged data
+  if (Array.isArray(result.ai_models) && result.ai_models.length > 0 && result.ai_models.every(isValidAIModel)) {
     appState.aiModels = result.ai_models;
+  } else {
+    await loadAIModelsFromCSV();
   }
 
   applyTheme(appState.theme);
@@ -359,8 +366,13 @@ async function initApp() {
 
   // Load app hierarchy directly, fall back to clean seed data if not present
   let hasLoadedSession = false;
-  if (result.app_hierarchy && result.app_hierarchy.length > 0) {
-    appState.hierarchy = result.app_hierarchy;
+  const savedHierarchy = normalizeHierarchy(result.app_hierarchy);
+  // Damaged data is about to be replaced, so keep a copy for manual recovery
+  if (JSON.stringify(savedHierarchy) !== JSON.stringify(result.app_hierarchy ?? [])) {
+    await chrome.storage.local.set({ "app_hierarchy_backup": result.app_hierarchy });
+  }
+  if (savedHierarchy.length > 0) {
+    appState.hierarchy = savedHierarchy;
     // Migration: Migrate any legacy main_ai_multichat id to SYSTEM_AI_GROUP_ID
     appState.hierarchy.forEach(g => {
       if (g.id === "main_ai_multichat") {
@@ -436,6 +448,7 @@ async function initApp() {
           customFavicon: defaultTab.customFavicon || "",
           openExternal: defaultTab.openExternal || false,
           isDualAcc: defaultTab.isDualAcc || false,
+          allowDevices: false,
           isActive: false
         };
         if (defaultTab.iconType) newTab.iconType = defaultTab.iconType;
@@ -540,6 +553,18 @@ async function initApp() {
 // Default Channels modal logic moved to modals/default-channels.js
 
 // 2. Storage utilities
+// Every reader assumes groups hold subGroups and subGroups hold tabs, so damaged entries stop here
+function normalizeHierarchy(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(group => group?.id).map(group => ({
+    ...group,
+    subGroups: (Array.isArray(group.subGroups) ? group.subGroups : []).filter(sub => sub?.id).map(sub => ({
+      ...sub,
+      tabs: (Array.isArray(sub.tabs) ? sub.tabs : []).filter(tab => tab?.id && tab.url)
+    }))
+  }));
+}
+
 async function saveHierarchyToStorage() {
   const cleanHierarchy = JSON.parse(JSON.stringify(appState.hierarchy));
   cleanHierarchy.forEach(mainGroup => {
@@ -697,6 +722,27 @@ function checkAndShowDefaultChannelsPopup() {
   }
 }
 
+// A group's icon can come from an imported CSV, so it only ever goes in through DOM properties
+function renderGroupHeader(titleEl, group) {
+  const iconWrap = document.createElement("span");
+  iconWrap.className = "group-header-icon";
+  if (window.MAIN_ICON_LIST?.includes(group.icon)) {
+    const img = document.createElement("img");
+    img.src = `svg/main-icons/${group.icon}.svg`;
+    img.alt = group.icon;
+    img.style.cssText = "width:24px;height:24px;object-fit:contain;filter:brightness(0) invert(0.85);vertical-align:middle;";
+    iconWrap.appendChild(img);
+  } else {
+    iconWrap.textContent = group.icon || "📁";
+  }
+
+  const text = document.createElement("span");
+  text.className = "group-header-text";
+  text.textContent = group.name;
+
+  titleEl.replaceChildren(iconWrap, " ", text);
+}
+
 // 5. Render Sub Sidebar (Column 2)
 function renderSubSidebar() {
   const activeMainGroup = appState.hierarchy.find(g => g.id === appState.activeMainGroupId);
@@ -721,9 +767,7 @@ function renderSubSidebar() {
     if (addSubGroupBtn) addSubGroupBtn.style.display = "none";
 
     sidebarSub.style.display = "flex";
-    const iconHtml = `<img src="svg/main-icons/AI.svg" alt="AI" style="width:24px;height:24px;object-fit:contain;filter:brightness(0) invert(0.85);vertical-align:middle;">`;
-    titleEl.innerHTML = `<span class="group-header-icon">${iconHtml}</span> <span class="group-header-text"></span>`;
-    titleEl.querySelector(".group-header-text").textContent = activeMainGroup.name;
+    renderGroupHeader(titleEl, activeMainGroup);
     subContainer.innerHTML = "";
 
     renderAISubSidebar(subContainer);
@@ -742,12 +786,7 @@ function renderSubSidebar() {
   }
 
   sidebarSub.style.display = "flex";
-  // Render header icon: SVG hoặc emoji cũ
-  const iconHtml = (activeMainGroup.icon && window.MAIN_ICON_LIST && window.MAIN_ICON_LIST.includes(activeMainGroup.icon))
-    ? `<img src="svg/main-icons/${activeMainGroup.icon}.svg" alt="${activeMainGroup.icon}" style="width:24px;height:24px;object-fit:contain;filter:brightness(0) invert(0.85);vertical-align:middle;">`
-    : (activeMainGroup.icon || "📁");
-  titleEl.innerHTML = `<span class="group-header-icon">${iconHtml}</span> <span class="group-header-text"></span>`;
-  titleEl.querySelector(".group-header-text").textContent = activeMainGroup.name;
+  renderGroupHeader(titleEl, activeMainGroup);
   subContainer.innerHTML = "";
   renderWorkspace();
 
@@ -946,6 +985,36 @@ function selectMainGroup(id) {
   saveSessionState();
 }
 
+// A non-split tab uses its primary URL and Dual Acc flag in whichever pane it is opened
+const isPaneRightLink = (pane, tabObj) => pane === "right" && !!tabObj.isSplit;
+const getPaneUrl = (pane, tabObj) => isPaneRightLink(pane, tabObj) ? tabObj.urlRight : tabObj.url;
+
+function createPaneIframe(pane, tabObj, url) {
+  const iframe = document.createElement("iframe");
+  const isDual = isPaneRightLink(pane, tabObj) ? tabObj.isDualAccRight : tabObj.isDualAcc;
+  // credentialless keeps this pane's cookies and storage apart from the main profile
+  if (isDual) iframe.setAttribute("credentialless", "true");
+  iframe.src = url;
+  iframe.name = tabObj.id;
+  // Links saved before this setting existed have no flag and keep the access they already had
+  iframe.setAttribute("allow", tabObj.allowDevices === false ? BASE_FRAME_PERMISSIONS : `${BASE_FRAME_PERMISSIONS}; ${DEVICE_FRAME_PERMISSIONS}`);
+  return iframe;
+}
+
+function reloadPane(pane) {
+  const tabId = pane === "left" ? appState.leftTabId : appState.rightTabId;
+  const tabObj = findTabById(tabId);
+  const wrapper = document.getElementById(`wrapper-${pane}-${tabId}`);
+  // Open-external tabs show a warning card instead of an iframe
+  if (!tabObj || !wrapper?.querySelector("iframe")) return;
+  wrapper.replaceChildren(createPaneIframe(pane, tabObj, getPaneUrl(pane, tabObj)));
+}
+
+function openPaneInNewTab(pane) {
+  const tabObj = findTabById(pane === "left" ? appState.leftTabId : appState.rightTabId);
+  if (tabObj) window.open(getPaneUrl(pane, tabObj), "_blank", "noopener");
+}
+
 window.loadIframeInPane = function(pane, tabObj, url, isOpenExternal) {
   const contentContainer = document.getElementById(`pane-${pane}-content`);
   if (!contentContainer) return;
@@ -968,30 +1037,10 @@ window.loadIframeInPane = function(pane, tabObj, url, isOpenExternal) {
       `;
       const btn = wrapper.querySelector(".open-external-btn");
       btn.addEventListener("click", () => {
-        window.open(url, "_blank");
+        window.open(url, "_blank", "noopener");
       });
     } else {
-      const iframe = document.createElement("iframe");
-      let iframeUrl = url;
-      const isDualForThisPane = tabObj && (pane === "right" ? tabObj.isDualAccRight : tabObj.isDualAcc);
-      if (isDualForThisPane) {
-        try {
-          const u = new URL(url);
-          u.searchParams.set("max_dual_acc", "1");
-          iframeUrl = u.toString();
-        } catch (e) {
-          iframeUrl = url + (url.includes("?") ? "&" : "?") + "max_dual_acc=1";
-        }
-        iframe.setAttribute("credentialless", "true");
-        iframe.setAttribute("data-dual-acc", "true");
-      }
-      iframe.src = iframeUrl;
-      if (tabObj && tabObj.id) {
-        iframe.name = tabObj.id;
-        iframe.setAttribute("name", tabObj.id);
-      }
-      iframe.setAttribute("allow", "geolocation; microphone; camera; midi; encrypted-media; clipboard-write; clipboard-read; autoplay");
-      wrapper.appendChild(iframe);
+      wrapper.appendChild(createPaneIframe(pane, tabObj, url));
     }
     contentContainer.appendChild(wrapper);
   } else {
@@ -1098,7 +1147,9 @@ function findTabById(tabId) {
 // Xử lý khi người dùng chỉnh sửa URL trực tiếp trên thanh address bar
 async function handleAddressBarSubmit(paneSide) {
   const inputEl = document.getElementById(`address-bar-input-${paneSide}`);
-  if (!inputEl) return;
+  // Iframe navigation also writes into this input, so only a real user edit may be saved
+  if (!inputEl?.dataset.edited) return;
+  delete inputEl.dataset.edited;
 
   const tabId = (paneSide === "left") ? appState.leftTabId : appState.rightTabId;
   if (!tabId) return;
@@ -1106,25 +1157,27 @@ async function handleAddressBarSubmit(paneSide) {
   const tabObj = findTabById(tabId);
   if (!tabObj) return;
 
+  const urlKey = isPaneRightLink(paneSide, tabObj) ? "urlRight" : "url";
   let newUrl = inputEl.value.trim();
-  
+
   // Nếu xoá trống, trả về URL cũ của tab
   if (!newUrl) {
-    inputEl.value = tabObj.url;
+    inputEl.value = tabObj[urlKey];
     return;
   }
 
-  // Tự động thêm protocol nếu thiếu
-  if (!/^https?:\/\//i.test(newUrl)) {
-    newUrl = "https://" + newUrl;
+  // Tự động thêm protocol nếu thiếu; địa chỉ không dùng được thì trả về URL cũ
+  newUrl = normalizeHttpUrl(newUrl);
+  if (!newUrl) {
+    inputEl.value = tabObj[urlKey];
+    return;
   }
-  
+
   inputEl.value = newUrl;
 
   // Nếu có thay đổi URL thực sự
-  if (tabObj.url !== newUrl) {
-    const oldUrl = tabObj.url;
-    tabObj.url = newUrl;
+  if (tabObj[urlKey] !== newUrl) {
+    tabObj[urlKey] = newUrl;
 
     // Cập nhật src cho iframe tương ứng trong DOM
     const wrapper = document.getElementById(`wrapper-${paneSide}-${tabId}`);
@@ -1140,7 +1193,7 @@ async function handleAddressBarSubmit(paneSide) {
 
     // Cập nhật dataset trên nút Edit để đồng bộ
     const editBtn = document.querySelector(`[data-action="edit-tab"][data-tab-id="${tabId}"]`);
-    if (editBtn) {
+    if (editBtn && urlKey === "url") {
       editBtn.setAttribute("data-tab-url", newUrl);
     }
   }
@@ -1542,8 +1595,8 @@ function setSplitViewActive(active) {
       const title = document.getElementById("pane-right-title");
       if (title) title.textContent = tabObj ? tabObj.name : "Right View";
       const address = document.getElementById("address-bar-input-right");
-      if (address) address.value = tabObj ? tabObj.url : "";
-      
+      if (address) address.value = tabObj ? getPaneUrl("right", tabObj) : "";
+
       const rightContent = document.getElementById("pane-right-content");
       rightContent?.querySelectorAll(".iframe-wrapper").forEach(w => {
         if (w.id === `wrapper-right-${appState.rightTabId}`) {
@@ -1795,14 +1848,6 @@ function registerEvents() {
   document.getElementById("btn-toggle-split-view")?.addEventListener("click", toggleSplitView);
   document.getElementById("btn-toggle-window-mode")?.addEventListener("click", handleWindowModeToggle);
   document.getElementById("btn-toggle-autohide")?.addEventListener("click", toggleAutohide);
-  document.getElementById("btn-open-settings-modal")?.addEventListener("click", () => {
-    if (typeof openSettingsModal === "function") openSettingsModal();
-    else if (typeof openInfoModal === "function") openInfoModal();
-  });
-  document.getElementById("btn-open-info-modal")?.addEventListener("click", () => {
-    if (typeof openSettingsModal === "function") openSettingsModal();
-    else if (typeof openInfoModal === "function") openInfoModal();
-  });
 
   // Manual Google Sheet Sync Button Handler
   document.getElementById("btn-sync-google-sheet")?.addEventListener("click", async () => {
@@ -1835,26 +1880,20 @@ function registerEvents() {
     const mainModal = document.getElementById("main-group-modal");
     const subModal = document.getElementById("sub-group-modal");
     const tabModal = document.getElementById("tab-modal");
-    const infoModal = document.getElementById("info-modal");
     const settingsModal = document.getElementById("settings-modal");
 
-    // 1. ESC KEY -> Close active modal or floating donate nudge
+    // 1. ESC KEY -> Close active modal
     if (e.key === "Escape") {
-      const donateNudge = document.getElementById("donate-nudge");
-      if (donateNudge && donateNudge.classList.contains("show")) {
-        donateNudge.classList.remove("show");
-      }
       if (mainModal && mainModal.classList.contains("show")) closeModal("main-group-modal");
       else if (subModal && subModal.classList.contains("show")) closeModal("sub-group-modal");
       else if (tabModal && tabModal.classList.contains("show")) closeModal("tab-modal");
       else if (settingsModal && settingsModal.classList.contains("show")) closeModal("settings-modal");
-      else if (infoModal && infoModal.classList.contains("show")) closeModal("info-modal");
       return;
     }
 
     // 2. TAB KEY -> Modal Focus Trap (Cycle focus within visible modal)
     if (e.key === "Tab") {
-      const activeModal = [mainModal, subModal, tabModal, settingsModal, infoModal].find(m => m && m.classList.contains("show"));
+      const activeModal = [mainModal, subModal, tabModal, settingsModal].find(m => m && m.classList.contains("show"));
       if (activeModal) {
         const focusableElements = activeModal.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
         if (focusableElements.length > 0) {
@@ -1871,8 +1910,8 @@ function registerEvents() {
       }
     }
 
-    // 3. ENTER KEY -> Save active modal regardless of element focus
-    if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
+    // 3. ENTER KEY -> Save active modal, unless a button or link has focus and should do its own action
+    if (e.key === "Enter" && e.target.tagName !== "TEXTAREA" && !e.target.closest("button, a")) {
       if (mainModal && mainModal.classList.contains("show")) {
         e.preventDefault();
         if (typeof saveMainGroup === "function") saveMainGroup();
@@ -1890,9 +1929,6 @@ function registerEvents() {
       } else if (settingsModal && settingsModal.classList.contains("show")) {
         e.preventDefault();
         closeModal("settings-modal");
-      } else if (infoModal && infoModal.classList.contains("show")) {
-        e.preventDefault();
-        closeModal("info-modal");
       }
     }
   });
@@ -1912,9 +1948,7 @@ function registerEvents() {
     const tabName = btn.getAttribute("data-tab-name");
     const tabUrl = btn.getAttribute("data-tab-url");
 
-    if (action === "add-tab") {
-      openAddTabModal(subGroupId);
-    } else if (action === "edit-sub-group") {
+    if (action === "edit-sub-group") {
       openEditSubGroupModal(subGroupId, subGroupName);
     } else if (action === "clone-sub-group") {
       cloneSubGroup(subGroupId);
@@ -1934,65 +1968,33 @@ function registerEvents() {
   // Address Bar Controls (Left Pane)
   document.getElementById("btn-reload-left")?.addEventListener("click", (e) => {
     e.stopPropagation();
-    if (appState.leftTabId) {
-      const wrapper = document.getElementById(`wrapper-left-${appState.leftTabId}`);
-      if (wrapper) {
-        const activeTab = findTabById(appState.leftTabId);
-        const url = activeTab ? activeTab.url : wrapper.querySelector("iframe")?.src;
-        if (url) {
-          wrapper.innerHTML = "";
-          const iframe = document.createElement("iframe");
-          iframe.setAttribute("allow", "geolocation; microphone; camera; midi; encrypted-media; clipboard-write; clipboard-read");
-          iframe.src = url;
-          wrapper.appendChild(iframe);
-        }
-      }
-    }
+    reloadPane("left");
   });
 
   document.getElementById("btn-open-external-left")?.addEventListener("click", (e) => {
     e.stopPropagation();
-    if (appState.leftTabId) {
-      const activeTab = findTabById(appState.leftTabId);
-      if (activeTab && activeTab.url) {
-        window.open(activeTab.url, "_blank");
-      }
-    }
+    openPaneInNewTab("left");
   });
 
   // Address Bar Controls (Right Pane)
   document.getElementById("btn-reload-right")?.addEventListener("click", (e) => {
     e.stopPropagation();
-    if (appState.rightTabId) {
-      const wrapper = document.getElementById(`wrapper-right-${appState.rightTabId}`);
-      if (wrapper) {
-        const activeTab = findTabById(appState.rightTabId);
-        const url = (activeTab && activeTab.urlRight) ? activeTab.urlRight : wrapper.querySelector("iframe")?.src;
-        if (url) {
-          wrapper.innerHTML = "";
-          const iframe = document.createElement("iframe");
-          iframe.setAttribute("allow", "geolocation; microphone; camera; midi; encrypted-media; clipboard-write; clipboard-read");
-          iframe.src = url;
-          wrapper.appendChild(iframe);
-        }
-      }
-    }
+    reloadPane("right");
   });
 
   document.getElementById("btn-open-external-right")?.addEventListener("click", (e) => {
     e.stopPropagation();
-    if (appState.rightTabId) {
-      const activeTab = findTabById(appState.rightTabId);
-      if (activeTab && activeTab.url) {
-        window.open(activeTab.url, "_blank");
-      }
-    }
+    openPaneInNewTab("right");
   });
 
   // Gắn sự kiện lắng nghe chỉnh sửa địa chỉ trực tiếp trên address bar (Enter và blur)
   const addAddressBarListeners = (side) => {
     const inputEl = document.getElementById(`address-bar-input-${side}`);
     if (!inputEl) return;
+
+    inputEl.addEventListener("input", () => {
+      inputEl.dataset.edited = "1";
+    });
 
     inputEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -2011,12 +2013,19 @@ function registerEvents() {
   addAddressBarListeners("right");
 }
 
+let modalOpener = null;
+
 function openModal(modalId) {
+  modalOpener = document.activeElement;
   document.getElementById(modalId).classList.add("show");
 }
 
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove("show");
+  // Focus must not stay on a control inside the hidden modal
+  document.activeElement?.blur();
+  if (modalOpener?.isConnected) modalOpener.focus();
+  modalOpener = null;
 }
 
 // renderEmojiSelector moved to modals/main-group.js
@@ -2027,52 +2036,19 @@ window.closeModal = closeModal;
 
 // Listen for subframe audio playback events via postMessage
 window.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "MAX_AUDIO_STATE") {
-    const isAudible = !!event.data.isAudible;
-    const tabId = event.data.tabId;
-    const frameUrl = event.data.url;
+  if (event.data?.type !== "MAX_AUDIO_STATE") return;
 
-    let targetTab = null;
-    if (tabId) {
-      targetTab = findTabById(tabId);
-    }
-    if (!targetTab && frameUrl) {
-      targetTab = findTabByFrameUrl(frameUrl);
-    }
+  // Identify the tab from our own iframe element, never from what the page claims about itself
+  const paneFrame = [...document.querySelectorAll(".iframe-wrapper iframe")].find(frame => frame.contentWindow === event.source);
+  const targetTab = paneFrame && findTabById(paneFrame.name);
+  if (!targetTab) return;
 
-    if (targetTab) {
-      const hasLeftWrapper = !!document.getElementById(`wrapper-left-${targetTab.id}`);
-      const hasRightWrapper = !!document.getElementById(`wrapper-right-${targetTab.id}`);
-      const effectiveAudible = (hasLeftWrapper || hasRightWrapper) ? isAudible : false;
-
-      if (targetTab.isAudible !== effectiveAudible) {
-        targetTab.isAudible = effectiveAudible;
-        updateTabAudioIconUI(targetTab.id, effectiveAudible);
-      }
-    }
+  const isAudible = !!event.data.isAudible;
+  if (targetTab.isAudible !== isAudible) {
+    targetTab.isAudible = isAudible;
+    updateTabAudioIconUI(targetTab.id, isAudible);
   }
 });
-
-function findTabByFrameUrl(url) {
-  if (!url) return null;
-  const cleanUrl = url.toLowerCase();
-  for (const mainGroup of appState.hierarchy) {
-    for (const subGroup of mainGroup.subGroups) {
-      const tab = subGroup.tabs.find(t => {
-        if (!t.url) return false;
-        try {
-          const h1 = new URL(t.url).hostname.replace(/^www\./, "").toLowerCase();
-          const h2 = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
-          return h1 === h2 || h1.includes(h2) || h2.includes(h1);
-        } catch (e) {
-          return cleanUrl.includes(t.url.toLowerCase()) || t.url.toLowerCase().includes(cleanUrl);
-        }
-      });
-      if (tab) return tab;
-    }
-  }
-  return null;
-}
 
 function updateTabAudioIconUI(tabId, isAudible) {
   const tabEl = document.querySelector(`.tab-link-item[data-tab-id="${tabId}"]`);
@@ -2101,25 +2077,14 @@ function updateTabAudioIconUI(tabId, isAudible) {
   renderMainSidebar();
 }
 
-// Helper to manually test audio icon in browser console
-window.testAudioState = function(tabId, isAudible = true) {
-  const tabObj = findTabById(tabId);
-  if (tabObj) {
-    tabObj.isAudible = isAudible;
-    updateTabAudioIconUI(tabId, isAudible);
-  }
-};
-
 // Listen for message from background.js/content.js to detect iframe navigation errors & details
 chrome.runtime.onMessage.addListener((message, sender) => {
   if (message.type === "IFRAME_LOAD_ERROR") {
     handleIframeLoadError(message.url);
   } else if (message.type === "FAVICON_DETECTED") {
     handleFaviconDetected(message.url, message.faviconUrl);
-  } else if (message.type === "IFRAME_NAVIGATED") {
-    handleIframeNavigated(message.frameId, message.url);
   } else if (message.type === "SUBFRAME_URL_CHANGED" && sender && typeof sender.frameId !== "undefined") {
-    handleIframeNavigated(sender.frameId, message.url);
+    handleIframeNavigated(sender.frameId, message.url, message.tabId);
   }
 });
 
@@ -2194,19 +2159,11 @@ function handleIframeLoadError(url) {
   }
 }
 
-// Global Event Listener for Favicon error handling (to bypass CSP inline error restriction)
-document.addEventListener("error", (e) => {
-  if (e.target && e.target.tagName === "IMG" && e.target.classList.contains("tab-favicon")) {
-    e.target.style.display = "none";
-    const fallbackEl = e.target.nextElementSibling;
-    if (fallbackEl) {
-      fallbackEl.style.display = "inline-block";
-    }
-  }
-}, true); // Use capture phase because image error event does not bubble
-
 // Hàm định tuyến và cập nhật URL cho Address Bar (pane-address-container) khi iframe chuyển hướng
-function handleIframeNavigated(frameId, url) {
+function handleIframeNavigated(frameId, url, senderTabId) {
+  // A hidden tab on the same site keeps navigating and must not take over the visible address bar
+  if (findTabById(senderTabId) && senderTabId !== appState.leftTabId && senderTabId !== appState.rightTabId) return;
+
   // 1. Kiểm tra xem frameId đã được map vào pane nào chưa
   if (paneFrameIdMap.left === frameId) {
     const inputLeft = document.getElementById("address-bar-input-left");

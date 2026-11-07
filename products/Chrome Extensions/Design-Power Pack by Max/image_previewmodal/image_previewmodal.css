@@ -109,21 +109,6 @@
   gap: 8px;
 }
 
-/* Master Mask Icon (.icon-mask) Self-contained Definition */
-.icon-mask {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  background-color: currentColor;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  flex-shrink: 0;
-}
-
 /* Circular HUD Action Buttons (Theme Toggle & Hide HUD) */
 .hide-hud-btn {
   width: 45px;
@@ -147,14 +132,7 @@
 .hide-hud-btn .icon-mask {
   width: 25px;
   height: 25px;
-  display: inline-block;
   background-color: var(--text-primary);
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
   transition: background-color 0.2s ease;
 }
 
@@ -344,8 +322,6 @@
 .modal-hint-chip .hint-icon-svg {
   width: 12px;
   height: 12px;
-  object-fit: contain;
-  filter: invert(61%) sepia(87%) saturate(1915%) hue-rotate(152deg) brightness(98%) contrast(97%);
 }
 
 .modal-hint-chip.chip-cyan {
@@ -399,6 +375,12 @@
   outline: none !important;
 }
 
+.modal-actions .action-btn .icon-mask,
+.search-image-actions .action-btn .icon-mask {
+  width: 14px;
+  height: 14px;
+}
+
 .modal-actions .action-btn:hover,
 .search-image-actions .action-btn:hover {
   background: var(--accent-subtle);
@@ -413,10 +395,6 @@
   color: var(--text-on-gradient);
   border: none;
   box-shadow: none !important;
-}
-
-.modal-actions #modal-download-btn .tool-icon-svg {
-  filter: brightness(0) !important;
 }
 
 .modal-actions #modal-download-btn:hover {
@@ -473,10 +451,6 @@
   background: rgba(0, 242, 254, 0.15);
   border-color: var(--accent-primary);
   color: var(--accent-primary);
-}
-
-.modal-info .tool-icon-svg {
-  filter: var(--icon-filter);
 }
 
 /* Vector Object Custom Color & Opacity Popover */

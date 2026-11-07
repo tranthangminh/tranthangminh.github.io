@@ -55,17 +55,33 @@
     });
   }
 
+  // Web Audio outputs silence for cross-origin media loaded without CORS, so boosting would mute the video
+  function canBoostAudio(video) {
+    if (video.crossOrigin !== null) return true;
+    const src = video.currentSrc || video.src || video.querySelector('source')?.src;
+    if (!src || src.startsWith('blob:') || src.startsWith('data:')) return true;
+    try {
+      return new URL(src, location.href).origin === window.origin;
+    } catch {
+      return false;
+    }
+  }
+
   // Audio Boost Application & Event Dispatching
   function updateAudioBoost(video, level) {
-    let cleanLevel = Math.max(0, Math.min(50, Math.round(level)));
+    const canBoost = canBoostAudio(video);
+    let cleanLevel = canBoost ? Math.max(0, Math.min(50, Math.round(level))) : 0;
     video._maxAudioBoostLevel = cleanLevel;
 
-    video.dispatchEvent(new CustomEvent('max-set-audio-boost', {
-      bubbles: true,
-      detail: { db: cleanLevel, level: cleanLevel }
-    }));
-
-    if (rememberBoostLevel) safeSet({ [LAST_BOOST_KEY]: cleanLevel });
+    if (canBoost) {
+      video.dispatchEvent(new CustomEvent('max-set-audio-boost', {
+        bubbles: true,
+        detail: { db: cleanLevel, level: cleanLevel }
+      }));
+      if (rememberBoostLevel) safeSet({ [LAST_BOOST_KEY]: cleanLevel });
+    } else {
+      window.showToast?.('Audio Boost is not available for this video.');
+    }
 
     const ctrl = window.maxControllersMap?.get(video);
     if (!ctrl) return;
@@ -87,7 +103,7 @@
       btn.classList.toggle('max-active', val === cleanLevel);
     });
 
-    window.maxTriggerCenterHud?.(video, getBoostText(cleanLevel), true);
+    if (canBoost) window.maxTriggerCenterHud?.(video, getBoostText(cleanLevel), true);
   }
 
   // Global Keyboard Shortcuts
@@ -97,8 +113,9 @@
     if (modal && (!modal.classList.contains('hidden') || modal.classList.contains('editor-page-modal'))) return;
     if (window.isEditMode || window.selectedTextObj?.isEditingText) return;
 
-    const el = document.activeElement;
-    if (el && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable || el.classList.contains('max-shortcut-key-box'))) return;
+    // composedPath sees the real target inside Shadow DOM, where activeElement only returns the host
+    const el = e.composedPath()[0];
+    if (el && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable || el.classList?.contains('max-shortcut-key-box'))) return;
     if (e.ctrlKey || e.altKey || e.metaKey || !e.key) return;
 
     const key = e.key.toLowerCase();
@@ -142,8 +159,9 @@
   function setupSoundBoostRow(video, controller) {
     if (controller.querySelector('.max-boost-row')) return;
 
-    let currentBoost = rememberBoostLevel ? lastBoostLevel : (video._maxAudioBoostLevel || 0);
-    if (rememberBoostLevel && lastBoostLevel > 0) {
+    const useRemembered = rememberBoostLevel && canBoostAudio(video);
+    let currentBoost = useRemembered ? lastBoostLevel : (video._maxAudioBoostLevel || 0);
+    if (useRemembered && lastBoostLevel > 0) {
       video._maxAudioBoostLevel = lastBoostLevel;
       video.dispatchEvent(new CustomEvent('max-set-audio-boost', {
         bubbles: true,
@@ -157,7 +175,7 @@
     // Minus Button
     const minusBtn = document.createElement('button');
     minusBtn.className = 'max-speed-btn max-boost-btn max-boost-minus';
-    minusBtn.textContent = '−';
+    minusBtn.innerHTML = '<span class="icon-mask icon-minus" aria-hidden="true"></span>';
     minusBtn.title = `Lower Boost (${boostShortcutSettings.decrease.key.toUpperCase()})`;
     minusBtn.addEventListener('click', () => {
       const cur = video._maxAudioBoostLevel || 0;
@@ -250,7 +268,7 @@
     // Plus Button
     const plusBtn = document.createElement('button');
     plusBtn.className = 'max-speed-btn max-boost-btn max-boost-plus';
-    plusBtn.textContent = '+';
+    plusBtn.innerHTML = '<span class="icon-mask icon-plus" aria-hidden="true"></span>';
     plusBtn.title = `Higher Boost (${boostShortcutSettings.increase.key.toUpperCase()})`;
     plusBtn.addEventListener('click', () => {
       const cur = video._maxAudioBoostLevel || 0;

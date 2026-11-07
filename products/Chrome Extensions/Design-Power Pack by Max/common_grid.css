@@ -228,9 +228,7 @@
 }
 
 .btn-icon:not(.lang-toggle-btn):hover img,
-.btn-icon:not(.lang-toggle-btn):hover .tool-icon-svg,
-.history-action-btn:hover img,
-.history-action-btn:hover .tool-icon-svg {
+.history-action-btn:hover img {
   filter: brightness(0);
 }
 

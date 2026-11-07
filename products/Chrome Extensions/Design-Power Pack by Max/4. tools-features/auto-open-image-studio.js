@@ -11,16 +11,16 @@
   let isInjected = false;
 
   function isStandaloneImagePage() {
-    if (!window.location) return false;
+    if (!window.location || window !== window.top) return false;
 
     // Prevent recursive loop if inside extension page context
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && window.location.href.includes(chrome.runtime.id)) {
       return false;
     }
 
-    // Direct match for blob: URLs (Messenger, WhatsApp, Discord, Figma image tabs)
+    // blob: tabs can hold any content, so only image documents qualify (Messenger, WhatsApp, Discord, Figma image tabs)
     if (window.location.protocol === 'blob:') {
-      return true;
+      return Boolean(document.contentType && document.contentType.startsWith('image/'));
     }
 
     const protocol = window.location.protocol;
@@ -59,15 +59,6 @@
     return false;
   }
 
-  function getIconUrl(name) {
-    try {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.runtime.getURL) {
-        return chrome.runtime.getURL(`svg/${name}`);
-      }
-    } catch (e) {}
-    return `svg/${name}`;
-  }
-
   function createModalHtml() {
     return `
       <!-- Image Edit Toolbar -->
@@ -75,22 +66,22 @@
         <div class="edit-toolbar-row">
           <!-- Idle / Selection Mode Button -->
           <button id="edit-idle-mode-btn" class="btn-modal-edit btn-icon active" title="Select (A)" data-i18n-title="editor.select">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('cursor.svg')}'); -webkit-mask-image: url('${getIconUrl('cursor.svg')}');"></span>
+            <span class="icon-mask icon-cursor" aria-hidden="true"></span>
           </button>
 
           <!-- Brush Tool Popover Trigger -->
           <div class="edit-tool-popover-wrapper">
             <button id="edit-brush-tool-btn" class="btn-modal-edit btn-dropdown" title="Brush Tool (B)" data-i18n-title="editor.brush">
-              <span class="icon-mask" style="mask-image: url('${getIconUrl('brush.svg')}'); -webkit-mask-image: url('${getIconUrl('brush.svg')}');"></span>
-              <span class="dropdown-arrow">▼</span>
+              <span class="icon-mask icon-brush" aria-hidden="true"></span>
+              <span class="icon-mask icon-dropdown-arrow dropdown-arrow" aria-hidden="true"></span>
             </button>
           </div>
 
           <!-- Shape Tool Popover Trigger -->
           <div class="edit-tool-popover-wrapper">
             <button id="edit-shape-tool-btn" class="btn-modal-edit btn-dropdown" title="Shapes (M)" data-i18n-title="editor.shapes">
-              <span class="icon-mask" style="mask-image: url('${getIconUrl('square.svg')}'); -webkit-mask-image: url('${getIconUrl('square.svg')}');"></span>
-              <span class="dropdown-arrow">▼</span>
+              <span class="icon-mask icon-square" aria-hidden="true"></span>
+              <span class="icon-mask icon-dropdown-arrow dropdown-arrow" aria-hidden="true"></span>
             </button>
 
             <!-- Shape Settings Popover Panel -->
@@ -101,15 +92,15 @@
                 </div>
                 <div class="shape-type-grid">
                   <button id="shape-type-rect-btn" class="btn-radio shape-type-btn active" data-shape="rect">
-                    <span class="icon-mask" style="mask-image: url('${getIconUrl('square.svg')}'); -webkit-mask-image: url('${getIconUrl('square.svg')}');"></span>
+                    <span class="icon-mask icon-square" aria-hidden="true"></span>
                     <span data-i18n="editor.polygon">Polygon (M)</span>
                   </button>
                   <button id="shape-type-ellipse-btn" class="btn-radio shape-type-btn" data-shape="ellipse">
-                    <span class="icon-mask" style="mask-image: url('${getIconUrl('circle.svg')}'); -webkit-mask-image: url('${getIconUrl('circle.svg')}');"></span>
+                    <span class="icon-mask icon-circle" aria-hidden="true"></span>
                     <span data-i18n="editor.ellipse">Ellipse (O)</span>
                   </button>
                   <button id="shape-type-polygonal-btn" class="btn-radio shape-type-btn" data-shape="polygonal">
-                    <span class="icon-mask" style="mask-image: url('${getIconUrl('polygonal.svg')}'); -webkit-mask-image: url('${getIconUrl('polygonal.svg')}');"></span>
+                    <span class="icon-mask icon-polygonal" aria-hidden="true"></span>
                     <span data-i18n="editor.linePath">Line Path (P)</span>
                   </button>
                 </div>
@@ -119,42 +110,42 @@
 
           <!-- Text Tool Trigger -->
           <button id="edit-text-tool-btn" class="btn-modal-edit btn-icon" title="Text Tool (T)" data-i18n-title="editor.text">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('text-tool.svg')}'); -webkit-mask-image: url('${getIconUrl('text-tool.svg')}');"></span>
+            <span class="icon-mask icon-text-tool" aria-hidden="true"></span>
           </button>
 
           <div class="edit-toolbar-divider"></div>
 
           <!-- Undo, Redo, Clear Buttons -->
           <button id="edit-undo-btn" class="btn-modal-edit btn-icon" title="Undo (Ctrl+Z)" data-i18n-title="editor.undo">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('undo.svg')}'); -webkit-mask-image: url('${getIconUrl('undo.svg')}');"></span>
+            <span class="icon-mask icon-undo" aria-hidden="true"></span>
           </button>
 
           <button id="edit-redo-btn" class="btn-modal-edit btn-icon" title="Redo (Ctrl+Y)" data-i18n-title="editor.redo">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('redo.svg')}'); -webkit-mask-image: url('${getIconUrl('redo.svg')}');"></span>
+            <span class="icon-mask icon-redo" aria-hidden="true"></span>
           </button>
 
           <button id="edit-clear-btn" class="btn-modal-edit btn-icon" title="Clear Canvas" data-i18n-title="editor.clear">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('clear.svg')}'); -webkit-mask-image: url('${getIconUrl('clear.svg')}');"></span>
+            <span class="icon-mask icon-clear" aria-hidden="true"></span>
           </button>
         </div>
 
         <!-- Row 2 for Download Edited & Close Modal -->
         <div class="edit-toolbar-row edit-toolbar-row-2">
           <button id="edit-stop-brush-btn" class="edit-btn stop-brush-btn hidden" title="Stop Drawing" data-i18n-title="editor.stopDrawing">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('close.svg')}'); -webkit-mask-image: url('${getIconUrl('close.svg')}');"></span> <span data-i18n="editor.stop">Stop</span>
+            <span class="icon-mask icon-close" aria-hidden="true"></span> <span data-i18n="editor.stop">Stop</span>
           </button>
           <div class="edit-save-group">
             <button id="edit-copy-btn" class="edit-btn copy-btn">
-              <span class="icon-mask" style="mask-image: url('${getIconUrl('copy.svg')}'); -webkit-mask-image: url('${getIconUrl('copy.svg')}');"></span> <span data-i18n-html="editor.copyEdited">Copy<br>Edited</span>
+              <span class="icon-mask icon-copy" aria-hidden="true"></span> <span data-i18n-html="editor.copyEdited">Copy<br>Edited</span>
             </button>
             <button id="edit-save-btn" class="edit-btn save-btn">
-              <span class="icon-mask" style="mask-image: url('${getIconUrl('download.svg')}'); -webkit-mask-image: url('${getIconUrl('download.svg')}');"></span> <span data-i18n-html="editor.downloadEdited">Download<br>Edited</span>
+              <span class="icon-mask icon-download" aria-hidden="true"></span> <span data-i18n-html="editor.downloadEdited">Download<br>Edited</span>
             </button>
             <button id="edit-toggle-drawings-btn" class="edit-btn toggle-drawings-btn" title="Hide Drawings" data-i18n-title="editor.hideDrawings">
-              <span class="icon-mask" style="mask-image: url('${getIconUrl('hide.svg')}'); -webkit-mask-image: url('${getIconUrl('hide.svg')}');"></span> <span class="toggle-drawings-text" data-i18n-html="editor.hideDrawingsHtml">Hide<br>Drawings</span>
+              <span class="icon-mask icon-hide" aria-hidden="true"></span> <span class="toggle-drawings-text" data-i18n-html="editor.hideDrawingsHtml">Hide<br>Drawings</span>
             </button>
             <button id="edit-close-modal-btn" class="btn btn-icon edit-close-btn modal-close-btn" title="Close (Esc)" data-i18n-title="editor.close">
-              <span class="icon-mask" style="mask-image: url('${getIconUrl('close.svg')}'); -webkit-mask-image: url('${getIconUrl('close.svg')}');"></span>
+              <span class="icon-mask icon-close" aria-hidden="true"></span>
             </button>
           </div>
         </div>
@@ -165,10 +156,10 @@
       <div class="modal-info-wrapper">
         <div class="modal-hud-controls">
           <button id="modal-theme-toggle-btn" class="btn-icon hide-hud-btn modal-theme-toggle-btn" title="Toggle Studio Theme" data-i18n-title="editor.toggleTheme">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('light-mode.svg')}'); -webkit-mask-image: url('${getIconUrl('light-mode.svg')}'); mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; mask-size: contain; -webkit-mask-size: contain; mask-position: center; -webkit-mask-position: center;"></span>
+            <span class="icon-mask icon-light-mode" aria-hidden="true"></span>
           </button>
           <button id="modal-hide-hud-btn" class="btn-icon hide-hud-btn" title="Hide HUD (H)" data-i18n-title="editor.hideHud">
-            <span class="icon-mask" style="mask-image: url('${getIconUrl('hide.svg')}'); -webkit-mask-image: url('${getIconUrl('hide.svg')}');"></span>
+            <span class="icon-mask icon-hide" aria-hidden="true"></span>
           </button>
         </div>
 
@@ -181,62 +172,62 @@
           <!-- Row 1: Expandable Hotkey Hint Chips -->
           <div class="modal-info-row modal-info-row-hints modal-info-row-expandable">
             <span class="modal-hint-chip">
-              <img src="${getIconUrl('cursor.svg')}" alt="Select" class="hint-icon-svg" />
+              <span class="icon-mask icon-cursor hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipSelect">A: Select</span>
             </span>
             <span class="modal-hint-chip">
-              <img src="${getIconUrl('brush.svg')}" alt="Brush" class="hint-icon-svg" />
+              <span class="icon-mask icon-brush hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipBrush">B: Brush</span>
             </span>
             <span class="modal-hint-chip">
-              <img src="${getIconUrl('text-tool.svg')}" alt="Text" class="hint-icon-svg" />
+              <span class="icon-mask icon-text-tool hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipText">T: Text</span>
             </span>
             <span class="modal-hint-chip">
-              <img src="${getIconUrl('square.svg')}" alt="Polygon" class="hint-icon-svg" />
+              <span class="icon-mask icon-square hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipPolygon">M: Polygon</span>
             </span>
             <span class="modal-hint-chip">
-              <img src="${getIconUrl('circle.svg')}" alt="Ellipse" class="hint-icon-svg" />
+              <span class="icon-mask icon-circle hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipEllipse">O: Ellipse</span>
             </span>
             <span class="modal-hint-chip">
-              <img src="${getIconUrl('polygonal.svg')}" alt="Line Path" class="hint-icon-svg" />
+              <span class="icon-mask icon-polygonal hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipLinePath">P: Line Path</span>
             </span>
 
             <span class="modal-hint-chip chip-purple">
-              <img src="${getIconUrl('hide.svg')}" alt="Hide HUD" class="hint-icon-svg" />
+              <span class="icon-mask icon-hide hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipHideHud">H: Hide HUD</span>
             </span>
             <span class="modal-hint-chip chip-purple">
-              <img src="${getIconUrl('copy.svg')}" alt="Copy" class="hint-icon-svg" />
+              <span class="icon-mask icon-copy hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipCopyEdited">Ctrl C: Copy Edited</span>
             </span>
 
             <span class="modal-hint-chip chip-cyan">
-              <img src="${getIconUrl('mouse.svg')}" alt="Pan" class="hint-icon-svg" />
+              <span class="icon-mask icon-mouse hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipPan">Middle: Pan</span>
             </span>
             <span class="modal-hint-chip chip-cyan">
-              <img src="${getIconUrl('zoom.svg')}" alt="Zoom" class="hint-icon-svg" />
+              <span class="icon-mask icon-zoom hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipZoom">Scroll: Zoom</span>
             </span>
             <span class="modal-hint-chip chip-cyan">
-              <img src="${getIconUrl('double-click.svg')}" alt="Fast Zoom" class="hint-icon-svg" />
+              <span class="icon-mask icon-double-click hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipFastZoom">DblClick: Fast Zoom</span>
             </span>
             <span class="modal-hint-chip chip-cyan">
-              <img src="${getIconUrl('zoom.svg')}" alt="100%" class="hint-icon-svg" />
+              <span class="icon-mask icon-zoom hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipZoom100">1: 100%</span>
             </span>
             <span class="modal-hint-chip chip-cyan">
-              <img src="${getIconUrl('fullscreen.svg')}" alt="Fit" class="hint-icon-svg" />
+              <span class="icon-mask icon-fullscreen hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipFitScreen">2: Fit Screen</span>
             </span>
 
             <span class="modal-hint-chip chip-red">
-              <img src="${getIconUrl('close.svg')}" alt="Close" class="hint-icon-svg" />
+              <span class="icon-mask icon-close hint-icon-svg" aria-hidden="true"></span>
               <span data-i18n="editor.chipClose">ESC: Close</span>
             </span>
           </div>
@@ -250,10 +241,10 @@
           <div class="modal-info-row modal-info-row-actions">
             <div class="modal-actions">
               <button id="modal-copy-btn" class="btn btn-secondary action-btn secondary-action-btn">
-                <span class="icon-mask" style="mask-image: url('${getIconUrl('copy.svg')}'); -webkit-mask-image: url('${getIconUrl('copy.svg')}'); width: 14px; height: 14px;"></span> <span data-i18n="editor.copy">Copy</span>
+                <span class="icon-mask icon-copy" aria-hidden="true"></span> <span data-i18n="editor.copy">Copy</span>
               </button>
               <button id="modal-download-btn" class="btn btn-primary action-btn">
-                <span class="icon-mask" style="mask-image: url('${getIconUrl('download.svg')}'); -webkit-mask-image: url('${getIconUrl('download.svg')}'); width: 14px; height: 14px;"></span> <span data-i18n="editor.download">Download</span>
+                <span class="icon-mask icon-download" aria-hidden="true"></span> <span data-i18n="editor.download">Download</span>
               </button>
             </div>
           </div>
@@ -263,10 +254,10 @@
             <span class="search-image-label" data-i18n="editor.searchOn">Search Image on:</span>
             <div class="search-image-actions">
               <button id="modal-yandex-search-btn" class="btn btn-secondary action-btn secondary-action-btn" title="Search on Yandex" data-i18n-title="editor.searchYandex">
-                <span class="icon-mask" style="mask-image: url('${getIconUrl('yandex.svg')}'); -webkit-mask-image: url('${getIconUrl('yandex.svg')}'); width: 14px; height: 14px;"></span> Yandex
+                <span class="icon-mask icon-yandex" aria-hidden="true"></span> Yandex
               </button>
               <button id="modal-tineye-search-btn" class="btn btn-secondary action-btn secondary-action-btn">
-                <span class="icon-mask" style="mask-image: url('${getIconUrl('tineye.svg')}'); -webkit-mask-image: url('${getIconUrl('tineye.svg')}'); width: 14px; height: 14px;"></span> TinEye
+                <span class="icon-mask icon-tineye-mono" aria-hidden="true"></span> TinEye
               </button>
             </div>
           </div>
@@ -290,33 +281,13 @@
         document.documentElement.setAttribute('data-theme', 'light');
         if (document.body) document.body.setAttribute('data-theme', 'light');
         if (themeBtn) themeBtn.title = 'Switch to Dark Theme';
-        if (iconMask) {
-          const darkSvg = getIconUrl('dark-mode.svg');
-          iconMask.style.maskImage = `url('${darkSvg}')`;
-          iconMask.style.webkitMaskImage = `url('${darkSvg}')`;
-          iconMask.style.maskRepeat = 'no-repeat';
-          iconMask.style.webkitMaskRepeat = 'no-repeat';
-          iconMask.style.maskSize = 'contain';
-          iconMask.style.webkitMaskSize = 'contain';
-          iconMask.style.maskPosition = 'center';
-          iconMask.style.webkitMaskPosition = 'center';
-        }
+        if (iconMask) iconMask.classList.replace('icon-light-mode', 'icon-dark-mode');
       } else {
         if (modal) modal.removeAttribute('data-theme');
         document.documentElement.removeAttribute('data-theme');
         if (document.body) document.body.removeAttribute('data-theme');
         if (themeBtn) themeBtn.title = 'Switch to Light Theme';
-        if (iconMask) {
-          const lightSvg = getIconUrl('light-mode.svg');
-          iconMask.style.maskImage = `url('${lightSvg}')`;
-          iconMask.style.webkitMaskImage = `url('${lightSvg}')`;
-          iconMask.style.maskRepeat = 'no-repeat';
-          iconMask.style.webkitMaskRepeat = 'no-repeat';
-          iconMask.style.maskSize = 'contain';
-          iconMask.style.webkitMaskSize = 'contain';
-          iconMask.style.maskPosition = 'center';
-          iconMask.style.webkitMaskPosition = 'center';
-        }
+        if (iconMask) iconMask.classList.replace('icon-dark-mode', 'icon-light-mode');
       }
     }
 

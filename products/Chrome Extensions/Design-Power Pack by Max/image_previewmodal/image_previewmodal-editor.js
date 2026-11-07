@@ -120,31 +120,11 @@ let currentShapeType = 'rect'; // 'rect' | 'ellipse'
 window.currentShapeType = currentShapeType;
 
 function updateShapeToolBtnIcon(shapeType) {
-  const shapeBtn = document.getElementById('edit-shape-tool-btn');
-  if (!shapeBtn) return;
-  const getSvgPath = (name) => {
-    try {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.runtime.getURL) {
-        return chrome.runtime.getURL(`svg/${name}`);
-      }
-    } catch (e) {}
-    return `svg/${name}`;
-  };
-  let iconPath = getSvgPath('square.svg');
-  if (shapeType === 'ellipse') {
-    iconPath = getSvgPath('circle.svg');
-  } else if (shapeType === 'polygonal') {
-    iconPath = getSvgPath('polygonal.svg');
-  }
-  const maskSpan = shapeBtn.querySelector('.icon-mask');
-  if (maskSpan) {
-    maskSpan.style.maskImage = `url('${iconPath}')`;
-    maskSpan.style.webkitMaskImage = `url('${iconPath}')`;
-  }
-  const img = shapeBtn.querySelector('.tool-icon-svg');
-  if (img) {
-    img.src = iconPath;
-  }
+  const maskSpan = document.querySelector('#edit-shape-tool-btn .icon-mask');
+  if (!maskSpan) return;
+  const iconName = shapeType === 'ellipse' ? 'circle' : (shapeType === 'polygonal' ? 'polygonal' : 'square');
+  maskSpan.classList.remove('icon-square', 'icon-circle', 'icon-polygonal');
+  maskSpan.classList.add(`icon-${iconName}`);
 }
 window.updateShapeToolBtnIcon = updateShapeToolBtnIcon;
 

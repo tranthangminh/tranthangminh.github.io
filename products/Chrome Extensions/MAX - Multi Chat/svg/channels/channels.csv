@@ -32,7 +32,7 @@ Game,Game,Channels,Streaming,Kick,https://kick.com/,svg/channels/kick.svg,FALSE,
 ,,Channels,Chat,Slack,https://slack.com/,svg/channels/slack.svg,FALSE,FALSE,,,FALSE,FALSE
 Game,Game,Channels,Streaming,Soop,https://www.sooplive.com/,svg/channels/soop.svg,FALSE,FALSE,,,FALSE,FALSE
 ,,Channels,AI,Spaces,https://spaces.ac/,svg/channels/spaces.svg,FALSE,FALSE,,,FALSE,FALSE
-,,Channels,Chat,Teams,https://teams.microsoft.com/,svg/channels/teams.svg,TRUE,FALSE,,,FALSE,FALSE
+,,Channels,Chat,Teams,https://teams.microsoft.com/,svg/channels/microsoft-teams.svg,TRUE,FALSE,,,FALSE,FALSE
 Chat,Chat,Channels,Chat,Telegram,https://web.telegram.org/a/,svg/channels/telegram.svg,FALSE,FALSE,,,FALSE,FALSE
 Social,Social,Channels,Social,Threads,https://www.threads.net/,svg/channels/threads.svg,TRUE,FALSE,,,FALSE,FALSE
 Social,Social,Channels,Social,TikTok,https://www.tiktok.com/,svg/channels/tiktok.svg,FALSE,FALSE,,,FALSE,FALSE

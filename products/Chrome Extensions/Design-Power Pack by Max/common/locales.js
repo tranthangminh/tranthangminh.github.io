@@ -8,6 +8,8 @@
 
   const STORAGE_KEY = 'maxLanguage';
   const DEFAULT_LANG = 'en';
+  // This file also runs as a content script, where `document` belongs to the host website.
+  const IS_EXTENSION_PAGE = window.location.protocol === 'chrome-extension:';
 
   const TRANSLATIONS = {
     en: {
@@ -95,12 +97,11 @@
         maxLimitTooltip: 'Output image dimensions will be restricted by Max Limit. Set 0 to disable.',
         captureScreen: 'Capture Screen',
         captureTip: 'Tip: Side Panel narrows page. Switch to Popup Mode for full width.',
-        shortcutHint: 'Shortcuts active: Alt+Shift+Z (Area), Alt+Shift+X (Visible), Alt+Shift+C (Full), Alt+Shift+V (Record)',
         areaDesc: 'Drag to crop region',
         visibleDesc: 'Capture current view',
         fullDesc: 'Auto-scroll page',
         recordDesc: 'Record tab / screen',
-        fileAccessWarning: '⚠️ To preview local files directly in original quality, please enable <strong>"Allow access to file URLs"</strong> in <a href="#" id="open-extensions-link">extension settings</a>.',
+        fileAccessWarning: 'To preview local files directly in original quality, please enable <strong>"Allow access to file URLs"</strong> in <a href="#" id="open-extensions-link">extension settings</a>.',
         activeTabNotFound: 'Active tab not found.',
         systemPageRestricted: 'Cannot capture Chrome system pages or Chrome Web Store due to browser security restrictions. Please try on a normal webpage!',
         downloadSuccess: 'Screenshot downloaded successfully!',
@@ -420,12 +421,11 @@
         maxLimitTooltip: 'Kích thước ảnh xuất ra sẽ bị giới hạn. Đặt 0 để tắt.',
         captureScreen: 'Bắt đầu chụp',
         captureTip: 'Mẹo: Thanh bên thu hẹp trang. Đổi sang dạng Popup để lấy độ rộng tối đa.',
-        shortcutHint: 'Phím tắt: Alt+Shift+Z (Vùng chọn), Alt+Shift+X (Hiển thị), Alt+Shift+C (Toàn trang), Alt+Shift+V (Quay)',
         areaDesc: 'Kéo chuột để chọn vùng chụp',
         visibleDesc: 'Chụp phần màn hình đang hiển thị',
         fullDesc: 'Tự động cuộn chụp trang',
         recordDesc: 'Quay Video Tab / Màn Hình',
-        fileAccessWarning: '⚠️ Để xem trước tệp cục bộ ở chất lượng gốc, vui lòng bật <strong>"Cho phép truy cập vào các URL tệp"</strong> trong <a href="#" id="open-extensions-link">cài đặt tiện ích</a>.',
+        fileAccessWarning: 'Để xem trước tệp cục bộ ở chất lượng gốc, vui lòng bật <strong>"Cho phép truy cập vào các URL tệp"</strong> trong <a href="#" id="open-extensions-link">cài đặt tiện ích</a>.',
         activeTabNotFound: 'Không tìm thấy thẻ hoạt động.',
         systemPageRestricted: 'Không thể chụp trang hệ thống Chrome hoặc Chrome Web Store do chính sách bảo mật. Vui lòng thử trên trang web thông thường!',
         downloadSuccess: 'Đã tải ảnh chụp màn hình thành công!',
@@ -705,7 +705,7 @@
   }
 
   function applyTranslations(root = document) {
-    if (!root) return;
+    if (!root || (root === document && !IS_EXTENSION_PAGE)) return;
 
     // 1. Text elements [data-i18n] and [data-i18n-html]
     const textEls = root.querySelectorAll('[data-i18n], [data-i18n-html]');
@@ -740,6 +740,8 @@
         el.placeholder = translated;
       }
     });
+
+    if (!IS_EXTENSION_PAGE) return;
 
     // 4. Update Header Language Toggle if present
     const langBtn = document.getElementById('lang-toggle-btn');

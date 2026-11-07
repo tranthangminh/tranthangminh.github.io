@@ -248,14 +248,14 @@ function renderCaptureHistory(items) {
 
     const previewHtml = isRecVideo
       ? `<div class="rec-video-placeholder" title="${safeFilename}">
-           <span class="icon-mask" style="mask-image: url('svg/videos.svg'); -webkit-mask-image: url('svg/videos.svg'); width: 24px; height: 24px;"></span>
+           <span class="icon-mask icon-videos" aria-hidden="true"></span>
            <span class="rec-video-label">${(window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('screencapture.savedDownloads') : 'Saved to Downloads'}</span>
            ${recDate ? `<span class="rec-video-date">${recDate}</span>` : ''}
          </div>`
       : displayUrl
         ? `<img src="${escAttr(displayUrl)}" alt="${safeFilename}" loading="lazy" />`
         : `<div class="rec-video-placeholder img-no-access-placeholder" title="${safeFilename}">
-             <span class="icon-mask" style="mask-image: url('svg/images.svg'); -webkit-mask-image: url('svg/images.svg'); width: 24px; height: 24px;"></span>
+             <span class="icon-mask icon-images" aria-hidden="true"></span>
              <span class="rec-video-label">${(window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('screencapture.enableFileAccess') : 'Enable file access to preview'}</span>
              <span class="rec-video-date">${recDate}</span>
            </div>`;
@@ -266,8 +266,8 @@ function renderCaptureHistory(items) {
       ? ((window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.view') : 'Show in folder')
       : ((window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.download') : 'Download');
     const downloadIcon = hasLocalFile
-      ? `<span class="icon-mask" style="mask-image: url('svg/folder.svg'); -webkit-mask-image: url('svg/folder.svg');"></span>`
-      : `<span class="icon-mask" style="mask-image: url('svg/download.svg'); -webkit-mask-image: url('svg/download.svg');"></span>`;
+      ? `<span class="icon-mask icon-folder" aria-hidden="true"></span>`
+      : `<span class="icon-mask icon-download" aria-hidden="true"></span>`;
 
     const deleteTitle = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.delete') : 'Remove from history';
     const viewTitle = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.view') : 'View';
@@ -275,17 +275,17 @@ function renderCaptureHistory(items) {
     const openTitle = (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t('common.openTab') : 'Open in new tab';
 
     const deleteBtnHtml = `<button class="action-icon-btn history-action-btn delete-history-btn" title="${deleteTitle}" data-id="${item.id}">
-        <span class="icon-mask" style="mask-image: url('svg/delete.svg'); -webkit-mask-image: url('svg/delete.svg');"></span>
+        <span class="icon-mask icon-delete" aria-hidden="true"></span>
       </button>`;
 
     const actionBtnsHtml = `<button class="action-icon-btn history-action-btn view-history-btn" title="${viewTitle}" data-id="${item.id}">
-           <span class="icon-mask" style="mask-image: url('svg/eye.svg'); -webkit-mask-image: url('svg/eye.svg');"></span>
+           <span class="icon-mask icon-eye" aria-hidden="true"></span>
          </button>
          <button class="action-icon-btn history-action-btn copy-history-btn" title="${copyTitle}" data-id="${item.id}">
-           <span class="icon-mask" style="mask-image: url('svg/copy.svg'); -webkit-mask-image: url('svg/copy.svg');"></span>
+           <span class="icon-mask icon-copy" aria-hidden="true"></span>
          </button>
          <button class="action-icon-btn history-action-btn open-history-btn" title="${openTitle}" data-id="${item.id}">
-           <span class="icon-mask" style="mask-image: url('svg/open-tab.svg'); -webkit-mask-image: url('svg/open-tab.svg');"></span>
+           <span class="icon-mask icon-open-tab" aria-hidden="true"></span>
          </button>
          <button class="action-icon-btn history-action-btn download-history-btn" title="${downloadTitle}" data-id="${item.id}">
            ${downloadIcon}

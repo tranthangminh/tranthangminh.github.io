@@ -1284,22 +1284,6 @@ body, html {
   background-color: #ffffff !important;
 }
 
-.icon-add-default {
-  display: block;
-  width: 20px;
-  height: 20px;
-  background-color: var(--text-secondary); /* Luôn màu xanh dương */
-  mask-image: url('svg/add-default.svg');
-  -webkit-mask-image: url('svg/add-default.svg');
-  mask-size: contain;
-  -webkit-mask-size: contain;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
-  mask-position: center;
-  -webkit-mask-position: center;
-  transition: filter 0.2s;
-}
-
 
 
 /* ==================== SUB-GROUP CHANNELS GRID VISIBILITY ==================== */
@@ -1350,10 +1334,6 @@ body, html {
 /* Integrated Icon Config & Swatches styles moved to modals/tab-link.css */
 
 /* ==================== SPLIT VIEW LAYOUT & SYSTEM ==================== */
-
-.sidebar-btn:hover .icon-add-default {
-  filter: brightness(1.5);
-}
 
 .split-view-pane {
   position: relative;

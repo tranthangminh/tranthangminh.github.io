@@ -368,22 +368,9 @@
   background-color: var(--c-red, #ef4444) !important;
 }
 
-.tool-icon-svg {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  filter: var(--icon-filter);
-  transition: filter 0.2s ease;
-}
-
-.edit-icon-tool-btn.active .tool-icon-svg,
-.edit-action-icon-btn:hover .tool-icon-svg,
-.edit-btn:hover .tool-icon-svg {
-  filter: var(--icon-filter-active);
-}
-
-.dropdown-arrow {
-  font-size: 8px;
+.icon-mask.dropdown-arrow {
+  width: 8px;
+  height: 8px;
   opacity: 0.7;
 }
 
@@ -408,10 +395,6 @@
   background: var(--accent-subtle);
   border-color: var(--accent-primary);
   color: var(--accent-primary);
-}
-
-.edit-action-icon-btn.active .tool-icon-svg {
-  filter: var(--icon-filter-active);
 }
 
 #edit-clear-btn:hover {
@@ -606,10 +589,6 @@
   box-shadow: none !important;
 }
 
-.edit-btn.save-btn .tool-icon-svg {
-  filter: brightness(0) !important;
-}
-
 .edit-btn.save-btn:hover {
   transform: none !important;
   box-shadow: none !important;
@@ -694,8 +673,19 @@
   stroke-width: 1.5px;
 }
 
-#edit-ui-vector-overlay .vector-toolbar-btn.active image {
-  filter: invert(72%) sepia(80%) saturate(1962%) hue-rotate(150deg) !important;
+#edit-ui-vector-overlay foreignObject {
+  pointer-events: none;
+}
+
+#edit-ui-vector-overlay foreignObject .icon-mask {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
+}
+
+#edit-ui-vector-overlay .vector-toolbar-btn.active .icon-mask {
+  color: var(--accent-primary);
 }
 
 /* Vector Handle Circles (Rotate, Scale, Delete) */
@@ -1156,9 +1146,14 @@
 }
 
 .discard-dialog-icon {
-  font-size: 32px !important;
   margin-bottom: 8px !important;
   line-height: 1 !important;
+}
+
+.discard-dialog-icon .icon-mask {
+  width: 32px;
+  height: 32px;
+  color: var(--accent-warning);
 }
 
 .discard-dialog-title {

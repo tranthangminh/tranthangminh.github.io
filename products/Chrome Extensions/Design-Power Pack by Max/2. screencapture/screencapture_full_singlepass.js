@@ -318,18 +318,7 @@ async function captureSinglePassFullPage(options) {
       await new Promise(r => chrome.debugger.detach({ tabId: tabId }, r));
     } catch (e) {}
 
-    // Restore progress HUD & original scroll position
-    await chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      args: [pageInfo.originalScrollTop || 0],
-      func: (origScrollTop) => {
-        const hud = document.getElementById('max-capture-progress-hud');
-        if (hud) hud.style.setProperty('visibility', 'visible', 'important');
-        const floating = document.getElementById('max-floating-tools-host');
-        if (floating) floating.style.removeProperty('display');
-        window.scrollTo(0, origScrollTop);
-      }
-    }).catch(() => {});
+    await restorePageAfterCapture(tabId, pageInfo);
 
     await updateWebProgressHUDBg(tabId, 88, 'Stitching screenshots on Offscreen Canvas...');
 
@@ -427,11 +416,7 @@ async function captureSinglePassFullPage(options) {
 
     chrome.scripting.executeScript({
       target: { tabId: tabId },
-      func: (name) => {
-        if (typeof showToast === 'function') {
-          showToast(`Full Page Screenshot saved: ${name}`);
-        }
-      },
+      func: (name) => window.showToast?.(`Full Page Screenshot saved: ${name}`),
       args: [filename]
     }).catch(() => {});
 
@@ -444,18 +429,24 @@ async function captureSinglePassFullPage(options) {
       await new Promise(r => chrome.debugger.detach({ tabId: tabId }, r));
     } catch (e) {}
 
-    await chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      args: [pageInfo ? pageInfo.originalScrollTop || 0 : 0],
-      func: (origScrollTop) => {
-        const floating = document.getElementById('max-floating-tools-host');
-        if (floating) floating.style.removeProperty('display');
-        window.scrollTo(0, origScrollTop);
-      }
-    }).catch(() => {});
+    await restorePageAfterCapture(tabId, pageInfo);
 
     return false;
   }
+}
+
+// Undoes prepareLayout, so the page does not stay without animations and scrollbars until reload.
+function restorePageAfterCapture(tabId, pageInfo) {
+  return chrome.scripting.executeScript({
+    target: { tabId },
+    args: [pageInfo],
+    func: (info) => {
+      const hud = document.getElementById('max-capture-progress-hud');
+      if (hud) hud.style.setProperty('visibility', 'visible', 'important');
+      window.__maxScreenCapture?.restoreUniversalSnap?.();
+      window.__maxScreenCapture?.restoreLayout?.(info.originalScrollTop, info.originalOverflow, info.originalHtmlScrollBehavior, info.originalBodyScrollBehavior);
+    }
+  }).catch(() => {});
 }
 
 // Export for background service worker

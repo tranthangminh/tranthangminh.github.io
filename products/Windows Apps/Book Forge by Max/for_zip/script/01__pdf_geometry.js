@@ -59,7 +59,7 @@ async function analyzeGeometry(doc, pdfPath, projectDir) {
     const dominantFs = computeDominantFontSize(fontSizesCount);
 
     // Step 4: Calibrate Margins & Filter Running Headers/Footers
-    const { avgHeaderY, avgFooterY } = calibrateMarginsAndFilterHeaders(pagesData, numPages);
+    const { avgHeaderY, avgFooterY } = calibrateMarginsAndFilterHeaders(pagesData, dominantFs);
 
     return {
         pagesData,

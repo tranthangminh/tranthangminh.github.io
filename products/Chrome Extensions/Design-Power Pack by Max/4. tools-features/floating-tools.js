@@ -230,18 +230,9 @@
       .action-btn:active {
         transform: translateY(0) scale(0.94);
       }
-      .icon-mask {
-        display: inline-block;
+      .action-btn .icon-mask {
         width: 17px;
         height: 17px;
-        background-color: currentColor;
-        -webkit-mask-size: contain;
-        mask-size: contain;
-        -webkit-mask-repeat: no-repeat;
-        mask-repeat: no-repeat;
-        -webkit-mask-position: center;
-        mask-position: center;
-        pointer-events: none;
       }
       /* Custom Tooltip */
       .action-btn[data-title]:hover::after {
@@ -287,26 +278,30 @@
       </button>
       <div class="actions-menu">
         <button class="action-btn" data-action="color" data-title="Pick Color" title="Pick Color">
-          <span class="icon-mask" style="mask-image: url('${getIconUrl('colorpicker.svg')}'); -webkit-mask-image: url('${getIconUrl('colorpicker.svg')}');"></span>
+          <span class="icon-mask icon-colorpicker" aria-hidden="true"></span>
         </button>
         <button class="action-btn" data-action="area" data-title="Capture Area" title="Capture Area">
-          <span class="icon-mask" style="mask-image: url('${getIconUrl('crop.svg')}'); -webkit-mask-image: url('${getIconUrl('crop.svg')}');"></span>
+          <span class="icon-mask icon-crop" aria-hidden="true"></span>
         </button>
         <button class="action-btn" data-action="visible" data-title="Capture Screen" title="Capture Screen">
-          <span class="icon-mask" style="mask-image: url('${getIconUrl('camera.svg')}'); -webkit-mask-image: url('${getIconUrl('camera.svg')}');"></span>
+          <span class="icon-mask icon-camera" aria-hidden="true"></span>
         </button>
         <button class="action-btn" data-action="full" data-title="Capture Full Page" title="Capture Full Page">
-          <span class="icon-mask" style="mask-image: url('${getIconUrl('fullscreen.svg')}'); -webkit-mask-image: url('${getIconUrl('fullscreen.svg')}');"></span>
+          <span class="icon-mask icon-fullscreen" aria-hidden="true"></span>
         </button>
         <button class="action-btn" data-action="recorder" data-title="Screen Recorder" title="Screen Recorder">
-          <span class="icon-mask" style="mask-image: url('${getIconUrl('rec-screen.svg')}'); -webkit-mask-image: url('${getIconUrl('rec-screen.svg')}');"></span>
+          <span class="icon-mask icon-rec-screen" aria-hidden="true"></span>
         </button>
         <button class="action-btn" data-action="draw" data-title="Draw on Web" title="Draw on Web">
-          <span class="icon-mask" style="mask-image: url('${getIconUrl('brush.svg')}'); -webkit-mask-image: url('${getIconUrl('brush.svg')}');"></span>
+          <span class="icon-mask icon-brush" aria-hidden="true"></span>
         </button>
       </div>
     `;
 
+    const iconsLink = document.createElement('link');
+    iconsLink.rel = 'stylesheet';
+    iconsLink.href = chrome.runtime.getURL('icons.css');
+    shadow.appendChild(iconsLink);
     shadow.appendChild(style);
     shadow.appendChild(dock);
 
@@ -385,6 +380,8 @@
 
     // Action button triggers (Calling existing extension functions/messages only)
     actionsMenu.addEventListener('click', (e) => {
+      // The shadow root is open, so page scripts could otherwise trigger captures and downloads with .click()
+      if (!e.isTrusted) return;
       const btn = e.target.closest('.action-btn');
       if (!btn) return;
       const action = btn.dataset.action;

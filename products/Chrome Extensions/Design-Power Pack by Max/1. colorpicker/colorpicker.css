@@ -168,6 +168,11 @@
   pointer-events: auto;
 }
 
+.delete-color-btn .icon-mask {
+  width: 10px;
+  height: 10px;
+}
+
 .delete-color-btn:hover {
   color: #ffffff;
   background-color: var(--accent-danger);

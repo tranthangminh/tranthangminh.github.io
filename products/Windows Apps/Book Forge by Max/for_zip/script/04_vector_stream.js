@@ -6,6 +6,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const MAX_FIGURE_LABEL_LENGTH = 40;
+
 function escapeXml(str) {
     if (!str) return '';
     return str
@@ -100,14 +102,18 @@ function exportPureVector({ pNum, cl, imagesDir, metadataManager }) {
     const svgContent = generateSvgFromPaths(cl.paths, cl, cl.textItems || []);
     const outPath = path.join(imagesDir, fileName);
     fs.writeFileSync(outPath, svgContent, 'utf8');
-    const hasText = cl.textItems && cl.textItems.length > 0;
-    console.log(`  [Vector Page ${pNum}] Saved ${fileName} (${Math.round(cl.width)}x${Math.round(cl.height)} pt) - ${hasText ? 'Vector Diagram + Text Labels' : 'Pure Vector Paths'}`);
+    const labels = cl.textItems || [];
+    console.log(`  [Vector Page ${pNum}] Saved ${fileName} (${Math.round(cl.width)}x${Math.round(cl.height)} pt) - ${labels.length > 0 ? 'Vector Diagram + Text Labels' : 'Pure Vector Paths'}`);
+    // Labels are drawn inside the SVG, so they must not also reach the body as text or headings.
+    // A box holding sentences is a text callout: its text stays in the body to be translated.
+    const isFigure = labels.every(t => t.str.length <= MAX_FIGURE_LABEL_LENGTH);
     metadataManager.addIllustrationItem({
         page: pNum,
         type: 'vector',
         file: fileName,
         y: (cl.minY + cl.maxY) / 2,
-        bounds: cl
+        bounds: cl,
+        suppressedTexts: isFigure ? labels.map(t => t.str) : []
     });
 }
 
