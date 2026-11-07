@@ -13,6 +13,11 @@ namespace MaxApp.Common
     /// </summary>
     public static class BuiltInSvgAssets
     {
+        public const string InfoSvg = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<svg id=""Layer_1"" xmlns=""http://www.w3.org/2000/svg"" version=""1.1"" viewBox=""0 0 24 24"">
+  <path d=""M12,0C5.38,0,0,5.38,0,12s5.38,12,12,12,12-5.38,12-12S18.62,0,12,0ZM14,17.5c0,1.1-.9,2-2,2s-2-.9-2-2v-6c0-1.1.9-2,2-2s2,.9,2,2v6ZM12,8c-1.1,0-2-.9-2-2s.9-2,2-2,2,.9,2,2-.9,2-2,2Z""/>
+</svg>";
+
         public const string AdminSvg = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <svg id=""Icons"" xmlns=""http://www.w3.org/2000/svg"" version=""1.1"" viewBox=""0 0 24 24"">
   <defs>
@@ -270,6 +275,7 @@ namespace MaxApp.Common
             if (string.IsNullOrEmpty(nameOrPath)) return null;
             string key = Path.GetFileName(nameOrPath).ToLowerInvariant();
 
+            if (key == "info.svg") return InfoSvg;
             if (key == "admin.svg") return AdminSvg;
             if (key == "dark-mode.svg") return DarkModeSvg;
             if (key == "light-mode.svg") return LightModeSvg;

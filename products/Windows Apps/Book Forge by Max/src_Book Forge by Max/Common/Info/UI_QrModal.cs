@@ -77,7 +77,7 @@ namespace MaxApp.Common
             // Thank you label
             lblThank = new Label
             {
-                Text = Loc.IsVietnamese ? "Cám ơn bạn đã ủng hộ tác giả!" : "Thank you for supporting the author!",
+                Text = Loc.QrThanks,
                 Location = new Point(10, 286),
                 Size = new Size(300, 22),
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -88,7 +88,7 @@ namespace MaxApp.Common
             // Close Button
             btnClose = new RoundedButton
             {
-                Text = Loc.IsVietnamese ? "Đóng" : "Close",
+                Text = Loc.Common_Close,
                 Location = new Point((320 - 110) / 2, 318),
                 Size = new Size(110, 32),
                 Font = ThemeTokens.FontSmall(FontStyle.Bold),
@@ -129,7 +129,7 @@ namespace MaxApp.Common
                     {
                         g.FillPath(whiteBrush, cardPath);
                     }
-                    Color borderColor = (_theme != null) ? _theme.BorderColor : Color.FromArgb(200, 200, 200);
+                    Color borderColor = (_theme ?? ThemeTokens.Current).BorderColor;
                     using (Pen borderPen = new Pen(borderColor, 1))
                     {
                         g.DrawPath(borderPen, cardPath);
@@ -149,11 +149,11 @@ namespace MaxApp.Common
 
         private void RenderQrPlaceholder(Graphics g, int w, int h)
         {
-            Color bg = (_theme != null) ? _theme.BgTertiary : Color.FromArgb(35, 35, 45);
-            Color border = (_theme != null) ? _theme.BorderColor : Color.FromArgb(70, 70, 85);
+            Color bg = (_theme ?? ThemeTokens.Current).BgTertiary;
+            Color border = (_theme ?? ThemeTokens.Current).BorderColor;
             Color textPrimary = (_theme != null) ? _theme.TextPrimary : Color.White;
-            Color textSecondary = (_theme != null) ? _theme.TextSecondary : Color.FromArgb(160, 160, 175);
-            Color accent = (_theme != null) ? _theme.AccentPrimary : Color.FromArgb(100, 102, 233);
+            Color textSecondary = (_theme ?? ThemeTokens.Current).TextSecondary;
+            Color accent = (_theme ?? ThemeTokens.Current).AccentPrimary;
 
             using (GraphicsPath path = GraphicsHelper.GetRoundedRectangle(new Rectangle(0, 0, w, h), 8))
             {
@@ -266,7 +266,7 @@ namespace MaxApp.Common
                 {
                     g.FillPath(brush, path);
                 }
-                Color border = (_theme != null) ? _theme.BorderColor : Color.FromArgb(70, 70, 85);
+                Color border = (_theme ?? ThemeTokens.Current).BorderColor;
                 using (Pen pen = new Pen(border, 1.2f))
                 {
                     g.DrawPath(pen, path);

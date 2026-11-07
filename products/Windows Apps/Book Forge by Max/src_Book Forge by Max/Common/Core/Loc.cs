@@ -80,5 +80,9 @@ namespace MaxApp.Common
         public static string Common_Cancel { get { return IsVietnamese ? "Hủy" : "Cancel"; } }
         public static string Common_Yes { get { return IsVietnamese ? "Có" : "Yes"; } }
         public static string Common_No { get { return IsVietnamese ? "Không" : "No"; } }
+        public static string QrThanks { get { return IsVietnamese ? "Cám ơn bạn đã ủng hộ tác giả!" : "Thank you for supporting the author!"; } }
+        public static string Common_Close { get { return IsVietnamese ? "Đóng" : "Close"; } }
+        public static string Common_OpenLinkFailed(string url) { return string.Format(IsVietnamese ? "Không mở được liên kết:\n{0}\n\nHãy sao chép và mở trong trình duyệt." : "Could not open this link:\n{0}\n\nPlease copy it into your browser.", url); }
+        public static string Common_RestartAdminFailed(string error) { return string.Format(IsVietnamese ? "Không khởi động lại được dưới quyền Quản trị viên: {0}" : "Unable to restart as Administrator: {0}", error); }
     }
 }

@@ -27,7 +27,9 @@ Common/
 ├── Controls/                        # BỘ ĐIỀU KHIỂN GIAO DIỆN HIỆN ĐẠI
 │   ├── UI_CustomTitleBar.cs         # Thanh tiêu đề không viền (Close, Max, Min, Lang, Theme, Admin, Drag, DoubleClick Max)
 │   ├── UI_CustomControls.cs         # RoundedButton, ModernButton, ModernCard, ModernTextBox, NumberInput, ModernDropdown...
+│   ├── UI_ModeTabBar.cs             # Thanh tab trên cùng: nút Info + bao nhiêu tab tùy ý trong một khung bo góc
 │   ├── UI_ModernScrollBar.cs        # Thanh cuộn vẽ tay GDI+ mượt mà, đồng bộ Theme
+│   ├── UI_ModernDialog.cs           # Khung popup dùng chung: chế độ chặn (ShowModal) và song song (ShowParallel)
 │   ├── UI_ModernMessageBox.cs       # Hộp thoại thông báo phẳng tối/sáng thay thế MessageBox cũ
 │   └── UI_FirstRunLanguageDialog.cs # Hộp thoại chọn ngôn ngữ lần đầu mở app (English / Tiếng Việt)
 │
@@ -45,11 +47,15 @@ Common/
 │   ├── GraphicsHelper.cs            # Toán học & hình học GDI+ (bo góc, fill, outline, anti-aliasing)
 │   ├── SvgFileRenderer.cs           # Bộ vẽ vector SVG ra Bitmap GDI+ siêu nét, hỗ trợ đổi màu (tint)
 │   ├── BuiltInSvgAssets.cs          # Chuỗi vector SVG nhúng sẵn (Zero-Resource Fallback, không sợ thiếu file)
+│   ├── AppLog.cs                    # Ghi lỗi vào error.log, không bao giờ ném lỗi, có giới hạn dung lượng
+│   ├── ExternalLink.cs              # Mở trang web, báo cho người dùng nếu không mở được
+│   ├── JobObjectHelper.cs           # Windows Job Object: tiến trình con tự tắt theo tiến trình cha
 │   └── CommonNativeMethods.cs       # Win32 API thiết yếu (ReleaseCapture, SendMessage, WM_SETREDRAW, DWM Dark Mode)
 │
 └── Assets/                          # TÀI NGUYÊN VECTOR SVG DÙNG CHUNG
     ├── admin.svg                    # Icon Administrator
     ├── dark-mode.svg                # Icon Chế độ Tối
+    ├── info.svg                     # Icon nút Info của ModeTabBar
     ├── light-mode.svg               # Icon Chế độ Sáng
     ├── logo-MAX.svg                 # Logo thương hiệu MAX
     ├── lang-EN.svg                  # Icon cờ tiếng Anh (Language English)
@@ -144,7 +150,27 @@ Mọi nút bấm đều có sẵn, được điều khiển qua các property sa
 
 ---
 
-### 4.3. Thiết Lập Ứng Dụng (`AppInfo`)
+### 4.3. Thanh Tab Trên Cùng (`ModeTabBar`)
+
+Nút Info và các tab chế độ nằm trong một khung bo góc. Tab số `0` luôn là Info, các tab chế độ là `1..n`. Tên tab do app truyền vào, Common không chứa chữ riêng của app.
+
+```csharp
+tabBar = new ModeTabBar { Size = new Size(388, 36) };
+tabBar.SetTabs("Simple", "Asian Mode");   // Bao nhiêu tab cũng được; gọi lại khi đổi ngôn ngữ
+tabBar.SetTabFixedWidth(1, 147);          // Tùy chọn; các tab còn lại chia đều phần dư
+tabBar.OnTabSelected += SwitchTab;        // App tự đổi panel theo số tab
+tabBar.SelectedIndex = 1;                 // Đổi tab từ code, không phát OnTabSelected
+tabBar.ApplyTheme(theme);
+tabBar.GetTabButton(2).Paint += ...;      // Gắn hiệu ứng hoặc tooltip riêng của app
+```
+
+| Thuộc tính | Kiểu | Mặc định | Ý nghĩa & Hành vi |
+| :--- | :---: | :---: | :--- |
+| `ShowInfoButton` | `bool` | `true` | Ẩn nút Info thì khung tab tự dồn sát mép trái. |
+
+---
+
+### 4.4. Thiết Lập Ứng Dụng (`AppInfo`)
 
 `AppInfo` tự động đọc tên và version từ `[assembly: AssemblyProduct]` và `[assembly: AssemblyVersion]`.  
 Nếu muốn cấu hình thủ công trong `Program.cs`, chỉ cần gọi 1 dòng:
@@ -189,10 +215,60 @@ Toàn bộ các control dưới đây nằm trong namespace `MaxApp.Common` và 
 - Thanh tiến trình phẳng bo tròn mềm mại, dải màu gradient mượt mà hiển thị phần trăm `%` và text trạng thái tùy biến.
 
 ### 7. `ModernMessageBox`
-- Hộp thoại thông báo tối/sáng hiện đại:
+- Hộp thoại thông báo tối/sáng hiện đại, dựng trên `ModernDialog`. Dùng thay cho `MessageBox` của Windows. `owner` là form hoặc control bất kỳ nằm trên form đó:
 ```csharp
 ModernMessageBox.Show("Thao tác đã hoàn tất thành công!", "Thông Báo", MessageBoxButtons.OK, MessageBoxIcon.Information, this);
 ```
+- Chỉ giữ `MessageBox` của Windows cho lỗi lúc khởi động trong `Program.cs`, khi giao diện có thể chưa dùng được.
+
+### 7.1. `ModernDialog` (Khung popup dùng chung)
+- **Popup mới bắt buộc kế thừa class này**, không tự chép thanh tiêu đề, viền hay Esc. Khung lo: thanh tiêu đề `CustomTitleBar` (kéo được, nút X), viền và bo góc, Esc/Enter, thân popup tự cuộn khi quá cao, thanh nút tự co theo chữ, đổi theme và ngôn ngữ.
+- Popup chỉ thêm control vào `Body` (tọa độ tính từ 0,0), gọi `SetBodySize` và `AddButton`:
+```csharp
+public class AskNameDialog : ModernDialog
+{
+    public string ResultName { get; private set; }
+
+    public AskNameDialog(ThemeTokens theme) : base("Name", theme)
+    {
+        TextBox input = new TextBox { Location = new Point(16, 12), Width = 248 };
+        Body.Controls.Add(input);
+
+        // Nút xếp từ trái sang phải; beforeClose chạy trước khi popup đóng
+        this.AcceptButton = AddButton("Apply", DialogResult.OK, true, () => { ResultName = input.Text; });
+        this.CancelButton = AddButton("Cancel", DialogResult.Cancel, false);
+
+        SetBodySize(280, 48);
+        this.Shown += (s, e) => input.Focus(); // Popup nhập liệu tự chuyển focus; mặc định focus vào AcceptButton
+    }
+}
+```
+- **Người gọi chọn cách mở:**
+
+| Cách mở | Main window | Dùng khi |
+| :--- | :--- | :--- |
+| `dialog.ShowModal(owner)` | Khóa đến khi xử lý xong popup. Bấm vào main thì popup nhảy lên trước và viền nháy. | Mặc định. Cần câu trả lời ngay rồi mới làm tiếp. |
+| `ModernDialog.ShowParallel(owner, () => new MyDialog())` | Vẫn dùng bình thường. Popup nổi trên main, thu nhỏ và tắt theo main, tự dispose khi đóng. | Hai bên cùng thao tác. |
+
+```csharp
+// Chặn
+using (AskNameDialog dialog = new AskNameDialog(theme))
+{
+    if (dialog.ShowModal(this) == DialogResult.OK) Rename(dialog.ResultName);
+}
+
+// Song song: mỗi loại chỉ mở một cái, gọi lại thì cái đang mở nhảy lên trước
+ToolDialog tool = ModernDialog.ShowParallel(this, () => new ToolDialog(theme));
+```
+- **Lưu ý cho popup song song:** kết quả trả về qua event (`FormClosed`, `DialogResult`), không `using`. Main vẫn đổi được dữ liệu trong lúc popup mở, nên popup không được giữ dữ liệu cũ của tab hay script đã đổi. Override `ApplyTheme` và `ApplyLanguage` để nội dung đổi theo app.
+- **Phím tắt toàn cục:** dùng `WindowHelper.IsBlockedByDialog(form)` để biết có popup đang khóa cửa sổ không. `Control.Enabled` không dùng được cho việc này.
+- `ThemeTokens.Current` là nguồn theme chung của popup: app phải gán lại khi đổi theme, `ModernDialog` tự nhận qua `ThemeTokens.OnThemeChanged`.
+- **Không dùng khung này cho:** lớp phủ toàn màn hình như `CoordinatePicker`, popup bám theo ô đang sửa, tự đóng khi mất focus, và cửa sổ kéo giãn được.
+
+### 7.2. `AppLog` và `ExternalLink`
+- `AppLog.Error(context, ex)` ghi lỗi vào `error.log` cạnh app, hoặc vào LocalAppData nếu thư mục app không cho ghi. File tự xóa khi quá 1 MB.
+- `AppLog.Caught(ex)` dùng trong `catch` xử lý xong rồi chạy tiếp. Mỗi vị trí chỉ ghi vài lần nên an toàn trong vòng lặp. Không để `catch` rỗng: lỗi đã biết trước thì ghi lý do trong khối `catch`, còn lại thì gọi hàm này.
+- `ExternalLink.Open(url, owner)` mở trang web và báo cho người dùng nếu không mở được.
 
 ### 8. `FirstRunLanguageDialog`
 - Hộp thoại chào mừng lần đầu mở ứng dụng với 2 thẻ cờ vector 100x100 sắc nét, bo góc và nhãn chữ "English" / "Tiếng Việt" trực quan bên dưới:

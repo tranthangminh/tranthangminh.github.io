@@ -255,7 +255,7 @@ namespace MaxApp.Common
                                 if (found) break;
                             }
                         }
-                        catch { }
+                        catch (Exception caught) { AppLog.Caught(caught); }
                     }
                 }
 
@@ -275,7 +275,7 @@ namespace MaxApp.Common
                     return d;
                 }
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
 
             return null;
         }
@@ -349,7 +349,7 @@ namespace MaxApp.Common
                         ico = Icon.ExtractAssociatedIcon(exePath);
                     }
                 }
-                catch { }
+                catch (Exception caught) { AppLog.Caught(caught); }
 
                 if (ico != null)
                 {
@@ -358,7 +358,7 @@ namespace MaxApp.Common
                     {
                         if (_cachedAppIconImage != null)
                         {
-                            try { _cachedAppIconImage.Dispose(); } catch { }
+                            try { _cachedAppIconImage.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                             _cachedAppIconImage = null;
                         }
                         _cachedAppIconImage = new Bitmap(raw, new Size(size, size));
@@ -367,7 +367,7 @@ namespace MaxApp.Common
                     }
                 }
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
 
             return null;
         }

@@ -122,7 +122,7 @@ namespace MaxApp.Common
             };
             linkFb.LinkClicked += (s, e) =>
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://fb.me/maxiechen") { UseShellExecute = true }); } catch { }
+                ExternalLink.Open("https://fb.me/maxiechen", this);
             };
 
             lblWebTitle = new Label
@@ -144,7 +144,7 @@ namespace MaxApp.Common
             };
             linkWeb.LinkClicked += (s, e) =>
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://tranthangminh.github.io/products.html?lang=vi") { UseShellExecute = true }); } catch { }
+                ExternalLink.Open("https://tranthangminh.github.io/products.html?lang=vi", this);
             };
 
             // Support (Vietcombank QR)
@@ -194,7 +194,7 @@ namespace MaxApp.Common
             };
             linkBunGioHeo.LinkClicked += (s, e) =>
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://maps.app.goo.gl/uAK6PqGx5X3GuMFF8") { UseShellExecute = true }); } catch { }
+                ExternalLink.Open("https://maps.app.goo.gl/uAK6PqGx5X3GuMFF8", this);
             };
 
             lblBunGioHeoSuffix = new Label
@@ -215,7 +215,7 @@ namespace MaxApp.Common
             };
             picLogo.Paint += (s, e) =>
             {
-                Color accent = (_theme != null) ? _theme.AccentPrimary : Color.FromArgb(100, 102, 233);
+                Color accent = (_theme ?? ThemeTokens.Current).AccentPrimary;
                 using (Bitmap bmp = SvgFileRenderer.RenderLogoFromFile(150, 150, accent))
                 {
                     if (bmp != null) e.Graphics.DrawImage(bmp, 0, 0);

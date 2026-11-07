@@ -53,6 +53,7 @@ namespace MaxApp.Common
 
         // Global Active Theme Token
         private static ThemeTokens _current = null;
+        public static event Action OnThemeChanged;
         public static ThemeTokens Current
         {
             get
@@ -63,6 +64,7 @@ namespace MaxApp.Common
             set
             {
                 _current = value;
+                if (OnThemeChanged != null) OnThemeChanged();
             }
         }
 
@@ -221,7 +223,7 @@ namespace MaxApp.Common
                         }
                     }
                 }
-                catch { }
+                catch (Exception caught) { AppLog.Caught(caught); }
             }
 
             return new Font(FontFamily.GenericMonospace, pixelSize, style, GraphicsUnit.Pixel);

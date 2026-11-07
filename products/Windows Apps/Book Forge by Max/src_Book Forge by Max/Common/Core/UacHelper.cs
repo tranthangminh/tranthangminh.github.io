@@ -155,7 +155,7 @@ namespace MaxApp.Common
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Unable to restart as Administrator: " + ex.Message,
+                ModernMessageBox.Show(Loc.Common_RestartAdminFailed(ex.Message),
                     AppInfo.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }

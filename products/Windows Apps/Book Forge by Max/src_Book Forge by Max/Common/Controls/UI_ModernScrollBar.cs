@@ -17,9 +17,9 @@ namespace MaxApp.Common
         private int _largeChange = 10;
         private int _smallChange = 10;
 
-        private Color _trackColor = Color.FromArgb(25, 25, 25);
-        private Color _thumbColor = Color.FromArgb(52, 52, 52);
-        private Color _thumbHoverColor = Color.FromArgb(70, 70, 70);
+        private Color _trackColor = ThemeTokens.Current.BgPrimary;
+        private Color _thumbColor = ThemeTokens.Current.BgTertiary;
+        private Color _thumbHoverColor = ThemeTokens.Current.BgElevated;
 
         private bool _isDragging = false;
         private bool _isHovered = false;

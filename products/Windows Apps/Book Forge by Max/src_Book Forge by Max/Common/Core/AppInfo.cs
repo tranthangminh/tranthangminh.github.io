@@ -60,7 +60,7 @@ namespace MaxApp.Common
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception caught) { AppLog.Caught(caught); }
 
                     if (string.IsNullOrEmpty(_appName))
                     {
@@ -102,7 +102,7 @@ namespace MaxApp.Common
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception caught) { AppLog.Caught(caught); }
 
                     if (string.IsNullOrEmpty(_version))
                     {

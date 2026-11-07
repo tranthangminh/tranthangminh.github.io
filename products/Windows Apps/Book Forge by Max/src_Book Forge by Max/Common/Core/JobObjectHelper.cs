@@ -166,7 +166,7 @@ namespace MaxApp.Common
 
                 if (_jobHandle != IntPtr.Zero)
                 {
-                    try { CloseHandle(_jobHandle); } catch (Exception) { }
+                    try { CloseHandle(_jobHandle); } catch (Exception caught) { AppLog.Caught(caught); }
                     _jobHandle = IntPtr.Zero;
                 }
             }
