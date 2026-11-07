@@ -17,7 +17,7 @@ namespace ModernAutoClicker
     {
         private static IntPtr GetWindowUnderOurOverlay(NativeMethods.POINT pt)
         {
-            uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+            uint myPid = NativeMethods.CurrentProcessId;
             IntPtr wnd = NativeMethods.WindowFromPoint(pt);
             while (wnd != IntPtr.Zero)
             {
@@ -65,7 +65,7 @@ namespace ModernAutoClicker
             IntPtr topAtPt = NativeMethods.WindowFromPoint(sPt);
             uint topPid = 0;
             if (topAtPt != IntPtr.Zero) NativeMethods.GetWindowThreadProcessId(topAtPt, out topPid);
-            uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+            uint myPid = NativeMethods.CurrentProcessId;
             bool isOurOverlay = (topPid == myPid);
 
             if (hWnd != IntPtr.Zero)
@@ -200,7 +200,7 @@ namespace ModernAutoClicker
                     }
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             finally
             {
                 NativeMethods.SelectObject(memDc, oldBmp);
@@ -240,7 +240,7 @@ namespace ModernAutoClicker
             IntPtr topAtPt = NativeMethods.WindowFromPoint(sCenterPt);
             uint topPid = 0;
             if (topAtPt != IntPtr.Zero) NativeMethods.GetWindowThreadProcessId(topAtPt, out topPid);
-            uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+            uint myPid = NativeMethods.CurrentProcessId;
             bool isOurOverlay = (topPid == myPid);
 
             // Check if covered window background capture is required
@@ -350,7 +350,7 @@ namespace ModernAutoClicker
                     }
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             finally
             {
                 NativeMethods.SelectObject(memDc, oldBmp);

@@ -92,7 +92,7 @@ namespace ModernAutoClicker
             {
                 NativeMethods.SetWindowDisplayAffinity(this.Handle, NativeMethods.WDA_EXCLUDEFROMCAPTURE);
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
         }
 
         // CRITICAL: Prevent OverlayForm from ever stealing focus when shown or clicked!
@@ -422,7 +422,7 @@ namespace ModernAutoClicker
             {
                 NativeMethods.SetWindowDisplayAffinity(this.Handle, NativeMethods.WDA_EXCLUDEFROMCAPTURE);
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
             NativeMethods.SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
             NativeMethods.ShowWindow(this.Handle, NativeMethods.SW_SHOWNOACTIVATE);
         }

@@ -18,6 +18,7 @@ namespace ModernAutoClicker.Advanced
         public Point EndPoint { get; set; }
         public int HoldMs { get; set; }
         public int DelayMs { get; set; }
+        public int DelayUnit { get; set; } // Display/input unit of DelayMs (TimeUnit); the value itself is always stored in ms
         public int BaseHoldMs { get; set; }
         public int BaseDelayMs { get; set; }
         public int RepeatCount { get; set; }
@@ -99,7 +100,7 @@ namespace ModernAutoClicker.Advanced
         {
             if (_cachedBitmap != null)
             {
-                try { _cachedBitmap.Dispose(); } catch { }
+                try { _cachedBitmap.Dispose(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                 _cachedBitmap = null;
             }
         }
@@ -114,6 +115,7 @@ namespace ModernAutoClicker.Advanced
             EndPoint = Point.Empty;
             HoldMs = 10;
             DelayMs = 240;
+            DelayUnit = TimeUnit.Milliseconds;
             BaseHoldMs = 10;
             BaseDelayMs = 240;
             RepeatCount = 1;
@@ -154,6 +156,7 @@ namespace ModernAutoClicker.Advanced
                 EndPoint = this.EndPoint,
                 HoldMs = this.HoldMs,
                 DelayMs = this.DelayMs,
+                DelayUnit = this.DelayUnit,
                 BaseHoldMs = this.BaseHoldMs > 0 ? this.BaseHoldMs : this.HoldMs,
                 BaseDelayMs = this.BaseDelayMs >= 0 ? this.BaseDelayMs : this.DelayMs,
                 RepeatCount = this.RepeatCount,

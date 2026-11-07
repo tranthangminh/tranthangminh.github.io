@@ -27,7 +27,7 @@ namespace ModernAutoClicker
 
             if (end == Point.Empty)
             {
-                if (durationMs > 0) Thread.Sleep(durationMs);
+                CancellableSleep.Sleep(durationMs, isRunningCheck);
                 return;
             }
 
@@ -35,10 +35,7 @@ namespace ModernAutoClicker
             if (durationMs <= 20 || (start.X == end.X && start.Y == end.Y))
             {
                 NativeMethods.SetCursorPos(end.X, end.Y);
-                if (durationMs > 0)
-                {
-                    Thread.Sleep(durationMs);
-                }
+                CancellableSleep.Sleep(durationMs, isRunningCheck);
                 return;
             }
 

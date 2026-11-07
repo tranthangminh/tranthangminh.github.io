@@ -104,12 +104,14 @@ namespace ModernAutoClicker
 
         public static void ReleaseAllKeys()
         {
+            // Only release modifiers that are actually held: a stray Alt/Win key-up can activate menus in the target app
             byte[] allMods = new byte[] { 0x11, 0x10, 0x12, 0x5B, 0x5C };
             List<NativeMethods.INPUT> inputs = new List<NativeMethods.INPUT>();
             for (int i = 0; i < allMods.Length; i++)
             {
-                inputs.Add(CreateKeyInput(allMods[i], true));
+                if (NativeMethods.IsKeyDown(allMods[i])) inputs.Add(CreateKeyInput(allMods[i], true));
             }
+            if (inputs.Count == 0) return;
             NativeMethods.SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf(typeof(NativeMethods.INPUT)));
         }
 
@@ -125,51 +127,60 @@ namespace ModernAutoClicker
         {
             if (string.IsNullOrEmpty(text)) return;
 
+            // Line breaks are typed as a real Enter key (many apps such as browsers ignore a unicode LF); '\r' is dropped
+            text = text.Replace("\r", "");
             int len = text.Length;
+            if (len == 0) return;
 
-            // 1. Instant / Fast Batch Typing: If Hold is small (<= 20ms), send all unicode characters in ONE batch call
+            // 1. Instant / Fast Batch Typing: If Hold is small (<= 20ms), send all characters in ONE batch call
             if (totalDurationMs <= 20)
             {
-                NativeMethods.INPUT[] batchInputs = new NativeMethods.INPUT[len * 2];
+                List<NativeMethods.INPUT> batchInputs = new List<NativeMethods.INPUT>(len * 2);
                 for (int i = 0; i < len; i++)
                 {
-                    char ch = text[i];
-
-                    batchInputs[i * 2].type = NativeMethods.INPUT_KEYBOARD;
-                    batchInputs[i * 2].u.ki.wScan = (ushort)ch;
-                    batchInputs[i * 2].u.ki.dwFlags = NativeMethods.KEYEVENTF_UNICODE;
-
-                    batchInputs[(i * 2) + 1].type = NativeMethods.INPUT_KEYBOARD;
-                    batchInputs[(i * 2) + 1].u.ki.wScan = (ushort)ch;
-                    batchInputs[(i * 2) + 1].u.ki.dwFlags = NativeMethods.KEYEVENTF_UNICODE | NativeMethods.KEYEVENTF_KEYUP;
+                    AddCharInputs(batchInputs, text[i]);
                 }
-                NativeMethods.SendInput((uint)batchInputs.Length, batchInputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+                NativeMethods.SendInput((uint)batchInputs.Count, batchInputs.ToArray(), Marshal.SizeOf(typeof(NativeMethods.INPUT)));
                 return;
             }
 
             // 2. Gradual Typing: Paced smoothly across totalDurationMs
             int delayPerChar = Math.Max(1, totalDurationMs / len);
-            NativeMethods.INPUT[] charInputs = new NativeMethods.INPUT[2];
+            List<NativeMethods.INPUT> charInputs = new List<NativeMethods.INPUT>(2);
 
             for (int i = 0; i < len; i++)
             {
-                char ch = text[i];
-
-                charInputs[0].type = NativeMethods.INPUT_KEYBOARD;
-                charInputs[0].u.ki.wScan = (ushort)ch;
-                charInputs[0].u.ki.dwFlags = NativeMethods.KEYEVENTF_UNICODE;
-
-                charInputs[1].type = NativeMethods.INPUT_KEYBOARD;
-                charInputs[1].u.ki.wScan = (ushort)ch;
-                charInputs[1].u.ki.dwFlags = NativeMethods.KEYEVENTF_UNICODE | NativeMethods.KEYEVENTF_KEYUP;
-
-                NativeMethods.SendInput(2, charInputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
+                charInputs.Clear();
+                AddCharInputs(charInputs, text[i]);
+                NativeMethods.SendInput((uint)charInputs.Count, charInputs.ToArray(), Marshal.SizeOf(typeof(NativeMethods.INPUT)));
 
                 if (delayPerChar > 0)
                 {
                     Thread.Sleep(delayPerChar);
                 }
             }
+        }
+
+        private static void AddCharInputs(List<NativeMethods.INPUT> inputs, char ch)
+        {
+            if (ch == '\n')
+            {
+                inputs.Add(CreateKeyInput(0x0D, false)); // VK_RETURN
+                inputs.Add(CreateKeyInput(0x0D, true));
+                return;
+            }
+
+            NativeMethods.INPUT down = new NativeMethods.INPUT();
+            down.type = NativeMethods.INPUT_KEYBOARD;
+            down.u.ki.wScan = (ushort)ch;
+            down.u.ki.dwFlags = NativeMethods.KEYEVENTF_UNICODE;
+            inputs.Add(down);
+
+            NativeMethods.INPUT up = new NativeMethods.INPUT();
+            up.type = NativeMethods.INPUT_KEYBOARD;
+            up.u.ki.wScan = (ushort)ch;
+            up.u.ki.dwFlags = NativeMethods.KEYEVENTF_UNICODE | NativeMethods.KEYEVENTF_KEYUP;
+            inputs.Add(up);
         }
 
         private static NativeMethods.INPUT CreateKeyInput(byte vk, bool keyUp)

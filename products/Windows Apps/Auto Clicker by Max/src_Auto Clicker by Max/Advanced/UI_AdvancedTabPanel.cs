@@ -22,11 +22,12 @@ namespace ModernAutoClicker.Advanced
         private RoundedPanel pnlBodyCard;
 
         // Top Toolbar Controls
-        private RoundedButton btnAddStep;
-        private RoundedButton btnCloneSelected;
-        private RoundedButton btnClearAll;
-        private RoundedButton btnSaveProfile;
-        private RoundedButton btnLoadProfile;
+        private IconTextButton btnAddStep;
+        private IconTextButton btnCloneSelected;
+        private IconTextButton btnClearAll;
+        private const int FileBtnW = 112;
+        private IconTextButton btnSaveProfile;
+        private IconTextButton btnLoadProfile;
         private ModernDropdownButton btnTemplate;
 
         // Bottom Options Controls (Loop, Jitter, Time)
@@ -64,6 +65,12 @@ namespace ModernAutoClicker.Advanced
             return _profiles[_activeProfileIndex];
         }
 
+        // Name of the open script. Unlike GetCurrentProfile it does not sync the step table, so a timer can poll it
+        public string ActiveScriptName
+        {
+            get { return (_activeProfileIndex >= 0 && _activeProfileIndex < _profiles.Count) ? _profiles[_activeProfileIndex].Name : null; }
+        }
+
         public List<MacroProfile> GetAllProfiles()
         {
             FlushCurrentProfileFromUI();
@@ -80,6 +87,54 @@ namespace ModernAutoClicker.Advanced
                 list.Add(!string.IsNullOrEmpty(_profiles[i].Name) ? _profiles[i].Name : string.Format("Script {0}", i + 1));
             }
             return list;
+        }
+
+        /// <summary>
+        /// Script names are the key for runners, RunScript targets and tab running state, so they must be unique (case-insensitive) and non-empty.
+        /// Returns desired if free, otherwise "desired (2)", "desired (3)"...
+        /// </summary>
+        private string MakeUniqueName(string desired, int ownIndex)
+        {
+            string baseName = !string.IsNullOrEmpty(desired) ? desired.Trim() : "";
+            if (baseName.Length == 0) baseName = string.Format("Script {0}", ownIndex + 1);
+
+            string candidate = baseName;
+            int suffix = 2;
+            while (IsNameTaken(candidate, ownIndex))
+            {
+                candidate = string.Format("{0} ({1})", baseName, suffix++);
+            }
+            return candidate;
+        }
+
+        private bool IsNameTaken(string name, int ownIndex)
+        {
+            for (int i = 0; i < _profiles.Count; i++)
+            {
+                if (i == ownIndex) continue;
+                if (string.Equals(_profiles[i].Name, name, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
+        }
+
+        // Keeps the first occurrence of each name, suffixes later duplicates (used when a whole profile list is loaded)
+        private void NormalizeProfileNames()
+        {
+            HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < _profiles.Count; i++)
+            {
+                string baseName = !string.IsNullOrEmpty(_profiles[i].Name) ? _profiles[i].Name.Trim() : "";
+                if (baseName.Length == 0) baseName = string.Format("Script {0}", i + 1);
+
+                string candidate = baseName;
+                int suffix = 2;
+                while (seen.Contains(candidate))
+                {
+                    candidate = string.Format("{0} ({1})", baseName, suffix++);
+                }
+                _profiles[i].Name = candidate;
+                seen.Add(candidate);
+            }
         }
 
         public int CurrentJitterPx
@@ -105,6 +160,7 @@ namespace ModernAutoClicker.Advanced
         public void ApplyLanguage()
         {
             if (btnAddStep != null) btnAddStep.Text = Loc.AdvBtnAddStep;
+            if (profileTabBar != null) profileTabBar.RefreshTabTitles();
             if (btnCloneSelected != null) btnCloneSelected.Text = Loc.AdvBtnClone;
             if (btnSaveProfile != null) btnSaveProfile.Text = Loc.AdvBtnSave;
             if (btnLoadProfile != null) btnLoadProfile.Text = Loc.AdvBtnLoad;
@@ -237,7 +293,8 @@ namespace ModernAutoClicker.Advanced
             this.SuspendLayout();
 
             // 1. Profile tabs & Template button outside on top (Y = 0, Height = 26)
-            if (profileTabBar != null) profileTabBar.Size = new Size(Math.Max(50, w - 86 - 6), 26);
+            bool showTemplate = btnTemplate != null && btnTemplate.Visible;
+            if (profileTabBar != null) profileTabBar.Size = new Size(Math.Max(50, showTemplate ? w - 86 - 6 : w - 8), 26);
             if (btnTemplate != null) btnTemplate.Location = new Point(w - 86, 0);
 
             // 2. The Main Body Card ("Bảng Lớn") wrapping all step controls (Y = 26)
@@ -252,8 +309,8 @@ namespace ModernAutoClicker.Advanced
                 int bh = pnlBodyCard.Height;
 
                 // Toolbar right buttons (Y = 8)
-                if (btnLoadProfile != null) btnLoadProfile.Location = new Point(bw - 8 - 88, 8);
-                if (btnSaveProfile != null) btnSaveProfile.Location = new Point(bw - 8 - 88 - 6 - 88, 8);
+                if (btnLoadProfile != null) btnLoadProfile.Location = new Point(bw - 8 - FileBtnW, 8);
+                if (btnSaveProfile != null) btnSaveProfile.Location = new Point(bw - 8 - FileBtnW - 6 - FileBtnW, 8);
 
                 // Macro table (Y = 38)
                 int tableH = Math.Max(100, bh - 38 - 46);
@@ -308,7 +365,9 @@ namespace ModernAutoClicker.Advanced
                 Text = "Template",
                 Location = new Point(590 - 86, 0),
                 Size = new Size(86, 26),
-                Font = ThemeTokens.FontBase(FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                // Hidden for now at the author's request; the template menu and data are kept to bring it back later
+                Visible = false
             };
             btnTemplate.Click += (s, e) => ShowTemplateMenu();
 
@@ -325,12 +384,13 @@ namespace ModernAutoClicker.Advanced
 
             // Top Toolbar inside pnlBodyCard (Y = 8, Height = 24)
             // Left Side: Step-level operations
-            btnAddStep = new RoundedButton
+            // Toolbar buttons carry an icon left of the text (sized to fit both)
+            btnAddStep = new IconTextButton
             {
-                Text = "➕ Add Step",
+                Text = "Add Step",
                 Location = new Point(8, 8),
-                Size = new Size(96, 24),
-                Font = ThemeTokens.FontBase(FontStyle.Bold)
+                Size = new Size(108, 24),
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             btnAddStep.Click += (s, e) =>
             {
@@ -354,12 +414,12 @@ namespace ModernAutoClicker.Advanced
                 UpdateStatus();
             };
 
-            btnCloneSelected = new RoundedButton
+            btnCloneSelected = new IconTextButton
             {
                 Text = "Clone Step(s)",
-                Location = new Point(110, 8),
-                Size = new Size(112, 24),
-                Font = ThemeTokens.FontBase(FontStyle.Bold)
+                Location = new Point(122, 8),
+                Size = new Size(132, 24),
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             btnCloneSelected.Click += (s, e) =>
             {
@@ -367,35 +427,39 @@ namespace ModernAutoClicker.Advanced
                 UpdateStatus();
             };
 
-            btnClearAll = new RoundedButton
+            btnClearAll = new IconTextButton
             {
                 Text = "Clear All Steps",
-                Location = new Point(228, 8),
-                Size = new Size(116, 24),
-                Font = ThemeTokens.FontBase(FontStyle.Bold)
+                Location = new Point(260, 8),
+                Size = new Size(138, 24),
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             btnClearAll.Click += (s, e) =>
             {
+                int count = tableControl.GetSteps().Count;
+                if (count == 0) return;
+                if (ModernMessageBox.Show(Loc.AdvClearAllConfirmMsg(count), Loc.AdvClearAllConfirmTitle,
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning, this) != DialogResult.Yes) return;
                 tableControl.ClearAll();
                 UpdateStatus();
             };
 
             // Right Side: Script file operations (aligned with right edge of body card)
-            btnSaveProfile = new RoundedButton
+            btnSaveProfile = new IconTextButton
             {
                 Text = "Save Script",
                 Location = new Point(400, 8),
-                Size = new Size(88, 24),
-                Font = ThemeTokens.FontBase(FontStyle.Bold)
+                Size = new Size(FileBtnW, 24),
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             btnSaveProfile.Click += (s, e) => SaveProfile();
 
-            btnLoadProfile = new RoundedButton
+            btnLoadProfile = new IconTextButton
             {
                 Text = "Load Script",
                 Location = new Point(494, 8),
-                Size = new Size(88, 24),
-                Font = ThemeTokens.FontBase(FontStyle.Bold)
+                Size = new Size(FileBtnW, 24),
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             btnLoadProfile.Click += (s, e) => LoadProfile();
 
@@ -441,7 +505,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 1,
                 AllowEmpty = true,
                 Value = 0,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -469,7 +533,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 1,
                 AllowEmpty = true,
                 Value = 0,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -501,7 +565,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 5,
                 AllowEmpty = true,
                 Value = 0,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -529,7 +593,7 @@ namespace ModernAutoClicker.Advanced
                 Step = 10,
                 AllowEmpty = false,
                 Value = 100,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
+                Font = ThemeTokens.FontBase(FontStyle.Regular),
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = HorizontalAlignment.Center
             };
@@ -598,6 +662,7 @@ namespace ModernAutoClicker.Advanced
 
             _activeProfileIndex = Math.Max(0, Math.Min(_profiles.Count - 1, activeIndex));
             profileTabBar.LoadTabs(names, _activeProfileIndex);
+            ApplyTabMarkers();
             LoadProfileToUI(_profiles[_activeProfileIndex]);
         }
 
@@ -661,6 +726,7 @@ namespace ModernAutoClicker.Advanced
             }
 
             _profiles.Add(p);
+            p.Name = MakeUniqueName(p.Name, _profiles.Count - 1);
             ReloadProfileTabs(_profiles.Count - 1);
 
             if (OnActiveScriptChanged != null) OnActiveScriptChanged();
@@ -687,6 +753,7 @@ namespace ModernAutoClicker.Advanced
             }
 
             _profiles.Insert(index + 1, dup);
+            dup.Name = MakeUniqueName(dup.Name, index + 1);
             ReloadProfileTabs(index + 1);
 
             if (OnActiveScriptChanged != null) OnActiveScriptChanged();
@@ -742,18 +809,44 @@ namespace ModernAutoClicker.Advanced
         {
             if (index < 0 || index >= _profiles.Count) return;
 
+            // Deleting a running script would leave its runner clicking in the background with no tab to stop it from
+            if (_runningScripts.Contains(_profiles[index].Name ?? ""))
+            {
+                ModernMessageBox.Show(
+                    Loc.DeleteScriptRunningMsg(_profiles[index].Name),
+                    Loc.DeleteScriptRunningTitle,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information,
+                    this);
+                return;
+            }
+
             FlushCurrentProfileFromUI();
 
             MacroProfile target = _profiles[index];
             bool isEmpty = (target.Steps == null || target.Steps.Count == 0);
+            List<string> callers = FindRunScriptCallers(target.Name, index);
 
-            if (!isEmpty)
+            if (callers.Count > 0)
             {
-                DialogResult dr = MessageBox.Show(
-                    string.Format("Are you sure you want to delete '{0}'?", target.Name),
-                    "Confirm Delete Script",
+                DialogResult dr = ModernMessageBox.Show(
+                    Loc.DeleteScriptInUseMsg(target.Name, string.Join(", ", callers.ToArray())),
+                    Loc.DeleteScriptInUseTitle,
                     MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question
+                    MessageBoxIcon.Warning,
+                    this
+                );
+
+                if (dr != DialogResult.Yes) return;
+            }
+            else if (!isEmpty)
+            {
+                DialogResult dr = ModernMessageBox.Show(
+                    Loc.DeleteScriptConfirmMsg(target.Name),
+                    Loc.DeleteScriptConfirmTitle,
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
+                    this
                 );
 
                 if (dr != DialogResult.Yes) return;
@@ -787,9 +880,39 @@ namespace ModernAutoClicker.Advanced
         {
             if (index >= 0 && index < _profiles.Count && !string.IsNullOrEmpty(newName))
             {
-                _profiles[index].Name = newName;
+                FlushCurrentProfileFromUI();
+                string oldName = _profiles[index].Name;
+                string uniqueName = MakeUniqueName(newName, index);
+                _profiles[index].Name = uniqueName;
+                if (uniqueName != newName.Trim()) profileTabBar.SetTabTitle(index, uniqueName);
+                if (!string.Equals(oldName, uniqueName, StringComparison.Ordinal))
+                {
+                    UpdateRunScriptReferences(oldName, uniqueName);
+                    foreach (HashSet<string> called in _calledByRunning.Values)
+                    {
+                        if (called.Remove(oldName)) called.Add(uniqueName);
+                    }
+                    ApplyTabMarkers();
+                }
                 tableControl.SetAvailableScripts(GetAvailableScriptNames(_activeProfileIndex));
                 UpdateStatus();
+            }
+        }
+
+        // RunScript steps reference their target by name (KeyData), so a rename must follow through every script
+        private void UpdateRunScriptReferences(string oldName, string newName)
+        {
+            if (string.IsNullOrEmpty(oldName)) return;
+            foreach (MacroProfile p in _profiles)
+            {
+                if (p.Steps == null) continue;
+                foreach (MacroStep s in p.Steps)
+                {
+                    if (s.ActionType == MacroActionType.RunScript && string.Equals(s.KeyData, oldName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        s.KeyData = newName;
+                    }
+                }
             }
         }
 
@@ -800,6 +923,7 @@ namespace ModernAutoClicker.Advanced
             {
                 _profiles = profiles ?? new List<MacroProfile>();
                 EnsureProfileExists();
+                NormalizeProfileNames();
                 _activeProfileIndex = Math.Max(0, Math.Min(_profiles.Count - 1, activeIdx));
                 ReloadProfileTabs(_activeProfileIndex);
             }
@@ -858,6 +982,27 @@ namespace ModernAutoClicker.Advanced
             {
                 OnStatusChanged(_statusText);
             }
+            UpdateToolbarButtonStates();
+        }
+
+        // Clone and Clear All have nothing to act on in an empty script: they stay gray (still clickable, as no-ops) until there are steps
+        private void UpdateToolbarButtonStates()
+        {
+            if (tableControl == null || _theme == null) return;
+            bool hasSteps = tableControl.GetSteps().Count > 0;
+            StyleToolbarButton(btnCloneSelected, AppIcons.Clone, hasSteps, _theme.AccentPrimary);
+            StyleToolbarButton(btnClearAll, AppIcons.Clear, hasSteps, _theme.Danger);
+        }
+
+        private void StyleToolbarButton(RoundedButton btn, string icon, bool usable, Color hoverColor)
+        {
+            if (btn == null) return;
+            Color fore = usable ? _theme.TextPrimary : _theme.TextTertiary;
+            Color hover = usable ? hoverColor : _theme.BgElevated;
+            if (btn.ForeColor == fore && btn.HoverColor == hover && btn.Image != null) return;
+            btn.ForeColor = fore;
+            btn.HoverColor = hover;
+            AppIcons.Set(btn, icon, fore);
         }
 
         private bool IsCurrentScriptEmpty()
@@ -902,11 +1047,13 @@ namespace ModernAutoClicker.Advanced
                 {
                     // Replace the currently selected empty script with the 1st loaded script
                     _profiles[_activeProfileIndex] = loadedProfiles[0];
+                    loadedProfiles[0].Name = MakeUniqueName(loadedProfiles[0].Name, _activeProfileIndex);
 
                     // Append any additional loaded scripts as new tabs
                     for (int i = 1; i < loadedProfiles.Count; i++)
                     {
                         _profiles.Add(loadedProfiles[i]);
+                        loadedProfiles[i].Name = MakeUniqueName(loadedProfiles[i].Name, _profiles.Count - 1);
                     }
 
                     ReloadProfileTabs(_activeProfileIndex);
@@ -918,6 +1065,7 @@ namespace ModernAutoClicker.Advanced
                     foreach (var p in loadedProfiles)
                     {
                         _profiles.Add(p);
+                        p.Name = MakeUniqueName(p.Name, _profiles.Count - 1);
                     }
 
                     ReloadProfileTabs(firstNewIndex);
@@ -942,7 +1090,7 @@ namespace ModernAutoClicker.Advanced
 
             if (templates == null || templates.Count == 0)
             {
-                ToolStripMenuItem emptyItem = new ToolStripMenuItem("(No templates found)");
+                ToolStripMenuItem emptyItem = new ToolStripMenuItem(Loc.TemplateNoneFound);
                 emptyItem.Enabled = false;
                 menu.Items.Add(emptyItem);
             }
@@ -991,9 +1139,11 @@ namespace ModernAutoClicker.Advanced
                         if (isCurrentEmpty)
                         {
                             _profiles[_activeProfileIndex] = loadedProfiles[0];
+                            loadedProfiles[0].Name = MakeUniqueName(loadedProfiles[0].Name, _activeProfileIndex);
                             for (int i = 1; i < loadedProfiles.Count; i++)
                             {
                                 _profiles.Add(loadedProfiles[i]);
+                                loadedProfiles[i].Name = MakeUniqueName(loadedProfiles[i].Name, _profiles.Count - 1);
                             }
                             ReloadProfileTabs(_activeProfileIndex);
                         }
@@ -1003,6 +1153,7 @@ namespace ModernAutoClicker.Advanced
                             foreach (var p in loadedProfiles)
                             {
                                 _profiles.Add(p);
+                                p.Name = MakeUniqueName(p.Name, _profiles.Count - 1);
                             }
                             ReloadProfileTabs(firstNewIndex);
                         }
@@ -1014,7 +1165,7 @@ namespace ModernAutoClicker.Advanced
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, "Failed to load template:\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ModernMessageBox.Show(Loc.TemplateLoadFailed(ex.Message), Loc.ErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, this);
             }
         }
 
@@ -1040,6 +1191,10 @@ namespace ModernAutoClicker.Advanced
                     btn.Invalidate();
                 }
             }
+            AppIcons.Set(btnAddStep, AppIcons.Add, t.TextPrimary);
+            AppIcons.Set(btnSaveProfile, AppIcons.Save, t.TextPrimary);
+            AppIcons.Set(btnLoadProfile, AppIcons.Import, t.TextPrimary);
+            UpdateToolbarButtonStates();
             if (btnTemplate != null) btnTemplate.ApplyTheme(t);
 
             Label[] labels = new Label[] { lblLoop, lblRandJitter, lblRandInterval, lblSpeed };
@@ -1077,12 +1232,128 @@ namespace ModernAutoClicker.Advanced
             this.Invalidate();
         }
 
+        // Kept here (not on tab items) because LoadTabs recreates every tab item on add/duplicate/load
+        private readonly HashSet<string> _runningScripts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Running script -> scripts it calls via RunScript, captured at start (the runner works on a snapshot taken at the same moment)
+        private readonly Dictionary<string, HashSet<string>> _calledByRunning = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
         public void SetScriptRunning(string scriptName, bool isRunning)
         {
-            if (profileTabBar != null)
+            if (string.IsNullOrEmpty(scriptName)) return;
+
+            if (isRunning)
             {
-                profileTabBar.SetTabRunningByTitle(scriptName, isRunning);
+                _runningScripts.Add(scriptName);
+                _calledByRunning[scriptName] = CollectCalledScripts(scriptName);
             }
+            else
+            {
+                _runningScripts.Remove(scriptName);
+                _calledByRunning.Remove(scriptName);
+            }
+            ApplyTabMarkers();
+        }
+
+        private void ApplyTabMarkers()
+        {
+            if (profileTabBar == null) return;
+            for (int i = 0; i < _profiles.Count; i++)
+            {
+                string name = _profiles[i].Name ?? "";
+                bool running = _runningScripts.Contains(name);
+                bool inUse = false;
+                if (!running)
+                {
+                    foreach (HashSet<string> called in _calledByRunning.Values)
+                    {
+                        if (called.Contains(name)) { inUse = true; break; }
+                    }
+                }
+                profileTabBar.SetTabRunning(i, running);
+                profileTabBar.SetTabInUse(i, inUse);
+            }
+        }
+
+        // All scripts reachable from rootName through enabled RunScript steps (nested calls included, root excluded)
+        private HashSet<string> CollectCalledScripts(string rootName)
+        {
+            HashSet<string> result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            Queue<string> pending = new Queue<string>();
+            pending.Enqueue(rootName);
+
+            while (pending.Count > 0)
+            {
+                string current = pending.Dequeue();
+                MacroProfile p = _profiles.Find(x => string.Equals(x.Name, current, StringComparison.OrdinalIgnoreCase));
+                if (p == null || p.Steps == null) continue;
+
+                foreach (MacroStep s in p.Steps)
+                {
+                    if (!s.Enabled || s.ActionType != MacroActionType.RunScript || string.IsNullOrEmpty(s.KeyData)) continue;
+                    if (string.Equals(s.KeyData, rootName, StringComparison.OrdinalIgnoreCase)) continue;
+                    if (result.Add(s.KeyData)) pending.Enqueue(s.KeyData);
+                }
+            }
+            return result;
+        }
+
+        // A script plus every script it can run through RunScript: the steps a run of rootName can reach
+        public List<MacroProfile> GetProfilesUsedBy(string rootName)
+        {
+            FlushCurrentProfileFromUI();
+
+            List<MacroProfile> result = new List<MacroProfile>();
+            MacroProfile root = _profiles.Find(x => string.Equals(x.Name, rootName, StringComparison.OrdinalIgnoreCase));
+            if (root != null) result.Add(root);
+
+            foreach (string name in CollectCalledScripts(rootName))
+            {
+                MacroProfile called = _profiles.Find(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+                if (called != null && !called.IsCombine) result.Add(called);
+            }
+            return result;
+        }
+
+        // Moves every step of rootName and the scripts it calls from one target window to another (null window = All Screens)
+        public void ReplaceWindowTarget(string rootName, string oldProcess, string oldTitle, int oldIndex, NativeMethods.WindowTargetInfo newWindow)
+        {
+            foreach (MacroProfile p in GetProfilesUsedBy(rootName))
+            {
+                if (p.Steps == null) continue;
+                foreach (MacroStep s in p.Steps)
+                {
+                    if (!s.RelativeToWindow || s.WindowIndex != oldIndex) continue;
+                    if (!string.Equals(s.ProcessName ?? "", oldProcess ?? "", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (!string.Equals(s.WindowTitle ?? "", oldTitle ?? "", StringComparison.OrdinalIgnoreCase)) continue;
+
+                    s.RelativeToWindow = newWindow != null;
+                    s.WindowHwnd = newWindow != null ? newWindow.Hwnd : IntPtr.Zero;
+                    s.TargetPid = newWindow != null ? newWindow.ProcessId : 0;
+                    s.ProcessName = newWindow != null ? newWindow.ProcessName : "";
+                    s.WindowTitle = newWindow != null ? newWindow.Title : "";
+                    s.WindowIndex = newWindow != null ? newWindow.WindowIndex : 0;
+                }
+            }
+            tableControl.RefreshWindowIcons();
+        }
+
+        // Names of other scripts that have a RunScript step targeting scriptName (disabled steps included: they break if re-enabled)
+        private List<string> FindRunScriptCallers(string scriptName, int ownIndex)
+        {
+            List<string> callers = new List<string>();
+            for (int i = 0; i < _profiles.Count; i++)
+            {
+                if (i == ownIndex || _profiles[i].Steps == null) continue;
+                foreach (MacroStep s in _profiles[i].Steps)
+                {
+                    if (s.ActionType == MacroActionType.RunScript && string.Equals(s.KeyData, scriptName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        callers.Add(_profiles[i].Name);
+                        break;
+                    }
+                }
+            }
+            return callers;
         }
 
         public void SetScriptEditingLocked(bool isLocked)

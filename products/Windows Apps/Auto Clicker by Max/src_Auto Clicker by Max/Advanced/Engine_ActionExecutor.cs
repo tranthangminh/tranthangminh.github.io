@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -48,125 +49,6 @@ namespace ModernAutoClicker.Advanced
             int dg = Math.Abs((int)actual.G - (int)target.G);
             int db = Math.Abs((int)actual.B - (int)target.B);
             return (dr <= tolerance && dg <= tolerance && db <= tolerance);
-        }
-
-        public static Point FindMatchingPixelInArea(Rectangle area, Color target, int tolerance = 10)
-        {
-            if (area.Width <= 0 || area.Height <= 0) return Point.Empty;
-
-            int minX = SystemInformation.VirtualScreen.Left;
-            int minY = SystemInformation.VirtualScreen.Top;
-            int maxX = SystemInformation.VirtualScreen.Right;
-            int maxY = SystemInformation.VirtualScreen.Bottom;
-
-            int left = Math.Max(minX, area.Left);
-            int top = Math.Max(minY, area.Top);
-            int right = Math.Min(maxX, area.Right);
-            int bottom = Math.Min(maxY, area.Bottom);
-
-            int width = right - left;
-            int height = bottom - top;
-
-            if (width <= 0 || height <= 0) return Point.Empty;
-
-            try
-            {
-                using (Bitmap bmp = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
-                {
-                    using (Graphics g = Graphics.FromImage(bmp))
-                    {
-                        g.CopyFromScreen(left, top, 0, 0, new Size(width, height), CopyPixelOperation.SourceCopy);
-                    }
-
-                    System.Drawing.Imaging.BitmapData data = bmp.LockBits(
-                        new Rectangle(0, 0, width, height),
-                        System.Drawing.Imaging.ImageLockMode.ReadOnly,
-                        System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-                    try
-                    {
-                        int targetR = target.R;
-                        int targetG = target.G;
-                        int targetB = target.B;
-
-                        int stride = data.Stride;
-                        IntPtr scan0 = data.Scan0;
-                        int bytesPerPixel = 4;
-
-                        byte[] rowBuffer = new byte[width * bytesPerPixel];
-
-                        for (int y = 0; y < height; y++)
-                        {
-                            IntPtr rowPtr = new IntPtr(scan0.ToInt64() + y * stride);
-                            Marshal.Copy(rowPtr, rowBuffer, 0, rowBuffer.Length);
-
-                            for (int x = 0; x < width; x++)
-                            {
-                                int idx = x * 4;
-                                int b = rowBuffer[idx];
-                                int gVal = rowBuffer[idx + 1];
-                                int r = rowBuffer[idx + 2];
-
-                                if (Math.Abs(r - targetR) <= tolerance &&
-                                    Math.Abs(gVal - targetG) <= tolerance &&
-                                    Math.Abs(b - targetB) <= tolerance)
-                                {
-                                    return new Point(left + x, top + y);
-                                }
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        bmp.UnlockBits(data);
-                    }
-                }
-            }
-            catch { }
-
-            return Point.Empty;
-        }
-
-        public static bool FindTemplateInArea(Rectangle area, Bitmap templateBmp, int similarityPercent, out Point foundCenter)
-        {
-            foundCenter = Point.Empty;
-            if (templateBmp == null || templateBmp.Width <= 0 || templateBmp.Height <= 0) return false;
-
-            int minX = SystemInformation.VirtualScreen.Left;
-            int minY = SystemInformation.VirtualScreen.Top;
-            int maxX = SystemInformation.VirtualScreen.Right;
-            int maxY = SystemInformation.VirtualScreen.Bottom;
-
-            int left = Math.Max(minX, area.Left);
-            int top = Math.Max(minY, area.Top);
-            int right = Math.Min(maxX, area.Right);
-            int bottom = Math.Min(maxY, area.Bottom);
-
-            int scanW = right - left;
-            int scanH = bottom - top;
-
-            if (scanW < templateBmp.Width || scanH < templateBmp.Height) return false;
-
-            try
-            {
-                using (Bitmap screenBmp = new Bitmap(scanW, scanH, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
-                {
-                    using (Graphics g = Graphics.FromImage(screenBmp))
-                    {
-                        g.CopyFromScreen(left, top, 0, 0, new Size(scanW, scanH), CopyPixelOperation.SourceCopy);
-                    }
-
-                    Point localCenter;
-                    if (FindTemplateInBitmap(screenBmp, templateBmp, similarityPercent, out localCenter))
-                    {
-                        foundCenter = new Point(left + localCenter.X, top + localCenter.Y);
-                        return true;
-                    }
-                }
-            }
-            catch { }
-
-            return false;
         }
 
         public static bool FindTemplateInBitmap(Bitmap sourceBmp, Bitmap templateBmp, int similarityPercent, out Point foundCenter)
@@ -341,9 +223,17 @@ namespace ModernAutoClicker.Advanced
                     if (needDisposeSource) normalizedSource.Dispose();
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             return false;
+        }
+
+        // True when running this step needs its target window. Delay, RunScript and RepeatTimer never touch it, even if a default target is stored on them.
+        public static bool UsesTargetWindow(MacroStep step)
+        {
+            if (step == null || !step.RelativeToWindow) return false;
+            if (step.ActionType == MacroActionType.Delay || step.ActionType == MacroActionType.RunScript || step.ActionType == MacroActionType.RepeatTimer) return false;
+            return step.WindowHwnd != IntPtr.Zero || !string.IsNullOrEmpty(step.ProcessName) || !string.IsNullOrEmpty(step.WindowTitle) || step.TargetPid > 0;
         }
 
         public static IntPtr EnsureTargetWindowHandle(MacroStep step)
@@ -592,10 +482,13 @@ namespace ModernAutoClicker.Advanced
                     else // Click
                     {
                         int mouseBtn = (mode == 1) ? 1 : (mode == 2 ? 2 : 0);
+                        int keyFlags = GetMouseKeyFlags(keyCombo);
                         if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
-                            PerformClickDirectToWindow(directHwnd, rawClickPt, mouseBtn, hold);
+                            NativeMethods.PerformClickDirectToWindow(directHwnd, rawClickPt.X, rawClickPt.Y, mouseBtn, hold, keyFlags);
+                        else if (freeMouseMode && clickPt != Point.Empty)
+                            NativeMethods.SendBackgroundClick(clickPt.X, clickPt.Y, mouseBtn, hold, keyFlags);
                         else
-                            PerformClick(clickPt, mouseBtn, hold, freeMouseMode);
+                            PerformClick(clickPt, mouseBtn, hold, false);
                     }
                 }
                 finally
@@ -671,6 +564,18 @@ namespace ModernAutoClicker.Advanced
                     }
                 }
             }
+        }
+
+        // Ctrl / Shift of a Press & Click key combination, as MK_* flags for clicks posted to a window (Alt and other keys have no flag)
+        private static int GetMouseKeyFlags(string keyCombo)
+        {
+            List<byte> modifiers;
+            byte mainVk;
+            KeyboardSimulator.ParseKeyCombo(keyCombo, out modifiers, out mainVk);
+            int flags = 0;
+            if (modifiers.Contains(0x11)) flags |= NativeMethods.MK_CONTROL;
+            if (modifiers.Contains(0x10)) flags |= NativeMethods.MK_SHIFT;
+            return flags;
         }
 
         private static void PerformClickDirectToWindow(IntPtr hWnd, Point clientPt, int button, int holdMs)

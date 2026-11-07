@@ -109,6 +109,16 @@ namespace ModernAutoClicker.Advanced
             return steps;
         }
 
+        // Redraws the target icon of every row after the steps' targets were changed from outside the table
+        public void RefreshWindowIcons()
+        {
+            foreach (MacroRowControl r in _rows)
+            {
+                MacroStep s = r.Step;
+                r.SetTargetWindowDirect(s.RelativeToWindow, s.ProcessName, s.WindowTitle, s.WindowHwnd, s.WindowIndex, s.TargetPid);
+            }
+        }
+
         public MacroTableControl()
         {
             _theme = ThemeTokens.DarkTheme();
@@ -121,6 +131,79 @@ namespace ModernAutoClicker.Advanced
 
             InitializeTable();
             ApplyTheme(_theme);
+
+            _rowSelectFilter = new MacroRowSelectFilter(this);
+            Application.AddMessageFilter(_rowSelectFilter);
+        }
+
+        private MacroRowSelectFilter _rowSelectFilter;
+
+        /// <summary>
+        /// Called by MacroRowSelectFilter for every left mouse-down in the app. A click on any control inside a step row selects that row.
+        /// With Ctrl/Shift held, the click only changes the selection and is consumed (dropdowns, inputs and buttons ignore it).
+        /// Returns true when the click must not reach the control.
+        /// </summary>
+        public bool HandleRowAreaMouseDown(IntPtr hWnd)
+        {
+            if (!this.Visible || !this.IsHandleCreated) return false;
+
+            Control clicked = Control.FromChildHandle(hWnd);
+            bool isShift = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
+            bool isCtrl = (Control.ModifierKeys & Keys.Control) == Keys.Control;
+
+            // A plain click on the empty area below the steps clears the selection (the 4px gaps between rows are left alone)
+            if (clicked != null && (clicked == pnlContent || clicked == pnlScrollContainer))
+            {
+                bool belowRows = clicked == pnlScrollContainer || _rows.Count == 0 ||
+                                 pnlContent.PointToClient(Cursor.Position).Y > _rows[_rows.Count - 1].Bottom;
+                if (belowRows && !isShift && !isCtrl && _selectedIndices.Count > 0) ClearSelection();
+                return false;
+            }
+
+            MacroRowControl row = FindRowForControl(clicked);
+            // The row background and the step-number handle run their own select/drag logic: a press released without moving collapses the selection there
+            if (row == null || clicked == row || row.IsDragHandle(clicked)) return false;
+
+            if (isShift || isCtrl)
+            {
+                HandleRowClicked(row, isShift, isCtrl);
+                return true;
+            }
+
+            // ✕ removes only its own row, so the other selected rows stay selected
+            if (row.IsDeleteButton(clicked)) return false;
+
+            // Inputs, dropdowns and buttons cannot start a drag, so a plain click collapses a multi-selection right away
+            if (_selectedIndices.Count != 1 || !_selectedIndices.Contains(row.Index)) SelectOnly(row.Index);
+            return false;
+        }
+
+        /// <summary>
+        /// Called by MacroRowSelectFilter on mouse moves and Ctrl/Shift presses: while Ctrl/Shift is held the whole row shows the hand cursor,
+        /// so inputs no longer switch to the I-beam and the step-number handle no longer shows the move cursor.
+        /// </summary>
+        public void ApplySelectModifierCursor()
+        {
+            if (_dragFilter != null || !this.Visible || !this.IsHandleCreated) return;
+            if ((Control.ModifierKeys & (Keys.Shift | Keys.Control)) == Keys.None) return;
+
+            Point pos = Cursor.Position;
+            IntPtr hWnd = NativeMethods.WindowFromPoint(new NativeMethods.POINT { X = pos.X, Y = pos.Y });
+            if (hWnd == IntPtr.Zero) return;
+            if (FindRowForControl(Control.FromChildHandle(hWnd)) != null)
+            {
+                Cursor.Current = Cursors.Hand;
+            }
+        }
+
+        private MacroRowControl FindRowForControl(Control control)
+        {
+            for (Control c = control; c != null; c = c.Parent)
+            {
+                MacroRowControl row = c as MacroRowControl;
+                if (row != null) return _rows.Contains(row) ? row : null;
+            }
+            return null;
         }
 
         private void InitializeTable()
@@ -135,32 +218,29 @@ namespace ModernAutoClicker.Advanced
                 Margin = new Padding(0)
             };
 
-            int x = 2;
-            int colGap = 5;
+            _lblColNo = CreateColLabel(Loc.ColNo, MacroColumnLayout.NoX, MacroColumnLayout.NoW, true, MacroDescriptions.GetHeaderDescription("No."), () => ToggleAllSelection());
+            pnlHeader.Controls.Add(_lblColNo);
 
-            _lblColNo = CreateColLabel(Loc.ColNo, x, 34, true, MacroDescriptions.GetHeaderDescription("No."), () => ToggleAllSelection());
-            pnlHeader.Controls.Add(_lblColNo); x += 34 + colGap;
+            _lblColCheck = CreateColLabel(Loc.ColCheck, MacroColumnLayout.CheckX, MacroColumnLayout.CheckW, true, MacroDescriptions.GetHeaderDescription("✔"), () => ToggleAllCheckboxes());
+            pnlHeader.Controls.Add(_lblColCheck);
 
-            _lblColCheck = CreateColLabel(Loc.ColCheck, x, 20, true, MacroDescriptions.GetHeaderDescription("✔"), () => ToggleAllCheckboxes());
-            pnlHeader.Controls.Add(_lblColCheck); x += 20 + colGap;
-            
-            _lblColWin = CreateColLabel(Loc.ColWin, x, 30, true, MacroDescriptions.GetHeaderDescription("Win"), null);
+            _lblColWin = CreateColLabel(Loc.ColWin, MacroColumnLayout.WinX, MacroColumnLayout.WinW, true, MacroDescriptions.GetHeaderDescription("Win"), null);
             _lblColWin.Click += (s, e) => ShowBatchWindowMenu(_lblColWin);
-            pnlHeader.Controls.Add(_lblColWin); x += 30 + colGap;
+            pnlHeader.Controls.Add(_lblColWin);
 
-            _lblColAction = CreateColLabel(Loc.ColActionType, x, 112, true, MacroDescriptions.GetHeaderDescription("Action Type"), null);
+            _lblColAction = CreateColLabel(Loc.ColActionType, MacroColumnLayout.ActionX, MacroColumnLayout.ActionW, true, MacroDescriptions.GetHeaderDescription("Action Type"), null);
             _lblColAction.Click += (s, e) => ShowBatchActionTypeMenu(_lblColAction);
-            pnlHeader.Controls.Add(_lblColAction); x += 112 + colGap;
+            pnlHeader.Controls.Add(_lblColAction);
 
-            _lblColTarget = CreateColLabel(Loc.ColTarget, x, 116, true, MacroDescriptions.GetHeaderDescription("Target"), () => BatchSetTargetCoordinates());
-            pnlHeader.Controls.Add(_lblColTarget); x += 116 + colGap;
+            _lblColTarget = CreateColLabel(Loc.ColTarget, MacroColumnLayout.TargetX, MacroColumnLayout.TargetW, true, MacroDescriptions.GetHeaderDescription("Target"), () => BatchSetTargetCoordinates());
+            pnlHeader.Controls.Add(_lblColTarget);
 
-            _lblColHold = CreateColLabel(Loc.ColHold, x, 44, true, MacroDescriptions.GetHeaderDescription("Hold"), () =>
+            _lblColHold = CreateColLabel(Loc.ColHold, MacroColumnLayout.HoldX, MacroColumnLayout.HoldW, true, MacroDescriptions.GetHeaderDescription("Hold"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 string title = targets.Count == _rows.Count
-                    ? (Loc.IsVietnamese ? "Cài đặt hàng loạt Thời gian Giữ (Tất cả bước)" : "Batch Set Hold Duration (All Steps)")
-                    : (Loc.IsVietnamese ? string.Format("Cài đặt hàng loạt Thời gian Giữ ({0} bước đã chọn)", targets.Count) : string.Format("Batch Set Hold Duration ({0} Selected Steps)", targets.Count));
+                    ? (Loc.BatchHoldAll)
+                    : (Loc.BatchHoldSelected(targets.Count));
                 string prompt = Loc.IsVietnamese
                     ? string.Format("Nhập Thời gian Giữ (ms) cho {0} bước:\n(Thời gian hoàn thành từng bước)", targets.Count)
                     : string.Format("Enter Hold Duration (ms) for {0} steps:\n(Time to complete each step)", targets.Count);
@@ -170,31 +250,34 @@ namespace ModernAutoClicker.Advanced
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
             });
-            pnlHeader.Controls.Add(_lblColHold); x += 44 + colGap;
+            pnlHeader.Controls.Add(_lblColHold);
 
-            _lblColDelay = CreateColLabel(Loc.ColDelay, x, 46, true, MacroDescriptions.GetHeaderDescription("Delay"), () =>
+            _lblColDelay = CreateColLabel(Loc.ColDelay, MacroColumnLayout.DelayX, MacroColumnLayout.DelayW, true, MacroDescriptions.GetHeaderDescription("Delay"), () =>
             {
                 var targets = GetTargetRowsForBatch();
+                if (targets == null || targets.Count == 0) return;
                 string title = targets.Count == _rows.Count
-                    ? (Loc.IsVietnamese ? "Cài đặt hàng loạt Thời gian Chờ (Tất cả bước)" : "Batch Set Delay Duration (All Steps)")
-                    : (Loc.IsVietnamese ? string.Format("Cài đặt hàng loạt Thời gian Chờ ({0} bước đã chọn)", targets.Count) : string.Format("Batch Set Delay Duration ({0} Selected Steps)", targets.Count));
+                    ? (Loc.BatchDelayAll)
+                    : (Loc.BatchDelaySelected(targets.Count));
                 string prompt = Loc.IsVietnamese
-                    ? string.Format("Nhập Thời gian Chờ (ms) cho {0} bước:\n(Thời gian chờ chuyển sang bước kế tiếp)", targets.Count)
-                    : string.Format("Enter Delay Duration (ms) for {0} steps:\n(Wait or travel time to next step)", targets.Count);
-                PromptBatchNumber(title, prompt, 0, 999999, 240, (val) =>
+                    ? string.Format("Nhập Thời gian Chờ cho {0} bước:\n(Thời gian chờ chuyển sang bước kế tiếp)", targets.Count)
+                    : string.Format("Enter Delay Duration for {0} steps:\n(Wait or travel time to next step)", targets.Count);
+                // Start from the first target's value and unit; the dialog applies both to every target
+                MacroStep first = targets[0].Step;
+                PromptBatchDuration(title, prompt, first.DelayMs, first.DelayUnit, (val, unit) =>
                 {
-                    foreach (MacroRowControl r in targets) r.UpdateDelayValue(val);
+                    foreach (MacroRowControl r in targets) r.UpdateDelayValue(val, unit);
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
             });
-            pnlHeader.Controls.Add(_lblColDelay); x += 46 + colGap;
+            pnlHeader.Controls.Add(_lblColDelay);
 
-            _lblColRep = CreateColLabel(Loc.ColRep, x, 30, true, MacroDescriptions.GetHeaderDescription("Rep"), () =>
+            _lblColRep = CreateColLabel(Loc.ColRep, MacroColumnLayout.RepX, MacroColumnLayout.RepW, true, MacroDescriptions.GetHeaderDescription("Rep"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 string title = targets.Count == _rows.Count
-                    ? (Loc.IsVietnamese ? "Cài đặt hàng loạt Số lần Lặp (Tất cả bước)" : "Batch Set Repeat Count (All Steps)")
-                    : (Loc.IsVietnamese ? string.Format("Cài đặt hàng loạt Số lần Lặp ({0} bước đã chọn)", targets.Count) : string.Format("Batch Set Repeat Count ({0} Selected Steps)", targets.Count));
+                    ? (Loc.BatchRepeatAll)
+                    : (Loc.BatchRepeatSelected(targets.Count));
                 string prompt = Loc.IsVietnamese
                     ? string.Format("Nhập Số lần Lặp cho {0} bước:", targets.Count)
                     : string.Format("Enter Repeat Count for {0} steps:", targets.Count);
@@ -204,33 +287,33 @@ namespace ModernAutoClicker.Advanced
                     if (OnTableDataChanged != null) OnTableDataChanged();
                 });
             });
-            pnlHeader.Controls.Add(_lblColRep); x += 30 + colGap;
+            pnlHeader.Controls.Add(_lblColRep);
 
-            _lblColDel = CreateColLabel(Loc.ColDel, x, 34, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
+            _lblColDel = CreateColLabel(Loc.ColDel, MacroColumnLayout.DelX, MacroColumnLayout.DelW, true, MacroDescriptions.GetHeaderDescription("Del"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 if (targets == null || targets.Count == 0) return;
 
                 string confirmMsg = targets.Count == _rows.Count
-                    ? (Loc.IsVietnamese ? string.Format("Bạn có chắc chắn muốn xóa TẤT CẢ {0} bước trong script này không?", targets.Count) : string.Format("Are you sure you want to delete ALL {0} steps in this script?", targets.Count))
-                    : (Loc.IsVietnamese ? string.Format("Bạn có chắc chắn muốn xóa {0} bước đã chọn không?", targets.Count) : string.Format("Are you sure you want to delete {0} selected step(s)?", targets.Count));
+                    ? (Loc.BatchDeleteAllConfirm(targets.Count))
+                    : (Loc.BatchDeleteSelectedConfirm(targets.Count));
 
-                string dialogTitle = Loc.IsVietnamese ? "Xóa hàng loạt Bước" : "Batch Delete Steps";
-                if (MessageBox.Show(this.FindForm(), confirmMsg, dialogTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                string dialogTitle = Loc.BatchDeleteTitle;
+                if (ModernMessageBox.Show(confirmMsg, dialogTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, this) == DialogResult.Yes)
                 {
                     BatchDeleteRows(targets);
                 }
             });
-            pnlHeader.Controls.Add(_lblColDel); x += 34 + colGap;
+            pnlHeader.Controls.Add(_lblColDel);
 
-            _lblColNote = CreateColLabel(Loc.ColNote, x, 72, true, MacroDescriptions.GetHeaderDescription("Note"), () =>
+            _lblColNote = CreateColLabel(Loc.ColNote, MacroColumnLayout.NoteX, 72, true, MacroDescriptions.GetHeaderDescription("Note"), () =>
             {
                 var targets = GetTargetRowsForBatch();
                 if (targets == null || targets.Count == 0) return;
 
                 string title = targets.Count == _rows.Count
-                    ? (Loc.IsVietnamese ? "Cài đặt hàng loạt Ghi chú (Tất cả bước)" : "Batch Set Note (All Steps)")
-                    : (Loc.IsVietnamese ? string.Format("Cài đặt hàng loạt Ghi chú ({0} bước đã chọn)", targets.Count) : string.Format("Batch Set Note ({0} Selected Steps)", targets.Count));
+                    ? (Loc.BatchNoteAll)
+                    : (Loc.BatchNoteSelected(targets.Count));
                 string prompt = Loc.IsVietnamese
                     ? string.Format("Nhập ghi chú tùy chỉnh cho {0} bước:", targets.Count)
                     : string.Format("Enter custom note for {0} step(s):", targets.Count);
@@ -315,7 +398,7 @@ namespace ModernAutoClicker.Advanced
                             this.ScrollToBottom();
                         }));
                     }
-                    catch { }
+                    catch (Exception caught) { AppLog.Caught(caught); }
                 }
                 else
                 {
@@ -324,12 +407,27 @@ namespace ModernAutoClicker.Advanced
                 }
             };
 
+            // The Delay of the previous recorded step is only known when the next action comes in
+            ActionRecorder.Instance.OnStepDelayChanged += (step) =>
+            {
+                if (this.IsDisposed) return;
+                if (this.InvokeRequired)
+                {
+                    try { this.BeginInvoke((Action)(() => ShowRecordedStepDelay(step))); }
+                    catch (Exception caught) { AppLog.Caught(caught); }
+                }
+                else
+                {
+                    ShowRecordedStepDelay(step);
+                }
+            };
+
             ReorderRows();
         }
 
         private Label CreateColLabel(string text, int x, int width, bool interactive, string tooltipText, Action clickAction)
         {
-            Color defaultColor = interactive ? (_theme != null ? _theme.AccentPrimary : Color.FromArgb(96, 165, 250)) : (_theme != null ? _theme.TextSecondary : Color.FromArgb(160, 160, 160));
+            Color defaultColor = interactive ? ((_theme ?? ThemeTokens.Current).AccentPrimary) : ((_theme ?? ThemeTokens.Current).TextSecondary);
 
             Label lbl = new Label
             {
@@ -346,7 +444,7 @@ namespace ModernAutoClicker.Advanced
             {
                 lbl.Cursor = Cursors.Hand;
                 lbl.MouseEnter += (s, e) => { lbl.ForeColor = _theme != null ? _theme.AccentPrimaryHover : Color.White; };
-                lbl.MouseLeave += (s, e) => { lbl.ForeColor = _theme != null ? _theme.AccentPrimary : Color.FromArgb(96, 165, 250); };
+                lbl.MouseLeave += (s, e) => { lbl.ForeColor = (_theme ?? ThemeTokens.Current).AccentPrimary; };
                 if (clickAction != null)
                 {
                     lbl.Click += (s, e) =>
@@ -397,9 +495,33 @@ namespace ModernAutoClicker.Advanced
             }
 
             bool targetState = anyUnchecked;
-            foreach (MacroRowControl r in _rows)
+
+            // Suppress per-row OnStepChanged (each one re-layouts all rows, syncs the overlay and saves the config to disk);
+            // fire a single OnTableDataChanged after the batch instead
+            bool prevLoading = _isLoading;
+            _isLoading = true;
+            bool handleCreated = pnlContent.IsHandleCreated;
+            if (handleCreated)
             {
-                r.SetCheckedDirect(targetState);
+                NativeMethods.SendMessage(pnlContent.Handle, NativeMethods.WM_SETREDRAW, (IntPtr)0, IntPtr.Zero);
+            }
+            pnlContent.SuspendLayout();
+            try
+            {
+                foreach (MacroRowControl r in _rows)
+                {
+                    r.SetCheckedDirect(targetState);
+                }
+            }
+            finally
+            {
+                pnlContent.ResumeLayout();
+                if (handleCreated)
+                {
+                    NativeMethods.SendMessage(pnlContent.Handle, NativeMethods.WM_SETREDRAW, (IntPtr)1, IntPtr.Zero);
+                    pnlContent.Invalidate(true);
+                }
+                _isLoading = prevLoading;
             }
 
             if (OnTableDataChanged != null) OnTableDataChanged();
@@ -410,56 +532,21 @@ namespace ModernAutoClicker.Advanced
             if (_rows.Count == 0) return;
             var targets = GetTargetRowsForBatch();
 
-            ContextMenuStrip menu = new ContextMenuStrip();
-            menu.Renderer = new ModernMenuRenderer(_theme);
-            menu.ShowImageMargin = true;
-
-            ToolStripMenuItem itemDesktop = new ToolStripMenuItem(Loc.IsVietnamese ? "Toàn màn hình (Desktop)" : "All Screens (Desktop)");
-            itemDesktop.Image = IconCache.DesktopIcon;
-            itemDesktop.Click += (s, e) =>
+            TargetWindowMenu.Show(anchor, _theme, (window) =>
             {
+                bool relative = window != null;
+                string processName = relative ? window.ProcessName : "";
+                string title = relative ? window.Title : "";
+                int windowIndex = relative ? window.WindowIndex : 0;
+                uint pid = relative ? window.ProcessId : 0;
+
                 foreach (MacroRowControl r in targets)
                 {
-                    r.SetTargetWindowDirect(false, "", "", IntPtr.Zero, 0, 0);
+                    r.SetTargetWindowDirect(relative, processName, title, relative ? window.Hwnd : IntPtr.Zero, windowIndex, pid);
                 }
-                if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(false, "", "", 0, 0);
+                if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(relative, processName, title, windowIndex, pid);
                 if (OnTableDataChanged != null) OnTableDataChanged();
-            };
-            menu.Items.Add(itemDesktop);
-            menu.Items.Add(new ToolStripSeparator());
-
-            var windows = NativeMethods.GetOpenWindows();
-            if (windows.Count == 0)
-            {
-                var itemEmpty = new ToolStripMenuItem(Loc.IsVietnamese ? "(Không phát hiện cửa sổ đang mở)" : "(No open windows detected)");
-                itemEmpty.Enabled = false;
-                menu.Items.Add(itemEmpty);
-            }
-            else
-            {
-                foreach (var win in windows)
-                {
-                    var targetWin = win;
-                    ToolStripMenuItem itemWin = new ToolStripMenuItem(win.ToString());
-                    itemWin.Image = targetWin.AppIcon ?? IconCache.GenericAppIcon;
-                    itemWin.Click += (s, e) =>
-                    {
-                        if (targetWin.AppIcon != null)
-                        {
-                            IconCache.CacheProcessIcon(targetWin.ProcessName, targetWin.AppIcon);
-                        }
-                        foreach (MacroRowControl r in targets)
-                        {
-                            r.SetTargetWindowDirect(true, targetWin.ProcessName, targetWin.Title, targetWin.Hwnd, targetWin.WindowIndex, targetWin.ProcessId);
-                        }
-                        if (OnDefaultWindowBatchChanged != null) OnDefaultWindowBatchChanged(true, targetWin.ProcessName, targetWin.Title, targetWin.WindowIndex, targetWin.ProcessId);
-                        if (OnTableDataChanged != null) OnTableDataChanged();
-                    };
-                    menu.Items.Add(itemWin);
-                }
-            }
-
-            menu.Show(anchor, new Point(0, anchor.Height));
+            });
         }
 
         public void ShowBatchActionTypeMenu(Control anchor)
@@ -492,7 +579,7 @@ namespace ModernAutoClicker.Advanced
             for (int i = 0; i < types.Length; i++)
             {
                 MacroActionType actionType = types[i];
-                ToolStripMenuItem item = new ToolStripMenuItem(Loc.GetActionTypeName(actionType));
+                ToolStripMenuItem item = new ToolStripMenuItem(MenuText.Escape(Loc.GetActionTypeName(actionType)));
                 item.ForeColor = MacroRowControl.GetActionTypeColor(actionType, _theme);
                 item.Click += (s, e) =>
                 {
@@ -515,9 +602,23 @@ namespace ModernAutoClicker.Advanced
             Form parentForm = this.FindForm();
             using (BatchNumberInputDialog dlg = new BatchNumberInputDialog(title, fieldLabel, min, max, defaultVal, _theme))
             {
-                if (dlg.ShowDialog(parentForm) == DialogResult.OK && dlg.ResultValue.HasValue)
+                if (dlg.ShowModal(parentForm) == DialogResult.OK && dlg.ResultValue.HasValue)
                 {
                     onValueConfirmed(dlg.ResultValue.Value);
+                }
+            }
+        }
+
+        private void PromptBatchDuration(string title, string fieldLabel, int defaultMs, int defaultUnit, Action<int, int> onValueConfirmed)
+        {
+            if (_rows.Count == 0) return;
+
+            Form parentForm = this.FindForm();
+            using (BatchNumberInputDialog dlg = new BatchNumberInputDialog(title, fieldLabel, 0, TimeUnit.MaxMs, defaultMs, _theme, defaultUnit))
+            {
+                if (dlg.ShowModal(parentForm) == DialogResult.OK && dlg.ResultValue.HasValue)
+                {
+                    onValueConfirmed(dlg.ResultValue.Value, dlg.ResultUnit);
                 }
             }
         }
@@ -529,7 +630,7 @@ namespace ModernAutoClicker.Advanced
             Form parentForm = this.FindForm();
             using (BatchTextInputDialog dlg = new BatchTextInputDialog(title, fieldLabel, defaultVal, _theme))
             {
-                if (dlg.ShowDialog(parentForm) == DialogResult.OK && dlg.ResultValue != null)
+                if (dlg.ShowModal(parentForm) == DialogResult.OK && dlg.ResultValue != null)
                 {
                     onValueConfirmed(dlg.ResultValue);
                 }
@@ -556,6 +657,17 @@ namespace ModernAutoClicker.Advanced
         }
 
         private bool _isLoading = false;
+
+        private void ShowRecordedStepDelay(MacroStep step)
+        {
+            foreach (MacroRowControl r in _rows)
+            {
+                if (!ReferenceEquals(r.Step, step)) continue;
+                r.UpdateDelayValue(step.DelayMs, step.DelayUnit);
+                if (!_isLoading && OnTableDataChanged != null) OnTableDataChanged();
+                return;
+            }
+        }
 
         public void AddStep(MacroStep step = null)
         {
@@ -740,7 +852,7 @@ namespace ModernAutoClicker.Advanced
         {
             c.MouseWheel += (s, e) =>
             {
-                if (c is NumberInput && c.Focused) return;
+                if ((c is NumberInput || c is DurationInput) && c.Focused) return;
                 if (scrollBar != null && scrollBar.Visible)
                 {
                     scrollBar.DoMouseWheel(e.Delta);
@@ -750,14 +862,6 @@ namespace ModernAutoClicker.Advanced
             {
                 HookMouseWheelRecursively(child);
             }
-        }
-
-        public void MoveRow(int srcIndex, int targetIndex)
-        {
-            if (_isEditingLocked || srcIndex < 0 || srcIndex >= _rows.Count || targetIndex < 0 || targetIndex >= _rows.Count || srcIndex == targetIndex) return;
-
-            SelectOnly(srcIndex);
-            MoveSelectedRows(targetIndex, targetIndex > srcIndex);
         }
 
         public void MoveSelectedRows(int targetIdx, bool dropBelow)
@@ -1119,28 +1223,6 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
-        public void DeleteSelectedRow()
-        {
-            if (_isEditingLocked) return;
-            List<MacroRowControl> targets = new List<MacroRowControl>();
-            foreach (MacroRowControl r in _rows)
-            {
-                if (r.IsSelected) targets.Add(r);
-            }
-
-            if (targets.Count > 0)
-            {
-                foreach (MacroRowControl r in targets)
-                {
-                    RemoveRow(r);
-                }
-            }
-            else if (_selectedIndex >= 0 && _selectedIndex < _rows.Count)
-            {
-                RemoveRow(_rows[_selectedIndex]);
-            }
-        }
-
         public void RemoveRow(MacroRowControl row)
         {
             if (_isEditingLocked) return;
@@ -1214,16 +1296,6 @@ namespace ModernAutoClicker.Advanced
             if (OnTableDataChanged != null) OnTableDataChanged();
         }
 
-        public void UpdateStepPoint(int stepIndex, bool isStart, Point newPt)
-        {
-            if (stepIndex >= 0 && stepIndex < _rows.Count)
-            {
-                if (isStart) _rows[stepIndex].Step.StartPoint = newPt;
-                else _rows[stepIndex].Step.EndPoint = newPt;
-                _rows[stepIndex].RefreshDisplay();
-            }
-        }
-
         public void UpdateStepPointOnly(int stepIndex, bool isStart, Point newPt)
         {
             if (stepIndex >= 0 && stepIndex < _rows.Count)
@@ -1231,16 +1303,6 @@ namespace ModernAutoClicker.Advanced
                 if (isStart) _rows[stepIndex].Step.StartPoint = newPt;
                 else _rows[stepIndex].Step.EndPoint = newPt;
                 _rows[stepIndex].UpdateCoordinatesOnly();
-            }
-        }
-
-        public void UpdateStepArea(int stepIndex, Point startPt, Point endPt)
-        {
-            if (stepIndex >= 0 && stepIndex < _rows.Count)
-            {
-                _rows[stepIndex].Step.StartPoint = startPt;
-                _rows[stepIndex].Step.EndPoint = endPt;
-                _rows[stepIndex].RefreshDisplay();
             }
         }
 
@@ -1374,25 +1436,6 @@ namespace ModernAutoClicker.Advanced
                     r.RefreshJumpDropdowns();
                 }
             }
-        }
-
-        public void SetDefaultWindowForAllSteps(string procName, string winTitle, IntPtr hwnd = default(IntPtr), int windowIndex = 0, uint targetPid = 0)
-        {
-            if (_rows == null || _rows.Count == 0) return;
-            bool isRel = (hwnd != IntPtr.Zero) || !string.IsNullOrEmpty(procName);
-            pnlContent.SuspendLayout();
-            try
-            {
-                foreach (var row in _rows)
-                {
-                    row.SetTargetWindowDirect(isRel, procName, winTitle, hwnd, windowIndex, targetPid);
-                }
-            }
-            finally
-            {
-                pnlContent.ResumeLayout();
-            }
-            if (OnTableDataChanged != null) OnTableDataChanged();
         }
 
         public void ClearAll()
@@ -1792,7 +1835,7 @@ namespace ModernAutoClicker.Advanced
                     focused = Control.FromHandle(hFocus);
                 }
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
 
             if (focused == null && form != null)
             {
@@ -1801,10 +1844,12 @@ namespace ModernAutoClicker.Advanced
 
             if (focused == null) return false;
 
-            // 1. Direct TextBoxBase (TextBox, ModernTextBox, RichTextBox)
-            if (focused is TextBoxBase)
+            // 1. Direct TextBoxBase (TextBox, ModernTextBox, RichTextBox); a read-only preview (Type Text) is not being typed in, so Ctrl+A selects the steps
+            TextBoxBase focusedTextBox = focused as TextBoxBase;
+            if (focusedTextBox != null)
             {
-                ((TextBoxBase)focused).SelectAll();
+                if (focusedTextBox.ReadOnly) return false;
+                focusedTextBox.SelectAll();
                 return true;
             }
 
@@ -1837,7 +1882,7 @@ namespace ModernAutoClicker.Advanced
                         return true;
                     }
                 }
-                catch { }
+                catch (Exception caught) { AppLog.Caught(caught); }
 
                 if (focused is TextBoxBase)
                 {
@@ -1864,7 +1909,7 @@ namespace ModernAutoClicker.Advanced
                     }
                 }
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
 
             return false;
         }
@@ -1882,18 +1927,13 @@ namespace ModernAutoClicker.Advanced
             return c;
         }
 
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        /// <summary>
+        /// Ctrl+A on the Asian tab, called by MainForm wherever focus is: a text box being typed in selects its own text, anything else selects every step.
+        /// </summary>
+        public void HandleSelectAllShortcut()
         {
-            if (keyData == (Keys.Control | Keys.A))
-            {
-                if (HandleTextControlSelectAll())
-                {
-                    return true;
-                }
-                SelectAll();
-                return true;
-            }
-            return base.ProcessCmdKey(ref msg, keyData);
+            if (HandleTextControlSelectAll()) return;
+            SelectAll();
         }
 
         protected override void Dispose(bool disposing)
@@ -1902,19 +1942,24 @@ namespace ModernAutoClicker.Advanced
             {
                 if (_dragFilter != null)
                 {
-                    try { Application.RemoveMessageFilter(_dragFilter); } catch { }
+                    try { Application.RemoveMessageFilter(_dragFilter); } catch (Exception caught) { AppLog.Caught(caught); }
                     _dragFilter = null;
+                }
+                if (_rowSelectFilter != null)
+                {
+                    try { Application.RemoveMessageFilter(_rowSelectFilter); } catch (Exception caught) { AppLog.Caught(caught); }
+                    _rowSelectFilter = null;
                 }
                 if (_headerToolTip != null)
                 {
-                    try { _headerToolTip.Dispose(); } catch { }
+                    try { _headerToolTip.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                     _headerToolTip = null;
                 }
                 if (_rows != null)
                 {
                     foreach (var row in _rows)
                     {
-                        try { row.Dispose(); } catch { }
+                        try { row.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                     }
                     _rows.Clear();
                 }
@@ -1922,7 +1967,7 @@ namespace ModernAutoClicker.Advanced
                 {
                     foreach (var row in _rowPool)
                     {
-                        try { row.Dispose(); } catch { }
+                        try { row.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                     }
                     _rowPool.Clear();
                 }
@@ -1931,339 +1976,135 @@ namespace ModernAutoClicker.Advanced
         }
     }
 
-    public class BatchNumberInputDialog : Form
+    public class BatchNumberInputDialog : ModernDialog
     {
         private NumberInput numInput;
-        private RoundedButton btnApply;
-        private RoundedButton btnCancel;
-        private ThemeTokens _theme;
+        private DurationInput durInput;
         public int? ResultValue { get; private set; }
+        // Unit picked in duration mode (TimeUnit); ResultValue is then in ms
+        public int ResultUnit { get; private set; }
 
-        public BatchNumberInputDialog(string title, string fieldLabel, int min, int max, int defaultVal, ThemeTokens theme)
+        /// <summary>
+        /// Pass durationUnit (a TimeUnit) to edit a duration: the value is typed in that unit, with the unit button inside the box, and ResultValue comes back in ms.
+        /// </summary>
+        public BatchNumberInputDialog(string title, string fieldLabel, int min, int max, int defaultVal, ThemeTokens theme, int durationUnit = -1)
+            : base(title, theme)
         {
-            _theme = theme ?? ThemeTokens.DarkTheme();
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.ShowInTaskbar = false;
-            this.Size = new Size(280, 166);
-            this.Text = title;
-            this.BackColor = _theme.BgPrimary;
-            this.ForeColor = _theme.TextPrimary;
-            this.DoubleBuffered = true;
-            this.KeyPreview = true;
-
-            // Custom Titlebar
-            Panel pnlHeader = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 32,
-                BackColor = _theme.BgPrimary
-            };
-            pnlHeader.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            Label lblFormTitle = new Label
-            {
-                Text = title,
-                Location = new Point(12, 0),
-                Size = new Size(this.Width - 48, 32),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                ForeColor = _theme.TextPrimary,
-                UseMnemonic = false
-            };
-            lblFormTitle.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            Button btnClose = new Button
-            {
-                Text = "✕",
-                Location = new Point(this.Width - 36, 0),
-                Size = new Size(36, 32),
-                FlatStyle = FlatStyle.Flat,
-                Font = ThemeTokens.FontSegoeSymbol(10),
-                ForeColor = _theme.TextSecondary,
-                BackColor = _theme.BgPrimary,
-                Cursor = Cursors.Hand
-            };
-            btnClose.FlatAppearance.BorderSize = 0;
-            btnClose.MouseEnter += (s, e) => { btnClose.BackColor = _theme.Danger; btnClose.ForeColor = Color.White; };
-            btnClose.MouseLeave += (s, e) => { btnClose.BackColor = _theme.BgPrimary; btnClose.ForeColor = _theme.TextSecondary; };
-            btnClose.Click += (s, e) => { ResultValue = null; this.DialogResult = DialogResult.Cancel; this.Close(); };
-
-            pnlHeader.Controls.AddRange(new Control[] { lblFormTitle, btnClose });
-
             Label lblTitle = new Label
             {
                 Text = fieldLabel,
-                Location = new Point(20, 44),
+                Location = new Point(20, 12),
                 Size = new Size(240, 20),
                 Font = ThemeTokens.FontButton(FontStyle.Bold),
-                ForeColor = _theme.AccentPrimary
+                ForeColor = Theme.AccentPrimary
             };
 
-            numInput = new NumberInput
+            TextBox valueBox;
+            if (durationUnit >= 0)
             {
-                Location = new Point(20, 68),
-                Size = new Size(240, 26),
-                Minimum = min,
-                Maximum = max,
-                AllowEmpty = true,
-                Value = defaultVal,
-                BackColor = _theme.BgTertiary,
-                ForeColor = _theme.TextPrimary,
-                Font = ThemeTokens.FontCard(FontStyle.Bold)
-            };
+                durInput = new DurationInput
+                {
+                    Location = new Point(20, 36),
+                    Size = new Size(240, 26),
+                    ShowUnitButton = true,
+                    MinimumMs = min,
+                    MaximumMs = max,
+                    Unit = durationUnit,
+                    ValueMs = defaultVal,
+                    Font = ThemeTokens.FontCard(FontStyle.Bold)
+                };
+                durInput.ApplyTheme(Theme);
+                valueBox = durInput;
+            }
+            else
+            {
+                numInput = new NumberInput
+                {
+                    Location = new Point(20, 36),
+                    Size = new Size(240, 26),
+                    Minimum = min,
+                    Maximum = max,
+                    AllowEmpty = true,
+                    Value = defaultVal,
+                    BackColor = Theme.BgTertiary,
+                    ForeColor = Theme.TextPrimary,
+                    Font = ThemeTokens.FontCard(FontStyle.Bold)
+                };
+                valueBox = numInput;
+            }
 
-            btnApply = new RoundedButton
+            Body.Controls.AddRange(new Control[] { lblTitle, valueBox });
+
+            this.AcceptButton = AddButton(Loc.DialogApplyAll, DialogResult.OK, true, () =>
             {
-                Text = Loc.IsVietnamese ? "Áp dụng" : "Apply All",
-                Location = new Point(20, 110),
-                Size = new Size(116, 28),
-                BorderRadius = _theme.RadiusMd,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.AccentPrimary,
-                HoverColor = _theme.AccentPrimaryHover,
-                ForeColor = Color.White
-            };
-            btnApply.Click += (s, e) =>
-            {
-                if (string.IsNullOrEmpty(numInput.Text.Trim()))
+                if (string.IsNullOrEmpty(valueBox.Text.Trim()))
                 {
                     ResultValue = null;
+                }
+                else if (durInput != null)
+                {
+                    ResultValue = durInput.ValueMs;
+                    ResultUnit = durInput.Unit;
                 }
                 else
                 {
                     ResultValue = numInput.Value;
                 }
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            };
+            });
+            this.CancelButton = AddButton(Loc.DialogCancel, DialogResult.Cancel, false);
 
-            btnCancel = new RoundedButton
-            {
-                Text = Loc.IsVietnamese ? "Hủy" : "Cancel",
-                Location = new Point(144, 110),
-                Size = new Size(116, 28),
-                BorderRadius = _theme.RadiusMd,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.BgElevated,
-                HoverColor = _theme.BgTertiary,
-                ForeColor = _theme.TextSecondary
-            };
-            btnCancel.Click += (s, e) =>
-            {
-                ResultValue = null;
-                this.DialogResult = DialogResult.Cancel;
-                this.Close();
-            };
-
-            this.Controls.AddRange(new Control[] { pnlHeader, lblTitle, numInput, btnApply, btnCancel });
-            this.AcceptButton = btnApply;
-            this.CancelButton = btnCancel;
+            SetBodySize(278, 74);
 
             this.Shown += (s, e) =>
             {
-                numInput.Focus();
-                numInput.SelectAll();
+                valueBox.Focus();
+                valueBox.SelectAll();
             };
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            using (Pen p = new Pen(_theme.BorderColor, 1))
-            {
-                e.Graphics.DrawRectangle(p, 0, 0, this.Width - 1, this.Height - 1);
-            }
-        }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-            if (e.KeyCode == Keys.Escape)
-            {
-                ResultValue = null;
-                this.DialogResult = DialogResult.Cancel;
-                this.Close();
-            }
         }
     }
 
-    public class BatchTextInputDialog : Form
+    public class BatchTextInputDialog : ModernDialog
     {
         private TextBox txtInput;
-        private RoundedButton btnApply;
-        private RoundedButton btnCancel;
-        private ThemeTokens _theme;
         public string ResultValue { get; private set; }
 
         public BatchTextInputDialog(string title, string fieldLabel, string defaultVal, ThemeTokens theme)
+            : base(title, theme)
         {
-            _theme = theme ?? ThemeTokens.DarkTheme();
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.ShowInTaskbar = false;
-            this.Size = new Size(320, 166);
-            this.Text = title;
-            this.BackColor = _theme.BgPrimary;
-            this.ForeColor = _theme.TextPrimary;
-            this.DoubleBuffered = true;
-            this.KeyPreview = true;
-
-            // Custom Titlebar
-            Panel pnlHeader = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 32,
-                BackColor = _theme.BgPrimary
-            };
-            pnlHeader.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            Label lblFormTitle = new Label
-            {
-                Text = title,
-                Location = new Point(12, 0),
-                Size = new Size(this.Width - 48, 32),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                ForeColor = _theme.TextPrimary,
-                UseMnemonic = false
-            };
-            lblFormTitle.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            Button btnClose = new Button
-            {
-                Text = "✕",
-                Location = new Point(this.Width - 36, 0),
-                Size = new Size(36, 32),
-                FlatStyle = FlatStyle.Flat,
-                Font = ThemeTokens.FontSegoeSymbol(10),
-                ForeColor = _theme.TextSecondary,
-                BackColor = _theme.BgPrimary,
-                Cursor = Cursors.Hand
-            };
-            btnClose.FlatAppearance.BorderSize = 0;
-            btnClose.MouseEnter += (s, e) => { btnClose.BackColor = _theme.Danger; btnClose.ForeColor = Color.White; };
-            btnClose.MouseLeave += (s, e) => { btnClose.BackColor = _theme.BgPrimary; btnClose.ForeColor = _theme.TextSecondary; };
-            btnClose.Click += (s, e) => { ResultValue = null; this.DialogResult = DialogResult.Cancel; this.Close(); };
-
-            pnlHeader.Controls.AddRange(new Control[] { lblFormTitle, btnClose });
-
             Label lblTitle = new Label
             {
                 Text = fieldLabel,
-                Location = new Point(20, 44),
+                Location = new Point(20, 12),
                 Size = new Size(280, 20),
                 Font = ThemeTokens.FontButton(FontStyle.Bold),
-                ForeColor = _theme.AccentPrimary
+                ForeColor = Theme.AccentPrimary
             };
 
             txtInput = new TextBox
             {
-                Location = new Point(20, 68),
+                Location = new Point(20, 36),
                 Size = new Size(280, 26),
                 Text = defaultVal ?? "",
-                BackColor = _theme.BgTertiary,
-                ForeColor = _theme.TextPrimary,
+                BackColor = Theme.BgTertiary,
+                ForeColor = Theme.TextPrimary,
                 Font = ThemeTokens.FontButton(FontStyle.Regular)
             };
 
-            btnApply = new RoundedButton
-            {
-                Text = Loc.IsVietnamese ? "Áp dụng" : "Apply All",
-                Location = new Point(20, 110),
-                Size = new Size(134, 28),
-                BorderRadius = _theme.RadiusMd,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.AccentPrimary,
-                HoverColor = _theme.AccentPrimaryHover,
-                ForeColor = Color.White
-            };
-            btnApply.Click += (s, e) =>
+            Body.Controls.AddRange(new Control[] { lblTitle, txtInput });
+
+            this.AcceptButton = AddButton(Loc.DialogApplyAll, DialogResult.OK, true, () =>
             {
                 ResultValue = txtInput.Text;
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            };
+            });
+            this.CancelButton = AddButton(Loc.DialogCancel, DialogResult.Cancel, false);
 
-            btnCancel = new RoundedButton
-            {
-                Text = Loc.IsVietnamese ? "Hủy" : "Cancel",
-                Location = new Point(166, 110),
-                Size = new Size(134, 28),
-                BorderRadius = _theme.RadiusMd,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.BgElevated,
-                HoverColor = _theme.BgTertiary,
-                ForeColor = _theme.TextSecondary
-            };
-            btnCancel.Click += (s, e) =>
-            {
-                ResultValue = null;
-                this.DialogResult = DialogResult.Cancel;
-                this.Close();
-            };
-
-            this.Controls.AddRange(new Control[] { pnlHeader, lblTitle, txtInput, btnApply, btnCancel });
-            this.AcceptButton = btnApply;
-            this.CancelButton = btnCancel;
+            SetBodySize(318, 74);
 
             this.Shown += (s, e) =>
             {
                 txtInput.Focus();
                 txtInput.SelectAll();
             };
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            using (Pen p = new Pen(_theme.BorderColor, 1))
-            {
-                e.Graphics.DrawRectangle(p, 0, 0, this.Width - 1, this.Height - 1);
-            }
-        }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-            if (e.KeyCode == Keys.Escape)
-            {
-                ResultValue = null;
-                this.DialogResult = DialogResult.Cancel;
-                this.Close();
-            }
         }
     }
 }

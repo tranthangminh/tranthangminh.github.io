@@ -20,7 +20,7 @@ namespace ModernAutoClicker
         {
             theme = theme ?? ThemeTokens.DarkTheme();
             this.BorderRadius = theme.RadiusMd;
-            this.BorderSize = 0;
+            this.BorderSize = 1;
             this.Size = new Size(224, 74);
 
             lblHelp1 = CreateKeyLabel("[F6]", 6, 8);
@@ -76,15 +76,16 @@ namespace ModernAutoClicker
         public void ApplyTheme(ThemeTokens t)
         {
             if (t == null) return;
-            this.BackColor = t.HotkeyBoxBg;
+            this.BackColor = t.BgSecondary;
+            this.BorderColor = t.BorderColor;
             this.BorderRadius = t.RadiusMd;
 
-            if (lblHelp1 != null) lblHelp1.ForeColor = t.HotkeyBoxText;
-            if (lblHelp2 != null) lblHelp2.ForeColor = t.HotkeyBoxText;
-            if (lblHelp3 != null) lblHelp3.ForeColor = t.HotkeyBoxText;
-            if (lblHelpVal1 != null) lblHelpVal1.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
-            if (lblHelpVal2 != null) lblHelpVal2.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
-            if (lblHelpVal3 != null) lblHelpVal3.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
+            if (lblHelp1 != null) lblHelp1.ForeColor = t.TextPrimary;
+            if (lblHelp2 != null) lblHelp2.ForeColor = t.TextPrimary;
+            if (lblHelp3 != null) lblHelp3.ForeColor = t.TextPrimary;
+            if (lblHelpVal1 != null) lblHelpVal1.ForeColor = t.TextSecondary;
+            if (lblHelpVal2 != null) lblHelpVal2.ForeColor = t.TextSecondary;
+            if (lblHelpVal3 != null) lblHelpVal3.ForeColor = t.TextSecondary;
 
             this.Invalidate();
         }

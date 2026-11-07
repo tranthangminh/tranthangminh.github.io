@@ -112,7 +112,7 @@ namespace MaxApp.Common
             };
             linkFb.LinkClicked += (s, e) =>
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://fb.me/maxiechen") { UseShellExecute = true }); } catch { }
+                ExternalLink.Open("https://fb.me/maxiechen", this);
             };
 
             lblWebTitle = new Label
@@ -134,7 +134,7 @@ namespace MaxApp.Common
             };
             linkWeb.LinkClicked += (s, e) =>
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://tranthangminh.github.io/products.html?lang=en") { UseShellExecute = true }); } catch { }
+                ExternalLink.Open("https://tranthangminh.github.io/products.html?lang=en", this);
             };
 
             lblSupportTitle = new Label
@@ -156,7 +156,7 @@ namespace MaxApp.Common
             };
             linkSupport.LinkClicked += (s, e) =>
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://ko-fi.com/maxiechen96") { UseShellExecute = true }); } catch { }
+                ExternalLink.Open("https://ko-fi.com/maxiechen96", this);
             };
 
             picLogo = new Panel
@@ -167,7 +167,7 @@ namespace MaxApp.Common
             };
             picLogo.Paint += (s, e) =>
             {
-                Color accent = (_theme != null) ? _theme.AccentPrimary : Color.FromArgb(100, 102, 233);
+                Color accent = (_theme ?? ThemeTokens.Current).AccentPrimary;
                 using (Bitmap bmp = SvgFileRenderer.RenderLogoFromFile(150, 150, accent))
                 {
                     if (bmp != null) e.Graphics.DrawImage(bmp, 0, 0);

@@ -255,7 +255,7 @@ namespace MaxApp.Common
                                 if (found) break;
                             }
                         }
-                        catch { }
+                        catch (Exception caught) { AppLog.Caught(caught); }
                     }
                 }
 
@@ -275,7 +275,7 @@ namespace MaxApp.Common
                     return d;
                 }
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
 
             return null;
         }
@@ -298,7 +298,7 @@ namespace MaxApp.Common
                 if (_cachedSunIcon == null)
                 {
                     // Sun icon for switching to Light Mode
-                    _cachedSunIcon = RenderSvg("light-mode.svg", size, size, Color.FromArgb(243, 176, 78));
+                    _cachedSunIcon = RenderSvg(CommonIcons.LightMode, size, size, Color.FromArgb(243, 176, 78));
                 }
                 return _cachedSunIcon;
             }
@@ -307,7 +307,7 @@ namespace MaxApp.Common
                 if (_cachedMoonIcon == null)
                 {
                     // Moon icon for switching to Dark Mode
-                    _cachedMoonIcon = RenderSvg("dark-mode.svg", size, size, Color.FromArgb(235, 160, 40));
+                    _cachedMoonIcon = RenderSvg(CommonIcons.DarkMode, size, size, Color.FromArgb(235, 160, 40));
                 }
                 return _cachedMoonIcon;
             }
@@ -322,7 +322,7 @@ namespace MaxApp.Common
             Image img;
             if (!_langIconCache.TryGetValue(key, out img) || img == null)
             {
-                string svgFile = isVietnamese ? "lang-VN.svg" : "lang-EN.svg";
+                string svgFile = isVietnamese ? CommonIcons.LangVn : CommonIcons.LangEn;
                 img = RenderSvg(svgFile, size, size, null, true);
                 if (img != null)
                 {
@@ -349,7 +349,7 @@ namespace MaxApp.Common
                         ico = Icon.ExtractAssociatedIcon(exePath);
                     }
                 }
-                catch { }
+                catch (Exception caught) { AppLog.Caught(caught); }
 
                 if (ico != null)
                 {
@@ -358,7 +358,7 @@ namespace MaxApp.Common
                     {
                         if (_cachedAppIconImage != null)
                         {
-                            try { _cachedAppIconImage.Dispose(); } catch { }
+                            try { _cachedAppIconImage.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                             _cachedAppIconImage = null;
                         }
                         _cachedAppIconImage = new Bitmap(raw, new Size(size, size));
@@ -367,15 +367,15 @@ namespace MaxApp.Common
                     }
                 }
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
 
             return null;
         }
 
         public static Bitmap RenderLogoFromFile(int targetWidth, int targetHeight, Color? tintColor = null)
         {
-            // Max Logo in Info tab: uses logo-MAX.svg
-            Bitmap bmp = RenderSvg("logo-MAX.svg", targetWidth, targetHeight, tintColor);
+            // Max Logo in Info tab
+            Bitmap bmp = RenderSvg(CommonIcons.LogoMax, targetWidth, targetHeight, tintColor);
             if (bmp != null) return bmp;
 
             return null;

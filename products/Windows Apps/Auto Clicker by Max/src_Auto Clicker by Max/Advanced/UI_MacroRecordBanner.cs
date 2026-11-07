@@ -116,9 +116,9 @@ namespace ModernAutoClicker.Advanced
 
             int radius = 8;
 
-            // 1. Fill Background (Keep dark BgSecondary, no gray background on hover to preserve text readability)
+            // 1. Fill Background: a red tint while recording (pulsing), derived from the theme so it also works in light mode
             Color bgColor = isRec
-                ? (_isPulsing ? Color.FromArgb(45, 20, 20) : Color.FromArgb(35, 16, 16))
+                ? Blend(t.BgSecondary, t.Danger, _isPulsing ? 0.22 : 0.12)
                 : t.BgSecondary;
 
             using (GraphicsPath path = GetRoundedRectangle(rect, radius))
@@ -127,23 +127,17 @@ namespace ModernAutoClicker.Advanced
                 g.FillPath(bgBrush, path);
             }
 
-            // 2. Draw Dashed Line Border (Styled like Image 1)
-            Color borderColor;
-            if (isRec)
-            {
-                borderColor = _isPulsing ? t.Danger : Color.FromArgb(180, 50, 50);
-            }
-            else
-            {
-                borderColor = _isHovered ? t.AccentPrimary : t.BorderColor;
-            }
-
+            // 2. Border: dashed "drop zone" style when idle, solid red while recording so the state reads at a glance
+            Color borderColor = isRec ? t.Danger : (_isHovered ? t.Danger : t.BorderColor);
             using (GraphicsPath path = GetRoundedRectangle(rect, radius))
-            using (Pen dashPen = new Pen(borderColor, 1.5f))
+            using (Pen borderPen = new Pen(borderColor, isRec ? 2f : 1.5f))
             {
-                dashPen.DashStyle = DashStyle.Custom;
-                dashPen.DashPattern = new float[] { 5, 4 };
-                g.DrawPath(dashPen, path);
+                if (!isRec)
+                {
+                    borderPen.DashStyle = DashStyle.Custom;
+                    borderPen.DashPattern = new float[] { 5, 4 };
+                }
+                g.DrawPath(borderPen, path);
             }
 
             // 3. Layout Icon, Text, and Pill Badge
@@ -166,9 +160,8 @@ namespace ModernAutoClicker.Advanced
             }
             else
             {
-                // Idle red circle
-                Color dotColor = _isHovered ? t.Danger : Color.FromArgb(180, 239, 68, 68);
-                using (SolidBrush dotBrush = new SolidBrush(dotColor))
+                // Idle: solid red record dot
+                using (SolidBrush dotBrush = new SolidBrush(t.Danger))
                 {
                     g.FillEllipse(dotBrush, iconX + 2, iconY + 2, iconSize - 4, iconSize - 4);
                 }
@@ -176,7 +169,7 @@ namespace ModernAutoClicker.Advanced
 
             // Text section
             int textX = iconX + iconSize + 14;
-            int rightBadgeW = 120;
+            int rightBadgeW = 136;
             int maxTextW = rect.Width - (textX - rect.Left) - rightBadgeW - 10;
 
             using (Font titleFont = ThemeTokens.FontBase(FontStyle.Bold))
@@ -189,24 +182,16 @@ namespace ModernAutoClicker.Advanced
 
                 if (isRec)
                 {
-                    titleText = Loc.IsVietnamese
-                        ? string.Format("ĐANG GHI HÀNH ĐỘNG... ({0} bước đã ghi)", count)
-                        : string.Format("RECORDING ACTIVE... ({0} actions captured)", count);
+                    titleText = Loc.RecordActiveTitle(count);
                     titleColor = t.Danger;
-                    subText = Loc.IsVietnamese
-                        ? "Bấm [F6] hoặc click vào khung này để Dừng ghi"
-                        : "Press [F6] or click anywhere in this box to Stop Recording";
+                    subText = Loc.RecordActiveSub;
                     subColor = t.TextPrimary;
                 }
                 else
                 {
-                    titleText = Loc.IsVietnamese
-                        ? "Nhấn vào đây để ghi lại thao tác người dùng"
-                        : "Click to Record User Actions";
-                    titleColor = _isHovered ? t.AccentPrimary : t.TextPrimary;
-                    subText = Loc.IsVietnamese
-                        ? "Tự động ghi: Chuột, Double Click, Kéo thả, Phím, Nhập văn bản, Phím + Chuột"
-                        : "Auto-captures: Clicks, Double Click, Drag & Drop, Keys, Type Text, Press & Click";
+                    titleText = Loc.RecordIdleTitle;
+                    titleColor = t.TextPrimary;
+                    subText = Loc.RecordIdleSub;
                     subColor = t.TextTertiary;
                 }
 
@@ -223,15 +208,16 @@ namespace ModernAutoClicker.Advanced
             }
 
             // 4. Right Side Pill Badge (Styled exactly like Image 1)
-            int badgeW = 114;
+            int badgeW = 124;
             int badgeH = 30;
             int badgeX = rect.Right - badgeW - 14;
             int badgeY = rect.Top + (rect.Height - badgeH) / 2;
             Rectangle badgeRect = new Rectangle(badgeX, badgeY, badgeW, badgeH);
 
-            Color pillBg = isRec ? t.Danger : (_isHovered ? t.AccentPrimary : t.BgElevated);
+            // The button is always red so it reads as "record"; hover deepens it
+            Color pillBg = (_isHovered || isRec) ? t.CRed : t.Danger;
             Color pillFg = Color.White;
-            string pillText = isRec ? (Loc.IsVietnamese ? "Dừng (F6)" : "Stop (F6)") : (Loc.IsVietnamese ? "Ghi lại" : "Record");
+            string pillText = isRec ? Loc.RecordActiveButton : Loc.RecordIdleButton;
 
             using (GraphicsPath pillPath = GetRoundedRectangle(badgeRect, 6))
             using (SolidBrush pillBrush = new SolidBrush(pillBg))
@@ -262,6 +248,14 @@ namespace ModernAutoClicker.Advanced
 
                 g.DrawString(pillText, badgeFont, textBrush, startX + iconD + 8, contentY);
             }
+        }
+
+        private static Color Blend(Color baseColor, Color tint, double amount)
+        {
+            return Color.FromArgb(
+                (int)(baseColor.R + (tint.R - baseColor.R) * amount),
+                (int)(baseColor.G + (tint.G - baseColor.G) * amount),
+                (int)(baseColor.B + (tint.B - baseColor.B) * amount));
         }
 
         private static GraphicsPath GetRoundedRectangle(Rectangle bounds, int radius)

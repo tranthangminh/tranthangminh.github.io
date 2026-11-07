@@ -44,7 +44,7 @@ namespace ModernAutoClicker
                             oldProc.WaitForExit(3000);
                         }
                     }
-                    catch { }
+                    catch (Exception) { /* The old instance has already exited: nothing to wait for */ }
                 }
             }
 
@@ -66,7 +66,7 @@ namespace ModernAutoClicker
                 {
                     if (waitForPid > 0 && mutex != null)
                     {
-                        try { createdNew = mutex.WaitOne(2000); } catch { }
+                        try { createdNew = mutex.WaitOne(2000); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                     }
 
                     if (!createdNew)
@@ -111,7 +111,7 @@ namespace ModernAutoClicker
                 }
                 catch
                 {
-                    try { SetProcessDPIAware(); } catch { }
+                    try { SetProcessDPIAware(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                 }
 
                 Application.EnableVisualStyles();
@@ -132,42 +132,16 @@ namespace ModernAutoClicker
                 {
                     if (createdNew)
                     {
-                        try { mutex.ReleaseMutex(); } catch { }
+                        try { mutex.ReleaseMutex(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                     }
-                    try { mutex.Dispose(); } catch { }
+                    try { mutex.Dispose(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                 }
-            }
-        }
-
-        private static void SafeLogException(string context, Exception ex)
-        {
-            try
-            {
-                string logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "error.log");
-                string logText = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] [{1}] {2}\r\n\r\n",
-                    DateTime.Now, context, ex != null ? ex.ToString() : "Unknown exception");
-                System.IO.File.AppendAllText(logPath, logText, System.Text.Encoding.UTF8);
-            }
-            catch
-            {
-                // Directory might be write-protected (e.g. Program Files); fallback safely to LocalAppData
-                try
-                {
-                    string fallbackDir = System.IO.Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AutoClickerByMax");
-                    if (!System.IO.Directory.Exists(fallbackDir)) System.IO.Directory.CreateDirectory(fallbackDir);
-                    string fallbackPath = System.IO.Path.Combine(fallbackDir, "error.log");
-                    string logText = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] [{1}] {2}\r\n\r\n",
-                        DateTime.Now, context, ex != null ? ex.ToString() : "Unknown exception");
-                    System.IO.File.AppendAllText(fallbackPath, logText, System.Text.Encoding.UTF8);
-                }
-                catch { }
             }
         }
 
         private static void ShowErrorDialog(string context, Exception ex)
         {
-            SafeLogException(context, ex);
+            MaxApp.Common.AppLog.Error(context, ex);
             string errorSummary = ex != null ? ex.Message : "Unknown application error.";
             string msg = string.Format(
                 "An unexpected application error occurred:\n\n{0}\n\nTechnical details have been saved to error.log.\nIf this issue persists, please report it to the author (Trần Thắng Minh).",
@@ -176,7 +150,7 @@ namespace ModernAutoClicker
             {
                 MessageBox.Show(msg, "Auto Clicker by Max - Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            catch { }
+            catch (Exception) { /* Already written to the log, and there is no other way left to tell the user */ }
         }
     }
 }

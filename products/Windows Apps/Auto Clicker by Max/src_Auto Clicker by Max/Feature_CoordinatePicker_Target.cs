@@ -1,4 +1,4 @@
-﻿using MaxApp.Common;
+using MaxApp.Common;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -183,7 +183,7 @@ namespace ModernAutoClicker
 
             if (hWnd != IntPtr.Zero)
             {
-                uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+                uint myPid = NativeMethods.CurrentProcessId;
                 uint pid;
                 NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
                 if (pid != myPid && pid != 0)
@@ -194,7 +194,7 @@ namespace ModernAutoClicker
                         var p = System.Diagnostics.Process.GetProcessById((int)pid);
                         pName = p.ProcessName;
                     }
-                    catch { }
+                    catch (Exception) { /* The process ended or cannot be opened: the name stays empty */ }
 
                     int len = NativeMethods.GetWindowTextLength(hWnd);
                     string title = "";
@@ -314,7 +314,7 @@ namespace ModernAutoClicker
 
             if (hWnd != IntPtr.Zero)
             {
-                uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+                uint myPid = NativeMethods.CurrentProcessId;
                 uint pid;
                 NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
                 if (pid != myPid && pid != 0)
@@ -325,7 +325,7 @@ namespace ModernAutoClicker
                         var p = System.Diagnostics.Process.GetProcessById((int)pid);
                         pName = p.ProcessName;
                     }
-                    catch { }
+                    catch (Exception) { /* The process ended or cannot be opened: the name stays empty */ }
 
                     int len = NativeMethods.GetWindowTextLength(hWnd);
                     string title = "";

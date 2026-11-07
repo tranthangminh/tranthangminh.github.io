@@ -16,22 +16,12 @@ namespace ModernAutoClicker.SpecialApps
         static SpecialAppRegistry()
         {
             // Register built-in adapters in priority order
+            _adapters.Add(new TaskbarAdapter());
             _adapters.Add(new BlueStacksAdapter());
             _adapters.Add(new GooglePlayGamesAdapter());
             _adapters.Add(new ChromiumBrowserAdapter());
             _adapters.Add(new DesktopAdapter());
             _adapters.Add(new WindowsExplorerAdapter());
-        }
-
-        /// <summary>
-        /// Registers a new adapter dynamically.
-        /// </summary>
-        public static void RegisterAdapter(ISpecialAppAdapter adapter)
-        {
-            if (adapter != null && !_adapters.Contains(adapter))
-            {
-                _adapters.Add(adapter);
-            }
         }
 
         /// <summary>
@@ -75,18 +65,7 @@ namespace ModernAutoClicker.SpecialApps
 
             uint pid;
             NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
-            string proc = "";
-            if (pid != 0)
-            {
-                try
-                {
-                    using (var p = System.Diagnostics.Process.GetProcessById((int)pid))
-                    {
-                        proc = p.ProcessName;
-                    }
-                }
-                catch { }
-            }
+            string proc = NativeMethods.GetProcessNameCached(hWnd, pid) ?? "";
 
             ISpecialAppAdapter directAdapter = FindAdapter(proc, title, cls);
             if (directAdapter != null) return directAdapter;

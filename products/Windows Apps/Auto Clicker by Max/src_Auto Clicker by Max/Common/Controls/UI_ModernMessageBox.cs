@@ -1,173 +1,63 @@
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace MaxApp.Common
 {
     /// <summary>
-    /// Modern dark/light themed modal message dialog.
-    /// Replaces the legacy Win32 MessageBox with a sleek, rounded, flat dialog.
+    /// Modern dark/light themed message dialog on the shared popup frame.
+    /// Replaces the legacy Win32 MessageBox.
     /// </summary>
-    public class ModernMessageBox : Form
+    public class ModernMessageBox : ModernDialog
     {
-        private ThemeTokens _theme;
-        private Label _lblMessage;
-        private Label _lblTitle;
-        private Panel _pnlHeader;
-        private Button _btnClose;
-        private FlowLayoutPanel _pnlButtons;
-        private MessageBoxIcon _iconType;
+        private const int DialogWidth = 380;
+        private const int MaxBodyHeight = 420;
+        private const int TopPad = 16;
+        private const int BottomPad = 16;
+        private const int IconSize = 24;
+        private const int InfoIconSize = 20;
+        private const int IconLeft = 16;
+        private const int TextLeftWithIcon = 52;
+        private const int TextLeftNoIcon = 20;
+        private const int TextRightPad = 20;
 
-        private ModernMessageBox(string message, string title, MessageBoxButtons buttons, MessageBoxIcon icon, ThemeTokens theme)
+        private readonly MessageBoxIcon _iconType;
+
+        private ModernMessageBox(string message, string title, MessageBoxButtons buttons, MessageBoxIcon icon)
+            : base(title)
         {
-            _theme = theme ?? ThemeTokens.Current ?? ThemeTokens.DarkTheme();
             _iconType = icon;
 
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.ShowInTaskbar = false;
-            this.DoubleBuffered = true;
-            this.KeyPreview = true;
-            this.BackColor = _theme.BgSecondary;
-            this.ForeColor = _theme.TextPrimary;
+            int textLeft = (icon != MessageBoxIcon.None) ? TextLeftWithIcon : TextLeftNoIcon;
+            int textWidth = DialogWidth - textLeft - TextRightPad;
+            Font font = ThemeTokens.FontBase(FontStyle.Regular);
+            int textHeight = TextRenderer.MeasureText(message, font, new Size(textWidth, 0), TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix).Height;
 
-            InitializeDialog(message, title, buttons);
-        }
-
-        public static DialogResult Show(string message, string title = null, MessageBoxButtons buttons = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.None, Form owner = null)
-        {
-            if (string.IsNullOrEmpty(title))
-            {
-                title = AppInfo.AppName;
-            }
-
-            ThemeTokens t = ThemeTokens.Current ?? ThemeTokens.DarkTheme();
-            using (ModernMessageBox dlg = new ModernMessageBox(message, title, buttons, icon, t))
-            {
-                if (owner != null && owner.IsHandleCreated)
-                {
-                    return dlg.ShowDialog(owner);
-                }
-                else
-                {
-                    dlg.StartPosition = FormStartPosition.CenterScreen;
-                    return dlg.ShowDialog();
-                }
-            }
-        }
-
-        private void InitializeDialog(string message, string title, MessageBoxButtons buttons)
-        {
-            int baseWidth = 380;
-            int baseHeight = 160;
-
-            // Header Panel
-            _pnlHeader = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 32,
-                BackColor = _theme.BgPrimary
-            };
-            _pnlHeader.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            _lblTitle = new Label
-            {
-                Text = title,
-                Location = new Point(12, 0),
-                Size = new Size(baseWidth - 50, 32),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                ForeColor = _theme.TextPrimary,
-                UseMnemonic = false
-            };
-            _lblTitle.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            _btnClose = new Button
-            {
-                Text = "✕",
-                Location = new Point(baseWidth - 32, 0),
-                Size = new Size(32, 32),
-                FlatStyle = FlatStyle.Flat,
-                Font = ThemeTokens.FontSmall(FontStyle.Regular),
-                ForeColor = _theme.TextSecondary,
-                Cursor = Cursors.Hand
-            };
-            _btnClose.FlatAppearance.BorderSize = 0;
-            _btnClose.MouseEnter += (s, e) => { _btnClose.BackColor = _theme.Danger; _btnClose.ForeColor = Color.White; };
-            _btnClose.MouseLeave += (s, e) => { _btnClose.BackColor = Color.Transparent; _btnClose.ForeColor = _theme.TextSecondary; };
-            _btnClose.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
-
-            _pnlHeader.Controls.Add(_lblTitle);
-            _pnlHeader.Controls.Add(_btnClose);
-
-            // Message label
-            int iconOffset = (_iconType != MessageBoxIcon.None) ? 52 : 20;
-            int textWidth = baseWidth - iconOffset - 20;
-
-            _lblMessage = new Label
+            Body.Controls.Add(new Label
             {
                 Text = message,
-                Location = new Point(iconOffset, 48),
-                Size = new Size(textWidth, 60),
-                Font = ThemeTokens.FontBase(FontStyle.Regular),
-                ForeColor = _theme.TextPrimary,
+                Location = new Point(textLeft, TopPad),
+                Size = new Size(textWidth, textHeight),
+                Font = font,
+                ForeColor = Theme.TextPrimary,
                 UseMnemonic = false
-            };
-
-            using (Graphics g = this.CreateGraphics())
-            {
-                SizeF size = g.MeasureString(message, _lblMessage.Font, textWidth);
-                int measuredH = (int)Math.Ceiling(size.Height) + 10;
-                if (measuredH > 60)
-                {
-                    _lblMessage.Height = measuredH;
-                    baseHeight += (measuredH - 60);
-                }
-            }
-
-            // Button container
-            _pnlButtons = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Bottom,
-                Height = 46,
-                FlowDirection = FlowDirection.RightToLeft,
-                Padding = new Padding(12, 6, 12, 6),
-                BackColor = _theme.BgPrimary
-            };
+            });
+            Body.Paint += (s, e) => DrawIconBadge(e.Graphics);
 
             AddButtons(buttons);
+            SetBodySize(DialogWidth, TopPad + Math.Max(textHeight, IconSize) + BottomPad, MaxBodyHeight);
+        }
 
-            this.ClientSize = new Size(baseWidth, baseHeight);
-            _lblTitle.Width = this.ClientSize.Width - 40;
-            _btnClose.Location = new Point(this.ClientSize.Width - 32, 0);
+        /// <summary>Owner is the window to lock: a form, or any control on it.</summary>
+        public static DialogResult Show(string message, string title = null, MessageBoxButtons buttons = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.None, IWin32Window owner = null)
+        {
+            Control ownerControl = owner as Control;
+            Form ownerForm = ownerControl != null ? ownerControl.FindForm() : null;
 
-            this.Controls.Add(_lblMessage);
-            this.Controls.Add(_pnlHeader);
-            this.Controls.Add(_pnlButtons);
-
-            this.KeyDown += (s, e) =>
+            using (ModernMessageBox dialog = new ModernMessageBox(message, string.IsNullOrEmpty(title) ? AppInfo.AppName : title, buttons, icon))
             {
-                if (e.KeyCode == Keys.Escape)
-                {
-                    this.DialogResult = DialogResult.Cancel;
-                    this.Close();
-                }
-            };
+                return dialog.ShowModal(ownerForm != null && ownerForm.IsHandleCreated ? ownerForm : null);
+            }
         }
 
         private void AddButtons(MessageBoxButtons buttons)
@@ -175,107 +65,65 @@ namespace MaxApp.Common
             switch (buttons)
             {
                 case MessageBoxButtons.OK:
-                    CreateDialogButton(Loc.Common_Ok, DialogResult.OK, true);
+                    this.AcceptButton = AddButton(Loc.Common_Ok, DialogResult.OK, true);
+                    this.CancelButton = this.AcceptButton;
                     break;
                 case MessageBoxButtons.OKCancel:
-                    CreateDialogButton(Loc.Common_Cancel, DialogResult.Cancel, false);
-                    CreateDialogButton(Loc.Common_Ok, DialogResult.OK, true);
+                    this.AcceptButton = AddButton(Loc.Common_Ok, DialogResult.OK, true);
+                    this.CancelButton = AddButton(Loc.Common_Cancel, DialogResult.Cancel, false);
                     break;
                 case MessageBoxButtons.YesNo:
-                    CreateDialogButton(Loc.Common_No, DialogResult.No, false);
-                    CreateDialogButton(Loc.Common_Yes, DialogResult.Yes, true);
+                    this.AcceptButton = AddButton(Loc.Common_Yes, DialogResult.Yes, true);
+                    this.CancelButton = AddButton(Loc.Common_No, DialogResult.No, false);
                     break;
                 case MessageBoxButtons.YesNoCancel:
-                    CreateDialogButton(Loc.Common_Cancel, DialogResult.Cancel, false);
-                    CreateDialogButton(Loc.Common_No, DialogResult.No, false);
-                    CreateDialogButton(Loc.Common_Yes, DialogResult.Yes, true);
+                    this.AcceptButton = AddButton(Loc.Common_Yes, DialogResult.Yes, true);
+                    AddButton(Loc.Common_No, DialogResult.No, false);
+                    this.CancelButton = AddButton(Loc.Common_Cancel, DialogResult.Cancel, false);
                     break;
             }
         }
 
-        private void CreateDialogButton(string text, DialogResult result, bool isPrimary)
+        private void DrawIconBadge(Graphics g)
         {
-            RoundedButton btn = new RoundedButton
-            {
-                Text = text,
-                Size = new Size(84, 30),
-                BorderRadius = _theme.RadiusSm,
-                Font = ThemeTokens.FontSmall(FontStyle.Bold),
-                Cursor = Cursors.Hand,
-                Margin = new Padding(6, 0, 0, 0)
-            };
+            if (_iconType == MessageBoxIcon.None) return;
 
-            if (isPrimary)
-            {
-                btn.NormalColor = _theme.AccentPrimary;
-                btn.HoverColor = _theme.AccentPrimaryHover;
-                btn.ForeColor = Color.White;
-            }
-            else
-            {
-                btn.NormalColor = _theme.BgTertiary;
-                btn.HoverColor = _theme.BgElevated;
-                btn.ForeColor = _theme.TextPrimary;
-                btn.BorderColor = _theme.BorderColor;
-                btn.BorderWidth = 1;
-            }
-
-            btn.Click += (s, e) =>
-            {
-                this.DialogResult = result;
-                this.Close();
-            };
-
-            _pnlButtons.Controls.Add(btn);
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            Graphics g = e.Graphics;
             GraphicsHelper.ApplyHighQuality(g);
 
-            // Outer border
-            using (Pen p = new Pen(_theme.BorderColor, 1f))
+            // The font's info sign renders as a tiny dot and stroke, so this one comes from the shared icon set
+            if (_iconType == MessageBoxIcon.Information)
             {
-                g.DrawRectangle(p, 0, 0, this.Width - 1, this.Height - 1);
+                Image info = SvgFileRenderer.GetCachedTintedIcon(CommonIcons.Info, InfoIconSize, InfoIconSize, Theme.AccentPrimary);
+                if (info != null)
+                {
+                    int offset = (IconSize - InfoIconSize) / 2;
+                    g.DrawImage(info, IconLeft + offset, TopPad + offset, InfoIconSize, InfoIconSize);
+                }
+                return;
             }
 
-            // Icon
-            if (_iconType != MessageBoxIcon.None)
-            {
-                DrawIconBadge(g, new Rectangle(16, 48, 24, 24));
-            }
-        }
-
-        private void DrawIconBadge(Graphics g, Rectangle rect)
-        {
-            Color iconColor = _theme.AccentPrimary;
-            string symbol = "ℹ";
+            Color iconColor = Theme.AccentPrimary;
+            string symbol = "";
 
             switch (_iconType)
             {
-                case MessageBoxIcon.Information:
-                    iconColor = _theme.AccentPrimary;
-                    symbol = "ℹ";
-                    break;
                 case MessageBoxIcon.Warning:
-                    iconColor = _theme.CYellow;
+                    iconColor = Theme.CYellow;
                     symbol = "⚠";
                     break;
                 case MessageBoxIcon.Error:
-                    iconColor = _theme.Danger;
+                    iconColor = Theme.Danger;
                     symbol = "✕";
                     break;
                 case MessageBoxIcon.Question:
-                    iconColor = _theme.AccentSecondary;
+                    iconColor = Theme.AccentSecondary;
                     symbol = "?";
                     break;
             }
 
             using (Font symFont = ThemeTokens.FontSegoeSymbol(14f, FontStyle.Bold))
             {
-                TextRenderer.DrawText(g, symbol, symFont, rect, iconColor,
+                TextRenderer.DrawText(g, symbol, symFont, new Rectangle(IconLeft, TopPad, IconSize, IconSize), iconColor,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
             }
         }

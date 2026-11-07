@@ -7,17 +7,12 @@ using System.Windows.Forms;
 
 namespace ModernAutoClicker.Advanced
 {
-    public class ModernImageDialog : Form
+    public class ModernImageDialog : ModernDialog
     {
         private Bitmap _currentBitmap;
         private Bitmap _initialBitmap;
         private int _similarity;
         private bool _isChanged = false;
-        private ThemeTokens _theme;
-
-        private Panel pnlHeader;
-        private Label lblHeaderTitle;
-        private Button btnHeaderClose;
 
         private Panel pnlPreview;
         private Label lblDimensions;
@@ -27,108 +22,29 @@ namespace ModernAutoClicker.Advanced
         private RoundedButton btnClear;
         private Label lblSim;
         private NumberInput numSimilarity;
-        private RoundedButton btnApply;
-        private RoundedButton btnCancel;
 
         public Bitmap SelectedBitmap { get { return _currentBitmap; } }
         public int Similarity { get { return _similarity; } }
         public bool ImageChanged { get { return _isChanged; } }
 
         public ModernImageDialog(Bitmap initialBitmap, int initialSimilarity, ThemeTokens theme)
+            : base(Loc.ImageDialogTitle, theme)
         {
             _initialBitmap = initialBitmap;
             _currentBitmap = initialBitmap != null ? new Bitmap(initialBitmap) : null;
             _similarity = Math.Max(50, Math.Min(100, initialSimilarity > 0 ? initialSimilarity : 90));
-            _theme = theme ?? ThemeTokens.DarkTheme();
 
             InitializeComponent();
         }
 
         private void InitializeComponent()
         {
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.ShowInTaskbar = false;
-            this.Size = new Size(414, 286);
-            this.Text = Loc.IsVietnamese ? "Tùy chọn Hình ảnh Mẫu" : "Template Image Options";
-            this.BackColor = _theme.BgPrimary;
-            this.ForeColor = _theme.TextPrimary;
-            this.DoubleBuffered = true;
-            this.KeyPreview = true;
-
-            // 0. Custom Dark Titlebar
-            pnlHeader = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 32,
-                BackColor = _theme.BgPrimary
-            };
-            pnlHeader.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            lblHeaderTitle = new Label
-            {
-                Text = Loc.IsVietnamese ? "Tùy chọn Hình ảnh Mẫu" : "Template Image Options",
-                Location = new Point(12, 0),
-                Size = new Size(this.Width - 48, 32),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                ForeColor = _theme.TextPrimary,
-                UseMnemonic = false
-            };
-            lblHeaderTitle.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            btnHeaderClose = new Button
-            {
-                Text = "✕",
-                Location = new Point(this.Width - 36, 0),
-                Size = new Size(36, 32),
-                FlatStyle = FlatStyle.Flat,
-                Font = ThemeTokens.FontSegoeSymbol(10),
-                ForeColor = _theme.TextSecondary,
-                BackColor = _theme.BgPrimary,
-                Cursor = Cursors.Hand
-            };
-            btnHeaderClose.FlatAppearance.BorderSize = 0;
-            btnHeaderClose.MouseEnter += (s, e) =>
-            {
-                btnHeaderClose.BackColor = _theme.Danger;
-                btnHeaderClose.ForeColor = Color.White;
-            };
-            btnHeaderClose.MouseLeave += (s, e) =>
-            {
-                btnHeaderClose.BackColor = _theme.BgPrimary;
-                btnHeaderClose.ForeColor = _theme.TextSecondary;
-            };
-            btnHeaderClose.Click += (s, e) =>
-            {
-                this.DialogResult = DialogResult.Cancel;
-                this.Close();
-            };
-
-            pnlHeader.Controls.AddRange(new Control[] { lblHeaderTitle, btnHeaderClose });
-
             // 1. Image Preview Panel (Left Top)
             pnlPreview = new Panel
             {
-                Location = new Point(16, 44),
+                Location = new Point(16, 12),
                 Size = new Size(180, 126),
-                BackColor = _theme.BgSecondary,
+                BackColor = Theme.BgPrimary,
                 Cursor = Cursors.Hand
             };
             pnlPreview.Paint += (s, e) =>
@@ -147,21 +63,21 @@ namespace ModernAutoClicker.Advanced
 
                     g.DrawImage(_currentBitmap, dx, dy, dw, dh);
 
-                    using (Pen borderPen = new Pen(_theme.CPurple, 1.5f))
+                    using (Pen borderPen = new Pen(Theme.CPurple, 1.5f))
                     {
                         g.DrawRectangle(borderPen, dx - 1, dy - 1, dw + 1, dh + 1);
                     }
                 }
                 else
                 {
-                    using (Pen dashedPen = new Pen(_theme.TextTertiary, 1))
+                    using (Pen dashedPen = new Pen(Theme.TextTertiary, 1))
                     {
                         dashedPen.DashStyle = DashStyle.Dash;
                         g.DrawRectangle(dashedPen, 2, 2, pnlPreview.Width - 5, pnlPreview.Height - 5);
                     }
                     
                     // Clean vector camera icon (no unicode/emoji dependency)
-                    using (Pen iconPen = new Pen(_theme.TextTertiary, 1.5f))
+                    using (Pen iconPen = new Pen(Theme.TextTertiary, 1.5f))
                     {
                         int icW = 32;
                         int icH = 20;
@@ -169,16 +85,16 @@ namespace ModernAutoClicker.Advanced
                         int icY = 34;
                         g.DrawRectangle(iconPen, icX, icY, icW, icH);
                         g.DrawEllipse(iconPen, icX + 9, icY + 3, 14, 14);
-                        using (SolidBrush topBrush = new SolidBrush(_theme.TextTertiary))
+                        using (SolidBrush topBrush = new SolidBrush(Theme.TextTertiary))
                         {
                             g.FillRectangle(topBrush, icX + 5, icY - 3, 7, 3);
                         }
                     }
 
                     using (Font textFont = ThemeTokens.FontBase(FontStyle.Regular))
-                    using (SolidBrush textBrush = new SolidBrush(_theme.TextTertiary))
+                    using (SolidBrush textBrush = new SolidBrush(Theme.TextTertiary))
                     {
-                        string msg = Loc.IsVietnamese ? "Chưa có hình ảnh" : "No image selected";
+                        string msg = Loc.ImageNone;
                         SizeF sz = g.MeasureString(msg, textFont);
                         g.DrawString(msg, textFont, textBrush, (pnlPreview.Width - sz.Width) / 2, 68);
                     }
@@ -189,10 +105,10 @@ namespace ModernAutoClicker.Advanced
             // 2. Dimensions info under preview
             lblDimensions = new Label
             {
-                Location = new Point(16, 174),
+                Location = new Point(16, 142),
                 Size = new Size(180, 18),
                 Font = ThemeTokens.FontBase(FontStyle.Regular),
-                ForeColor = _theme.TextSecondary,
+                ForeColor = Theme.TextSecondary,
                 TextAlign = ContentAlignment.MiddleCenter,
                 Text = GetDimensionText()
             };
@@ -204,13 +120,13 @@ namespace ModernAutoClicker.Advanced
 
             btnCapture = new RoundedButton
             {
-                Text = Loc.IsVietnamese ? "Chụp từ màn hình" : "Capture from Screen",
-                Location = new Point(btnX, 44),
+                Text = Loc.ImageCapture,
+                Location = new Point(btnX, 12),
                 Size = new Size(btnW, btnH),
-                BorderRadius = _theme.RadiusMd,
+                BorderRadius = Theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.AccentPrimary,
-                HoverColor = _theme.AccentPrimaryHover,
+                NormalColor = Theme.AccentPrimary,
+                HoverColor = Theme.AccentPrimaryHover,
                 ForeColor = Color.White
             };
             btnCapture.Click += (s, e) =>
@@ -232,7 +148,7 @@ namespace ModernAutoClicker.Advanced
                                 _currentBitmap = new Bitmap(bmp);
                                 _isChanged = true;
                                 UpdatePreview();
-                                try { bmp.Dispose(); } catch { }
+                                try { bmp.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                             }));
                         }
                     };
@@ -244,21 +160,21 @@ namespace ModernAutoClicker.Advanced
 
             btnImport = new RoundedButton
             {
-                Text = Loc.IsVietnamese ? "Tải ảnh từ file..." : "Import from File...",
-                Location = new Point(btnX, 74),
+                Text = Loc.ImageImport,
+                Location = new Point(btnX, 42),
                 Size = new Size(btnW, btnH),
-                BorderRadius = _theme.RadiusMd,
+                BorderRadius = Theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.BgElevated,
-                HoverColor = _theme.BgTertiary,
-                ForeColor = _theme.TextPrimary
+                NormalColor = Theme.BgElevated,
+                HoverColor = Theme.BgTertiary,
+                ForeColor = Theme.TextPrimary
             };
             btnImport.Click += (s, e) =>
             {
                 using (OpenFileDialog ofd = new OpenFileDialog())
                 {
-                    ofd.Title = Loc.IsVietnamese ? "Tải ảnh mẫu" : "Import Template Image";
-                    ofd.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp|All Files (*.*)|*.*";
+                    ofd.Title = Loc.ImageImportTitle;
+                    ofd.Filter = Loc.FileFilterImages;
                     if (ofd.ShowDialog(this) == DialogResult.OK)
                     {
                         try
@@ -276,7 +192,7 @@ namespace ModernAutoClicker.Advanced
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(this, "Failed to load image file:\n" + ex.Message, "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ModernMessageBox.Show(Loc.ImageImportFailed(ex.Message), Loc.ImageImportErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, this);
                         }
                     }
                 }
@@ -284,14 +200,14 @@ namespace ModernAutoClicker.Advanced
 
             btnExport = new RoundedButton
             {
-                Text = Loc.IsVietnamese ? "Lưu ảnh ra file..." : "Export to File...",
-                Location = new Point(btnX, 104),
+                Text = Loc.ImageExport,
+                Location = new Point(btnX, 72),
                 Size = new Size(btnW, btnH),
-                BorderRadius = _theme.RadiusMd,
+                BorderRadius = Theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.BgElevated,
-                HoverColor = _theme.BgTertiary,
-                ForeColor = _theme.TextPrimary,
+                NormalColor = Theme.BgElevated,
+                HoverColor = Theme.BgTertiary,
+                ForeColor = Theme.TextPrimary,
                 Enabled = (_currentBitmap != null)
             };
             btnExport.Click += (s, e) =>
@@ -299,8 +215,8 @@ namespace ModernAutoClicker.Advanced
                 if (_currentBitmap == null) return;
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
-                    sfd.Title = Loc.IsVietnamese ? "Lưu ảnh mẫu" : "Export Template Image";
-                    sfd.Filter = "PNG Image (*.png)|*.png|All Files (*.*)|*.*";
+                    sfd.Title = Loc.ImageExportTitle;
+                    sfd.Filter = Loc.FileFilterPng;
                     sfd.FileName = "Template_Image.png";
                     if (sfd.ShowDialog(this) == DialogResult.OK)
                     {
@@ -310,7 +226,7 @@ namespace ModernAutoClicker.Advanced
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(this, "Failed to export image file:\n" + ex.Message, "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ModernMessageBox.Show(Loc.ImageExportFailed(ex.Message), Loc.ImageExportErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, this);
                         }
                     }
                 }
@@ -318,14 +234,14 @@ namespace ModernAutoClicker.Advanced
 
             btnClear = new RoundedButton
             {
-                Text = Loc.IsVietnamese ? "Xóa ảnh mẫu" : "Clear Template Image",
-                Location = new Point(btnX, 134),
+                Text = Loc.ImageClear,
+                Location = new Point(btnX, 102),
                 Size = new Size(btnW, btnH),
-                BorderRadius = _theme.RadiusMd,
+                BorderRadius = Theme.RadiusMd,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.BgElevated,
-                HoverColor = _theme.BgTertiary,
-                ForeColor = _theme.Danger,
+                NormalColor = Theme.BgElevated,
+                HoverColor = Theme.BgTertiary,
+                ForeColor = Theme.Danger,
                 Enabled = (_currentBitmap != null)
             };
             btnClear.Click += (s, e) =>
@@ -342,16 +258,16 @@ namespace ModernAutoClicker.Advanced
             // 4. Similarity Setting
             lblSim = new Label
             {
-                Text = Loc.IsVietnamese ? "Độ khớp ảnh (Similarity 50..100%):" : "Similarity (50..100%):",
-                Location = new Point(16, 202),
+                Text = Loc.ImageSimilarity,
+                Location = new Point(16, 170),
                 Size = new Size(260, 20),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                ForeColor = _theme.TextSecondary
+                ForeColor = Theme.TextSecondary
             };
 
             numSimilarity = new NumberInput
             {
-                Location = new Point(280, 200),
+                Location = new Point(280, 168),
                 Size = new Size(118, 24),
                 Minimum = 50,
                 Maximum = 100,
@@ -359,78 +275,27 @@ namespace ModernAutoClicker.Advanced
                 Value = _similarity,
                 Font = ThemeTokens.FontButton(FontStyle.Bold)
             };
-            numSimilarity.ApplyTheme(_theme);
+            numSimilarity.ApplyTheme(Theme);
             numSimilarity.TextChanged += (s, e) =>
             {
                 _similarity = Math.Max(50, Math.Min(100, numSimilarity.Value));
             };
 
-            // 5. Apply and Cancel Buttons (Bottom) - Apply uses AccentPrimary!
-            btnApply = new RoundedButton
+            Body.Controls.AddRange(new Control[]
             {
-                Text = Loc.IsVietnamese ? "Áp dụng" : "Apply",
-                Location = new Point(16, 238),
-                Size = new Size(180, 32),
-                BorderRadius = _theme.RadiusMd,
-                Font = ThemeTokens.FontButton(FontStyle.Bold),
-                NormalColor = _theme.AccentPrimary,
-                HoverColor = _theme.AccentPrimaryHover,
-                ForeColor = Color.White
-            };
-            btnApply.Click += (s, e) =>
-            {
-                _similarity = Math.Max(50, Math.Min(100, numSimilarity.Value));
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            };
-
-            btnCancel = new RoundedButton
-            {
-                Text = Loc.IsVietnamese ? "Hủy" : "Cancel",
-                Location = new Point(210, 238),
-                Size = new Size(188, 32),
-                BorderRadius = _theme.RadiusMd,
-                Font = ThemeTokens.FontButton(FontStyle.Bold),
-                NormalColor = _theme.BgElevated,
-                HoverColor = _theme.BgTertiary,
-                ForeColor = _theme.TextSecondary
-            };
-            btnCancel.Click += (s, e) =>
-            {
-                this.DialogResult = DialogResult.Cancel;
-                this.Close();
-            };
-
-            this.Controls.AddRange(new Control[]
-            {
-                pnlHeader,
                 pnlPreview, lblDimensions,
                 btnCapture, btnImport, btnExport, btnClear,
-                lblSim, numSimilarity,
-                btnApply, btnCancel
+                lblSim, numSimilarity
             });
 
-            this.AcceptButton = btnApply;
-            this.CancelButton = btnCancel;
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            using (Pen p = new Pen(_theme.BorderColor, 1))
+            // 5. Apply and Cancel Buttons
+            this.AcceptButton = AddButton(Loc.DialogApply, DialogResult.OK, true, () =>
             {
-                e.Graphics.DrawRectangle(p, 0, 0, this.Width - 1, this.Height - 1);
-            }
-        }
+                _similarity = Math.Max(50, Math.Min(100, numSimilarity.Value));
+            });
+            this.CancelButton = AddButton(Loc.DialogCancel, DialogResult.Cancel, false);
 
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-            if (e.KeyCode == Keys.Escape)
-            {
-                this.DialogResult = DialogResult.Cancel;
-                this.Close();
-            }
+            SetBodySize(412, 204);
         }
 
         private string GetDimensionText()
@@ -455,11 +320,11 @@ namespace ModernAutoClicker.Advanced
             if (_currentBitmap == null) return;
             using (Form previewForm = new Form())
             {
-                previewForm.Text = string.Format(Loc.IsVietnamese ? "Xem trước ảnh ({0} x {1} px)" : "Image Preview ({0} x {1} px)", _currentBitmap.Width, _currentBitmap.Height);
+                previewForm.Text = string.Format(Loc.ImagePreviewFormat, _currentBitmap.Width, _currentBitmap.Height);
                 previewForm.FormBorderStyle = FormBorderStyle.Sizable;
                 previewForm.StartPosition = FormStartPosition.CenterParent;
-                previewForm.BackColor = _theme.BgPrimary;
-                previewForm.ForeColor = _theme.TextPrimary;
+                previewForm.BackColor = Theme.BgPrimary;
+                previewForm.ForeColor = Theme.TextPrimary;
                 previewForm.ShowInTaskbar = false;
                 previewForm.KeyPreview = true;
                 previewForm.Size = new Size(Math.Max(320, _currentBitmap.Width + 40), Math.Max(240, _currentBitmap.Height + 60));
@@ -482,7 +347,7 @@ namespace ModernAutoClicker.Advanced
             {
                 if (_currentBitmap != null)
                 {
-                    try { _currentBitmap.Dispose(); } catch { }
+                    try { _currentBitmap.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                     _currentBitmap = null;
                 }
             }

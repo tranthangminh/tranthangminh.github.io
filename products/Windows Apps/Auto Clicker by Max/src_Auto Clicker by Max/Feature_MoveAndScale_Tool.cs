@@ -1,3 +1,4 @@
+using Loc = ModernAutoClicker.Localization.Loc;
 using MaxApp.Common;
 using System;
 using System.Collections.Generic;
@@ -15,9 +16,8 @@ namespace ModernAutoClicker
         public Point EndPoint { get; set; }
     }
 
-    public class MapTransformToolWindow : Form
+    public class MapTransformToolWindow : ModernDialog
     {
-        private ThemeTokens _theme;
         private bool _isAdvancedMode = false;
         private List<Point> _baseSimplePoints = new List<Point>();
         private List<StepPointSnapshot> _baseAdvancedSteps = new List<StepPointSnapshot>();
@@ -29,10 +29,10 @@ namespace ModernAutoClicker
         private int _currentScale = 100;
         private bool _isApplyingScale = false;
 
-        // Custom Titlebar
-        private Panel pnlHeader;
-        private Label lblHeaderTitle;
-        private Button btnHeaderClose;
+        // The D-pad buttons are only 26px tall, a full 16px triangle would crowd them
+        private const int DirectionIconSize = 12;
+        private const int BodyWidth = 250;
+        private const int BodyHeight = 198;
 
         // Scope Selection (Asian Mode only)
         private Panel pnlScope;
@@ -52,7 +52,6 @@ namespace ModernAutoClicker
         private RoundedButton btnLeft;
         private RoundedButton btnRight;
         private Label lblBounds;
-        private RoundedButton btnClose;
 
         // Callback events to update MainForm / OverlayForm
         public event Action<List<Point>> OnSimplePointsTransformed;
@@ -63,114 +62,37 @@ namespace ModernAutoClicker
         private List<MacroStep> _activeAdvancedSteps;
 
         public MapTransformToolWindow(ThemeTokens theme)
+            : base(Loc.MoveDialogTitle, theme)
         {
-            _theme = theme ?? ThemeTokens.DarkTheme();
             InitializeComponent();
         }
 
         private void InitializeComponent()
         {
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.ShowInTaskbar = false;
-            this.Size = new Size(268, 296);
-            this.Text = "Move & Scale Points";
-            this.BackColor = _theme.BgPrimary;
-            this.ForeColor = _theme.TextPrimary;
-            this.DoubleBuffered = true;
-            this.KeyPreview = true;
-
-            // 0. Custom Dark Titlebar
-            pnlHeader = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 32,
-                BackColor = _theme.BgPrimary
-            };
-            pnlHeader.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            lblHeaderTitle = new Label
-            {
-                Text = "Move & Scale Points",
-                Location = new Point(12, 0),
-                Size = new Size(this.Width - 48, 32),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                ForeColor = _theme.TextPrimary,
-                UseMnemonic = false
-            };
-            lblHeaderTitle.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    CommonNativeMethods.ReleaseCapture();
-                    CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
-                }
-            };
-
-            btnHeaderClose = new Button
-            {
-                Text = "✕",
-                Location = new Point(this.Width - 36, 0),
-                Size = new Size(36, 32),
-                FlatStyle = FlatStyle.Flat,
-                Font = ThemeTokens.FontSegoeSymbol(10),
-                ForeColor = _theme.TextSecondary,
-                BackColor = _theme.BgPrimary,
-                Cursor = Cursors.Hand
-            };
-            btnHeaderClose.FlatAppearance.BorderSize = 0;
-            btnHeaderClose.MouseEnter += (s, e) =>
-            {
-                btnHeaderClose.BackColor = _theme.Danger;
-                btnHeaderClose.ForeColor = Color.White;
-            };
-            btnHeaderClose.MouseLeave += (s, e) =>
-            {
-                btnHeaderClose.BackColor = _theme.BgPrimary;
-                btnHeaderClose.ForeColor = _theme.TextSecondary;
-            };
-            btnHeaderClose.Click += (s, e) =>
-            {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            };
-
-            pnlHeader.Controls.AddRange(new Control[] { lblHeaderTitle, btnHeaderClose });
-
             // 0.1 Scope Section (Asian Mode only)
             pnlScope = new Panel
             {
-                Location = new Point(16, 38),
-                Size = new Size(236, 26),
+                Location = new Point(16, 6),
+                Size = new Size(218, 26),
                 Visible = false
             };
             rdoAllSteps = new RadioButton
             {
-                Text = "All Steps",
+                Text = Loc.MoveAllSteps,
                 Location = new Point(0, 2),
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Regular),
-                ForeColor = _theme.TextPrimary,
+                ForeColor = Theme.TextPrimary,
                 Checked = true,
                 Cursor = Cursors.Hand
             };
             rdoSelectedSteps = new RadioButton
             {
-                Text = "Selected (0)",
+                Text = Loc.MoveSelectedSteps(0),
                 Location = new Point(96, 2),
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Regular),
-                ForeColor = _theme.TextPrimary,
+                ForeColor = Theme.TextPrimary,
                 Checked = false,
                 Cursor = Cursors.Hand
             };
@@ -187,16 +109,16 @@ namespace ModernAutoClicker
             // 1. Scale Section
             lblScaleHeader = new Label
             {
-                Text = "Scale (Origin 0,0):",
-                Location = new Point(16, 40),
+                Text = Loc.MoveScaleLabel,
+                Location = new Point(16, 8),
                 Size = new Size(220, 16),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                ForeColor = _theme.AccentPrimary
+                ForeColor = Theme.AccentPrimary
             };
 
             numScale = new NumberInput
             {
-                Location = new Point(16, 60),
+                Location = new Point(16, 28),
                 Size = new Size(116, 24),
                 Minimum = 10,
                 Maximum = 500,
@@ -204,7 +126,7 @@ namespace ModernAutoClicker
                 Value = 100,
                 Font = ThemeTokens.FontButton(FontStyle.Bold)
             };
-            numScale.ApplyTheme(_theme);
+            numScale.ApplyTheme(Theme);
             numScale.TextChanged += (s, e) =>
             {
                 if (_isApplyingScale) return;
@@ -214,13 +136,13 @@ namespace ModernAutoClicker
             btnResetScale = new RoundedButton
             {
                 Text = "100%",
-                Location = new Point(138, 60),
+                Location = new Point(138, 28),
                 Size = new Size(96, 24),
-                BorderRadius = _theme.RadiusSm,
+                BorderRadius = Theme.RadiusSm,
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.BgElevated,
-                HoverColor = _theme.BgTertiary,
-                ForeColor = _theme.TextPrimary
+                NormalColor = Theme.BgElevated,
+                HoverColor = Theme.BgTertiary,
+                ForeColor = Theme.TextPrimary
             };
             btnResetScale.Click += (s, e) =>
             {
@@ -231,16 +153,16 @@ namespace ModernAutoClicker
             // 2. Move Step Selector
             lblMoveHeader = new Label
             {
-                Text = "Move Step (px):",
-                Location = new Point(16, 92),
+                Text = Loc.MoveStepLabel,
+                Location = new Point(16, 60),
                 Size = new Size(220, 16),
                 Font = ThemeTokens.FontBase(FontStyle.Bold),
-                ForeColor = _theme.AccentPrimary
+                ForeColor = Theme.AccentPrimary
             };
 
-            btnStep1 = CreateStepButton("1px", 1, 16, 112, 66);
-            btnStep10 = CreateStepButton("10px", 10, 88, 112, 72);
-            btnStep100 = CreateStepButton("100px", 100, 166, 112, 68);
+            btnStep1 = CreateStepButton("1px", 1, 16, 80, 66);
+            btnStep10 = CreateStepButton("10px", 10, 88, 80, 72);
+            btnStep100 = CreateStepButton("100px", 100, 166, 80, 68);
             UpdateStepButtonStyles();
 
             // 3. Directional D-Pad Buttons (1 on Top, 3 on Bottom)
@@ -248,70 +170,36 @@ namespace ModernAutoClicker
             int btnW = 44;
             int btnH = 26;
 
-            btnUp = CreateDirectionButton("▲", dpadCenterX - (btnW / 2), 142, btnW, btnH, 0, -1);
-            btnLeft = CreateDirectionButton("◄", dpadCenterX - (btnW / 2) - btnW - 4, 172, btnW, btnH, -1, 0);
-            btnDown = CreateDirectionButton("▼", dpadCenterX - (btnW / 2), 172, btnW, btnH, 0, 1);
-            btnRight = CreateDirectionButton("►", dpadCenterX + (btnW / 2) + 4, 172, btnW, btnH, 1, 0);
+            btnUp = CreateDirectionButton(AppIcons.Up, dpadCenterX - (btnW / 2), 110, btnW, btnH, 0, -1);
+            btnLeft = CreateDirectionButton(AppIcons.Left, dpadCenterX - (btnW / 2) - btnW - 4, 140, btnW, btnH, -1, 0);
+            btnDown = CreateDirectionButton(AppIcons.Down, dpadCenterX - (btnW / 2), 140, btnW, btnH, 0, 1);
+            btnRight = CreateDirectionButton(AppIcons.Right, dpadCenterX + (btnW / 2) + 4, 140, btnW, btnH, 1, 0);
 
             // 4. Bounds Indicator
             lblBounds = new Label
             {
-                Text = "Bounds: 0, 0",
-                Location = new Point(12, 206),
-                Size = new Size(236, 16),
+                Text = Loc.MoveBoundsEmpty,
+                Location = new Point(16, 174),
+                Size = new Size(218, 16),
                 Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeSmall),
-                ForeColor = _theme.TextTertiary,
+                ForeColor = Theme.TextTertiary,
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
-            // 5. Close / Apply Button
-            btnClose = new RoundedButton
+            Body.Controls.AddRange(new Control[]
             {
-                Text = "Close",
-                Location = new Point(16, 228),
-                Size = new Size(236, 30),
-                BorderRadius = _theme.RadiusMd,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.AccentPrimary,
-                HoverColor = _theme.AccentPrimaryHover,
-                ForeColor = Color.White
-            };
-            btnClose.Click += (s, e) =>
-            {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            };
-
-            this.Controls.AddRange(new Control[]
-            {
-                pnlHeader, pnlScope,
+                pnlScope,
                 lblScaleHeader, numScale, btnResetScale,
                 lblMoveHeader, btnStep1, btnStep10, btnStep100,
                 btnUp, btnLeft, btnDown, btnRight,
-                lblBounds, btnClose
+                lblBounds
             });
 
-            this.AcceptButton = btnClose;
-            this.CancelButton = btnClose;
-        }
+            // 5. Close / Apply Button: moves are applied as they happen, so every way out keeps them
+            this.AcceptButton = AddButton(Loc.MoveClose, DialogResult.OK, true);
+            this.CancelButton = this.AcceptButton;
 
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            using (Pen p = new Pen(_theme.BorderColor, 1))
-            {
-                e.Graphics.DrawRectangle(p, 0, 0, this.Width - 1, this.Height - 1);
-            }
-        }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-            if (e.KeyCode == Keys.Escape)
-            {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            }
+            SetBodySize(BodyWidth, BodyHeight);
         }
 
         private void UpdateLayoutForMode(bool isAdvanced)
@@ -320,26 +208,25 @@ namespace ModernAutoClicker
             pnlScope.Visible = isAdvanced;
             int offset = isAdvanced ? 30 : 0;
 
-            lblScaleHeader.Top = 40 + offset;
-            numScale.Top = 60 + offset;
-            btnResetScale.Top = 60 + offset;
+            lblScaleHeader.Top = 8 + offset;
+            numScale.Top = 28 + offset;
+            btnResetScale.Top = 28 + offset;
 
-            lblMoveHeader.Top = 92 + offset;
-            btnStep1.Top = 112 + offset;
-            btnStep10.Top = 112 + offset;
-            btnStep100.Top = 112 + offset;
+            lblMoveHeader.Top = 60 + offset;
+            btnStep1.Top = 80 + offset;
+            btnStep10.Top = 80 + offset;
+            btnStep100.Top = 80 + offset;
 
             int dpadCenterX = 125;
             int btnW = 44;
-            btnUp.Location = new Point(dpadCenterX - (btnW / 2), 142 + offset);
-            btnLeft.Location = new Point(dpadCenterX - (btnW / 2) - btnW - 4, 172 + offset);
-            btnDown.Location = new Point(dpadCenterX - (btnW / 2), 172 + offset);
-            btnRight.Location = new Point(dpadCenterX + (btnW / 2) + 4, 172 + offset);
+            btnUp.Location = new Point(dpadCenterX - (btnW / 2), 110 + offset);
+            btnLeft.Location = new Point(dpadCenterX - (btnW / 2) - btnW - 4, 140 + offset);
+            btnDown.Location = new Point(dpadCenterX - (btnW / 2), 140 + offset);
+            btnRight.Location = new Point(dpadCenterX + (btnW / 2) + 4, 140 + offset);
 
-            lblBounds.Top = 206 + offset;
-            btnClose.Location = new Point(16, 228 + offset);
+            lblBounds.Top = 174 + offset;
 
-            this.ClientSize = new Size(268, 270 + offset);
+            SetBodySize(BodyWidth, BodyHeight + offset);
         }
 
         private bool IsTargetStep(int index)
@@ -355,7 +242,7 @@ namespace ModernAutoClicker
                 Text = text,
                 Location = new Point(x, y),
                 Size = new Size(w, 22),
-                BorderRadius = _theme.RadiusSm,
+                BorderRadius = Theme.RadiusSm,
                 Font = ThemeTokens.FontBase(FontStyle.Bold)
             };
             btn.Click += (s, e) =>
@@ -376,24 +263,24 @@ namespace ModernAutoClicker
         private void SetStepBtnActive(RoundedButton btn, bool active)
         {
             if (btn == null) return;
-            btn.NormalColor = active ? _theme.AccentPrimary : _theme.BgTertiary;
-            btn.HoverColor = active ? _theme.AccentPrimaryHover : _theme.BgElevated;
-            btn.ForeColor = active ? Color.White : _theme.TextSecondary;
+            btn.NormalColor = active ? Theme.AccentPrimary : Theme.BgTertiary;
+            btn.HoverColor = active ? Theme.AccentPrimaryHover : Theme.BgElevated;
+            btn.ForeColor = active ? Color.White : Theme.TextSecondary;
             btn.Invalidate();
         }
 
-        private RoundedButton CreateDirectionButton(string text, int x, int y, int w, int h, int dirX, int dirY)
+        private RoundedButton CreateDirectionButton(string icon, int x, int y, int w, int h, int dirX, int dirY)
         {
             RoundedButton btn = new RoundedButton
             {
-                Text = text,
                 Location = new Point(x, y),
                 Size = new Size(w, h),
-                BorderRadius = _theme.RadiusSm,
-                Font = ThemeTokens.FontBase(FontStyle.Bold),
-                NormalColor = _theme.BgElevated,
-                HoverColor = _theme.AccentPrimary,
-                ForeColor = _theme.TextPrimary
+                BorderRadius = Theme.RadiusSm,
+                NormalColor = Theme.BgElevated,
+                HoverColor = Theme.AccentPrimary,
+                ForeColor = Theme.TextPrimary,
+                Image = AppIcons.Get(icon, Theme.TextPrimary, DirectionIconSize),
+                ImageAlign = ContentAlignment.MiddleCenter
             };
             btn.Click += (s, e) =>
             {
@@ -458,12 +345,12 @@ namespace ModernAutoClicker
             rdoAllSteps.Checked = true;
             if (_selectedIndices.Count > 0)
             {
-                rdoSelectedSteps.Text = string.Format("Selected ({0})", _selectedIndices.Count);
+                rdoSelectedSteps.Text = Loc.MoveSelectedSteps(_selectedIndices.Count);
                 rdoSelectedSteps.Enabled = true;
             }
             else
             {
-                rdoSelectedSteps.Text = "Selected (0)";
+                rdoSelectedSteps.Text = Loc.MoveSelectedSteps(0);
                 rdoSelectedSteps.Enabled = false;
             }
 
@@ -688,11 +575,11 @@ namespace ModernAutoClicker
 
             if (count > 0)
             {
-                lblBounds.Text = string.Format("Bounds: X:{0}..{1} | Y:{2}..{3}", minX, maxX, minY, maxY);
+                lblBounds.Text = Loc.MoveBounds(minX, maxX, minY, maxY);
             }
             else
             {
-                lblBounds.Text = "Bounds: No points";
+                lblBounds.Text = Loc.MoveBoundsEmpty;
             }
         }
     }

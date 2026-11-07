@@ -24,18 +24,6 @@ namespace ModernAutoClicker
             return targetIdx;
         }
 
-        public static void DrawInsertionLine(Graphics g, Rectangle bounds, Color accentColor, bool dropBelow)
-        {
-            int lineY = dropBelow ? (bounds.Bottom - 2) : (bounds.Top);
-            using (SolidBrush lineBrush = new SolidBrush(accentColor))
-            using (Pen linePen = new Pen(accentColor, 2f))
-            {
-                g.DrawLine(linePen, bounds.Left + 4, lineY, bounds.Right - 4, lineY);
-                g.FillEllipse(lineBrush, bounds.Left + 1, lineY - 2, 5, 5);
-                g.FillEllipse(lineBrush, bounds.Right - 6, lineY - 2, 5, 5);
-            }
-        }
-
         public static void DrawInsertionLineAtY(Graphics g, float lineY, int left, int right, Color accentColor)
         {
             using (SolidBrush lineBrush = new SolidBrush(accentColor))
@@ -141,6 +129,47 @@ namespace ModernAutoClicker
                 Cursor.Current = Cursors.Default;
                 _owner.CancelRowDrag();
                 return true;
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Lets a left click anywhere inside a step row (inputs, dropdowns, labels, buttons) select that row, with Ctrl/Shift taking priority.
+    /// Also keeps the hand cursor over rows while Ctrl/Shift is held.
+    /// </summary>
+    public class MacroRowSelectFilter : IMessageFilter
+    {
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_KEYUP = 0x0101;
+        private const int WM_MOUSEMOVE = 0x0200;
+        private const int WM_LBUTTONDOWN = 0x0201;
+        private const int VK_SHIFT = 0x10;
+        private const int VK_CONTROL = 0x11;
+        private readonly MacroTableControl _owner;
+
+        public MacroRowSelectFilter(MacroTableControl owner)
+        {
+            _owner = owner;
+        }
+
+        public bool PreFilterMessage(ref Message m)
+        {
+            if (_owner == null || _owner.IsDisposed) return false;
+
+            if (m.Msg == WM_LBUTTONDOWN)
+            {
+                return _owner.HandleRowAreaMouseDown(m.HWnd);
+            }
+
+            bool isModifierKeyMsg = (m.Msg == WM_KEYDOWN || m.Msg == WM_KEYUP) &&
+                                    (m.WParam.ToInt32() == VK_SHIFT || m.WParam.ToInt32() == VK_CONTROL);
+            if (m.Msg == WM_MOUSEMOVE || isModifierKeyMsg)
+            {
+                // Real-time key state: a Ctrl/Shift released while another window had focus still re-enables the hints
+                bool modifierHeld = NativeMethods.IsKeyDown(VK_SHIFT) || NativeMethods.IsKeyDown(VK_CONTROL);
+                RowToolTipManager.SetSuppressed(modifierHeld);
+                _owner.ApplySelectModifierCursor();
             }
             return false;
         }

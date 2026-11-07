@@ -24,7 +24,7 @@ namespace ModernAutoClicker.Advanced
                     case MacroActionType.DoubleClick:
                         return "Click Đúp (Nhấp Đôi):\nThực hiện nhấp đôi chuột trái nhanh tại tọa độ (X, Y).";
                     case MacroActionType.DragDrop:
-                        return "Kéo và Thả (Drag n Drop):\nNhấp và kéo con trỏ mượt mà từ Điểm A đến Điểm B trong khoảng thời gian Giữ (Hold) đã cài đặt.";
+                        return "Kéo & Thả (Drag & Drop):\nNhấp và kéo con trỏ mượt mà từ Điểm A đến Điểm B trong khoảng thời gian Giữ (Hold) đã cài đặt.";
                     case MacroActionType.KeyPress:
                         return "Nhấn Phím:\nNhấn một phím đơn hoặc tổ hợp phím tắt (ví dụ Space, Enter, Ctrl+C, Alt+F4) trong khoảng thời gian Giữ (Hold).";
                     case MacroActionType.TypeText:
@@ -59,10 +59,10 @@ namespace ModernAutoClicker.Advanced
                                "• Thấy: Hành động khi tìm thấy ảnh (Click Tâm ảnh, Nhảy đến bước X, Bước kế tiếp, hoặc Dừng).\n" +
                                "• Không thấy: Hành động khi không tìm thấy (Bước kế tiếp, Nhảy đến bước X, hoặc Dừng).";
                     case MacroActionType.PressAndClick:
-                        return "Nhấn & Click (Press n Click):\n" +
+                        return "Nhấn & Click (Press & Click):\n" +
                                "Kết hợp giữ phím và thao tác chuột cùng lúc (ví dụ Ctrl+Click, Shift+Click, Alt+Drag):\n" +
                                "• Tự do đổi thứ tự: Phím ➔ Click (giữ phím rồi click) hoặc Click ➔ Phím (click rồi giữ phím).\n" +
-                               "• 4 chế độ chuột: Click trái, Click phải, Click giữa, hoặc Kéo thả (Drag n Drop).";
+                               "• 4 chế độ chuột: Click trái, Click phải, Click giữa, hoặc Kéo & Thả.";
                     default:
                         return "Bước Macro: Thực hiện một hành động tự động hóa.";
                 }
@@ -79,7 +79,7 @@ namespace ModernAutoClicker.Advanced
                 case MacroActionType.DoubleClick:
                     return "Double Click:\nPerforms a rapid double left-click at the specified (X, Y) coordinates.";
                 case MacroActionType.DragDrop:
-                    return "Drag n Drop:\nSmoothly clicks and drags cursor from Point A to Point B over the configured Hold duration.";
+                    return "Drag & Drop:\nSmoothly clicks and drags cursor from Point A to Point B over the configured Hold duration.";
                 case MacroActionType.KeyPress:
                     return "Key Press:\nPresses a single key or shortcut combination (e.g. Space, Enter, Ctrl+C, Alt+F4) for Hold ms.";
                 case MacroActionType.TypeText:
@@ -114,10 +114,10 @@ namespace ModernAutoClicker.Advanced
                            "• Found: Action when image is found (Click Center, Jump to Step X, Next Step, or Stop).\n" +
                            "• Not Found: Action when image is missing (Next Step, Jump to Step X, or Stop).";
                 case MacroActionType.PressAndClick:
-                    return "Press n Click:\n" +
+                    return "Press & Click:\n" +
                            "Combines key press and mouse action simultaneously (e.g. Ctrl+Click, Shift+Click, Alt+Drag):\n" +
                            "• Configurable order: Key ➔ Click (hold key then click) or Click ➔ Key (click then hold key).\n" +
-                           "• 4 mouse modes: Left Click, Right Click, Middle Click, or Drag n Drop.";
+                           "• 4 mouse modes: Left Click, Right Click, Middle Click, or Drag & Drop.";
                 default:
                     return "Macro Action: Performs an automated input step.";
             }
@@ -333,14 +333,14 @@ namespace ModernAutoClicker.Advanced
                         step.Similarity);
                 case MacroActionType.PressAndClick:
                     string orderTextEn = step.PressClickOrder == 0 ? "Key ➔ Click" : "Click ➔ Key";
-                    string modeTextEn = step.PressClickMode == 0 ? "Left Click" : (step.PressClickMode == 1 ? "Right Click" : (step.PressClickMode == 2 ? "Middle Click" : "Drag n Drop"));
+                    string modeTextEn = step.PressClickMode == 0 ? "Left Click" : (step.PressClickMode == 1 ? "Right Click" : (step.PressClickMode == 2 ? "Middle Click" : "Drag & Drop"));
                     if (step.PressClickMode == 3)
                     {
-                        return string.Format("Press n Drag: [{0}] + {1} ({2})\nDrag path ({3}, {4}) ➔ ({5}, {6}). Click 🎯 to pick 2 points.",
+                        return string.Format("Press & Drag: [{0}] + {1} ({2})\nDrag path ({3}, {4}) ➔ ({5}, {6}). Click 🎯 to pick 2 points.",
                             !string.IsNullOrEmpty(step.KeyData) ? step.KeyData : "Ctrl", modeTextEn, orderTextEn,
                             step.StartPoint.X, step.StartPoint.Y, step.EndPoint.X, step.EndPoint.Y);
                     }
-                    return string.Format("Press n Click: [{0}] + {1} ({2})\nCoordinates ({3}, {4}). Click 🎯 to pick coordinate.",
+                    return string.Format("Press & Click: [{0}] + {1} ({2})\nCoordinates ({3}, {4}). Click 🎯 to pick coordinate.",
                         !string.IsNullOrEmpty(step.KeyData) ? step.KeyData : "Ctrl", modeTextEn, orderTextEn,
                         step.StartPoint.X, step.StartPoint.Y);
                 default:

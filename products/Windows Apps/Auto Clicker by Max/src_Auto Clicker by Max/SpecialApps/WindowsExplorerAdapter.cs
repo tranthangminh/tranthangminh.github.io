@@ -123,7 +123,7 @@ namespace ModernAutoClicker.SpecialApps
                                 }
                             }
                         }
-                        catch { }
+                        catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                     }
 
                     // 2. Dual Hit-Test Fallback: If screenPt didn't hit, check if clientPt is already a valid screen coordinate
@@ -152,7 +152,7 @@ namespace ModernAutoClicker.SpecialApps
                                             }
                                         }
                                     }
-                                    catch { }
+                                    catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                                 }
                                 if (hitElement != null)
                                 {
@@ -189,7 +189,7 @@ namespace ModernAutoClicker.SpecialApps
                             object selObj;
                             if (hitElement.TryGetCurrentPattern(SelectionItemPattern.Pattern, out selObj))
                             {
-                                try { ((SelectionItemPattern)selObj).Select(); } catch { }
+                                try { ((SelectionItemPattern)selObj).Select(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                             }
 
                             IntPtr leafHwnd = DrillDownToLeaf(targetHwnd, screenPt);
@@ -211,7 +211,7 @@ namespace ModernAutoClicker.SpecialApps
                             object invObj;
                             if (hitElement.TryGetCurrentPattern(InvokePattern.Pattern, out invObj))
                             {
-                                try { ((InvokePattern)invObj).Invoke(); return true; } catch { }
+                                try { ((InvokePattern)invObj).Invoke(); return true; } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                             }
 
                             object expObj;
@@ -226,13 +226,13 @@ namespace ModernAutoClicker.SpecialApps
                                         ec.Collapse();
                                     return true;
                                 }
-                                catch { }
+                                catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                             }
 
                             object selObj;
                             if (hitElement.TryGetCurrentPattern(SelectionItemPattern.Pattern, out selObj))
                             {
-                                try { ((SelectionItemPattern)selObj).Select(); } catch { }
+                                try { ((SelectionItemPattern)selObj).Select(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                             }
 
                             // Win32 background DBLCLK and VK_RETURN to leaf DirectUIHWND
@@ -261,7 +261,7 @@ namespace ModernAutoClicker.SpecialApps
                             // Edit: Focus
                             if (hitElement.Current.ControlType == ControlType.Edit)
                             {
-                                try { hitElement.SetFocus(); return true; } catch { }
+                                try { hitElement.SetFocus(); return true; } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                             }
 
                             // Button, SplitButton, MenuItem, Hyperlink: Invoke
@@ -310,7 +310,7 @@ namespace ModernAutoClicker.SpecialApps
                     }
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             // Fallback to Win32 message dispatch to leaf window if UIA hit-test didn't match (e.g. whitespace)
             IntPtr leafTarget = DrillDownToLeaf(targetHwnd, screenPt);

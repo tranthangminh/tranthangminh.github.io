@@ -1,4 +1,4 @@
-﻿using MaxApp.Common;
+using MaxApp.Common;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -20,10 +20,30 @@ namespace ModernAutoClicker.Advanced
         private Label lblTitle;
         private Label btnClose;
         private TextBox txtEdit;
+        private ToolStripMenuItem mnuRename;
+        private ToolStripMenuItem mnuDuplicate;
+        private ToolStripMenuItem mnuDelete;
         private bool _isEditing = false;
 
         private bool _isRunning = false;
-        private Color _fillColor = Color.FromArgb(37, 38, 43);
+        private bool _isInUse = false;
+        private Color _fillColor = ThemeTokens.Current.BgElevated;
+
+        // "(In use)" marks a script called via RunScript by a running script; the running state itself takes precedence
+        private string DisplayTitle
+        {
+            get { return (_isInUse && !_isRunning) ? _title + ModernAutoClicker.Localization.Loc.TabInUseSuffix : _title; }
+        }
+
+        // Re-renders the title and context menu after a language switch
+        public void RefreshDisplayTitle()
+        {
+            if (mnuRename != null) mnuRename.Text = ModernAutoClicker.Localization.Loc.TabMenuRename;
+            if (mnuDuplicate != null) mnuDuplicate.Text = ModernAutoClicker.Localization.Loc.TabMenuDuplicate;
+            if (mnuDelete != null) mnuDelete.Text = ModernAutoClicker.Localization.Loc.TabMenuDelete;
+            if (lblTitle != null) lblTitle.Text = DisplayTitle;
+            AdjustSize();
+        }
 
         public ProfileTabControl ParentTabControl
         {
@@ -39,9 +59,23 @@ namespace ModernAutoClicker.Advanced
                 if (_isRunning != value)
                 {
                     _isRunning = value;
-                    if (lblTitle != null) lblTitle.Text = _title;
+                    if (lblTitle != null) lblTitle.Text = DisplayTitle;
                     if (_canClose && btnClose != null) btnClose.Visible = !_isRunning && !_isPinned;
                     UpdateAppearance();
+                    AdjustSize();
+                }
+            }
+        }
+
+        public bool IsInUse
+        {
+            get { return _isInUse; }
+            set
+            {
+                if (_isInUse != value)
+                {
+                    _isInUse = value;
+                    if (lblTitle != null) lblTitle.Text = DisplayTitle;
                     AdjustSize();
                 }
             }
@@ -53,7 +87,7 @@ namespace ModernAutoClicker.Advanced
             set
             {
                 _title = !string.IsNullOrEmpty(value) ? value.Trim() : "Script";
-                if (lblTitle != null) lblTitle.Text = _title;
+                if (lblTitle != null) lblTitle.Text = DisplayTitle;
                 AdjustSize();
             }
         }
@@ -136,13 +170,13 @@ namespace ModernAutoClicker.Advanced
         {
             // Context Menu
             ContextMenuStrip contextMenu = new ContextMenuStrip();
-            ToolStripMenuItem mnuRename = new ToolStripMenuItem("Rename Script");
+            mnuRename = new ToolStripMenuItem(ModernAutoClicker.Localization.Loc.TabMenuRename);
             mnuRename.Click += (s, e) => StartRename();
 
-            ToolStripMenuItem mnuDuplicate = new ToolStripMenuItem("Duplicate Script");
+            mnuDuplicate = new ToolStripMenuItem(ModernAutoClicker.Localization.Loc.TabMenuDuplicate);
             mnuDuplicate.Click += (s, e) => { if (OnDuplicated != null) OnDuplicated(this); };
 
-            ToolStripMenuItem mnuDelete = new ToolStripMenuItem("Delete Script");
+            mnuDelete = new ToolStripMenuItem(ModernAutoClicker.Localization.Loc.TabMenuDelete);
             mnuDelete.Click += (s, e) => { if (_canClose && OnClosed != null) OnClosed(this); };
 
             contextMenu.Items.AddRange(new ToolStripItem[] { mnuRename, mnuDuplicate, new ToolStripSeparator(), mnuDelete });
@@ -170,18 +204,18 @@ namespace ModernAutoClicker.Advanced
             this.MouseUp += HandleTabMouseUp;
             this.DoubleClick += (s, e) => StartRename();
 
-            // Close Button "✕"
+            // Close button: close icon tinted with ForeColor, so the existing hover/active color logic keeps working
             btnClose = new Label
             {
-                Text = "✕",
                 Size = new Size(16, 18),
-                Font = ThemeTokens.FontMicro(FontStyle.Bold),
-                TextAlign = ContentAlignment.MiddleCenter,
+                ImageAlign = ContentAlignment.MiddleCenter,
                 Cursor = Cursors.Hand,
                 BackColor = Color.Transparent,
                 ForeColor = _theme.TextTertiary,
                 Visible = _canClose
             };
+            btnClose.Image = AppIcons.Get(AppIcons.Close, btnClose.ForeColor, 9);
+            btnClose.ForeColorChanged += (s, e) => { btnClose.Image = AppIcons.Get(AppIcons.Close, btnClose.ForeColor, 9); };
             btnClose.MouseEnter += (s, e) => { btnClose.ForeColor = _theme.Danger; };
             btnClose.MouseLeave += (s, e) => { btnClose.ForeColor = _isActive ? _theme.TextSecondary : _theme.TextTertiary; };
             btnClose.Click += (s, e) =>
@@ -264,7 +298,8 @@ namespace ModernAutoClicker.Advanced
 
         public void StartRename()
         {
-            if (_isEditing || _isPinned) return;
+            // Running scripts are tracked by name; renaming mid-run would orphan the runner
+            if (_isEditing || _isPinned || _isRunning) return;
             _isEditing = true;
 
             txtEdit.Location = new Point(lblTitle.Left, 2);
@@ -288,7 +323,7 @@ namespace ModernAutoClicker.Advanced
             if (!string.IsNullOrEmpty(newTitle) && newTitle != _title)
             {
                 _title = newTitle;
-                lblTitle.Text = _isRunning ? "🟢 " + _title : _title;
+                lblTitle.Text = DisplayTitle;
                 AdjustSize();
                 if (OnRenamed != null) OnRenamed(this, _title);
             }
@@ -303,7 +338,7 @@ namespace ModernAutoClicker.Advanced
 
         private void AdjustSize()
         {
-            string displayTitle = _title;
+            string displayTitle = DisplayTitle;
             int textW = TextRenderer.MeasureText(displayTitle, lblTitle.Font).Width;
             bool showClose = _canClose && !_isRunning && !_isPinned;
             int totalW = 8 + textW + (showClose ? 20 : 8);
@@ -321,17 +356,24 @@ namespace ModernAutoClicker.Advanced
 
         private void UpdateAppearance()
         {
+            // Only the active tab title is bold; the width is re-measured with the new weight
+            FontStyle titleStyle = _isActive ? FontStyle.Bold : FontStyle.Regular;
+            if (lblTitle.Font.Style != titleStyle)
+            {
+                lblTitle.Font = ThemeTokens.FontBase(titleStyle);
+                AdjustSize();
+            }
             if (_isActive)
             {
-                _fillColor = _theme != null ? _theme.AccentPrimary : Color.FromArgb(25, 113, 194);
+                _fillColor = (_theme ?? ThemeTokens.Current).AccentPrimary;
                 lblTitle.ForeColor = Color.White;
-                btnClose.ForeColor = _theme != null ? _theme.TextSecondary : Color.FromArgb(160, 160, 160);
+                btnClose.ForeColor = (_theme ?? ThemeTokens.Current).TextSecondary;
             }
             else
             {
-                _fillColor = _theme != null ? _theme.BgElevated : Color.FromArgb(37, 38, 43);
-                lblTitle.ForeColor = _isRunning ? (_theme != null ? _theme.Success : Color.FromArgb(46, 204, 113)) : (_theme != null ? _theme.TextSecondary : Color.FromArgb(160, 160, 160));
-                btnClose.ForeColor = _theme != null ? _theme.TextTertiary : Color.FromArgb(110, 110, 110);
+                _fillColor = (_theme ?? ThemeTokens.Current).BgElevated;
+                lblTitle.ForeColor = _isRunning ? ((_theme ?? ThemeTokens.Current).Success) : ((_theme ?? ThemeTokens.Current).TextSecondary);
+                btnClose.ForeColor = (_theme ?? ThemeTokens.Current).TextTertiary;
             }
             this.Invalidate();
         }
@@ -380,7 +422,7 @@ namespace ModernAutoClicker.Advanced
             if (w <= 0 || h <= 0) return;
 
             // Fill parent background on corners to ensure smooth anti-aliased edge
-            Color parentBg = _theme != null ? _theme.BgPrimary : Color.FromArgb(25, 25, 25);
+            Color parentBg = (_theme ?? ThemeTokens.Current).BgPrimary;
             using (SolidBrush bgBrush = new SolidBrush(parentBg))
             {
                 g.FillRectangle(bgBrush, this.ClientRectangle);
@@ -398,14 +440,14 @@ namespace ModernAutoClicker.Advanced
 
                 if (_isRunning)
                 {
-                    using (Pen pen = new Pen(_theme != null ? _theme.Success : Color.FromArgb(46, 204, 113), 1.5f))
+                    using (Pen pen = new Pen((_theme ?? ThemeTokens.Current).Success, 1.5f))
                     {
                         g.DrawPath(pen, path);
                     }
                 }
                 else if (!_isActive)
                 {
-                    using (Pen pen = new Pen(_theme != null ? _theme.BorderColor : Color.FromArgb(58, 58, 58), 1f))
+                    using (Pen pen = new Pen((_theme ?? ThemeTokens.Current).BorderColor, 1f))
                     {
                         g.DrawPath(pen, path);
                     }
@@ -461,12 +503,11 @@ namespace ModernAutoClicker.Advanced
             };
             pnlTabList.MouseWheel += HandleMouseWheel;
 
+            // Add-tab button shows the add icon (tinted in ApplyTheme)
             btnAddTab = new RoundedButton
             {
-                Text = "＋",
                 Size = new Size(24, 24),
                 Location = new Point(0, 1),
-                Font = ThemeTokens.FontButton(FontStyle.Bold),
                 BorderRadius = _theme.RadiusSm,
                 NormalColor = _theme.BgElevated,
                 ForeColor = _theme.TextPrimary,
@@ -735,14 +776,27 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
-        public void SetTabRunningByTitle(string title, bool isRunning)
+        public void SetTabInUse(int index, bool isInUse)
+        {
+            if (index >= 0 && index < _tabItems.Count)
+            {
+                _tabItems[index].IsInUse = isInUse;
+            }
+        }
+
+        public void RefreshTabTitles()
         {
             foreach (var tab in _tabItems)
             {
-                if (string.Equals(tab.Title, title, StringComparison.OrdinalIgnoreCase))
-                {
-                    tab.IsRunning = isRunning;
-                }
+                tab.RefreshDisplayTitle();
+            }
+        }
+
+        public void SetTabTitle(int index, string title)
+        {
+            if (index >= 0 && index < _tabItems.Count)
+            {
+                _tabItems[index].Title = title;
             }
         }
 
@@ -756,6 +810,8 @@ namespace ModernAutoClicker.Advanced
             btnAddTab.ForeColor = t.TextPrimary;
             btnAddTab.HoverColor = t.AccentPrimary;
             btnAddTab.BorderRadius = t.RadiusSm;
+            btnAddTab.Image = AppIcons.Get(AppIcons.Add, t.TextPrimary, 12);
+            btnAddTab.ImageAlign = ContentAlignment.MiddleCenter;
             btnAddTab.Invalidate();
 
             foreach (ProfileTabItem item in _tabItems)

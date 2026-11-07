@@ -46,12 +46,12 @@ namespace MaxApp.Common
                     {
                         Region old = form.Region;
                         form.Region = null;
-                        try { old.Dispose(); } catch { }
+                        try { old.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                     }
                     return;
                 }
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
 
             // 2. Windows 10 / Legacy Fallback (Symmetrical Win32 GDI RoundRect Region)
             if (form.FormBorderStyle == FormBorderStyle.None && form.Width > 10 && form.Height > 10)
@@ -66,8 +66,33 @@ namespace MaxApp.Common
                         CommonNativeMethods.SetWindowRgn(form.Handle, hRgn, true);
                     }
                 }
-                catch { }
+                catch (Exception caught) { AppLog.Caught(caught); }
             }
+        }
+
+        /// <summary>
+        /// Colors the 1px border Windows 11 draws on top of a rounded window. It covers what DrawWindowBorder paints there.
+        /// Older Windows have no such border and refuse the call, which leaves DrawWindowBorder as the visible one.
+        /// </summary>
+        public static void SetSystemBorderColor(Form form, Color color)
+        {
+            if (form == null || form.IsDisposed || !form.IsHandleCreated) return;
+
+            int colorRef = ColorTranslator.ToWin32(color);
+            try
+            {
+                CommonNativeMethods.DwmSetWindowAttribute(form.Handle, CommonNativeMethods.DWMWA_BORDER_COLOR, ref colorRef, sizeof(int));
+            }
+            catch (Exception caught) { AppLog.Caught(caught); }
+        }
+
+        /// <summary>
+        /// True while a modal popup (a ModernDialog, a file dialog, anything opened with ShowDialog) keeps this window locked.
+        /// Windows disables the window itself: Control.Enabled stays true, so it cannot tell.
+        /// </summary>
+        public static bool IsBlockedByDialog(Form form)
+        {
+            return form != null && form.IsHandleCreated && !CommonNativeMethods.IsWindowEnabled(form.Handle);
         }
 
         /// <summary>

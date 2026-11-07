@@ -47,12 +47,12 @@ namespace ModernAutoClicker
                                     }
                                 }
                             }
-                            catch { }
+                            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                         }
                     }
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             // 2. Read from disk if local Template folder exists (e.g. during development or portable overrides)
             List<string> searchDirs = new List<string>();
@@ -65,7 +65,7 @@ namespace ModernAutoClicker
                 }
                 searchDirs.Add(Path.Combine(baseDir, "Template"));
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             foreach (string dir in searchDirs)
             {
@@ -83,11 +83,11 @@ namespace ModernAutoClicker
                                 {
                                     dict[name] = File.ReadAllText(f, Encoding.UTF8);
                                 }
-                                catch { }
+                                catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                 }
             }
 

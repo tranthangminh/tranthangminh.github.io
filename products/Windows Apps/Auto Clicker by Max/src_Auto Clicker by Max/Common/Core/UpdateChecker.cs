@@ -24,6 +24,8 @@ namespace MaxApp.Common
     /// </summary>
     public static class UpdateChecker
     {
+        private const string TrustedHost = "tranthangminh.github.io";
+
         private static bool _isChecking = false;
         private static string _inMemoryLastCheckDate = null;
 
@@ -84,7 +86,7 @@ namespace MaxApp.Common
                         if (ExtractAppInfoFromJson(json, AppInfo.AppId, out remoteVer, out pageUrl))
                         {
                             result.RemoteVersion = remoteVer;
-                            if (!string.IsNullOrEmpty(pageUrl))
+                            if (IsTrustedPageUrl(pageUrl))
                             {
                                 result.DownloadUrl = pageUrl;
                             }
@@ -165,7 +167,7 @@ namespace MaxApp.Common
                                     _inMemoryLastCheckDate = reminderKey;
                                     if (SetLastCheckDateHandler != null)
                                     {
-                                        try { SetLastCheckDateHandler(reminderKey); } catch { }
+                                        try { SetLastCheckDateHandler(reminderKey); } catch (Exception caught) { AppLog.Caught(caught); }
                                     }
 
                                     ShowUpdateDialog(ownerForm, result);
@@ -173,7 +175,7 @@ namespace MaxApp.Common
                             }
                         }));
                     }
-                    catch { }
+                    catch (Exception caught) { AppLog.Caught(caught); }
                 }
                 else
                 {
@@ -183,6 +185,15 @@ namespace MaxApp.Common
                     }
                 }
             });
+        }
+
+        // This address comes from the web and is opened by the shell, which also runs files and other kinds of links
+        public static bool IsTrustedPageUrl(string url)
+        {
+            Uri uri;
+            return Uri.TryCreate(url, UriKind.Absolute, out uri)
+                && uri.Scheme == Uri.UriSchemeHttps
+                && string.Equals(uri.Host, TrustedHost, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool ExtractAppInfoFromJson(string json, string appId, out string remoteVer, out string pageUrl)
@@ -285,14 +296,10 @@ namespace MaxApp.Common
 
                 string title = isVi ? "Cập Nhật Mới" : "Update Available";
 
-                DialogResult dr = MessageBox.Show(owner, msg, title, MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                DialogResult dr = ModernMessageBox.Show(msg, title, MessageBoxButtons.YesNo, MessageBoxIcon.Information, owner);
                 if (dr == DialogResult.Yes)
                 {
-                    try
-                    {
-                        Process.Start(new ProcessStartInfo(result.DownloadUrl) { UseShellExecute = true });
-                    }
-                    catch { }
+                    ExternalLink.Open(result.DownloadUrl, owner);
                 }
             }
             else if (result.Success && !result.HasUpdate)
@@ -302,7 +309,7 @@ namespace MaxApp.Common
                     : string.Format("You are running the latest version of {0} (v{1}).", AppInfo.AppName, result.LocalVersion);
 
                 string title = isVi ? "Kiểm Tra Cập Nhật" : "Check for Updates";
-                MessageBox.Show(owner, msg, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ModernMessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Information, owner);
             }
             else
             {
@@ -311,7 +318,7 @@ namespace MaxApp.Common
                     : "Unable to check for updates.\nPlease check your internet connection.";
 
                 string title = isVi ? "Lỗi Kiểm Tra Cập Nhật" : "Update Check Failed";
-                MessageBox.Show(owner, msg, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ModernMessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Warning, owner);
             }
         }
     }

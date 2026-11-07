@@ -15,7 +15,7 @@ namespace ModernAutoClicker
         private ModernAutoClicker.Advanced.AdvancedHotkeyCard cardAdvancedHotkey;
         private ModernAutoClicker.Advanced.AdvancedTabPanel pnlTabAdvanced;
         private ModernAutoClicker.Info.InfoTabPanel pnlTabInfo;
-        private Panel pnlTabBar, pnlTabBasic, pnlContentHost, pnlBottomBar;
+        private Panel pnlTabBasic, pnlContentHost, pnlBottomBar;
         private DoubleBufferedTableLayoutPanel tblRoot;
         private CustomTitleBar titleBar;
 
@@ -25,7 +25,91 @@ namespace ModernAutoClicker
         private RoundedButton btnTransformTool;
 
         // Tab Navigation
-        private RoundedButton btnTabInfo, btnTabBasic, btnTabAdvanced;
+        private ModeTabBar tabBar;
+        // Simple keeps a fixed width; Asian takes the rest of the frame
+        private const int SimpleModeTabW = 147;
+        private const int RunBarIconW = 44;
+
+        // Collapsible bottom settings card: header row + body (checkboxes and hotkey card)
+        private Label lblSettingsHeader;
+        private Panel pnlSettingsBody;
+        private bool _settingsCollapsed = false;
+        private const int SettingsHeaderH = 22;
+        private const int SettingsBodyTop = 16; // body overlaps the header's bottom padding; its controls already have a 7px top inset
+        private const int SettingsBodyH = 86;
+        private const int SettingsCollapsedH = 26;
+        // Fixed Asian chrome height (title, mode bar, status, run bar, margins) without the settings card
+        private const int AsianChromeBaseH = 186;
+        // "Running: ..." row under the settings card (label 16px + 4px margin), present only while a task runs
+        private const int RunningRowH = 20;
+        private Label lblRunningTasks;
+        private bool _runningRowShown = false;
+
+        private int SettingsCardHeight
+        {
+            get { return _settingsCollapsed ? SettingsCollapsedH : SettingsBodyTop + SettingsBodyH; }
+        }
+
+        private int RunningRowHeight
+        {
+            get { return _runningRowShown ? RunningRowH : 0; }
+        }
+
+        // Height the settings card gives up when folded
+        private const int SettingsFoldDelta = SettingsBodyTop + SettingsBodyH - SettingsCollapsedH;
+
+        // Asian window minimum height: folding the settings card lowers it by the same amount the card shrinks
+        private int AsianMinHeight
+        {
+            get { return _settingsCollapsed ? 760 - SettingsFoldDelta : 760; }
+        }
+
+        private void LayoutSettingsCardChrome(int targetW)
+        {
+            if (lblSettingsHeader != null) lblSettingsHeader.Size = new Size(targetW - 20, SettingsHeaderH - 4);
+            if (pnlSettingsBody != null) pnlSettingsBody.Size = new Size(targetW - 2, SettingsBodyH);
+        }
+
+        private void ToggleSettingsCollapse()
+        {
+            _settingsCollapsed = !_settingsCollapsed;
+            ApplySettingsCollapse();
+            if (_currentTabIndex == 2 && this.WindowState == FormWindowState.Normal)
+            {
+                // Like Simple, the window itself shrinks/grows by the card's height; the step table keeps its size
+                int newH = this.ClientSize.Height + (_settingsCollapsed ? -SettingsFoldDelta : SettingsFoldDelta);
+                if (_settingsCollapsed) this.MinimumSize = new Size(700, AsianMinHeight);
+                this.ClientSize = new Size(this.ClientSize.Width, Math.Max(AsianMinHeight, newH));
+                if (!_settingsCollapsed) this.MinimumSize = new Size(700, AsianMinHeight);
+                ApplyAsianDynamicLayout(this.ClientSize.Width, this.ClientSize.Height);
+            }
+            SaveSettings();
+        }
+
+        // Simple shrinks/grows with the card (the form auto-sizes); Asian keeps its window size
+        private void ApplySettingsCollapse()
+        {
+            if (pnlGlobalSettings == null) return;
+            pnlSettingsBody.Visible = !_settingsCollapsed;
+            pnlGlobalSettings.Size = new Size(pnlGlobalSettings.Width, SettingsCardHeight);
+            UpdateSettingsHeader();
+        }
+
+        private void UpdateSettingsHeader()
+        {
+            if (lblSettingsHeader == null) return;
+            string title = (_settingsCollapsed ? "▸ " : "▾ ") + Loc.SettingsHeader;
+            if (_settingsCollapsed)
+            {
+                System.Collections.Generic.List<string> on = new System.Collections.Generic.List<string>();
+                if (chkFreeMouse != null && chkFreeMouse.Checked) on.Add(chkFreeMouse.Text);
+                if (chkShowMap != null && chkShowMap.Checked) on.Add(chkShowMap.Text + " " + _mapOverlayOpacity + "%");
+                if (chkSmoothMove != null && chkSmoothMove.Checked) on.Add(chkSmoothMove.Text);
+                if (chkAlwaysOnTop != null && chkAlwaysOnTop.Checked) on.Add(chkAlwaysOnTop.Text);
+                if (on.Count > 0) title += "   ·   " + string.Join(" · ", on.ToArray());
+            }
+            lblSettingsHeader.Text = title;
+        }
         private int _currentTabIndex = 1;
         private bool _isBasicTab = true;
 
@@ -34,8 +118,10 @@ namespace ModernAutoClicker
         private ModernDropdownButton btnSimpleTargetWindow;
 
         // Time / Click Setting Controls (Tab Simple)
-        private Label lblHeaderTime, lblInterval, lblMs, lblSimpleLoop, lblSimpleLoopHint, lblSimpleJitter, lblSimpleJitterUnit;
-        private NumberInput numInterval, numSimpleLoop, numSimpleJitter;
+        private Label lblHeaderTime, lblInterval, lblSimpleLoop, lblSimpleLoopHint, lblSimpleJitter, lblSimpleJitterUnit;
+        private NumberInput numSimpleLoop, numSimpleJitter;
+        private DurationInput numInterval;
+        private ModernDropdown cboIntervalUnit;
         private Label lblCurrentTimeTitle, lblCurrentTimeVal;
         private Label lblCurrentClicksTitle, lblCurrentClicksVal, lblClicksUnit2;
 
@@ -52,12 +138,12 @@ namespace ModernAutoClicker
 
         // Bottom Action Controls
         private Label lblMainStatusInfo;
-        private RoundedButton btnStart;
+        private IconTextButton btnStart;
         private RoundedButton btnStopAll;
 
         // Simple Mode Profiles (Tabs 1 to 5)
         private Panel pnlSimpleTabs;
-        private RoundedButton[] btnSimpleTabs = new RoundedButton[5];
+        private RoundedButton[] btnSimpleTabs = new RoundedButton[AppSettings.SimpleTabCount];
         private int _simpleTabIndex = 0;
 
         private void InitializeComponent()
@@ -79,7 +165,7 @@ namespace ModernAutoClicker
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 ColumnCount = 1,
-                RowCount = 6,
+                RowCount = 7,
                 Padding = new Padding(12, 8, 12, 12),
                 Margin = new Padding(0)
             };
@@ -112,43 +198,16 @@ namespace ModernAutoClicker
             // ==========================================
             // 2. MODERN TAB BAR
             // ==========================================
-            pnlTabBar = new Panel
+            tabBar = new ModeTabBar
             {
                 Size = new Size(388, 36),
                 Margin = new Padding(0, 0, 0, 8)
             };
+            tabBar.SetTabs(Loc.TabSimple, Loc.TabAsianMode);
+            tabBar.SetTabFixedWidth(1, SimpleModeTabW);
+            tabBar.OnTabSelected += SwitchTab;
 
-            btnTabInfo = new RoundedButton
-            {
-                Text = "ℹ",
-                Location = new Point(0, 0),
-                Size = new Size(34, 34),
-                BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontSegoeSymbol(ThemeTokens.FontSizeCard, FontStyle.Bold),
-                NormalColor = currentTheme.BgElevated,
-                ForeColor = currentTheme.TextSecondary
-            };
-            btnTabInfo.Click += (s, e) => SwitchTab(0);
-
-            btnTabBasic = new RoundedButton
-            {
-                Text = "Simple",
-                Location = new Point(40, 0),
-                Size = new Size(150, 34),
-                BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontCard(FontStyle.Bold)
-            };
-            btnTabBasic.Click += (s, e) => SwitchTab(1);
-
-            btnTabAdvanced = new RoundedButton
-            {
-                Text = "Asian Mode",
-                Location = new Point(196, 0),
-                Size = new Size(192, 34),
-                BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontCard(FontStyle.Bold)
-            };
-            btnTabAdvanced.Click += (s, e) => SwitchTab(2);
+            MaxApp.Common.RoundedButton btnTabAdvanced = tabBar.GetTabButton(2);
             btnTabAdvanced.Paint += (s, e) =>
             {
                 if (_currentTabIndex == 2 && pnlTabAdvanced != null && pnlTabAdvanced.VFX != null && pnlTabAdvanced.VFX.IsActive)
@@ -157,8 +216,7 @@ namespace ModernAutoClicker
                 }
             };
 
-            pnlTabBar.Controls.AddRange(new Control[] { btnTabInfo, btnTabBasic, btnTabAdvanced });
-            tblRoot.Controls.Add(pnlTabBar, 0, 1);
+            tblRoot.Controls.Add(tabBar, 0, 1);
 
             // ==========================================
             // 3. MAIN CONTENT HOST CONTAINER
@@ -186,17 +244,17 @@ namespace ModernAutoClicker
                 Margin = new Padding(0)
             };
 
-            // 0. Simple Profiles Tab Bar (Top-Left: 196 x 26)
+            // 0. Simple Profiles Tab Bar (Top row, spans into the empty space above the point list)
+            int tabBtnW = 36;
+            int tabGap = 4;
             pnlSimpleTabs = new Panel
             {
                 Location = new Point(0, 0),
-                Size = new Size(196, 26),
+                Size = new Size(AppSettings.SimpleTabCount * (tabBtnW + tabGap) - tabGap, 26),
                 Margin = new Padding(0)
             };
 
-            int tabBtnW = 36;
-            int tabGap = 4;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < AppSettings.SimpleTabCount; i++)
             {
                 int tabIdx = i;
                 btnSimpleTabs[i] = new RoundedButton
@@ -205,7 +263,7 @@ namespace ModernAutoClicker
                     Location = new Point(i * (tabBtnW + tabGap), 0),
                     Size = new Size(tabBtnW, 26),
                     BorderRadius = currentTheme.RadiusSm,
-                    Font = ThemeTokens.FontBase(FontStyle.Bold),
+                    Font = ThemeTokens.FontBase(FontStyle.Regular),
                     NormalColor = (i == _simpleTabIndex) ? currentTheme.AccentPrimary : currentTheme.BgElevated,
                     ForeColor = (i == _simpleTabIndex) ? Color.White : currentTheme.TextSecondary
                 };
@@ -238,7 +296,7 @@ namespace ModernAutoClicker
             {
                 Location = new Point(10, 26),
                 Size = new Size(176, 32),
-                Font = ThemeTokens.FontBase(FontStyle.Bold)
+                Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
             btnSimpleTargetWindow.Click += (s, e) => ShowSimpleTargetWindowMenu();
             pnlSimpleTarget.Controls.Add(btnSimpleTargetWindow);
@@ -252,10 +310,25 @@ namespace ModernAutoClicker
 
             int tY = 26;
             lblInterval = CreateLabel("Click Every:", 10, tY + 2);
-            numInterval = CreateNumberInput(86, tY, 50, 1, 999999, 10, 250);
-            numInterval.AllowEmpty = false;
-            numInterval.TextChanged += (s, e) => { if (!_isLoadingProfile) UpdateTabStatus(_isBasicTab); };
-            lblMs = CreateLabel("ms", 140, tY + 2);
+            // Interval is stored in ms; the unit dropdown only changes how it is shown and typed (ms / s / mm:ss)
+            numInterval = new DurationInput
+            {
+                Location = new Point(86, tY),
+                Width = 50,
+                MinimumMs = 1,
+                ValueMs = 250
+            };
+            numInterval.ApplyTheme(currentTheme);
+            numInterval.ValueChanged += () => { if (!_isLoadingProfile) UpdateTabStatus(_isBasicTab); };
+            cboIntervalUnit = TimeUnitDropdown.Create(TimeUnit.Milliseconds);
+            cboIntervalUnit.Location = new Point(140, tY);
+            cboIntervalUnit.Size = new Size(46, numInterval.Height);
+            cboIntervalUnit.ApplyTheme(currentTheme);
+            cboIntervalUnit.SelectedIndexChanged += (s, e) =>
+            {
+                numInterval.Unit = cboIntervalUnit.SelectedIndex;
+                if (!_isLoadingProfile) UpdateTabStatus(_isBasicTab);
+            };
 
             tY += 28;
             lblSimpleLoop = CreateLabel("Loops:", 10, tY + 2);
@@ -281,7 +354,7 @@ namespace ModernAutoClicker
             lblCurrentTimeVal = CreateValueLabel("00:00:00", 86, tY - 1);
 
             pnlTime.Controls.AddRange(new Control[] {
-                lblInterval, numInterval, lblMs,
+                lblInterval, numInterval, cboIntervalUnit,
                 lblSimpleLoop, numSimpleLoop, lblSimpleLoopHint,
                 lblSimpleJitter, numSimpleJitter, lblSimpleJitterUnit,
                 lblCurrentClicksTitle, lblCurrentClicksVal, lblClicksUnit2,
@@ -295,33 +368,28 @@ namespace ModernAutoClicker
             lblHeaderList.Location = new Point(10, 8);
             pnlList.Controls.Add(lblHeaderList);
 
+            // Icon-only list buttons (names in tooltips, see ApplyLanguage); icons are tinted in ApplyTheme
             btnClearList = new RoundedButton
             {
-                Text = "Clear",
                 Location = new Point(8, 28),
                 Size = new Size(52, 22),
-                BorderRadius = currentTheme.RadiusSm,
-                Font = ThemeTokens.FontSmall(FontStyle.Bold)
+                BorderRadius = currentTheme.RadiusSm
             };
             btnClearList.Click += (s, e) => ClearPoints();
 
             btnSaveList = new RoundedButton
             {
-                Text = "Save",
                 Location = new Point(64, 28),
                 Size = new Size(52, 22),
-                BorderRadius = currentTheme.RadiusSm,
-                Font = ThemeTokens.FontSmall(FontStyle.Bold)
+                BorderRadius = currentTheme.RadiusSm
             };
             btnSaveList.Click += (s, e) => SavePointsToFile();
 
             btnLoadList = new RoundedButton
             {
-                Text = "Load",
                 Location = new Point(120, 28),
                 Size = new Size(54, 22),
-                BorderRadius = currentTheme.RadiusSm,
-                Font = ThemeTokens.FontSmall(FontStyle.Bold)
+                BorderRadius = currentTheme.RadiusSm
             };
             btnLoadList.Click += (s, e) => LoadPointsFromFile();
 
@@ -373,7 +441,7 @@ namespace ModernAutoClicker
                 Margin = new Padding(0, 0, 0, 8)
             };
 
-            btnStart = new RoundedButton
+            btnStart = new IconTextButton
             {
                 Text = "Start",
                 Subtitle = "(F6)",
@@ -399,13 +467,12 @@ namespace ModernAutoClicker
             };
             btnStopAll.Click += (s, e) => StopAll();
 
+            // Icon-only so it never wraps; the name lives in its tooltip (set in ApplyLanguage), the icon is tinted in ApplyTheme
             btnTransformTool = new RoundedButton
             {
-                Text = "Move &\nScale",
-                Location = new Point(242, 0),
-                Size = new Size(74, 44),
+                Location = new Point(344, 0),
+                Size = new Size(RunBarIconW, 44),
                 BorderRadius = currentTheme.RadiusMd,
-                Font = ThemeTokens.FontCard(FontStyle.Bold),
                 NormalColor = currentTheme.BgElevated,
                 HoverColor = currentTheme.AccentPrimary,
                 ForeColor = currentTheme.TextPrimary
@@ -421,7 +488,7 @@ namespace ModernAutoClicker
             {
                 Size = new Size(388, 16),
                 Margin = new Padding(0, 2, 0, 4),
-                Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeSmall),
+                Font = ThemeTokens.FontSmall(FontStyle.Regular),
                 TextAlign = ContentAlignment.MiddleLeft,
                 Text = "Ready"
             };
@@ -432,8 +499,31 @@ namespace ModernAutoClicker
             // ==========================================
             // 6. BOTTOM GLOBAL SETTINGS & HOTKEYS BAR
             // ==========================================
-            pnlGlobalSettings = CreateCard(388, 90);
+            pnlGlobalSettings = CreateCard(388, SettingsBodyTop + SettingsBodyH);
             pnlGlobalSettings.Margin = new Padding(0);
+
+            // Clickable header row folds the card; when folded it lists the options that are on
+            lblSettingsHeader = new Label
+            {
+                Location = new Point(10, 3),
+                Size = new Size(368, SettingsHeaderH - 4),
+                AutoSize = false,
+                AutoEllipsis = true,
+                UseMnemonic = false,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = ThemeTokens.FontSmall(FontStyle.Bold),
+                ForeColor = currentTheme.TextSecondary,
+                Cursor = Cursors.Hand
+            };
+            lblSettingsHeader.Click += (s, e) => ToggleSettingsCollapse();
+
+            // Body keeps the original control positions; folding just hides it
+            pnlSettingsBody = new Panel
+            {
+                Location = new Point(1, SettingsBodyTop),
+                Size = new Size(386, SettingsBodyH),
+                BackColor = currentTheme.BgSecondary
+            };
 
             chkAlwaysOnTop = new CheckBox
             {
@@ -443,7 +533,7 @@ namespace ModernAutoClicker
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
-            chkAlwaysOnTop.CheckedChanged += (s, e) => { this.TopMost = chkAlwaysOnTop.Checked; };
+            chkAlwaysOnTop.CheckedChanged += (s, e) => { this.TopMost = chkAlwaysOnTop.Checked; UpdateSettingsHeader(); };
 
             chkShowMap = new CheckBox
             {
@@ -453,7 +543,7 @@ namespace ModernAutoClicker
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
-            chkShowMap.CheckedChanged += (s, e) => { SyncOverlay(); };
+            chkShowMap.CheckedChanged += (s, e) => { SyncOverlay(); UpdateSettingsHeader(); };
 
             btnMapOpacity = new RoundedButton
             {
@@ -475,7 +565,7 @@ namespace ModernAutoClicker
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
-            chkFreeMouse.CheckedChanged += (s, e) => UpdateTabStatus(_isBasicTab);
+            chkFreeMouse.CheckedChanged += (s, e) => { UpdateTabStatus(_isBasicTab); UpdateSettingsHeader(); };
 
             chkSmoothMove = new CheckBox
             {
@@ -485,6 +575,7 @@ namespace ModernAutoClicker
                 AutoSize = true,
                 Font = ThemeTokens.FontBase(FontStyle.Regular)
             };
+            chkSmoothMove.CheckedChanged += (s, e) => UpdateSettingsHeader();
 
             // Hotkey Help Inset Cards (Independent CS Controls)
             cardSimpleHotkey = new SimpleHotkeyCard(currentTheme);
@@ -495,22 +586,27 @@ namespace ModernAutoClicker
             cardAdvancedHotkey.Location = new Point(170, 8);
             cardAdvancedHotkey.Visible = false;
 
-            pnlGlobalSettings.Controls.AddRange(new Control[] { chkAlwaysOnTop, chkShowMap, btnMapOpacity, chkFreeMouse, chkSmoothMove, cardSimpleHotkey, cardAdvancedHotkey });
+            pnlSettingsBody.Controls.AddRange(new Control[] { chkAlwaysOnTop, chkShowMap, btnMapOpacity, chkFreeMouse, chkSmoothMove, cardSimpleHotkey, cardAdvancedHotkey });
+            pnlGlobalSettings.Controls.AddRange(new Control[] { lblSettingsHeader, pnlSettingsBody });
             tblRoot.Controls.Add(pnlGlobalSettings, 0, 5);
 
-            this.Controls.Add(tblRoot);
-
-            this.FormClosing += (s, e) =>
+            // ==========================================
+            // 7. RUNNING TASKS ROW (only while a task runs)
+            // ==========================================
+            lblRunningTasks = new Label
             {
-                StopAll();
-                UnregisterGlobalHotkeys();
-                SaveSettings();
-                if (overlayForm != null && !overlayForm.IsDisposed)
-                {
-                    overlayForm.Close();
-                    overlayForm.Dispose();
-                }
+                Size = new Size(388, 16),
+                Margin = new Padding(0, RunningRowH - 16, 0, 0),
+                AutoSize = false,
+                AutoEllipsis = true,
+                UseMnemonic = false,
+                Font = ThemeTokens.FontSmall(FontStyle.Regular),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Visible = false
             };
+            tblRoot.Controls.Add(lblRunningTasks, 0, 6);
+
+            this.Controls.Add(tblRoot);
         }
 
         public void ApplyAsianDynamicLayout(int clientW, int clientH)
@@ -518,12 +614,12 @@ namespace ModernAutoClicker
             if (_currentTabIndex != 2) return;
 
             int minW = 700;
-            int minH = 760;
+            int minH = AsianMinHeight;
             int curW = Math.Max(minW, clientW);
             int curH = Math.Max(minH, clientH);
 
             int targetW = curW - 24;
-            int targetContentH = curH - 276;
+            int targetContentH = curH - AsianChromeBaseH - SettingsCardHeight - RunningRowHeight;
 
             if (tblRoot != null)
             {
@@ -538,12 +634,7 @@ namespace ModernAutoClicker
             if (titleBar != null && titleBar.Width != targetW) titleBar.Size = new Size(targetW, 32);
 
             // 1. Tab Bar
-            if (pnlTabBar != null && pnlTabBar.Width != targetW) pnlTabBar.Size = new Size(targetW, 36);
-            if (btnTabAdvanced != null)
-            {
-                int tabAdvW = targetW - 196;
-                if (btnTabAdvanced.Width != tabAdvW) btnTabAdvanced.Size = new Size(tabAdvW, 34);
-            }
+            if (tabBar != null && tabBar.Width != targetW) tabBar.Size = new Size(targetW, 36);
 
             // 2. Content Host & Advanced Tab Panel
             if (pnlContentHost != null && (pnlContentHost.Width != targetW || pnlContentHost.Height != targetContentH))
@@ -557,22 +648,20 @@ namespace ModernAutoClicker
 
             // 3. Status Info
             if (lblMainStatusInfo != null && lblMainStatusInfo.Width != targetW) lblMainStatusInfo.Size = new Size(targetW, 16);
+            if (lblRunningTasks != null && lblRunningTasks.Width != targetW) lblRunningTasks.Size = new Size(targetW, 16);
 
             // 4. Bottom Action Bar
             if (pnlBottomBar != null)
             {
                 if (pnlBottomBar.Width != targetW) pnlBottomBar.Size = new Size(targetW, 46);
-                int totalBtnW = 180 + 8 + 122 + 8 + 152; // 470px
-                int startX = Math.Max(10, (targetW - totalBtnW) / 2);
-                if (btnStart != null && btnStart.Left != startX) btnStart.Location = new Point(startX, 0);
-                if (btnStopAll != null && btnStopAll.Left != startX + 180 + 8) btnStopAll.Location = new Point(startX + 180 + 8, 0);
-                if (btnTransformTool != null && btnTransformTool.Left != startX + 180 + 8 + 122 + 8) btnTransformTool.Location = new Point(startX + 180 + 8 + 122 + 8, 0);
+                LayoutRunBar(targetW, true);
             }
 
             // 5. Global Settings & Hotkey Card
             if (pnlGlobalSettings != null)
             {
-                if (pnlGlobalSettings.Width != targetW) pnlGlobalSettings.Size = new Size(targetW, 90);
+                if (pnlGlobalSettings.Width != targetW || pnlGlobalSettings.Height != SettingsCardHeight) pnlGlobalSettings.Size = new Size(targetW, SettingsCardHeight);
+                LayoutSettingsCardChrome(targetW);
                 if (cardAdvancedHotkey != null)
                 {
                     int cardW = Math.Max(408, targetW - 170 - 12);
@@ -583,16 +672,35 @@ namespace ModernAutoClicker
             if (tblRoot != null) tblRoot.ResumeLayout(true);
         }
 
+        // Start is the one wide button; Stop ALL is narrower and Move & Scale is a small icon button.
+        // Simple fills its 388px width; the wider Asian window keeps the group a fixed size and centred.
+        private void LayoutRunBar(int targetW, bool isAdvanced)
+        {
+            if (btnStart == null || btnStopAll == null || btnTransformTool == null) return;
+            int gap = 6;
+            int stopW = isAdvanced ? 130 : 104;
+            int startW = isAdvanced ? 260 : targetW - stopW - RunBarIconW - gap * 2;
+            int startX = isAdvanced ? Math.Max(10, (targetW - (startW + stopW + RunBarIconW + gap * 2)) / 2) : 0;
+
+            btnStart.Location = new Point(startX, 0);
+            btnStart.Size = new Size(startW, 44);
+            btnStopAll.Location = new Point(startX + startW + gap, 0);
+            btnStopAll.Size = new Size(stopW, 44);
+            btnTransformTool.Location = new Point(startX + startW + gap + stopW + gap, 0);
+            btnTransformTool.Size = new Size(RunBarIconW, 44);
+        }
+
         private void SwitchTab(int tabIndex)
         {
             if (_currentTabIndex == 2 && this.WindowState != FormWindowState.Minimized)
             {
                 _savedAsianWidth = Math.Max(700, this.Width);
-                _savedAsianHeight = Math.Max(760, this.Height);
+                _savedAsianHeight = Math.Max(AsianMinHeight, this.Height);
             }
 
             _currentTabIndex = tabIndex;
             _isBasicTab = (tabIndex == 1);
+            UpdateRunningTasksRow(false);
 
             this.SuspendLayout();
             if (tblRoot != null) tblRoot.SuspendLayout();
@@ -619,39 +727,22 @@ namespace ModernAutoClicker
             {
                 this.AutoSize = false;
                 if (tblRoot != null) tblRoot.AutoSize = false;
-                this.MinimumSize = new Size(700, 760);
+                this.MinimumSize = new Size(700, AsianMinHeight);
                 this.MaximumSize = Size.Empty;
                 int targetFormW = Math.Max(700, _savedAsianWidth);
-                int targetFormH = Math.Max(760, _savedAsianHeight);
+                int targetFormH = Math.Max(AsianMinHeight, _savedAsianHeight);
                 this.ClientSize = new Size(targetFormW, targetFormH);
             }
 
             int targetW = isAdvanced ? (this.ClientSize.Width - 24) : 388;
-            int targetContentH = isAdvanced ? (this.ClientSize.Height - 276) : (tabIndex == 0 ? 508 : 342);
+            int targetContentH = isAdvanced ? (this.ClientSize.Height - AsianChromeBaseH - SettingsCardHeight - RunningRowHeight) : (tabIndex == 0 ? 508 : 342);
 
             // 0. Title Bar
             if (titleBar != null) titleBar.Size = new Size(targetW, 32);
 
             // 1. Tab Bar
-            pnlTabBar.Size = new Size(targetW, 36);
-            if (!isAdvanced)
-            {
-                btnTabInfo.Location = new Point(0, 0);
-                btnTabInfo.Size = new Size(34, 34);
-                btnTabBasic.Location = new Point(40, 0);
-                btnTabBasic.Size = new Size(150, 34);
-                btnTabAdvanced.Location = new Point(196, 0);
-                btnTabAdvanced.Size = new Size(192, 34);
-            }
-            else
-            {
-                btnTabInfo.Location = new Point(0, 0);
-                btnTabInfo.Size = new Size(34, 34);
-                btnTabBasic.Location = new Point(40, 0);
-                btnTabBasic.Size = new Size(150, 34);
-                btnTabAdvanced.Location = new Point(196, 0);
-                btnTabAdvanced.Size = new Size(targetW - 196, 34);
-            }
+            tabBar.Size = new Size(targetW, 36);
+            tabBar.SelectedIndex = tabIndex;
 
             // 2. Content Host & Panels
             pnlContentHost.Size = new Size(targetW, targetContentH);
@@ -670,30 +761,15 @@ namespace ModernAutoClicker
             pnlGlobalSettings.Visible = showControls;
 
             lblMainStatusInfo.Size = new Size(targetW, 16);
+            lblRunningTasks.Size = new Size(targetW, 16);
 
             // 4. Bottom Action Bar
             pnlBottomBar.Size = new Size(targetW, 46);
-            if (!isAdvanced)
-            {
-                btnStart.Location = new Point(20, 0);
-                btnStart.Size = new Size(130, 44);
-                if (btnStopAll != null) { btnStopAll.Location = new Point(156, 0); btnStopAll.Size = new Size(100, 44); }
-                btnTransformTool.Location = new Point(262, 0);
-                btnTransformTool.Size = new Size(106, 44);
-            }
-            else
-            {
-                int totalBtnW = 180 + 8 + 122 + 8 + 152;
-                int startX = Math.Max(10, (targetW - totalBtnW) / 2);
-                btnStart.Location = new Point(startX, 0);
-                btnStart.Size = new Size(180, 44);
-                if (btnStopAll != null) { btnStopAll.Location = new Point(startX + 180 + 8, 0); btnStopAll.Size = new Size(122, 44); }
-                btnTransformTool.Location = new Point(startX + 180 + 8 + 122 + 8, 0);
-                btnTransformTool.Size = new Size(152, 44);
-            }
+            LayoutRunBar(targetW, isAdvanced);
 
             // 5. Global Settings & Hotkey Card
-            pnlGlobalSettings.Size = new Size(targetW, 90);
+            pnlGlobalSettings.Size = new Size(targetW, SettingsCardHeight);
+            LayoutSettingsCardChrome(targetW);
             if (!isAdvanced)
             {
                 chkAlwaysOnTop.Location = new Point(8, 7);
@@ -741,28 +817,11 @@ namespace ModernAutoClicker
                 }
             }
 
-            ThemeTokens t = currentTheme ?? ThemeTokens.DarkTheme();
-
-            btnTabInfo.NormalColor = (tabIndex == 0) ? t.AccentPrimary : t.BgElevated;
-            btnTabInfo.ForeColor = (tabIndex == 0) ? Color.White : t.TextSecondary;
-            btnTabInfo.HoverColor = (tabIndex == 0) ? t.AccentPrimaryHover : t.BorderHover;
-            btnTabInfo.Invalidate();
-
-            btnTabBasic.NormalColor = (tabIndex == 1) ? t.AccentPrimary : t.BgElevated;
-            btnTabBasic.ForeColor = (tabIndex == 1) ? Color.White : t.TextSecondary;
-            btnTabBasic.HoverColor = (tabIndex == 1) ? t.AccentPrimaryHover : t.BorderHover;
-            btnTabBasic.Invalidate();
-
-            btnTabAdvanced.NormalColor = (tabIndex == 2) ? t.AccentPrimary : t.BgElevated;
-            btnTabAdvanced.ForeColor = (tabIndex == 2) ? Color.White : t.TextSecondary;
-            btnTabAdvanced.HoverColor = (tabIndex == 2) ? t.AccentPrimaryHover : t.BorderHover;
-            btnTabAdvanced.Invalidate();
-
             if (pnlTabAdvanced != null && pnlTabAdvanced.VFX != null)
             {
                 if (tabIndex == 2)
                 {
-                    pnlTabAdvanced.VFX.Attach(this, tblRoot, btnTabAdvanced);
+                    pnlTabAdvanced.VFX.Attach(this, tblRoot, tabBar.GetTabButton(2));
                     pnlTabAdvanced.VFX.Start();
                 }
                 else
@@ -786,11 +845,13 @@ namespace ModernAutoClicker
         {
             if (lblMainStatusInfo == null) return;
 
-            if (IsAnyRunning)
+            string runStats = GetActiveRunStats();
+            if (runStats != null)
             {
-                UpdateMainStatusText();
+                ShowRunStats(runStats);
                 return;
             }
+            _statusShowsRunStats = false;
 
             if (_currentTabIndex == 0)
             {
@@ -801,22 +862,25 @@ namespace ModernAutoClicker
             else if (_currentTabIndex == 1)
             {
                 string modeStr = (chkFreeMouse != null && chkFreeMouse.Checked)
-                    ? (Loc.IsVietnamese ? "Chuột tự do" : "Free Mouse")
-                    : (Loc.IsVietnamese ? "Tọa độ cố định" : "Fixed Coordinates");
-                int interval = numInterval != null ? numInterval.Value : 100;
+                    ? (Loc.ModeFreeMouse)
+                    : (Loc.ModeFixedCoordinates);
+                // Shown in the unit picked next to "Click Every", e.g. "250 ms", "1.5 s", "02:30 m"
+                string interval = numInterval != null
+                    ? TimeUnit.Format(numInterval.ValueMs, numInterval.Unit) + " " + TimeUnit.ShortName(numInterval.Unit)
+                    : "100 ms";
                 bool isCursor = (radModeCursor != null && radModeCursor.Checked);
                 if (isCursor)
                 {
                     lblMainStatusInfo.Text = Loc.IsVietnamese
-                        ? string.Format("Sẵn sàng | Bám Con trỏ | Chế độ: {0} | Khoảng cách: {1}ms", modeStr, interval)
-                        : string.Format("Ready | Follow Cursor | Mode: {0} | Every: {1}ms", modeStr, interval);
+                        ? string.Format("Sẵn sàng | Bám Con trỏ | Chế độ: {0} | Khoảng cách: {1}", modeStr, interval)
+                        : string.Format("Ready | Follow Cursor | Mode: {0} | Every: {1}", modeStr, interval);
                 }
                 else
                 {
                     int ptsCount = (lstPoints != null) ? lstPoints.Count : 0;
                     lblMainStatusInfo.Text = Loc.IsVietnamese
-                        ? string.Format("Sẵn sàng | Chế độ: {0} | Khoảng cách: {1}ms | Tọa độ: {2}", modeStr, interval, ptsCount)
-                        : string.Format("Ready | Mode: {0} | Every: {1}ms | Points: {2}", modeStr, interval, ptsCount);
+                        ? string.Format("Sẵn sàng | Chế độ: {0} | Khoảng cách: {1} | Tọa độ: {2}", modeStr, interval, ptsCount)
+                        : string.Format("Ready | Mode: {0} | Every: {1} | Points: {2}", modeStr, interval, ptsCount);
                 }
             }
             else
@@ -837,8 +901,7 @@ namespace ModernAutoClicker
                 if (titleBar != null) titleBar.ApplyLanguage();
 
                 // Tabs
-                if (btnTabBasic != null) btnTabBasic.Text = Loc.TabSimple;
-                if (btnTabAdvanced != null) btnTabAdvanced.Text = Loc.TabAsianMode;
+                if (tabBar != null) tabBar.SetTabs(Loc.TabSimple, Loc.TabAsianMode);
 
                 // Click Mode Card
                 if (lblHeaderClickMode != null) lblHeaderClickMode.Text = Loc.HeaderClickMode;
@@ -852,7 +915,7 @@ namespace ModernAutoClicker
                 // Click Settings Card
                 if (lblHeaderTime != null) lblHeaderTime.Text = Loc.HeaderClickSettings;
                 if (lblInterval != null) lblInterval.Text = Loc.LabelClickEvery;
-                if (lblMs != null) lblMs.Text = Loc.UnitMs;
+                TimeUnitDropdown.RefreshText(cboIntervalUnit);
                 if (lblSimpleLoop != null) lblSimpleLoop.Text = Loc.LabelLoops;
                 if (lblSimpleLoopHint != null) lblSimpleLoopHint.Text = Loc.LoopHintInfinite;
                 if (lblSimpleJitter != null) lblSimpleJitter.Text = Loc.LabelJitter;
@@ -863,14 +926,18 @@ namespace ModernAutoClicker
 
                 // Target List Card
                 UpdatePointsHeader();
-                if (btnClearList != null) btnClearList.Text = Loc.BtnClear;
-                if (btnSaveList != null) btnSaveList.Text = Loc.BtnSave;
-                if (btnLoadList != null) btnLoadList.Text = Loc.BtnLoad;
+                // List buttons are icon-only (the card is too narrow for icon + text); their names live in tooltips
+                if (_startToolTip != null)
+                {
+                    if (btnClearList != null) _startToolTip.SetToolTip(btnClearList, Loc.BtnClear);
+                    if (btnSaveList != null) _startToolTip.SetToolTip(btnSaveList, Loc.BtnSave);
+                    if (btnLoadList != null) _startToolTip.SetToolTip(btnLoadList, Loc.BtnLoad);
+                }
 
                 // Action Buttons
                 UpdateStartButtonState();
                 if (btnStopAll != null) btnStopAll.Text = Loc.BtnStopAll;
-                if (btnTransformTool != null) btnTransformTool.Text = Loc.BtnTransformTool;
+                if (btnTransformTool != null && _startToolTip != null) _startToolTip.SetToolTip(btnTransformTool, Loc.BtnTransformToolTip);
 
                 // Checkboxes
                 if (chkAlwaysOnTop != null) chkAlwaysOnTop.Text = Loc.ChkAlwaysOnTop;
@@ -884,12 +951,14 @@ namespace ModernAutoClicker
                     }
                 }
                 if (chkSmoothMove != null) chkSmoothMove.Text = Loc.ChkSmoothMove;
+                UpdateSettingsHeader();
 
                 // Advanced Tab & Info Tab
                 if (pnlTabAdvanced != null) pnlTabAdvanced.ApplyLanguage();
                 if (pnlTabInfo != null) pnlTabInfo.ApplyLanguage();
 
                 // Status info
+                UpdateRunningTasksRow(true);
                 UpdateTabStatus(_isBasicTab);
             }
             finally
@@ -901,6 +970,7 @@ namespace ModernAutoClicker
         public void ApplyTheme(ThemeTokens t)
         {
             currentTheme = t;
+            ThemeTokens.Current = t;
             this.BackColor = t.BgPrimary;
             this.ForeColor = t.TextPrimary;
 
@@ -921,6 +991,8 @@ namespace ModernAutoClicker
                     card.Invalidate();
                 }
             }
+            if (pnlSettingsBody != null) pnlSettingsBody.BackColor = t.BgSecondary;
+            if (lblSettingsHeader != null) lblSettingsHeader.ForeColor = t.TextSecondary;
 
             if (pnlTabInfo != null)
             {
@@ -957,7 +1029,7 @@ namespace ModernAutoClicker
 
             // Sub labels
             Label[] subLabels = new Label[] {
-                lblInterval, lblMs, lblSimpleLoop, lblSimpleJitter,
+                lblInterval, lblSimpleLoop, lblSimpleJitter,
                 lblCurrentClicksTitle, lblCurrentTimeTitle
             };
             foreach (Label l in subLabels)
@@ -992,11 +1064,13 @@ namespace ModernAutoClicker
             if (chkSmoothMove != null) chkSmoothMove.ForeColor = t.TextSecondary;
 
             // Inputs
-            NumberInput[] nums = new NumberInput[] { numInterval, numSimpleLoop, numSimpleJitter };
+            NumberInput[] nums = new NumberInput[] { numSimpleLoop, numSimpleJitter };
             foreach (NumberInput n in nums)
             {
                 if (n != null) n.ApplyTheme(t);
             }
+            if (numInterval != null) numInterval.ApplyTheme(t);
+            if (cboIntervalUnit != null) cboIntervalUnit.ApplyTheme(t);
 
             lstPoints.ApplyTheme(t);
 
@@ -1012,27 +1086,14 @@ namespace ModernAutoClicker
             btnSaveList.NormalColor = btnBg;
             btnSaveList.ForeColor = btnText;
             btnSaveList.HoverColor = t.AccentSecondary;
-            btnSaveList.Invalidate();
+            AppIcons.Set(btnSaveList, AppIcons.Save, btnText, ContentAlignment.MiddleCenter);
 
             btnLoadList.NormalColor = btnBg;
             btnLoadList.ForeColor = btnText;
             btnLoadList.HoverColor = t.AccentSecondary;
-            btnLoadList.Invalidate();
+            AppIcons.Set(btnLoadList, AppIcons.Import, btnText, ContentAlignment.MiddleCenter);
 
-            btnTabInfo.NormalColor = (_currentTabIndex == 0) ? t.AccentPrimary : t.BgElevated;
-            btnTabInfo.ForeColor = (_currentTabIndex == 0) ? Color.White : t.TextSecondary;
-            btnTabInfo.HoverColor = (_currentTabIndex == 0) ? t.AccentPrimaryHover : t.BorderHover;
-            btnTabInfo.Invalidate();
-
-            btnTabBasic.NormalColor = (_currentTabIndex == 1) ? t.AccentPrimary : t.BgElevated;
-            btnTabBasic.ForeColor = (_currentTabIndex == 1) ? Color.White : t.TextSecondary;
-            btnTabBasic.HoverColor = (_currentTabIndex == 1) ? t.AccentPrimaryHover : t.BorderHover;
-            btnTabBasic.Invalidate();
-
-            btnTabAdvanced.NormalColor = (_currentTabIndex == 2) ? t.AccentPrimary : t.BgElevated;
-            btnTabAdvanced.ForeColor = (_currentTabIndex == 2) ? Color.White : t.TextSecondary;
-            btnTabAdvanced.HoverColor = (_currentTabIndex == 2) ? t.AccentPrimaryHover : t.BorderHover;
-            btnTabAdvanced.Invalidate();
+            tabBar.ApplyTheme(t);
 
             // Hotkey help boxes
             if (cardSimpleHotkey != null) cardSimpleHotkey.ApplyTheme(t);
@@ -1043,6 +1104,7 @@ namespace ModernAutoClicker
             {
                 lblMainStatusInfo.ForeColor = t.TextSecondary;
             }
+            if (lblRunningTasks != null) lblRunningTasks.ForeColor = t.Success;
 
             bool isRunning = IsActiveTabRunning;
             btnStart.NormalColor = isRunning ? t.Danger : t.AccentPrimary;
@@ -1050,30 +1112,21 @@ namespace ModernAutoClicker
             btnStart.ForeColor = Color.White;
             btnStart.Invalidate();
 
-            if (btnStopAll != null)
-            {
-                btnStopAll.NormalColor = t.Danger;
-                btnStopAll.HoverColor = t.CRed;
-                btnStopAll.ForeColor = Color.White;
-                btnStopAll.BorderRadius = t.RadiusMd;
-                btnStopAll.Invalidate();
-            }
+            if (btnStopAll != null) btnStopAll.BorderRadius = t.RadiusMd;
+            UpdateStopAllButtonLook();
 
             // Button Radius & Border styling
             btnClearList.BorderRadius = t.RadiusMd;
             btnSaveList.BorderRadius = t.RadiusMd;
             btnLoadList.BorderRadius = t.RadiusMd;
             btnStart.BorderRadius = t.RadiusMd;
-            btnTabInfo.BorderRadius = t.RadiusMd;
-            btnTabBasic.BorderRadius = t.RadiusMd;
-            btnTabAdvanced.BorderRadius = t.RadiusMd;
             if (btnTransformTool != null)
             {
                 btnTransformTool.NormalColor = t.BgElevated;
                 btnTransformTool.HoverColor = t.AccentPrimary;
                 btnTransformTool.ForeColor = t.TextPrimary;
                 btnTransformTool.BorderRadius = t.RadiusMd;
-                btnTransformTool.Invalidate();
+                AppIcons.Set(btnTransformTool, AppIcons.MoveAndScale, t.TextPrimary, ContentAlignment.MiddleCenter);
             }
             if (btnSimpleTargetWindow != null) btnSimpleTargetWindow.ApplyTheme(t);
 
@@ -1127,20 +1180,8 @@ namespace ModernAutoClicker
                 Text = text,
                 Location = new Point(x, y),
                 AutoSize = true,
-                Font = ThemeTokens.FontCard(FontStyle.Bold),
+                Font = ThemeTokens.FontCard(FontStyle.Regular),
                 ForeColor = currentTheme.TextPrimary
-            };
-        }
-
-        private Label CreateHelpLabel(string text, int x, int y)
-        {
-            return new Label
-            {
-                Text = text,
-                Location = new Point(x, y),
-                AutoSize = true,
-                Font = ThemeTokens.GetMonospaceFont(ThemeTokens.FontSizeBase),
-                ForeColor = currentTheme.TextSecondary
             };
         }
 
@@ -1153,7 +1194,9 @@ namespace ModernAutoClicker
                 Minimum = min,
                 Maximum = max,
                 Step = step,
-                Value = val
+                Value = val,
+                // Inputs use regular weight; NumberInput (Common) defaults to bold
+                Font = ThemeTokens.FontCard(FontStyle.Regular)
             };
             ni.ApplyTheme(currentTheme);
             return ni;

@@ -294,7 +294,7 @@ namespace ModernAutoClicker.SpecialApps
                                 return;
                             }
                         }
-                        catch { }
+                        catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                     }
 
                     // Fallback for special shell namespace items (This PC, Recycle Bin, Control Panel, Network)
@@ -325,7 +325,7 @@ namespace ModernAutoClicker.SpecialApps
                         return;
                     }
                 }
-                catch { }
+                catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             });
         }
 
@@ -337,19 +337,19 @@ namespace ModernAutoClicker.SpecialApps
                 string d1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 if (!string.IsNullOrEmpty(d1) && !list.Contains(d1)) list.Add(d1);
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             try
             {
                 string d2 = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
                 if (!string.IsNullOrEmpty(d2) && !list.Contains(d2)) list.Add(d2);
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             try
             {
                 string d3 = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
                 if (!string.IsNullOrEmpty(d3) && !list.Contains(d3)) list.Add(d3);
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             try
             {
                 using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"))
@@ -365,7 +365,7 @@ namespace ModernAutoClicker.SpecialApps
                     }
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             try
             {
                 string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -381,7 +381,7 @@ namespace ModernAutoClicker.SpecialApps
                     if (!list.Contains(oneDriveDeskVn) && Directory.Exists(oneDriveDeskVn)) list.Add(oneDriveDeskVn);
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             return list.ToArray();
         }
 

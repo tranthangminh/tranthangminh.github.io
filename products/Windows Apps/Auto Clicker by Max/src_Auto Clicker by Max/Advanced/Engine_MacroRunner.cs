@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
+using MaxApp.Common;
 
 namespace ModernAutoClicker.Advanced
 {
@@ -12,14 +13,35 @@ namespace ModernAutoClicker.Advanced
         private volatile bool _isRunning = false;
         private Thread _workerThread = null;
         private DateTime _startTime;
-        private int _totalCyclesCompleted = 0;
+        private volatile int _totalCyclesCompleted = 0;
+        private long _stepsExecuted = 0;
+        private int _targetLoops = 0;
 
         public bool IsRunning { get { return _isRunning; } }
         public int TotalCyclesCompleted { get { return _totalCyclesCompleted; } }
+        public int TargetLoops { get { return _targetLoops; } }
+        public TimeSpan Elapsed { get { return DateTime.Now - _startTime; } }
+
+        // Every enabled step the run has gone through, including the steps of scripts called via RunScript and steps repeated by a jump
+        public long StepsExecuted { get { return Interlocked.Read(ref _stepsExecuted); } }
 
         public event Action<int, string> OnStepExecuting; // stepIndex, stepName
-        public event Action<int, TimeSpan> OnProgressUpdated; // cycles, elapsed
+        public event Action<TargetProblem> OnTargetLost; // Raised on the worker thread before OnStopped
+        public event Action<Exception> OnRunFailed; // Raised on the worker thread before OnStopped
         public event Action OnStopped;
+
+        private string _rootScriptName = "";
+        private string _currentScriptName = "";
+
+        // A step with nothing to wait for (a call to a missing script, a loop block) runs tens of thousands of times a second.
+        // Reporting each one would bury the UI thread, F7 included, so the UI hears about a step at most this often.
+        private const int StepReportIntervalMs = 33;
+        private readonly Stopwatch _runClock = new Stopwatch();
+        private long _nextStepReportMs = 0;
+
+        // For the same reason the thread rests now and then, whatever the steps do
+        private const int StepsBetweenRests = 256;
+        private int _stepsSinceRest = 0;
 
         private class RepeatTimerSession
         {
@@ -29,6 +51,9 @@ namespace ModernAutoClicker.Advanced
         }
 
         private readonly Dictionary<string, RepeatTimerSession> _repeatTimerStates = new Dictionary<string, RepeatTimerSession>(StringComparer.OrdinalIgnoreCase);
+
+        // Scripts currently on the RunScript call chain (prevents A -> B -> A infinite recursion / StackOverflow)
+        private readonly HashSet<string> _scriptCallChain = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public void Start(MacroProfile profile, List<MacroProfile> allProfiles, bool freeMouseMode, bool smoothMouseMove = false)
         {
@@ -68,8 +93,17 @@ namespace ModernAutoClicker.Advanced
 
             _isRunning = true;
             _totalCyclesCompleted = 0;
+            _stepsExecuted = 0;
+            _targetLoops = profile.LoopCount;
+            _rootScriptName = profile.Name ?? "";
+            _currentScriptName = _rootScriptName;
             _startTime = DateTime.Now;
+            _runClock.Restart();
+            _nextStepReportMs = 0;
+            _stepsSinceRest = 0;
             _repeatTimerStates.Clear();
+            _scriptCallChain.Clear();
+            _scriptCallChain.Add(profile.Name ?? "");
 
             int targetLoops = profile.LoopCount;
             int randIntervalMs = Math.Max(0, profile.RandomIntervalMs);
@@ -77,131 +111,16 @@ namespace ModernAutoClicker.Advanced
 
             _workerThread = new Thread(() =>
             {
-                Thread.Sleep(60);
-
-                // Initial settle and focus for first step (prevents missed first click)
-                if (!freeMouseMode && stepsToRun.Count > 0)
+                Exception failure = null;
+                try
                 {
-                    MacroStep firstStep = stepsToRun.Find(s => s.Enabled && (s.StartPoint != Point.Empty || s.RelativeToWindow));
-                    if (firstStep != null)
-                    {
-                        if (firstStep.RelativeToWindow)
-                        {
-                            IntPtr fHwnd = firstStep.WindowHwnd;
-                            if (!NativeMethods.IsValidWindowHandle(fHwnd, firstStep.TargetPid, firstStep.ProcessName))
-                            {
-                                fHwnd = NativeMethods.FindWindowByTarget(firstStep.ProcessName, firstStep.WindowTitle, firstStep.WindowIndex, firstStep.TargetPid);
-                                if (fHwnd != IntPtr.Zero)
-                                {
-                                    firstStep.WindowHwnd = fHwnd;
-                                    uint p;
-                                    NativeMethods.GetWindowThreadProcessId(fHwnd, out p);
-                                    if (p > 0) firstStep.TargetPid = p;
-                                }
-                                else
-                                {
-                                    firstStep.WindowHwnd = IntPtr.Zero;
-                                }
-                            }
-                            if (fHwnd != IntPtr.Zero)
-                            {
-                                NativeMethods.ForceSetForegroundWindow(fHwnd);
-                                Thread.Sleep(30);
-                            }
-                        }
-
-                        if (firstStep.StartPoint != Point.Empty)
-                        {
-                            Point targetPt = ActionExecutor.ResolveActualScreenPoint(firstStep, firstStep.StartPoint);
-                            if (smoothMouseMove)
-                            {
-                                MouseMovementSimulator.MoveSmoothly(Point.Empty, targetPt, 120, () => _isRunning);
-                            }
-                            else
-                            {
-                                NativeMethods.SetCursorPos(targetPt.X, targetPt.Y);
-                            }
-                            Thread.Sleep(30); // Allow OS and target app to update hover & focus
-                        }
-                    }
+                    RunLoops(stepsToRun, subProfilesMap, freeMouseMode, smoothMouseMove, targetLoops, randIntervalMs, randJitterPx);
                 }
-
-                int currentLoop = 0;
-
-                while (_isRunning)
+                catch (Exception ex)
                 {
-                    currentLoop++;
-
-                    for (int i = 0; i < stepsToRun.Count; i++)
-                    {
-                        if (!_isRunning) break;
-                        MacroStep step = stepsToRun[i];
-                        if (!step.Enabled) continue;
-
-                        if (OnStepExecuting != null)
-                        {
-                            string stepDesc = step.Name;
-                            if (step.ActionType == MacroActionType.RunScript)
-                            {
-                                stepDesc = string.Format("Run {0} (x{1})", step.KeyData, step.RepeatCount);
-                            }
-                            else if (step.ActionType == MacroActionType.Delay)
-                            {
-                                stepDesc = string.Format("Delay {0}ms", step.DelayMs);
-                            }
-                            else if (step.ActionType == MacroActionType.RepeatTimer)
-                            {
-                                string key = !string.IsNullOrEmpty(step.Id) ? step.Id : i.ToString();
-                                RepeatTimerSession sess;
-                                _repeatTimerStates.TryGetValue(key, out sess);
-                                int targetStep = (step.RepeatTimerTargetStep > 0) ? step.RepeatTimerTargetStep : 1;
-                                if (step.RepeatTimerMode == 1) // Timer
-                                {
-                                    if (sess != null && sess.IsActive)
-                                    {
-                                        TimeSpan left = sess.Deadline - DateTime.Now;
-                                        if (left.TotalSeconds < 0) left = TimeSpan.Zero;
-                                        stepDesc = string.Format("Repeat/Timer: {0:D2}:{1:D2} left -> Step {2}",
-                                            (int)left.TotalMinutes, left.Seconds, targetStep);
-                                    }
-                                    else
-                                    {
-                                        int m = step.RepeatTimerSeconds / 60;
-                                        int s = step.RepeatTimerSeconds % 60;
-                                        stepDesc = string.Format("Repeat/Timer: {0:D2}:{1:D2} -> Step {2}",
-                                            m, s, targetStep);
-                                    }
-                                }
-                                else // Times
-                                {
-                                    int rem = (sess != null && sess.IsActive) ? sess.RemainingCount : step.RepeatCount;
-                                    stepDesc = string.Format("Repeat/Timer: {0}/{1} times -> Step {2}",
-                                        rem, step.RepeatCount, targetStep);
-                                }
-                            }
-                            OnStepExecuting(i, stepDesc);
-                        }
-
-                        ExecuteSingleStep(step, stepsToRun, ref i, subProfilesMap, freeMouseMode, randIntervalMs, randJitterPx, smoothMouseMove);
-                    }
-
-                    _totalCyclesCompleted = currentLoop;
-                    if (OnProgressUpdated != null)
-                    {
-                        TimeSpan elapsed = DateTime.Now - _startTime;
-                        OnProgressUpdated(_totalCyclesCompleted, elapsed);
-                    }
-
-                    if (targetLoops > 0 && currentLoop >= targetLoops)
-                    {
-                        break;
-                    }
+                    failure = ex;
                 }
-
-                _isRunning = false;
-                KeyboardSimulator.ReleaseAllKeys();
-                NativeMethods.ReleaseAllMouseButtons();
-                if (OnStopped != null) OnStopped();
+                FinishRun(failure);
             })
             {
                 IsBackground = true,
@@ -209,6 +128,147 @@ namespace ModernAutoClicker.Advanced
             };
 
             _workerThread.Start();
+        }
+
+        // Whatever went wrong inside a run, it ends here: an exception on this thread would close the whole app with keys and buttons still held down
+        private void FinishRun(Exception failure)
+        {
+            _isRunning = false;
+            try
+            {
+                KeyboardSimulator.ReleaseAllKeys();
+                NativeMethods.ReleaseAllMouseButtons();
+                if (failure != null)
+                {
+                    AppLog.Error("Running script " + _rootScriptName, failure);
+                    if (OnRunFailed != null) OnRunFailed(failure);
+                }
+                if (OnStopped != null) OnStopped();
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Ending a script run", ex);
+            }
+        }
+
+        private void RunLoops(List<MacroStep> stepsToRun, Dictionary<string, List<MacroStep>> subProfilesMap, bool freeMouseMode, bool smoothMouseMove, int targetLoops, int randIntervalMs, int randJitterPx)
+        {
+        Thread.Sleep(60);
+
+        // Initial settle and focus for first step (prevents missed first click)
+        if (!freeMouseMode && stepsToRun.Count > 0)
+        {
+            MacroStep firstStep = stepsToRun.Find(s => s.Enabled && (s.StartPoint != Point.Empty || s.RelativeToWindow));
+            if (firstStep != null && EnsureStepTarget(firstStep, stepsToRun.IndexOf(firstStep)))
+            {
+                if (firstStep.RelativeToWindow)
+                {
+                    IntPtr fHwnd = firstStep.WindowHwnd;
+                    if (!NativeMethods.IsValidWindowHandle(fHwnd, firstStep.TargetPid, firstStep.ProcessName))
+                    {
+                        fHwnd = NativeMethods.FindWindowByTarget(firstStep.ProcessName, firstStep.WindowTitle, firstStep.WindowIndex, firstStep.TargetPid);
+                        if (fHwnd != IntPtr.Zero)
+                        {
+                            firstStep.WindowHwnd = fHwnd;
+                            uint p;
+                            NativeMethods.GetWindowThreadProcessId(fHwnd, out p);
+                            if (p > 0) firstStep.TargetPid = p;
+                        }
+                        else
+                        {
+                            firstStep.WindowHwnd = IntPtr.Zero;
+                        }
+                    }
+                    if (fHwnd != IntPtr.Zero)
+                    {
+                        NativeMethods.ForceSetForegroundWindow(fHwnd);
+                        Thread.Sleep(30);
+                    }
+                }
+
+                if (firstStep.StartPoint != Point.Empty)
+                {
+                    Point targetPt = ActionExecutor.ResolveActualScreenPoint(firstStep, firstStep.StartPoint);
+                    if (smoothMouseMove)
+                    {
+                        MouseMovementSimulator.MoveSmoothly(Point.Empty, targetPt, 120, () => _isRunning);
+                    }
+                    else
+                    {
+                        NativeMethods.SetCursorPos(targetPt.X, targetPt.Y);
+                    }
+                    Thread.Sleep(30); // Allow OS and target app to update hover & focus
+                }
+            }
+        }
+
+        int currentLoop = 0;
+
+        while (_isRunning)
+        {
+            currentLoop++;
+
+            for (int i = 0; i < stepsToRun.Count; i++)
+            {
+                if (!_isRunning) break;
+                MacroStep step = stepsToRun[i];
+                if (!step.Enabled) continue;
+
+                if (OnStepExecuting != null && _runClock.ElapsedMilliseconds >= _nextStepReportMs)
+                {
+                    _nextStepReportMs = _runClock.ElapsedMilliseconds + StepReportIntervalMs;
+                    string stepDesc = step.Name;
+                    if (step.ActionType == MacroActionType.RunScript)
+                    {
+                        stepDesc = string.Format("Run {0} (x{1})", step.KeyData, step.RepeatCount);
+                    }
+                    else if (step.ActionType == MacroActionType.Delay)
+                    {
+                        stepDesc = string.Format("Delay {0}ms", step.DelayMs);
+                    }
+                    else if (step.ActionType == MacroActionType.RepeatTimer)
+                    {
+                        string key = !string.IsNullOrEmpty(step.Id) ? step.Id : i.ToString();
+                        RepeatTimerSession sess;
+                        _repeatTimerStates.TryGetValue(key, out sess);
+                        int targetStep = (step.RepeatTimerTargetStep > 0) ? step.RepeatTimerTargetStep : 1;
+                        if (step.RepeatTimerMode == 1) // Timer
+                        {
+                            if (sess != null && sess.IsActive)
+                            {
+                                TimeSpan left = sess.Deadline - DateTime.Now;
+                                if (left.TotalSeconds < 0) left = TimeSpan.Zero;
+                                stepDesc = string.Format("Repeat/Timer: {0:D2}:{1:D2} left -> Step {2}",
+                                    (int)left.TotalMinutes, left.Seconds, targetStep);
+                            }
+                            else
+                            {
+                                int m = step.RepeatTimerSeconds / 60;
+                                int s = step.RepeatTimerSeconds % 60;
+                                stepDesc = string.Format("Repeat/Timer: {0:D2}:{1:D2} -> Step {2}",
+                                    m, s, targetStep);
+                            }
+                        }
+                        else // Times
+                        {
+                            int rem = (sess != null && sess.IsActive) ? sess.RemainingCount : step.RepeatCount;
+                            stepDesc = string.Format("Repeat/Timer: {0}/{1} times -> Step {2}",
+                                rem, step.RepeatCount, targetStep);
+                        }
+                    }
+                    OnStepExecuting(i, stepDesc);
+                }
+
+                ExecuteSingleStep(step, stepsToRun, ref i, subProfilesMap, freeMouseMode, randIntervalMs, randJitterPx, smoothMouseMove);
+            }
+
+            _totalCyclesCompleted = currentLoop;
+
+            if (targetLoops > 0 && currentLoop >= targetLoops)
+            {
+                break;
+            }
+        }
         }
 
         private void ExecuteStepList(List<MacroStep> steps, Dictionary<string, List<MacroStep>> subProfilesMap, bool freeMouseMode, int randIntervalMs, int randJitterPx, bool smoothMouseMove)
@@ -234,26 +294,134 @@ namespace ModernAutoClicker.Advanced
             return new Rectangle(ax, ay, aw, ah);
         }
 
+        // Stops the run and reports why when the step's target window cannot be used.
+        // A running script never moves to another window: without its window, a click would land somewhere else.
+        private bool EnsureStepTarget(MacroStep step, int stepIndex)
+        {
+            if (!ActionExecutor.UsesTargetWindow(step)) return true;
+
+            IntPtr hWnd;
+            TargetWindowState state = NativeMethods.GetTargetWindowState(step.WindowHwnd, step.TargetPid, step.ProcessName, step.WindowTitle, step.WindowIndex, out hWnd);
+            if (state == TargetWindowState.Ok)
+            {
+                step.WindowHwnd = hWnd;
+                if (step.TargetPid == 0)
+                {
+                    uint pid;
+                    NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
+                    step.TargetPid = pid;
+                }
+                return true;
+            }
+
+            _isRunning = false;
+            if (OnTargetLost != null)
+            {
+                TargetProblem problem = new TargetProblem
+                {
+                    State = state,
+                    ProcessName = step.ProcessName,
+                    WindowTitle = step.WindowTitle,
+                    WindowIndex = step.WindowIndex,
+                    Pid = step.TargetPid,
+                    RootScriptName = _rootScriptName,
+                    StoppedRun = true
+                };
+                problem.AddStep(_currentScriptName, stepIndex + 1);
+                OnTargetLost(problem);
+            }
+            return false;
+        }
+
+        // -3 repeats this step, N goes to step N. Everything else moves on: past the last step ends this pass, so a main script wraps to step 1 through the outer loop (a counted cycle) and a called script returns to its caller.
+        private static int GetJumpTarget(int jumpAction, int i)
+        {
+            if (jumpAction == -3) return i;
+            if (jumpAction > 0) return jumpAction - 1;
+            return i + 1;
+        }
+
+        // The for loop around the step adds one to i, so the next step is targetIdx
+        private static void MoveToStep(int targetIdx, int stepCount, ref int i)
+        {
+            i = (targetIdx >= 0 && targetIdx < stepCount) ? targetIdx - 1 : stepCount;
+        }
+
+        private void ClickFoundSpot(MacroStep step, Point startPoint, int i, bool freeMouseMode, int randIntervalMs, int randJitterPx)
+        {
+            MacroStep clickStep = step.Clone();
+            clickStep.ActionType = MacroActionType.LeftClick;
+            clickStep.HoldMs = Math.Max(1, step.HoldMs);
+            clickStep.EndPoint = Point.Empty; // Click at the exact spot
+            clickStep.StartPoint = startPoint;
+
+            int clickReps = Math.Max(1, step.RepeatCount);
+            for (int cr = 0; cr < clickReps; cr++)
+            {
+                if (!_isRunning || !EnsureStepTarget(step, i)) break;
+                ActionExecutor.Execute(clickStep, freeMouseMode, randIntervalMs, randJitterPx);
+                if (cr < clickReps - 1 && step.DelayMs > 0)
+                {
+                    SleepWhileRunning(ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs));
+                }
+            }
+        }
+
+        private void WaitAfterNoMatch(MacroStep step, int jumpAction, int targetIdx, int stepCount, int randIntervalMs)
+        {
+            if (jumpAction == -3)
+            {
+                int repDelay = step.DelayMs > 0 ? ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs) : 20;
+                if (repDelay > 0 && _isRunning) SleepWhileRunning(repDelay);
+            }
+            else if ((targetIdx == 0 || targetIdx >= stepCount) && _isRunning)
+            {
+                Thread.Sleep(1);
+            }
+        }
+
         private void ExecuteSingleStep(MacroStep step, List<MacroStep> stepList, ref int i, Dictionary<string, List<MacroStep>> subProfilesMap, bool freeMouseMode, int randIntervalMs, int randJitterPx, bool smoothMouseMove)
         {
+            if (++_stepsSinceRest >= StepsBetweenRests)
+            {
+                _stepsSinceRest = 0;
+                Thread.Sleep(1);
+            }
+
+            if (!EnsureStepTarget(step, i)) return;
+
+            Interlocked.Increment(ref _stepsExecuted);
+
             // 1. RunScript Action
             if (step.ActionType == MacroActionType.RunScript)
             {
+                string subName = step.KeyData ?? "";
                 List<MacroStep> subSteps;
-                if (subProfilesMap != null && subProfilesMap.TryGetValue(step.KeyData ?? "", out subSteps) && subSteps != null && subSteps.Count > 0)
+                if (!_scriptCallChain.Contains(subName) && subProfilesMap != null && subProfilesMap.TryGetValue(subName, out subSteps) && subSteps != null && subSteps.Count > 0)
                 {
-                    int scriptReps = Math.Max(1, step.RepeatCount);
-                    for (int sr = 0; sr < scriptReps; sr++)
+                    _scriptCallChain.Add(subName);
+                    string callerScript = _currentScriptName;
+                    _currentScriptName = subName;
+                    try
                     {
-                        if (!_isRunning) break;
-                        ExecuteStepList(subSteps, subProfilesMap, freeMouseMode, randIntervalMs, randJitterPx, smoothMouseMove);
+                        int scriptReps = Math.Max(1, step.RepeatCount);
+                        for (int sr = 0; sr < scriptReps; sr++)
+                        {
+                            if (!_isRunning) break;
+                            ExecuteStepList(subSteps, subProfilesMap, freeMouseMode, randIntervalMs, randJitterPx, smoothMouseMove);
+                        }
+                    }
+                    finally
+                    {
+                        _currentScriptName = callerScript;
+                        _scriptCallChain.Remove(subName);
                     }
                 }
 
                 int postDelay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
                 if (postDelay > 0 && _isRunning)
                 {
-                    Thread.Sleep(postDelay);
+                    SleepWhileRunning(postDelay);
                 }
                 return;
             }
@@ -265,6 +433,8 @@ namespace ModernAutoClicker.Advanced
                 bool isArea = (step.EndPoint != Point.Empty && step.EndPoint != step.StartPoint);
                 while (_isRunning)
                 {
+                    if (!EnsureStepTarget(step, i)) return;
+
                     if (isArea)
                     {
                         Rectangle scanRect = GetScanRectangle(step);
@@ -287,7 +457,7 @@ namespace ModernAutoClicker.Advanced
                     Thread.Sleep(20);
                 }
                 int delay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
-                if (delay > 0 && _isRunning) Thread.Sleep(delay);
+                if (delay > 0 && _isRunning) SleepWhileRunning(delay);
                 return;
             }
 
@@ -308,6 +478,8 @@ namespace ModernAutoClicker.Advanced
 
                 while (_isRunning && template != null)
                 {
+                    if (!EnsureStepTarget(step, i)) return;
+
                     Point foundCenter;
                     if (PixelSampler.FindTemplateInArea(step, scanRect, template, sim, out foundCenter))
                     {
@@ -321,7 +493,7 @@ namespace ModernAutoClicker.Advanced
                 }
 
                 int delay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
-                if (delay > 0 && _isRunning) Thread.Sleep(delay);
+                if (delay > 0 && _isRunning) SleepWhileRunning(delay);
                 return;
             }
 
@@ -333,6 +505,8 @@ namespace ModernAutoClicker.Advanced
                 Color baseColor = PixelSampler.GetPixelColor(step, samplePt);
                 while (_isRunning)
                 {
+                    if (!EnsureStepTarget(step, i)) return;
+
                     samplePt = ActionExecutor.ResolveActualScreenPoint(step, step.StartPoint);
                     Color curr = PixelSampler.GetPixelColor(step, samplePt);
                     if (!ActionExecutor.MatchesColor(curr, baseColor, tol))
@@ -342,7 +516,7 @@ namespace ModernAutoClicker.Advanced
                     Thread.Sleep(20);
                 }
                 int delay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
-                if (delay > 0 && _isRunning) Thread.Sleep(delay);
+                if (delay > 0 && _isRunning) SleepWhileRunning(delay);
                 return;
             }
 
@@ -386,50 +560,13 @@ namespace ModernAutoClicker.Advanced
                     return;
                 }
 
-                int targetIdx;
-                if (jumpAction == -2)
+                if (jumpAction == -2 && matched && samplePt != Point.Empty)
                 {
-                    // Click Target: Click at target pixel if matched, then proceed to next step (or wrap to Step 1)
-                    if (matched && samplePt != Point.Empty)
-                    {
-                        MacroStep clickStep = step.Clone();
-                        clickStep.ActionType = MacroActionType.LeftClick;
-                        clickStep.HoldMs = Math.Max(1, step.HoldMs);
-                        clickStep.EndPoint = Point.Empty; // Click at the exact found pixel point
+                    // Click Target: only an area search found a spot of its own
+                    ClickFoundSpot(step, isArea ? ActionExecutor.ResolveScreenPointToRelative(step, samplePt) : step.StartPoint, i, freeMouseMode, randIntervalMs, randJitterPx);
+                }
 
-                        if (isArea)
-                        {
-                            clickStep.StartPoint = ActionExecutor.ResolveScreenPointToRelative(step, samplePt);
-                        }
-
-                        int clickReps = Math.Max(1, step.RepeatCount);
-                        for (int cr = 0; cr < clickReps; cr++)
-                        {
-                            if (!_isRunning) break;
-                            ActionExecutor.Execute(clickStep, freeMouseMode, randIntervalMs, randJitterPx);
-                            if (cr < clickReps - 1 && step.DelayMs > 0)
-                            {
-                                Thread.Sleep(ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs));
-                            }
-                        }
-                    }
-
-                    targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;
-                }
-                else if (jumpAction == -3)
-                {
-                    // Repeat this Step: loop back to current step i
-                    targetIdx = i;
-                }
-                else if (jumpAction > 0)
-                {
-                    targetIdx = jumpAction - 1;
-                }
-                else
-                {
-                    // Next Step (jumpAction == 0): Advance to next step, or wrap around to Step 1 if at the end
-                    targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;
-                }
+                int targetIdx = GetJumpTarget(jumpAction, i);
 
                 if (matched)
                 {
@@ -439,9 +576,10 @@ namespace ModernAutoClicker.Advanced
                         if (smoothMouseMove && !freeMouseMode && actualDelay > 20)
                         {
                             Point nextTarget = Point.Empty;
-                            if (targetIdx >= 0 && targetIdx < stepList.Count)
+                            int previewIdx = (targetIdx >= stepList.Count) ? 0 : targetIdx;
+                            if (previewIdx >= 0 && previewIdx < stepList.Count)
                             {
-                                MacroStep nextStep = stepList[targetIdx];
+                                MacroStep nextStep = stepList[previewIdx];
                                 if (nextStep.Enabled && nextStep.StartPoint != Point.Empty)
                                 {
                                     nextTarget = ActionExecutor.ResolveActualScreenPoint(nextStep, nextStep.StartPoint);
@@ -455,37 +593,21 @@ namespace ModernAutoClicker.Advanced
                             }
                             else
                             {
-                                Thread.Sleep(actualDelay);
+                                SleepWhileRunning(actualDelay);
                             }
                         }
                         else
                         {
-                            Thread.Sleep(actualDelay);
+                            SleepWhileRunning(actualDelay);
                         }
                     }
                 }
                 else
                 {
-                    // Unmatched
-                    if (jumpAction == -3)
-                    {
-                        int repDelay = step.DelayMs > 0 ? ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs) : 20;
-                        if (repDelay > 0 && _isRunning) Thread.Sleep(repDelay);
-                    }
-                    else if (targetIdx == 0 && _isRunning)
-                    {
-                        Thread.Sleep(1);
-                    }
+                    WaitAfterNoMatch(step, jumpAction, targetIdx, stepList.Count, randIntervalMs);
                 }
 
-                if (targetIdx >= 0 && targetIdx < stepList.Count)
-                {
-                    i = targetIdx - 1; // Outer for-loop will increment i, so next step is targetIdx
-                }
-                else
-                {
-                    i = stepList.Count; // End of script
-                }
+                MoveToStep(targetIdx, stepList.Count, ref i);
                 return;
             }
 
@@ -518,76 +640,28 @@ namespace ModernAutoClicker.Advanced
                     return;
                 }
 
-                int targetIdx;
-                if (jumpAction == -2)
+                if (jumpAction == -2 && matched && foundCenter != Point.Empty)
                 {
                     // Click Center of the matched template image
-                    if (matched && foundCenter != Point.Empty)
-                    {
-                        MacroStep clickStep = step.Clone();
-                        clickStep.ActionType = MacroActionType.LeftClick;
-                        clickStep.HoldMs = Math.Max(1, step.HoldMs);
-                        clickStep.EndPoint = Point.Empty;
-                        clickStep.StartPoint = ActionExecutor.ResolveScreenPointToRelative(step, foundCenter);
+                    ClickFoundSpot(step, ActionExecutor.ResolveScreenPointToRelative(step, foundCenter), i, freeMouseMode, randIntervalMs, randJitterPx);
+                }
 
-                        int clickReps = Math.Max(1, step.RepeatCount);
-                        for (int cr = 0; cr < clickReps; cr++)
-                        {
-                            if (!_isRunning) break;
-                            ActionExecutor.Execute(clickStep, freeMouseMode, randIntervalMs, randJitterPx);
-                            if (cr < clickReps - 1 && step.DelayMs > 0)
-                            {
-                                Thread.Sleep(ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs));
-                            }
-                        }
-                    }
-
-                    targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;
-                }
-                else if (jumpAction == -3)
-                {
-                    // Repeat this Step: loop back to current step i
-                    targetIdx = i;
-                }
-                else if (jumpAction > 0)
-                {
-                    targetIdx = jumpAction - 1;
-                }
-                else
-                {
-                    // Next Step (jumpAction == 0)
-                    targetIdx = (i + 1 < stepList.Count) ? (i + 1) : 0;
-                }
+                int targetIdx = GetJumpTarget(jumpAction, i);
 
                 if (matched)
                 {
                     int actualDelay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
                     if (actualDelay > 0 && _isRunning)
                     {
-                        Thread.Sleep(actualDelay);
+                        SleepWhileRunning(actualDelay);
                     }
                 }
                 else
                 {
-                    if (jumpAction == -3)
-                    {
-                        int repDelay = step.DelayMs > 0 ? ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs) : 20;
-                        if (repDelay > 0 && _isRunning) Thread.Sleep(repDelay);
-                    }
-                    else if (targetIdx == 0 && _isRunning)
-                    {
-                        Thread.Sleep(1);
-                    }
+                    WaitAfterNoMatch(step, jumpAction, targetIdx, stepList.Count, randIntervalMs);
                 }
 
-                if (targetIdx >= 0 && targetIdx < stepList.Count)
-                {
-                    i = targetIdx - 1;
-                }
-                else
-                {
-                    i = stepList.Count;
-                }
+                MoveToStep(targetIdx, stepList.Count, ref i);
                 return;
             }
 
@@ -652,7 +726,7 @@ namespace ModernAutoClicker.Advanced
                 }
 
                 int delay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
-                if (delay > 0 && _isRunning) Thread.Sleep(delay);
+                if (delay > 0 && _isRunning) SleepWhileRunning(delay);
 
                 if (shouldLoop)
                 {
@@ -687,7 +761,7 @@ namespace ModernAutoClicker.Advanced
             int repeats = Math.Max(1, step.RepeatCount);
             for (int r = 0; r < repeats; r++)
             {
-                if (!_isRunning) break;
+                if (!_isRunning || !EnsureStepTarget(step, i)) break;
 
                 ActionExecutor.Execute(step, freeMouseMode, randIntervalMs, randJitterPx);
 
@@ -736,15 +810,21 @@ namespace ModernAutoClicker.Advanced
                         }
                         else
                         {
-                            Thread.Sleep(actualDelay);
+                            SleepWhileRunning(actualDelay);
                         }
                     }
                     else
                     {
-                        Thread.Sleep(actualDelay);
+                        SleepWhileRunning(actualDelay);
                     }
                 }
             }
+        }
+
+        // User-set waits can be minutes long, so they must end as soon as Stop is pressed
+        private void SleepWhileRunning(int ms)
+        {
+            CancellableSleep.Sleep(ms, () => _isRunning);
         }
 
         public void Stop()
@@ -756,7 +836,7 @@ namespace ModernAutoClicker.Advanced
                 {
                     _workerThread.Join(200);
                 }
-                catch { }
+                catch (Exception caught) { AppLog.Caught(caught); }
             }
             KeyboardSimulator.ReleaseAllKeys();
             NativeMethods.ReleaseAllMouseButtons();

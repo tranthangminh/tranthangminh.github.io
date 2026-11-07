@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
+using MaxApp.Common;
 
 namespace ModernAutoClicker
 {
@@ -26,8 +27,10 @@ namespace ModernAutoClicker
     public class ClickEngine
     {
         private volatile bool _isRunning = false;
-        private Thread _workerThread = null;
+        private volatile Thread _workerThread = null;
         private long _totalClicks = 0;
+        private volatile int _completedLoops = 0;
+        private int _targetLoops = 0;
         private DateTime _startTime;
 
         [ThreadStatic]
@@ -42,10 +45,18 @@ namespace ModernAutoClicker
         }
 
         public bool IsRunning { get { return _isRunning; } }
-        public long TotalClicks { get { return _totalClicks; } }
+        public long TotalClicks { get { return Interlocked.Read(ref _totalClicks); } }
+        public int CompletedLoops { get { return _completedLoops; } }
+        public int TargetLoops { get { return _targetLoops; } }
+        public TimeSpan Elapsed { get { return DateTime.Now - _startTime; } }
+
+        // The engine is reused across runs: after Stop + Start, an old worker still waiting out its interval sees a newer thread here and exits instead of clicking alongside the new run
+        private bool IsCurrentRunActive { get { return _isRunning && _workerThread == Thread.CurrentThread; } }
 
         public event Action<long, TimeSpan> OnProgressUpdated;
         public event Action<int> OnPointExecuting;
+        public event Action<TargetProblem> OnTargetLost; // Raised on the worker thread before OnStopped
+        public event Action<Exception> OnRunFailed; // Raised on the worker thread before OnStopped
         public event Action OnStopped;
 
         private Point ApplyJitter(Point pt, int jitterPx)
@@ -56,26 +67,64 @@ namespace ModernAutoClicker
             return new Point(pt.X + dx, pt.Y + dy);
         }
 
-        private Point ResolveActualPoint(Point localPt, IntPtr targetHwnd, string procName, string winTitle, int windowIndex, bool relativeToWin, uint targetPid = 0)
+        private static bool HasWindowTarget(ClickConfig config)
         {
-            if (!relativeToWin || (targetHwnd == IntPtr.Zero && string.IsNullOrEmpty(procName) && string.IsNullOrEmpty(winTitle) && targetPid == 0))
-                return localPt;
+            return config.RelativeToWindow && (config.TargetHwnd != IntPtr.Zero || !string.IsNullOrEmpty(config.TargetProcessName) || !string.IsNullOrEmpty(config.TargetWindowTitle) || config.TargetPid != 0);
+        }
 
-            IntPtr hWnd = targetHwnd;
-            if (!NativeMethods.IsValidWindowHandle(hWnd, targetPid, procName))
-            {
-                hWnd = NativeMethods.FindWindowByTarget(procName, winTitle, windowIndex, targetPid);
-            }
+        // Window points become screen points through the checked target handle. False means the window just went away,
+        // and the point must not be used: as it stands it is relative to a window, so it would click some other place on the screen.
+        private static bool TryGetScreenPoint(ClickConfig config, Point localPt, out Point screenPt)
+        {
+            screenPt = localPt;
+            if (!HasWindowTarget(config)) return true;
 
-            if (hWnd != IntPtr.Zero)
+            NativeMethods.POINT pt = new NativeMethods.POINT { X = localPt.X, Y = localPt.Y };
+            if (!NativeMethods.ClientToScreen(config.TargetHwnd, ref pt)) return false;
+
+            screenPt = new Point(pt.X, pt.Y);
+            return true;
+        }
+
+        // Stops the run and reports why when the target window cannot be used. A running tab never moves to another window.
+        private bool EnsureTargetReady(ClickConfig config)
+        {
+            if (!HasWindowTarget(config)) return true;
+
+            IntPtr hWnd;
+            TargetWindowState state = NativeMethods.GetTargetWindowState(config.TargetHwnd, config.TargetPid, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, out hWnd);
+            if (state == TargetWindowState.Ok)
             {
-                NativeMethods.POINT pt = new NativeMethods.POINT { X = localPt.X, Y = localPt.Y };
-                if (NativeMethods.ClientToScreen(hWnd, ref pt))
+                config.TargetHwnd = hWnd;
+                if (config.TargetPid == 0)
                 {
-                    return new Point(pt.X, pt.Y);
+                    uint pid;
+                    NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
+                    config.TargetPid = pid;
                 }
+                return true;
             }
-            return localPt;
+
+            // Only the current run may end the engine; a superseded worker just exits
+            if (_workerThread == Thread.CurrentThread)
+            {
+                _isRunning = false;
+                if (OnTargetLost != null)
+                {
+                    OnTargetLost(new TargetProblem
+                    {
+                        State = state,
+                        ProcessName = config.TargetProcessName,
+                        WindowTitle = config.TargetWindowTitle,
+                        WindowIndex = config.TargetWindowIndex,
+                        Pid = config.TargetPid,
+                        StoppedRun = true
+                    });
+                }
+                if (OnPointExecuting != null) OnPointExecuting(-1);
+                if (OnStopped != null) OnStopped();
+            }
+            return false;
         }
 
         public void Start(ClickConfig config)
@@ -84,207 +133,217 @@ namespace ModernAutoClicker
 
             _isRunning = true;
             _totalClicks = 0;
+            _completedLoops = 0;
+            _targetLoops = config.Loops;
             _startTime = DateTime.Now;
 
             _workerThread = new Thread(() =>
             {
-                int interval = Math.Max(1, config.IntervalMs);
-                int holdMs = Math.Min(10, interval); // Default 10ms, but <= interval (e.g. if interval=5 -> hold=5, if interval=1 -> hold=1)
-                int restMs = Math.Max(0, interval - holdMs);
-                int pointIndex = 0;
-                int currentLoop = 0;
-                bool hasPoints = (config.ClickMode == 0) && config.PointsList != null && config.PointsList.Count > 0;
-                DateTime lastUiUpdate = DateTime.MinValue;
-
-                // Initial settle and focus for first point (prevents missed first click)
-                if (!config.FreeMouseMode && hasPoints)
+                try
                 {
-                    if (config.RelativeToWindow && config.TargetHwnd != IntPtr.Zero)
-                    {
-                        NativeMethods.ForceSetForegroundWindow(config.TargetHwnd);
-                        Thread.Sleep(30);
-                    }
-
-                    Point firstRaw = config.PointsList[0];
-                    Point firstPt = ApplyJitter(firstRaw, config.JitterPx);
-                    Point firstAct = ResolveActualPoint(firstPt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow, config.TargetPid);
-
-                    if (config.SmoothMouseMove)
-                    {
-                        MouseMovementSimulator.MoveSmoothly(Point.Empty, firstAct, 120, () => _isRunning);
-                    }
-                    else
-                    {
-                        NativeMethods.SetCursorPos(firstAct.X, firstAct.Y);
-                    }
-                    Thread.Sleep(30);
+                    RunClicks(config);
                 }
-
-                while (_isRunning)
+                catch (Exception ex)
                 {
-                    if (config.FreeMouseMode)
-                    {
-                        // Background Click (Free Mouse Mode)
-                        if (hasPoints)
-                        {
-                            int currIdx = pointIndex % config.PointsList.Count;
-                            if (OnPointExecuting != null) OnPointExecuting(currIdx);
-
-                            Point rawPt = config.PointsList[currIdx];
-                            Point pt = ApplyJitter(rawPt, config.JitterPx);
-                            IntPtr targetHwnd = config.RelativeToWindow ? config.TargetHwnd : IntPtr.Zero;
-                            if (config.RelativeToWindow && !NativeMethods.IsValidWindowHandle(targetHwnd, config.TargetPid, config.TargetProcessName))
-                            {
-                                targetHwnd = NativeMethods.FindWindowByTarget(config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.TargetPid);
-                                if (targetHwnd != IntPtr.Zero)
-                                {
-                                    config.TargetHwnd = targetHwnd;
-                                    uint pId;
-                                    NativeMethods.GetWindowThreadProcessId(targetHwnd, out pId);
-                                    if (pId > 0) config.TargetPid = pId;
-                                }
-                                else
-                                {
-                                    config.TargetHwnd = IntPtr.Zero;
-                                }
-                            }
-
-                            if (targetHwnd != IntPtr.Zero)
-                            {
-                                NativeMethods.PerformClickDirectToWindow(targetHwnd, pt.X, pt.Y, config.MouseButton, holdMs);
-                            }
-                            else if (!config.RelativeToWindow)
-                            {
-                                Point actPt = ResolveActualPoint(pt, targetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow, config.TargetPid);
-                                NativeMethods.SendBackgroundClick(actPt.X, actPt.Y, config.MouseButton, holdMs);
-                            }
-                            else
-                            {
-                                // Target window is closed/not found: pause briefly to avoid clicking randomly
-                                Thread.Sleep(50);
-                            }
-                            pointIndex++;
-                            if (pointIndex % config.PointsList.Count == 0)
-                            {
-                                currentLoop++;
-                            }
-                        }
-                        else
-                        {
-                            NativeMethods.POINT cur;
-                            if (NativeMethods.GetCursorPos(out cur))
-                            {
-                                Point pt = ApplyJitter(new Point(cur.X, cur.Y), config.JitterPx);
-                                NativeMethods.SendBackgroundClick(pt.X, pt.Y, config.MouseButton, holdMs);
-                            }
-                            currentLoop++;
-                        }
-                    }
-                    else
-                    {
-                        // Physical Hardware Cursor Click
-                        if (config.RelativeToWindow && (config.TargetHwnd != IntPtr.Zero || !string.IsNullOrEmpty(config.TargetProcessName)))
-                        {
-                            if (!NativeMethods.IsValidWindowHandle(config.TargetHwnd, config.TargetPid, config.TargetProcessName))
-                            {
-                                IntPtr newWnd = NativeMethods.FindWindowByTarget(config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.TargetPid);
-                                if (newWnd != IntPtr.Zero)
-                                {
-                                    config.TargetHwnd = newWnd;
-                                    uint pId;
-                                    NativeMethods.GetWindowThreadProcessId(newWnd, out pId);
-                                    if (pId > 0) config.TargetPid = pId;
-                                }
-                                else
-                                {
-                                    config.TargetHwnd = IntPtr.Zero;
-                                }
-                            }
-                            if (config.TargetHwnd != IntPtr.Zero)
-                            {
-                                IntPtr currFg = NativeMethods.GetForegroundWindow();
-                                if (currFg != config.TargetHwnd)
-                                {
-                                    NativeMethods.ForceSetForegroundWindow(config.TargetHwnd);
-                                    Thread.Sleep(25);
-                                }
-                            }
-                        }
-
-                        if (hasPoints)
-                        {
-                            int currIdx = pointIndex % config.PointsList.Count;
-                            if (OnPointExecuting != null) OnPointExecuting(currIdx);
-
-                            Point rawPt = config.PointsList[currIdx];
-                            Point pt = ApplyJitter(rawPt, config.JitterPx);
-                            Point actPt = ResolveActualPoint(pt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow, config.TargetPid);
-                            NativeMethods.SetCursorPos(actPt.X, actPt.Y);
-                            pointIndex++;
-                            if (pointIndex % config.PointsList.Count == 0)
-                            {
-                                currentLoop++;
-                            }
-                        }
-                        else
-                        {
-                            if (config.JitterPx > 0)
-                            {
-                                NativeMethods.POINT cur;
-                                if (NativeMethods.GetCursorPos(out cur))
-                                {
-                                    Point pt = ApplyJitter(new Point(cur.X, cur.Y), config.JitterPx);
-                                    NativeMethods.SetCursorPos(pt.X, pt.Y);
-                                }
-                            }
-                            currentLoop++;
-                        }
-
-                        NativeMethods.SendPhysicalClick(config.MouseButton, holdMs);
-                    }
-
-                    Interlocked.Increment(ref _totalClicks);
-
-                    // Realtime callback update: every single click for normal speeds, 25ms throttle for ultra-fast speeds
-                    DateTime now = DateTime.Now;
-                    if (interval >= 10 || (now - lastUiUpdate).TotalMilliseconds >= 25 || _totalClicks == 1 || (config.Loops > 0 && currentLoop >= config.Loops))
-                    {
-                        lastUiUpdate = now;
-                        if (OnProgressUpdated != null)
-                        {
-                            OnProgressUpdated(_totalClicks, now - _startTime);
-                        }
-                    }
-
-                    // Check Loops limit
-                    if (config.Loops > 0 && currentLoop >= config.Loops)
-                    {
-                        _isRunning = false;
-                        if (OnProgressUpdated != null) OnProgressUpdated(_totalClicks, DateTime.Now - _startTime);
-                        if (OnPointExecuting != null) OnPointExecuting(-1);
-                        if (OnStopped != null) OnStopped();
-                        break;
-                    }
-
-                    if (restMs > 0)
-                    {
-                        if (config.SmoothMouseMove && !config.FreeMouseMode && hasPoints && config.PointsList.Count > 1 && restMs > 20)
-                        {
-                            int nextIdx = pointIndex % config.PointsList.Count;
-                            Point nextPt = config.PointsList[nextIdx];
-                            Point actNextPt = ResolveActualPoint(nextPt, config.TargetHwnd, config.TargetProcessName, config.TargetWindowTitle, config.TargetWindowIndex, config.RelativeToWindow);
-                            MouseMovementSimulator.MoveSmoothly(Point.Empty, actNextPt, restMs, () => _isRunning);
-                        }
-                        else
-                        {
-                            Thread.Sleep(restMs);
-                        }
-                    }
+                    FailRun(ex);
                 }
             });
 
             _workerThread.IsBackground = true;
             _workerThread.Start();
+        }
+
+        // Whatever went wrong inside a run, it ends here: an exception on this thread would close the whole app with a button still held down.
+        // Only the current run may end the engine; a superseded worker just exits.
+        private void FailRun(Exception failure)
+        {
+            AppLog.Error("Running a Simple tab", failure);
+            if (_workerThread != Thread.CurrentThread) return;
+
+            _isRunning = false;
+            try
+            {
+                NativeMethods.ReleaseAllMouseButtons();
+                if (OnRunFailed != null) OnRunFailed(failure);
+                if (OnPointExecuting != null) OnPointExecuting(-1);
+                if (OnStopped != null) OnStopped();
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Ending a Simple run", ex);
+            }
+        }
+
+        private void RunClicks(ClickConfig config)
+        {
+        int interval = Math.Max(1, config.IntervalMs);
+        int holdMs = Math.Min(10, interval); // Default 10ms, but <= interval (e.g. if interval=5 -> hold=5, if interval=1 -> hold=1)
+        int restMs = Math.Max(0, interval - holdMs);
+        int pointIndex = 0;
+        int currentLoop = 0;
+        bool hasPoints = (config.ClickMode == 0) && config.PointsList != null && config.PointsList.Count > 0;
+        DateTime lastUiUpdate = DateTime.MinValue;
+
+        if (!EnsureTargetReady(config)) return;
+
+        // Initial settle and focus for first point (prevents missed first click)
+        if (!config.FreeMouseMode && hasPoints)
+        {
+            if (HasWindowTarget(config))
+            {
+                NativeMethods.ForceSetForegroundWindow(config.TargetHwnd);
+                Thread.Sleep(30);
+            }
+
+            Point firstRaw = config.PointsList[0];
+            Point firstPt = ApplyJitter(firstRaw, config.JitterPx);
+            Point firstAct;
+            if (TryGetScreenPoint(config, firstPt, out firstAct))
+            {
+                if (config.SmoothMouseMove)
+                {
+                    MouseMovementSimulator.MoveSmoothly(Point.Empty, firstAct, 120, () => IsCurrentRunActive);
+                }
+                else
+                {
+                    NativeMethods.SetCursorPos(firstAct.X, firstAct.Y);
+                }
+                Thread.Sleep(30);
+            }
+        }
+
+        while (IsCurrentRunActive)
+        {
+            if (!EnsureTargetReady(config)) break;
+
+            if (config.FreeMouseMode)
+            {
+                // Background Click (Free Mouse Mode)
+                if (hasPoints)
+                {
+                    int currIdx = pointIndex % config.PointsList.Count;
+                    if (OnPointExecuting != null) OnPointExecuting(currIdx);
+
+                    Point rawPt = config.PointsList[currIdx];
+                    Point pt = ApplyJitter(rawPt, config.JitterPx);
+
+                    if (HasWindowTarget(config))
+                    {
+                        NativeMethods.PerformClickDirectToWindow(config.TargetHwnd, pt.X, pt.Y, config.MouseButton, holdMs);
+                    }
+                    else
+                    {
+                        NativeMethods.SendBackgroundClick(pt.X, pt.Y, config.MouseButton, holdMs);
+                    }
+                    pointIndex++;
+                    if (pointIndex % config.PointsList.Count == 0)
+                    {
+                        currentLoop++;
+                    }
+                }
+                else
+                {
+                    NativeMethods.POINT cur;
+                    if (NativeMethods.GetCursorPos(out cur))
+                    {
+                        Point pt = ApplyJitter(new Point(cur.X, cur.Y), config.JitterPx);
+                        NativeMethods.SendBackgroundClick(pt.X, pt.Y, config.MouseButton, holdMs);
+                    }
+                    currentLoop++;
+                }
+            }
+            else
+            {
+                // Physical Hardware Cursor Click
+                if (HasWindowTarget(config))
+                {
+                    IntPtr currFg = NativeMethods.GetForegroundWindow();
+                    if (currFg != config.TargetHwnd)
+                    {
+                        NativeMethods.ForceSetForegroundWindow(config.TargetHwnd);
+                        Thread.Sleep(25);
+                    }
+                }
+
+                if (hasPoints)
+                {
+                    int currIdx = pointIndex % config.PointsList.Count;
+                    if (OnPointExecuting != null) OnPointExecuting(currIdx);
+
+                    Point rawPt = config.PointsList[currIdx];
+                    Point pt = ApplyJitter(rawPt, config.JitterPx);
+                    Point actPt;
+                    if (!TryGetScreenPoint(config, pt, out actPt)) continue;
+                    NativeMethods.SetCursorPos(actPt.X, actPt.Y);
+                    pointIndex++;
+                    if (pointIndex % config.PointsList.Count == 0)
+                    {
+                        currentLoop++;
+                    }
+                }
+                else
+                {
+                    if (config.JitterPx > 0)
+                    {
+                        NativeMethods.POINT cur;
+                        if (NativeMethods.GetCursorPos(out cur))
+                        {
+                            Point pt = ApplyJitter(new Point(cur.X, cur.Y), config.JitterPx);
+                            NativeMethods.SetCursorPos(pt.X, pt.Y);
+                        }
+                    }
+                    currentLoop++;
+                }
+
+                NativeMethods.SendPhysicalClick(config.MouseButton, holdMs);
+            }
+
+            Interlocked.Increment(ref _totalClicks);
+            _completedLoops = currentLoop;
+
+            // Realtime callback update: every single click for normal speeds, 25ms throttle for ultra-fast speeds
+            DateTime now = DateTime.Now;
+            if (interval >= 10 || (now - lastUiUpdate).TotalMilliseconds >= 25 || _totalClicks == 1 || (config.Loops > 0 && currentLoop >= config.Loops))
+            {
+                lastUiUpdate = now;
+                if (OnProgressUpdated != null)
+                {
+                    OnProgressUpdated(_totalClicks, now - _startTime);
+                }
+            }
+
+            // Check Loops limit
+            if (config.Loops > 0 && currentLoop >= config.Loops)
+            {
+                // Only the current run may end the engine; a superseded worker just exits
+                if (_workerThread == Thread.CurrentThread)
+                {
+                    _isRunning = false;
+                    if (OnProgressUpdated != null) OnProgressUpdated(_totalClicks, DateTime.Now - _startTime);
+                    if (OnPointExecuting != null) OnPointExecuting(-1);
+                    if (OnStopped != null) OnStopped();
+                }
+                break;
+            }
+
+            if (restMs > 0)
+            {
+                if (config.SmoothMouseMove && !config.FreeMouseMode && hasPoints && config.PointsList.Count > 1 && restMs > 20)
+                {
+                    int nextIdx = pointIndex % config.PointsList.Count;
+                    Point nextPt = config.PointsList[nextIdx];
+                    Point actNextPt;
+                    if (TryGetScreenPoint(config, nextPt, out actNextPt))
+                    {
+                        MouseMovementSimulator.MoveSmoothly(Point.Empty, actNextPt, restMs, () => IsCurrentRunActive);
+                    }
+                }
+                else
+                {
+                    CancellableSleep.Sleep(restMs, () => IsCurrentRunActive);
+                }
+            }
+        }
         }
 
         public void Stop()
@@ -296,7 +355,7 @@ namespace ModernAutoClicker
                 {
                     _workerThread.Join(200);
                 }
-                catch { }
+                catch (Exception caught) { AppLog.Caught(caught); }
             }
             _workerThread = null;
         }

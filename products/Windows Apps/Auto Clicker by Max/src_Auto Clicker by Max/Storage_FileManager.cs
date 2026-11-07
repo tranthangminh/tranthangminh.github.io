@@ -1,8 +1,10 @@
+using Loc = ModernAutoClicker.Localization.Loc;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using MaxApp.Common;
 using ModernAutoClicker.Advanced;
 
 namespace ModernAutoClicker
@@ -26,8 +28,8 @@ namespace ModernAutoClicker
 
             using (SaveFileDialog sfd = new SaveFileDialog
             {
-                Title = "Save Macro Script",
-                Filter = "Macro Script (*.json)|*.json|All Files (*.*)|*.*",
+                Title = Loc.FileSaveScriptTitle,
+                Filter = Loc.FileFilterScripts,
                 FileName = string.Format("{0}.json", defaultName),
                 DefaultExt = "json",
                 InitialDirectory = AppSettings.GetSaveLoadDirectory()
@@ -42,7 +44,7 @@ namespace ModernAutoClicker
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(owner, "Failed to save macro script:\n" + ex.Message, "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ModernMessageBox.Show(Loc.FileSaveScriptFailed(ex.Message), Loc.FileErrorSaveTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, owner);
                     }
                 }
             }
@@ -56,8 +58,8 @@ namespace ModernAutoClicker
         {
             using (OpenFileDialog ofd = new OpenFileDialog
             {
-                Title = "Load Macro Script(s)",
-                Filter = "Macro Files (*.json)|*.json|All Files (*.*)|*.*",
+                Title = Loc.FileLoadScriptTitle,
+                Filter = Loc.FileFilterScripts,
                 DefaultExt = "json",
                 Multiselect = true,
                 InitialDirectory = AppSettings.GetSaveLoadDirectory()
@@ -114,12 +116,12 @@ namespace ModernAutoClicker
                         }
                         else
                         {
-                            MessageBox.Show(owner, "No valid macro script found in selected file(s)!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            ModernMessageBox.Show(Loc.FileNoValidScript, Loc.FileWarningTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning, owner);
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(owner, "Failed to load macro file(s):\n" + ex.Message, "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ModernMessageBox.Show(Loc.FileLoadScriptFailed(ex.Message), Loc.FileErrorLoadTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, owner);
                     }
                 }
             }
@@ -137,14 +139,14 @@ namespace ModernAutoClicker
         {
             if (points == null || points.Count == 0)
             {
-                MessageBox.Show(owner, "Point list is empty. Nothing to save!", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ModernMessageBox.Show(Loc.FileNoPointsToSave, Loc.FileNoticeTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning, owner);
                 return false;
             }
 
             using (SaveFileDialog sfd = new SaveFileDialog
             {
-                Title = "Save Coordinates List",
-                Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
+                Title = Loc.FileSavePointsTitle,
+                Filter = Loc.FileFilterText,
                 FileName = "Points.txt",
                 DefaultExt = "txt",
                 InitialDirectory = AppSettings.GetSaveLoadDirectory()
@@ -160,12 +162,12 @@ namespace ModernAutoClicker
                             lines.Add(string.Format("{0},{1}", p.X, p.Y));
                         }
                         File.WriteAllLines(sfd.FileName, lines.ToArray(), System.Text.Encoding.UTF8);
-                        MessageBox.Show(owner, string.Format("Successfully saved {0} coordinates!", points.Count), "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ModernMessageBox.Show(Loc.FilePointsSaved(points.Count), Loc.FileSuccessTitle, MessageBoxButtons.OK, MessageBoxIcon.Information, owner);
                         return true;
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(owner, "Failed to save coordinates:\n" + ex.Message, "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ModernMessageBox.Show(Loc.FileSavePointsFailed(ex.Message), Loc.FileErrorSaveTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, owner);
                     }
                 }
             }
@@ -179,8 +181,8 @@ namespace ModernAutoClicker
         {
             using (OpenFileDialog ofd = new OpenFileDialog
             {
-                Title = "Load Coordinates List",
-                Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
+                Title = Loc.FileLoadPointsTitle,
+                Filter = Loc.FileFilterText,
                 DefaultExt = "txt",
                 Multiselect = true,
                 InitialDirectory = AppSettings.GetSaveLoadDirectory()
@@ -221,19 +223,19 @@ namespace ModernAutoClicker
                                 onPointsLoaded(loaded);
                             }
                             if (fileNames.Length > 1)
-                                MessageBox.Show(owner, string.Format("Successfully loaded {0} coordinates from {1} files!", loaded.Count, fileNames.Length), "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                ModernMessageBox.Show(Loc.FilePointsLoadedFromFiles(loaded.Count, fileNames.Length), Loc.FileSuccessTitle, MessageBoxButtons.OK, MessageBoxIcon.Information, owner);
                             else
-                                MessageBox.Show(owner, string.Format("Successfully loaded {0} coordinates!", loaded.Count), "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                ModernMessageBox.Show(Loc.FilePointsLoaded(loaded.Count), Loc.FileSuccessTitle, MessageBoxButtons.OK, MessageBoxIcon.Information, owner);
                             return true;
                         }
                         else
                         {
-                            MessageBox.Show(owner, "No valid coordinates found in selected file(s)!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            ModernMessageBox.Show(Loc.FileNoValidPoints, Loc.FileWarningTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning, owner);
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(owner, "Failed to load coordinates file(s):\n" + ex.Message, "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ModernMessageBox.Show(Loc.FileLoadPointsFailed(ex.Message), Loc.FileErrorLoadTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, owner);
                     }
                 }
             }
@@ -248,7 +250,8 @@ namespace ModernAutoClicker
         /// Writes content to a file atomically by saving to a temporary file first,
         /// then replacing or moving it to ensure zero risk of corrupted or 0-byte files on crash or power loss.
         /// </summary>
-        public static void AtomicWriteAllText(string filePath, string content, System.Text.Encoding encoding = null)
+        // backupPath, when given, receives the previous version of the file
+        public static void AtomicWriteAllText(string filePath, string content, System.Text.Encoding encoding = null, string backupPath = null)
         {
             if (string.IsNullOrEmpty(filePath)) return;
             if (encoding == null) encoding = System.Text.Encoding.UTF8;
@@ -266,26 +269,61 @@ namespace ModernAutoClicker
 
                 if (File.Exists(filePath))
                 {
-                    try
-                    {
-                        File.Replace(tempFile, filePath, null);
-                        return;
-                    }
-                    catch
-                    {
-                        // Fallback on filesystems where File.Replace is not supported
-                        File.Delete(filePath);
-                    }
+                    ReplaceKeepingOldUntilDone(tempFile, filePath, backupPath);
                 }
-                File.Move(tempFile, filePath);
+                else
+                {
+                    File.Move(tempFile, filePath);
+                }
             }
             finally
             {
                 if (File.Exists(tempFile))
                 {
-                    try { File.Delete(tempFile); } catch { }
+                    try { File.Delete(tempFile); } catch (Exception ex) { MaxApp.Common.AppLog.Caught(ex); }
                 }
             }
+        }
+
+        // At no point is the user's data gone: the old file stays until the new one is in place
+        private static void ReplaceKeepingOldUntilDone(string tempFile, string filePath, string backupPath)
+        {
+            const int Attempts = 3;
+            const int WaitMs = 50;
+
+            for (int attempt = 1; attempt <= Attempts; attempt++)
+            {
+                try
+                {
+                    File.Replace(tempFile, filePath, backupPath);
+                    return;
+                }
+                catch (IOException ex)
+                {
+                    // Another program may hold the file for a moment. After the last attempt, the file system may simply not support File.Replace.
+                    MaxApp.Common.AppLog.Caught(ex);
+                    if (attempt < Attempts) System.Threading.Thread.Sleep(WaitMs);
+                }
+            }
+
+            string aside = filePath + ".old";
+            if (File.Exists(aside)) File.Delete(aside);
+            File.Move(filePath, aside);
+            try
+            {
+                File.Move(tempFile, filePath);
+            }
+            catch (IOException)
+            {
+                File.Move(aside, filePath);
+                throw;
+            }
+
+            if (backupPath != null)
+            {
+                File.Copy(aside, backupPath, true);
+            }
+            File.Delete(aside);
         }
 
         #endregion

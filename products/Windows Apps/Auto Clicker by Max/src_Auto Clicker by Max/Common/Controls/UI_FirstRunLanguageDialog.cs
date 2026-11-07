@@ -214,7 +214,7 @@ namespace MaxApp.Common
                         CommonNativeMethods.ReleaseCapture();
                         CommonNativeMethods.SendMessage(this.Handle, CommonNativeMethods.WM_NCLBUTTONDOWN, (IntPtr)CommonNativeMethods.HTCAPTION, IntPtr.Zero);
                     }
-                    catch { }
+                    catch (Exception caught) { AppLog.Caught(caught); }
                 }
             };
         }

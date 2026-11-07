@@ -9,11 +9,12 @@
 ## 1.1 Ngôn Ngữ & Nền Tảng Kỹ Thuật
 - **Công nghệ cốt lõi:** C# (.NET Framework 4.x / C# 5).
 - **Giao diện:** Windows Forms (WinForms) thuần, vẽ tùy chỉnh (GDI+ Double Buffering, Owner Draw).
-- **Biên dịch & Đóng gói:** Single-file Portable `.exe` (~350KB), không cần cài đặt, không dependencies bên ngoài, biên dịch thông qua `build.bat` bằng trình biên dịch tích hợp sẵn của Windows (`csc.exe`).
+- **Biên dịch & Đóng gói:** Single-file Portable `.exe` (~1 MB), không cần cài đặt, không dependencies bên ngoài, biên dịch thông qua `build.bat` bằng trình biên dịch tích hợp sẵn của Windows (`csc.exe`).
 - **Giao tiếp Hệ điều hành:** Win32 P/Invoke API (`SendInput`, `PostMessage`, `SendMessage`, `FindWindowEx`, `GetPixel`, `RegisterHotKey`...).
 
-## 1.2 Ranh Giới Ngôn Ngữ (English-First UI)
-- **Giao diện 100% Tiếng Anh:** Toàn bộ văn bản hiển thị trên UI (Button, Label, Tooltip, Dialog, Placeholder, Menu, Log) đều phải là **Tiếng Anh chuẩn**. Tuyệt đối không hardcode tiếng Việt hay nửa Anh nửa Việt vào giao diện ứng dụng.
+## 1.2 Ranh Giới Ngôn Ngữ (English-First, có tiếng Việt)
+- **Giao diện EN + VI:** Tiếng Anh là mặc định, app có đủ bản tiếng Việt để người dùng chuyển trên thanh tiêu đề. Mọi văn bản hiển thị (Button, Label, Tooltip, Dialog, Placeholder, Menu) đều nằm trong `Localization/Loc.cs`, hoặc `Common/Core/Loc.cs` nếu thuộc `Common`, và có đủ cả hai bản. Cấm viết `IsVietnamese ? ... : ...` với chuỗi hiển thị ngay trong code giao diện.
+- **Log kỹ thuật** (`error.log`) chỉ dùng tiếng Anh.
 - **Khung Chat & Trao Đổi:** Sử dụng **Tiếng Việt** (xưng *"tao"* - gọi *"mày"*, thẳng thắn, trung thực, không né tránh sai sót kỹ thuật).
 
 ## 1.3 Quản Lý Phiên Bản & Tiêu Đề Duy Nhất (Single Source of Truth)
@@ -146,12 +147,26 @@
   - **Lá chắn bảo vệ khi mở thêm ứng dụng (Multi-Instance Shield Protection):**
     - Khi người dùng đang chạy và target vào **App 1 (PID 100)**: Auto Clicker giữ `TargetPid = 100`.
     - Sau đó người dùng mở thêm **App 2 (PID 200)** của cùng ứng dụng đó (ví dụ mở thêm nick game 2): Nhờ có `TargetPid = 100` đang khóa trong phiên, Auto Clicker tiếp tục nhắm đúng 100% vào App 1, **tuyệt đối không bị gián đoạn, không xáo trộn và không bao giờ click nhầm sang App 2**.
-  - **Tự động bắt lại siêu mượt cho App đơn lẻ (Frictionless Single-Instance Reconnection & Dynamic Titles):**
-    - Trong 95% trường hợp người dùng chỉ dùng 1 cửa sổ của ứng dụng: Người dùng chọn Target Window 1 lần là dùng vĩnh viễn. Khi app đó tắt đi mở lại (được Windows cấp PID mới), hoặc khi app có tiêu đề động thay đổi liên tục (như Antigravity/VS Code đổi workspace, Chrome đổi tab, Word/Notepad đổi tài liệu), Auto Clicker phát hiện cửa sổ duy nhất đó và **tự động bám lấy ngay trong 0.01 giây mà không cần người dùng chọn lại hay bắt bẻ tiêu đề cũ**.
+  - **Tiêu đề động không làm mất target (Dynamic Titles):**
+    - Khi app có tiêu đề thay đổi liên tục (như Antigravity/VS Code đổi workspace, Chrome đổi tab, Word/Notepad đổi tài liệu), `WindowHwnd` trong phiên vẫn còn hợp lệ nên Auto Clicker **tiếp tục bám đúng cửa sổ đó mà không bắt bẻ tiêu đề cũ**.
+  - **Tìm lại theo định danh bền vững chỉ khi `TargetPid = 0` (Reopen Reconnection):**
+    - Sau khi mở lại Auto Clicker, PID bằng `0`: tìm theo `ProcessName`, `WindowTitle`, `WindowIndex`; nhiều ứng viên giống nhau thì lấy **process mở sớm nhất**, rồi khóa PID đó cho cả phiên. Cửa sổ mở sớm nhất đang thu nhỏ thì báo thu nhỏ, không chuyển sang cửa sổ kế tiếp. `WindowIndex` đã lưu mà không đủ cửa sổ thì báo không tìm thấy, không dồn về cửa sổ khác.
+    - App đã lưu không chạy thì không tìm theo tiêu đề sang app khác; cửa sổ không có tiêu đề không bao giờ khớp theo tiêu đề.
   - **Đếm Instance theo Cửa Sổ Hiển Thị Thực Tế (Visible GUI Windows, KHÔNG đếm OS Process):**
-    - Các app Chromium/Electron (Antigravity, Chrome, Edge, VS Code, Discord) luôn sinh ra 6-15 tiến trình con trong Task Manager cho 1 cửa sổ duy nhất. Hệ thống **tuyệt đối không đếm số lượng tiến trình từ OS** để suy đoán số instance, mà phải đếm số lượng **cửa sổ hiển thị thực tế (Visible Windows có title length > 0)** trên màn hình. Chỉ khi có thực sự $\ge 2$ cửa sổ hiển thị thì mới kích hoạt cơ chế phân biệt đa instance.
-  - **Chống cướp quyền điều khiển khi tiến trình bị tắt (Anti-Hijack Guard):**
-    - Nếu người dùng đang nhắm vào một tiến trình cụ thể (`TargetPid > 0`) trong môi trường đa tiến trình (có $\ge 2$ cửa sổ cùng tên đang chạy, ví dụ PID 123 và PID 124): Khi tiến trình đang chọn (124) bị tắt, hệ thống **bắt buộc dừng lại báo mất mục tiêu (Target Lost)**, **TUYỆT ĐỐI CẤM fallback tự ý nhảy sang PID của instance khác (123)**.
+    - Các app Chromium/Electron (Antigravity, Chrome, Edge, VS Code, Discord) luôn sinh ra 6-15 tiến trình con trong Task Manager cho 1 cửa sổ duy nhất. Hệ thống **tuyệt đối không đếm số lượng tiến trình từ OS** để suy đoán số instance, mà phải đếm số lượng **cửa sổ hiển thị thực tế (Visible Windows có title length > 0)** trên màn hình.
+  - **Chống cướp quyền điều khiển (Anti-Hijack Guard):**
+    - `TargetPid > 0` là khóa tuyệt đối: chỉ cửa sổ của đúng PID đó mới hợp lệ (PID bị Windows cấp lại cho chương trình khác thì tính là đã tắt). Khi tiến trình đang chọn bị tắt, kể cả chỉ còn 1 cửa sổ khác hoặc app vừa được mở lại với PID mới, hệ thống **bắt buộc báo mất mục tiêu (Target Lost)**, **TUYỆT ĐỐI CẤM tự ý nhảy sang PID của instance khác**. Chỉ người dùng mới được đổi target.
+    - Nhiều cửa sổ chung 1 PID (Chrome, VS Code): chỉ nhận lại cửa sổ khớp tiêu đề, hoặc cửa sổ duy nhất của app khi không còn biết handle cũ. Engine đang chạy biết handle cũ nên không nhận cửa sổ duy nhất đó.
+
+## 3.1.1 Chặn Chạy & Dừng Khi Target Không Dùng Được (Target Check)
+- **Kiểm tra qua một cửa duy nhất:** `NativeMethods.GetTargetWindowState` trả về `Ok`, `Minimized`, `Hidden`, `Closed` hoặc `NotFound`.
+- **Trước khi Start:** kiểm tra target của tab Simple đang mở, hoặc mọi bước đang bật của script Asian kể cả script gọi qua RunScript. Có vấn đề thì không chạy và hiện popup. Target `All Screens (Desktop)` và các bước không dùng cửa sổ (`Delay`, `RunScript`, `RepeatTimer`) không bị kiểm tra.
+- **Khi đang chạy:** engine kiểm tra trước mỗi click hoặc bước, kể cả trong vòng chờ (`WaitColor`, `WaitImage`, `WaitChange`). Có vấn đề thì **không click**, chỉ tab đó dừng, tab khác chạy tiếp. Không bám lại cửa sổ nào giữa chừng: tọa độ tính theo cửa sổ mà không có cửa sổ sẽ click sai chỗ trên màn hình.
+- **Không click khi thu nhỏ:** Free Mouse không đáng tin vì tọa độ cửa sổ thu nhỏ bị đẩy ra ngoài màn hình và cửa sổ con không nhận đúng, chuột thật thì không tới được.
+- **Popup (`TargetProblemDialog`):** luôn ghi rõ tên process, PID và tiêu đề để không nhầm với cửa sổ cùng app đang mở.
+  - `Closed` / `NotFound`: có danh sách chọn target mới giống danh sách chọn bình thường (All Screens, mọi cửa sổ, kể cả đang thu nhỏ) và 2 nút `Đã hiểu, không đổi target` / `Đổi target`. Cửa sổ cùng app mở sớm nhất chỉ được chọn sẵn, không có tác dụng cho tới khi bấm `Đổi target`.
+  - `Minimized` / `Hidden`: chỉ thông báo, 1 nút `Đã hiểu`.
+  - `Đổi target` không bao giờ tự chạy. Enter và Esc không đổi gì.
 
 ## 3.2 Nhận Diện Cửa Sổ Thông Minh & Hiệu Năng Cao (High-Performance Window Resolution)
 - **Đường dẫn nhanh 0ms (Fast Path Validation):**

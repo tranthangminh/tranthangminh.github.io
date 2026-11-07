@@ -13,12 +13,12 @@ namespace ModernAutoClicker
 {
     public partial class MainForm : Form
     {
-        private ClickEngine[] _simpleEngines = new ClickEngine[5];
+        private ClickEngine[] _simpleEngines = new ClickEngine[AppSettings.SimpleTabCount];
         private Dictionary<string, ModernAutoClicker.Advanced.MacroRunner> _asianRunners = new Dictionary<string, ModernAutoClicker.Advanced.MacroRunner>(StringComparer.OrdinalIgnoreCase);
         private ModernAutoClicker.Advanced.MacroRunner _defaultAsianRunner = new ModernAutoClicker.Advanced.MacroRunner();
 
         // Legacy compatibility properties delegating to active tab engine/runner
-        private ClickEngine engine { get { return (_simpleEngines != null && _simpleTabIndex >= 0 && _simpleTabIndex < 5) ? _simpleEngines[_simpleTabIndex] : null; } }
+        private ClickEngine engine { get { return (_simpleEngines != null && _simpleTabIndex >= 0 && _simpleTabIndex < AppSettings.SimpleTabCount) ? _simpleEngines[_simpleTabIndex] : null; } }
         private ModernAutoClicker.Advanced.MacroRunner macroRunner
         {
             get
@@ -41,7 +41,7 @@ namespace ModernAutoClicker
             {
                 if (_simpleEngines != null)
                 {
-                    for (int i = 0; i < 5; i++)
+                    for (int i = 0; i < AppSettings.SimpleTabCount; i++)
                     {
                         if (_simpleEngines[i] != null && _simpleEngines[i].IsRunning) return true;
                     }
@@ -63,7 +63,7 @@ namespace ModernAutoClicker
             {
                 if (_currentTabIndex == 1)
                 {
-                    return _simpleEngines != null && _simpleTabIndex >= 0 && _simpleTabIndex < 5 &&
+                    return _simpleEngines != null && _simpleTabIndex >= 0 && _simpleTabIndex < AppSettings.SimpleTabCount &&
                            _simpleEngines[_simpleTabIndex] != null && _simpleEngines[_simpleTabIndex].IsRunning;
                 }
                 else if (_currentTabIndex == 2)
@@ -80,6 +80,17 @@ namespace ModernAutoClicker
                 return false;
             }
         }
+
+        // The status line above Start shows the open tab's live numbers while it runs; the Asian runner only reports at the end of a loop, so the UI polls
+        private const int RunStatsRefreshMs = 250;
+        private System.Windows.Forms.Timer _runStatsTimer;
+        private bool _statusShowsRunStats = false;
+
+        // Tabs that lose the same window notice it within a moment of each other: wait briefly so one popup covers them
+        private const int TargetProblemBatchMs = 300;
+        private System.Windows.Forms.Timer _targetProblemTimer;
+        private readonly List<TargetProblem> _pendingTargetProblems = new List<TargetProblem>();
+        private bool _targetDialogOpen = false;
 
         private ThemeTokens currentTheme;
         private List<Point> pointList { get { return lstPoints != null ? lstPoints.GetPoints() : new List<Point>(); } }
@@ -110,23 +121,23 @@ namespace ModernAutoClicker
         private string _simpleTargetProcessName = "";
         private string _simpleTargetWindowTitle = "";
         private bool _simpleRelativeToWindow = false;
-        private int[] _simpleTargetWindowIndices = new int[5];
+        private int[] _simpleTargetWindowIndices = new int[AppSettings.SimpleTabCount];
         private int _simpleTargetWindowIndex
         {
-            get { return (_simpleTabIndex >= 0 && _simpleTabIndex < 5) ? _simpleTargetWindowIndices[_simpleTabIndex] : 0; }
-            set { if (_simpleTabIndex >= 0 && _simpleTabIndex < 5) _simpleTargetWindowIndices[_simpleTabIndex] = value; }
+            get { return (_simpleTabIndex >= 0 && _simpleTabIndex < AppSettings.SimpleTabCount) ? _simpleTargetWindowIndices[_simpleTabIndex] : 0; }
+            set { if (_simpleTabIndex >= 0 && _simpleTabIndex < AppSettings.SimpleTabCount) _simpleTargetWindowIndices[_simpleTabIndex] = value; }
         }
-        private IntPtr[] _simpleTargetHwnds = new IntPtr[5];
+        private IntPtr[] _simpleTargetHwnds = new IntPtr[AppSettings.SimpleTabCount];
         private IntPtr _simpleTargetHwnd
         {
-            get { return (_simpleTabIndex >= 0 && _simpleTabIndex < 5) ? _simpleTargetHwnds[_simpleTabIndex] : IntPtr.Zero; }
-            set { if (_simpleTabIndex >= 0 && _simpleTabIndex < 5) _simpleTargetHwnds[_simpleTabIndex] = value; }
+            get { return (_simpleTabIndex >= 0 && _simpleTabIndex < AppSettings.SimpleTabCount) ? _simpleTargetHwnds[_simpleTabIndex] : IntPtr.Zero; }
+            set { if (_simpleTabIndex >= 0 && _simpleTabIndex < AppSettings.SimpleTabCount) _simpleTargetHwnds[_simpleTabIndex] = value; }
         }
-        private uint[] _simpleTargetPids = new uint[5];
+        private uint[] _simpleTargetPids = new uint[AppSettings.SimpleTabCount];
         private uint _simpleTargetPid
         {
-            get { return (_simpleTabIndex >= 0 && _simpleTabIndex < 5) ? _simpleTargetPids[_simpleTabIndex] : 0; }
-            set { if (_simpleTabIndex >= 0 && _simpleTabIndex < 5) _simpleTargetPids[_simpleTabIndex] = value; }
+            get { return (_simpleTabIndex >= 0 && _simpleTabIndex < AppSettings.SimpleTabCount) ? _simpleTargetPids[_simpleTabIndex] : 0; }
+            set { if (_simpleTabIndex >= 0 && _simpleTabIndex < AppSettings.SimpleTabCount) _simpleTargetPids[_simpleTabIndex] = value; }
         }
         private WindowTracker _windowTracker;
         private UnfocusClickFilter _unfocusFilter;
@@ -167,6 +178,12 @@ namespace ModernAutoClicker
                 ShowAlways = true
             };
 
+            _runStatsTimer = new System.Windows.Forms.Timer { Interval = RunStatsRefreshMs };
+            _runStatsTimer.Tick += (s, e) => RefreshRunStats();
+
+            _targetProblemTimer = new System.Windows.Forms.Timer { Interval = TargetProblemBatchMs };
+            _targetProblemTimer.Tick += (s, e) => ShowPendingTargetProblems();
+
             if (chkFreeMouse != null)
             {
                 _startToolTip.SetToolTip(chkFreeMouse, Loc.ChkFreeMouseTooltip);
@@ -175,7 +192,7 @@ namespace ModernAutoClicker
             if (btnMapOpacity != null)
             {
                 btnMapOpacity.Click += (s, e) => ShowOpacityMenu();
-                _startToolTip.SetToolTip(btnMapOpacity, "Overlay Map Opacity (Click to change, or Right-click Show Map)");
+                _startToolTip.SetToolTip(btnMapOpacity, Loc.TipMapOpacity);
             }
             if (chkShowMap != null)
             {
@@ -211,7 +228,7 @@ namespace ModernAutoClicker
             _unfocusFilter = new UnfocusClickFilter(this);
             Application.AddMessageFilter(_unfocusFilter);
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < AppSettings.SimpleTabCount; i++)
             {
                 int tabIdx = i;
                 _simpleEngines[i] = new ClickEngine();
@@ -224,8 +241,7 @@ namespace ModernAutoClicker
                             if (_currentTabIndex == 1 && _simpleTabIndex == tabIdx)
                             {
                                 lblCurrentClicksVal.Text = clicks.ToString();
-                                lblCurrentTimeVal.Text = string.Format("{0:D2}:{1:D2}:{2:D2}",
-                                    (int)elapsed.TotalHours, elapsed.Minutes, elapsed.Seconds);
+                                lblCurrentTimeVal.Text = FormatElapsed(elapsed);
                             }
                         }));
                     }
@@ -245,6 +261,23 @@ namespace ModernAutoClicker
                                 }
                             }
                         }));
+                    }
+                };
+
+                _simpleEngines[i].OnTargetLost += (problem) =>
+                {
+                    if (this.IsHandleCreated)
+                    {
+                        problem.SimpleTabIndex = tabIdx;
+                        this.BeginInvoke((Action)(() => QueueTargetProblem(problem)));
+                    }
+                };
+
+                _simpleEngines[i].OnRunFailed += (ex) =>
+                {
+                    if (this.IsHandleCreated)
+                    {
+                        this.BeginInvoke((Action)(() => ShowRunFailure(Loc.RunningSimpleName(tabIdx + 1), ex)));
                     }
                 };
 
@@ -271,7 +304,7 @@ namespace ModernAutoClicker
 
                 pnlTabAdvanced.OnStatusChanged += (status) =>
                 {
-                    if (!_isBasicTab && lblMainStatusInfo != null && !IsAnyRunning)
+                    if (!_isBasicTab && lblMainStatusInfo != null && GetActiveRunStats() == null)
                     {
                         lblMainStatusInfo.Text = status;
                     }
@@ -316,7 +349,7 @@ namespace ModernAutoClicker
                         if (owned != null && owned.Visible && owned.Bounds.Contains(pt)) return true;
                     }
                 }
-                catch { }
+                catch (Exception caught) { AppLog.Caught(caught); }
                 return false;
             };
         }
@@ -358,7 +391,7 @@ namespace ModernAutoClicker
 
             // Background automatic update check (Runs after 2.5s, checks at most once a day, never blocks UI)
             MaxApp.Common.UpdateChecker.GetLastCheckDateHandler = () => { try { return AppSettings.Load().LastUpdateCheckDate; } catch { return null; } };
-            MaxApp.Common.UpdateChecker.SetLastCheckDateHandler = (d) => { try { var cfg = AppSettings.Load(); cfg.LastUpdateCheckDate = d; AppSettings.Save(cfg); } catch { } };
+            MaxApp.Common.UpdateChecker.SetLastCheckDateHandler = (d) => { try { var cfg = AppSettings.Load(); cfg.LastUpdateCheckDate = d; AppSettings.Save(cfg); } catch (Exception caught) { AppLog.Caught(caught); } };
 
             System.Windows.Forms.Timer autoUpdateTimer = new System.Windows.Forms.Timer { Interval = 2500 };
             autoUpdateTimer.Tick += (s, args) =>
@@ -368,6 +401,34 @@ namespace ModernAutoClicker
                 UpdateChecker.CheckForUpdatesAsync(false, this);
             };
             autoUpdateTimer.Start();
+
+            ReportSettingsProblem();
+        }
+
+        private readonly HashSet<SettingsProblem> _reportedSettingsProblems = new HashSet<SettingsProblem>();
+
+        // Saving happens all the time, so each kind of problem is told once per session
+        private void ReportSettingsProblem()
+        {
+            if (!this.IsHandleCreated) return;
+
+            SettingsProblem problem = AppSettings.TakeProblem();
+            if (problem == SettingsProblem.None || !_reportedSettingsProblems.Add(problem)) return;
+
+            string message;
+            switch (problem)
+            {
+                case SettingsProblem.CouldNotRead: message = Loc.SettingsCouldNotRead; break;
+                case SettingsProblem.RestoredFromBackup: message = Loc.SettingsRestored; break;
+                case SettingsProblem.ResetToDefaults: message = Loc.SettingsReset; break;
+                default: message = Loc.SettingsCouldNotSave; break;
+            }
+            this.BeginInvoke((Action)(() => ModernMessageBox.Show(message, Loc.SettingsProblemTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning, this)));
+        }
+
+        private void ShowRunFailure(string runName, Exception ex)
+        {
+            ModernMessageBox.Show(Loc.RunFailedMessage(runName, ex.Message), Loc.RunFailedTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, this);
         }
 
         public void UpdateFormRegion()
@@ -405,8 +466,16 @@ namespace ModernAutoClicker
                 NativeMethods.UnregisterHotKey(this.Handle, NativeMethods.HOTKEY_START_ID);
                 NativeMethods.UnregisterHotKey(this.Handle, NativeMethods.HOTKEY_STOP_ALL_ID);
 
-                NativeMethods.RegisterHotKey(this.Handle, NativeMethods.HOTKEY_START_ID, 0, (uint)Keys.F6);
-                NativeMethods.RegisterHotKey(this.Handle, NativeMethods.HOTKEY_STOP_ALL_ID, 0, (uint)Keys.F7);
+                List<string> taken = new List<string>();
+                if (!NativeMethods.RegisterHotKey(this.Handle, NativeMethods.HOTKEY_START_ID, 0, (uint)Keys.F6)) taken.Add("F6");
+                if (!NativeMethods.RegisterHotKey(this.Handle, NativeMethods.HOTKEY_STOP_ALL_ID, 0, (uint)Keys.F7)) taken.Add("F7");
+
+                // Without F7 there is no way to stop a run from another window, so this cannot stay silent
+                if (taken.Count > 0)
+                {
+                    string keys = string.Join(", ", taken.ToArray());
+                    this.BeginInvoke((Action)(() => ModernMessageBox.Show(Loc.HotkeyTakenMessage(keys), Loc.HotkeyTakenTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning, this)));
+                }
             }
         }
 
@@ -443,7 +512,7 @@ namespace ModernAutoClicker
                 ActionRecorder.Instance.StopRecording();
                 if (lblMainStatusInfo != null)
                 {
-                    lblMainStatusInfo.Text = Loc.IsVietnamese ? "Đã dừng ghi bước (F6)" : "Recording stopped (F6)";
+                    lblMainStatusInfo.Text = Loc.StatusRecordingStopped;
                 }
                 return;
             }
@@ -454,25 +523,28 @@ namespace ModernAutoClicker
             }
             else
             {
+                // Global hotkeys still arrive while a popup locks this window: a run can be stopped, nothing new may start
+                if (WindowHelper.IsBlockedByDialog(this)) return;
+
                 if (!CanStartAutoClick())
                 {
-                    string reason = "Please add points or steps to start";
+                    string reason = Loc.TipAddPointsOrSteps;
                     if (_currentTabIndex == 1 && radModePoints != null && radModePoints.Checked)
                     {
-                        reason = "Please add at least 1 point to start (Press Space to capture point)";
+                        reason = Loc.TipNoPoints;
                     }
                     else if (_currentTabIndex == 2)
                     {
-                        reason = "Please add at least 1 active step to start (Click + Add Step)";
+                        reason = Loc.TipNoSteps;
                     }
                     else if (_currentTabIndex == 0)
                     {
-                        reason = "Cannot start from Info tab. Switch to Simple or Asian Mode!";
+                        reason = Loc.TipSwitchTab;
                     }
 
                     if (lblMainStatusInfo != null)
                     {
-                        lblMainStatusInfo.Text = "Cannot start: " + reason;
+                        lblMainStatusInfo.Text = Loc.StatusCannotStart(reason);
                     }
 
                     if (_startToolTip != null && btnStart != null && btnStart.IsHandleCreated)
@@ -480,7 +552,7 @@ namespace ModernAutoClicker
                         _startToolTip.Show(reason, btnStart, btnStart.Width / 2, btnStart.Height + 4, 3000);
                     }
 
-                    try { System.Media.SystemSounds.Beep.Play(); } catch { }
+                    try { System.Media.SystemSounds.Beep.Play(); } catch (Exception caught) { AppLog.Caught(caught); }
                     return;
                 }
                 StartAutoClick();
@@ -499,13 +571,13 @@ namespace ModernAutoClicker
             {
                 uint fgPid;
                 NativeMethods.GetWindowThreadProcessId(fg, out fgPid);
-                uint currentPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+                uint currentPid = NativeMethods.CurrentProcessId;
                 if (fgPid == currentPid)
                 {
                     return true;
                 }
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
 
             return false;
         }
@@ -567,7 +639,7 @@ namespace ModernAutoClicker
                 if (_currentTabIndex == 2 && this.WindowState != FormWindowState.Minimized)
                 {
                     _savedAsianWidth = Math.Max(700, this.Width);
-                    _savedAsianHeight = Math.Max(760, this.Height);
+                    _savedAsianHeight = Math.Max(AsianMinHeight, this.Height);
                     SaveSettings();
                 }
                 UpdateFormRegion();
@@ -670,7 +742,7 @@ namespace ModernAutoClicker
                         uint pid = 0;
                         if (hWnd != IntPtr.Zero && NativeMethods.IsWindow(hWnd) && NativeMethods.IsWindowVisible(hWnd) && !NativeMethods.IsIconic(hWnd))
                         {
-                            uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+                            uint myPid = NativeMethods.CurrentProcessId;
                             NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
 
                             if (pid != myPid && pid != 0)
@@ -687,7 +759,7 @@ namespace ModernAutoClicker
                                         var proc = System.Diagnostics.Process.GetProcessById((int)pid);
                                         pName = proc.ProcessName;
                                     }
-                                    catch { }
+                                    catch (Exception) { /* The process ended or cannot be opened: the name stays empty */ }
 
                                     int len = NativeMethods.GetWindowTextLength(hWnd);
                                     string title = "";
@@ -753,64 +825,18 @@ namespace ModernAutoClicker
             if (btnSimpleTargetWindow == null) return;
             btnSimpleTargetWindow.IsOpen = true;
 
-            ContextMenuStrip menu = new ContextMenuStrip();
-            menu.Renderer = new ModernMenuRenderer(currentTheme);
-            menu.ShowImageMargin = true;
-            menu.Closed += (s, e) => { btnSimpleTargetWindow.IsOpen = false; btnSimpleTargetWindow.BeginInvoke((Action)(() => menu.Dispose())); };
-
-            ToolStripMenuItem itemDesktop = new ToolStripMenuItem(Loc.IsVietnamese ? "Toàn màn hình (Desktop)" : "All Screens (Desktop)");
-            itemDesktop.Image = IconCache.DesktopIcon;
-            itemDesktop.Click += (s, e) =>
+            TargetWindowMenu.Show(btnSimpleTargetWindow, currentTheme, (window) =>
             {
-                _simpleRelativeToWindow = false;
-                _simpleTargetHwnd = IntPtr.Zero;
-                _simpleTargetPid = 0;
-                _simpleTargetProcessName = "";
-                _simpleTargetWindowTitle = "";
-                _simpleTargetWindowIndex = 0;
+                _simpleRelativeToWindow = window != null;
+                _simpleTargetHwnd = window != null ? window.Hwnd : IntPtr.Zero;
+                _simpleTargetPid = window != null ? window.ProcessId : 0;
+                _simpleTargetProcessName = window != null ? window.ProcessName : "";
+                _simpleTargetWindowTitle = window != null ? window.Title : "";
+                _simpleTargetWindowIndex = window != null ? window.WindowIndex : 0;
                 UpdateSimpleTargetWindowButtonDisplay();
                 SyncOverlay();
                 SaveSettings();
-            };
-            menu.Items.Add(itemDesktop);
-            menu.Items.Add(new ToolStripSeparator());
-
-            var windows = NativeMethods.GetOpenWindows();
-            if (windows.Count == 0)
-            {
-                var itemEmpty = new ToolStripMenuItem(Loc.IsVietnamese ? "(Không phát hiện cửa sổ đang mở)" : "(No open windows detected)");
-                itemEmpty.Enabled = false;
-                menu.Items.Add(itemEmpty);
-            }
-            else
-            {
-                foreach (var win in windows)
-                {
-                    var targetWin = win;
-                    string label = win.ToString();
-                    ToolStripMenuItem itemWin = new ToolStripMenuItem(label);
-                    itemWin.Image = targetWin.AppIcon ?? IconCache.GenericAppIcon;
-                    itemWin.Click += (s, e) =>
-                    {
-                        _simpleRelativeToWindow = true;
-                        _simpleTargetHwnd = targetWin.Hwnd;
-                        _simpleTargetPid = targetWin.ProcessId;
-                        _simpleTargetProcessName = targetWin.ProcessName;
-                        _simpleTargetWindowTitle = targetWin.Title;
-                        _simpleTargetWindowIndex = targetWin.WindowIndex;
-                        if (targetWin.AppIcon != null)
-                        {
-                            IconCache.CacheProcessIcon(targetWin.ProcessName, targetWin.AppIcon);
-                        }
-                        UpdateSimpleTargetWindowButtonDisplay();
-                        SyncOverlay();
-                        SaveSettings();
-                    };
-                    menu.Items.Add(itemWin);
-                }
-            }
-
-            menu.Show(btnSimpleTargetWindow, new Point(0, btnSimpleTargetWindow.Height));
+            }, () => { btnSimpleTargetWindow.IsOpen = false; });
         }
 
         private void UpdateSimpleTargetWindowButtonDisplay()
@@ -855,7 +881,7 @@ namespace ModernAutoClicker
             else
             {
                 btnSimpleTargetWindow.Image = IconCache.DesktopIcon;
-                btnSimpleTargetWindow.Text = Loc.IsVietnamese ? "Toàn màn hình (Desktop)" : "All Screens (Desktop)";
+                btnSimpleTargetWindow.Text = Loc.TargetAllScreens;
                 btnSimpleTargetWindow.CustomTextColor = currentTheme != null ? currentTheme.TextPrimary : Color.Empty;
             }
             btnSimpleTargetWindow.Invalidate();
@@ -971,7 +997,7 @@ namespace ModernAutoClicker
             {
                 if (isCursorMode)
                 {
-                    lblHeaderList.Text = "Follow Cursor Mode";
+                    lblHeaderList.Text = Loc.HeaderFollowCursorMode;
                 }
                 else
                 {
@@ -1210,6 +1236,7 @@ namespace ModernAutoClicker
             {
                 btnMapOpacity.Text = _mapOverlayOpacity + "% ▾";
             }
+            UpdateSettingsHeader();
             InitOverlayForm();
             if (overlayForm != null)
             {
@@ -1435,26 +1462,11 @@ namespace ModernAutoClicker
                     dlg.LoadAdvancedSteps(steps, maxW, maxH, selectedIndices);
                 }
 
-                dlg.ShowDialog(this);
+                dlg.ShowModal(this);
             }
 
             SyncOverlay();
             SaveSettings();
-        }
-
-        private void DeleteSelectedPoint()
-        {
-            if (_isBasicTab)
-            {
-                // Deletion handled via click on X in PointRowControl
-            }
-            else
-            {
-                if (pnlTabAdvanced != null && pnlTabAdvanced.Table != null)
-                {
-                    pnlTabAdvanced.Table.DeleteSelectedRow();
-                }
-            }
         }
 
         private Control GetDeepActiveControl()
@@ -1484,11 +1496,18 @@ namespace ModernAutoClicker
                     ActionRecorder.Instance.StopRecording();
                     if (lblMainStatusInfo != null)
                     {
-                        lblMainStatusInfo.Text = Loc.IsVietnamese ? "Đã dừng ghi bước (F6)" : "Recording stopped (F6)";
+                        lblMainStatusInfo.Text = Loc.StatusRecordingStopped;
                     }
                     return true;
                 }
                 ToggleStartStop();
+                return true;
+            }
+
+            // Ctrl+A on the Asian tab must not depend on focus being inside the step table (clicking labels or empty space never moves focus there)
+            if (keyData == (Keys.Control | Keys.A) && _currentTabIndex == 2 && pnlTabAdvanced != null && pnlTabAdvanced.Table != null)
+            {
+                pnlTabAdvanced.Table.HandleSelectAllShortcut();
                 return true;
             }
 
@@ -1562,12 +1581,13 @@ namespace ModernAutoClicker
             if (isRunning)
             {
                 btnStart.IsDisabled = false;
-                btnStart.Text = Loc.IsVietnamese ? "Dừng" : "Stop";
-                btnStart.Subtitle = Loc.IsVietnamese ? "(F6 để dừng)" : "(F6 to stop)";
+                btnStart.Icon = null;
+                btnStart.Text = Loc.BtnStopRun;
+                btnStart.Subtitle = Loc.BtnStopRunHint;
                 btnStart.NormalColor = currentTheme.Danger;
                 btnStart.HoverColor = currentTheme.CRed;
                 btnStart.ForeColor = Color.White;
-                if (_startToolTip != null) _startToolTip.SetToolTip(btnStart, Loc.IsVietnamese ? "Dừng tab đang hoạt động (F6)" : "Stop active tab (F6)");
+                if (_startToolTip != null) _startToolTip.SetToolTip(btnStart, Loc.TipStopActiveTab);
                 btnStart.Invalidate();
                 return;
             }
@@ -1583,18 +1603,24 @@ namespace ModernAutoClicker
 
             if (!canStart)
             {
-                string tip = Loc.IsVietnamese ? "Vui lòng thêm tọa độ hoặc bước để bắt đầu" : "Please add points or steps to start";
+                // Nothing to run yet: neutral gray instead of a faded accent
+                btnStart.NormalColor = currentTheme.BgElevated;
+                btnStart.HoverColor = currentTheme.BgElevated;
+                btnStart.ForeColor = currentTheme.TextSecondary;
+                AppIcons.Set(btnStart, AppIcons.Start, currentTheme.TextSecondary);
+
+                string tip = Loc.TipAddPointsOrSteps;
                 if (_currentTabIndex == 1 && radModePoints != null && radModePoints.Checked)
                 {
-                    tip = Loc.IsVietnamese ? "Chưa có tọa độ. Vui lòng thêm ít nhất 1 tọa độ để bắt đầu (Nhấn Space để lấy tọa độ)" : "No points set. Please add at least 1 point to start (Press Space to capture point)";
+                    tip = Loc.TipNoPoints;
                 }
                 else if (_currentTabIndex == 2)
                 {
-                    tip = Loc.IsVietnamese ? "Chưa có bước hợp lệ. Vui lòng thêm ít nhất 1 bước để bắt đầu (Bấm + Thêm bước)" : "No active steps. Please add at least 1 step to start (Click + Add Step)";
+                    tip = Loc.TipNoSteps;
                 }
                 else if (_currentTabIndex == 0)
                 {
-                    tip = Loc.IsVietnamese ? "Chuyển sang tab Cơ bản hoặc Nâng cao để bắt đầu" : "Switch to Simple or Asian Mode to start";
+                    tip = Loc.TipSwitchTab;
                 }
 
                 if (_startToolTip != null)
@@ -1604,9 +1630,10 @@ namespace ModernAutoClicker
             }
             else
             {
+                AppIcons.Set(btnStart, AppIcons.Start, Color.White);
                 if (_startToolTip != null)
                 {
-                    _startToolTip.SetToolTip(btnStart, Loc.IsVietnamese ? "Bắt đầu tab đang hoạt động (F6)" : "Start active tab (F6)");
+                    _startToolTip.SetToolTip(btnStart, Loc.TipStartActiveTab);
                 }
             }
             btnStart.Invalidate();
@@ -1616,6 +1643,7 @@ namespace ModernAutoClicker
         {
             if (IsActiveTabRunning) return;
             if (!CanStartAutoClick()) return;
+            if (!CheckTargetsBeforeStart()) return;
 
             // Auto-force FreeMouseMode if there will be >= 2 tasks running simultaneously
             int runningCount = GetTotalRunningCount();
@@ -1639,6 +1667,194 @@ namespace ModernAutoClicker
             UpdateRunningState();
             UpdateMainStatusText();
             if (titleBar != null) titleBar.IsRunning = true;
+        }
+
+        // Blocks the Start and shows the popup when a target window of the open tab cannot be used.
+        // A target without a session PID (Auto Clicker was reopened) gets locked here to the window it resolves to.
+        private bool CheckTargetsBeforeStart()
+        {
+            if (_targetDialogOpen) return false;
+
+            List<TargetProblem> problems = (_currentTabIndex == 1) ? FindSimpleTargetProblems() : FindAsianTargetProblems();
+            if (problems.Count == 0) return true;
+
+            ShowTargetProblems(problems);
+            return false;
+        }
+
+        private List<TargetProblem> FindSimpleTargetProblems()
+        {
+            List<TargetProblem> problems = new List<TargetProblem>();
+            bool hasTarget = _simpleRelativeToWindow && (_simpleTargetHwnd != IntPtr.Zero || !string.IsNullOrEmpty(_simpleTargetProcessName) || !string.IsNullOrEmpty(_simpleTargetWindowTitle) || _simpleTargetPid != 0);
+            if (!hasTarget) return problems;
+
+            IntPtr hWnd;
+            TargetWindowState state = NativeMethods.GetTargetWindowState(_simpleTargetHwnd, _simpleTargetPid, _simpleTargetProcessName, _simpleTargetWindowTitle, _simpleTargetWindowIndex, out hWnd);
+            if (state == TargetWindowState.Ok)
+            {
+                _simpleTargetHwnd = hWnd;
+                uint pid;
+                NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
+                if (pid != _simpleTargetPid)
+                {
+                    _simpleTargetPid = pid;
+                    UpdateSimpleTargetWindowButtonDisplay();
+                }
+                return problems;
+            }
+
+            problems.Add(new TargetProblem
+            {
+                State = state,
+                ProcessName = _simpleTargetProcessName,
+                WindowTitle = _simpleTargetWindowTitle,
+                WindowIndex = _simpleTargetWindowIndex,
+                Pid = _simpleTargetPid,
+                SimpleTabIndex = _simpleTabIndex
+            });
+            return problems;
+        }
+
+        private List<TargetProblem> FindAsianTargetProblems()
+        {
+            List<TargetProblem> problems = new List<TargetProblem>();
+            if (pnlTabAdvanced == null) return problems;
+
+            ModernAutoClicker.Advanced.MacroProfile root = pnlTabAdvanced.GetCurrentProfile();
+            if (root == null) return problems;
+
+            foreach (ModernAutoClicker.Advanced.MacroProfile script in pnlTabAdvanced.GetProfilesUsedBy(root.Name))
+            {
+                if (script.Steps == null) continue;
+                for (int i = 0; i < script.Steps.Count; i++)
+                {
+                    ModernAutoClicker.Advanced.MacroStep s = script.Steps[i];
+                    if (!s.Enabled || !ModernAutoClicker.Advanced.ActionExecutor.UsesTargetWindow(s)) continue;
+
+                    IntPtr hWnd;
+                    TargetWindowState state = NativeMethods.GetTargetWindowState(s.WindowHwnd, s.TargetPid, s.ProcessName, s.WindowTitle, s.WindowIndex, out hWnd);
+                    if (state == TargetWindowState.Ok)
+                    {
+                        s.WindowHwnd = hWnd;
+                        uint pid;
+                        NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
+                        s.TargetPid = pid;
+                        continue;
+                    }
+
+                    TargetProblem candidate = new TargetProblem
+                    {
+                        State = state,
+                        ProcessName = s.ProcessName,
+                        WindowTitle = s.WindowTitle,
+                        WindowIndex = s.WindowIndex,
+                        Pid = s.TargetPid,
+                        RootScriptName = root.Name
+                    };
+                    TargetProblem problem = problems.Find(x => x.TargetKey == candidate.TargetKey);
+                    if (problem == null)
+                    {
+                        problem = candidate;
+                        problems.Add(problem);
+                    }
+                    problem.AddStep(script.Name, i + 1);
+                }
+            }
+            return problems;
+        }
+
+        private void QueueTargetProblem(TargetProblem problem)
+        {
+            if (!_pendingTargetProblems.Exists(x => x.TargetKey == problem.TargetKey))
+            {
+                _pendingTargetProblems.Add(problem);
+            }
+            _targetProblemTimer.Stop();
+            _targetProblemTimer.Start();
+        }
+
+        private void ShowPendingTargetProblems()
+        {
+            _targetProblemTimer.Stop();
+            if (_targetDialogOpen || _pendingTargetProblems.Count == 0) return;
+
+            List<TargetProblem> problems = new List<TargetProblem>(_pendingTargetProblems);
+            _pendingTargetProblems.Clear();
+            ShowTargetProblems(problems);
+
+            // Tabs that lost their target while the popup was open
+            if (_pendingTargetProblems.Count > 0) _targetProblemTimer.Start();
+        }
+
+        private void ShowTargetProblems(List<TargetProblem> problems)
+        {
+            if (this.IsDisposed) return;
+
+            _targetDialogOpen = true;
+            try
+            {
+                // The popup belongs to this window: it would stay out of sight with it
+                if (this.WindowState == FormWindowState.Minimized) this.WindowState = FormWindowState.Normal;
+
+                using (TargetProblemDialog dialog = new TargetProblemDialog(problems, currentTheme))
+                {
+                    if (dialog.ShowModal(this) != DialogResult.OK) return;
+
+                    foreach (KeyValuePair<TargetProblem, TargetChoice> pair in dialog.Choices)
+                    {
+                        ApplyTargetChoice(pair.Key, pair.Value.Window);
+                    }
+                }
+
+                SyncOverlay();
+                SaveSettings();
+                if (GetActiveRunStats() == null) lblMainStatusInfo.Text = Loc.TargetChangedPressStart;
+            }
+            finally
+            {
+                _targetDialogOpen = false;
+            }
+        }
+
+        private void ApplyTargetChoice(TargetProblem problem, NativeMethods.WindowTargetInfo window)
+        {
+            if (window != null && window.AppIcon != null)
+            {
+                IconCache.CacheProcessIcon(window.ProcessName, window.AppIcon);
+            }
+
+            if (!problem.IsSimple)
+            {
+                pnlTabAdvanced.ReplaceWindowTarget(problem.RootScriptName, problem.ProcessName, problem.WindowTitle, problem.WindowIndex, window);
+                return;
+            }
+
+            int tab = problem.SimpleTabIndex;
+            _simpleTargetHwnds[tab] = window != null ? window.Hwnd : IntPtr.Zero;
+            _simpleTargetPids[tab] = window != null ? window.ProcessId : 0;
+            _simpleTargetWindowIndices[tab] = window != null ? window.WindowIndex : 0;
+
+            string processName = window != null ? window.ProcessName : "";
+            string windowTitle = window != null ? window.Title : "";
+
+            if (tab == _simpleTabIndex)
+            {
+                _simpleRelativeToWindow = window != null;
+                _simpleTargetProcessName = processName;
+                _simpleTargetWindowTitle = windowTitle;
+                UpdateSimpleTargetWindowButtonDisplay();
+            }
+            else
+            {
+                // A tab that is not on screen only lives in the settings until it is opened
+                AppSettings config = AppSettings.Load();
+                SimpleProfileConfig prof = config.GetProfile(tab);
+                prof.SimpleRelativeToWindow = window != null;
+                prof.SimpleTargetProcessName = processName;
+                prof.SimpleTargetWindowTitle = windowTitle;
+                prof.SimpleTargetWindowIndex = _simpleTargetWindowIndices[tab];
+                AppSettings.Save(config);
+            }
         }
 
         private void StopAutoClick()
@@ -1668,7 +1884,7 @@ namespace ModernAutoClicker
 
         private void StartSimpleTab(int tabIndex, bool forceFreeMouse)
         {
-            if (tabIndex < 0 || tabIndex >= 5) return;
+            if (tabIndex < 0 || tabIndex >= AppSettings.SimpleTabCount) return;
             if (_simpleEngines[tabIndex] != null && _simpleEngines[tabIndex].IsRunning) return;
 
             SaveActiveSimpleProfileFromUI();
@@ -1676,12 +1892,12 @@ namespace ModernAutoClicker
             SimpleProfileConfig prof = config.GetProfile(tabIndex);
 
             int clickMode = prof.SimpleClickMode;
-            uint tabPid = (tabIndex >= 0 && tabIndex < 5) ? _simpleTargetPids[tabIndex] : 0;
-            IntPtr tabHwnd = (tabIndex >= 0 && tabIndex < 5) ? _simpleTargetHwnds[tabIndex] : IntPtr.Zero;
+            uint tabPid = (tabIndex >= 0 && tabIndex < AppSettings.SimpleTabCount) ? _simpleTargetPids[tabIndex] : 0;
+            IntPtr tabHwnd = (tabIndex >= 0 && tabIndex < AppSettings.SimpleTabCount) ? _simpleTargetHwnds[tabIndex] : IntPtr.Zero;
             if (prof.SimpleRelativeToWindow && !NativeMethods.IsValidWindowHandle(tabHwnd, tabPid, prof.SimpleTargetProcessName))
             {
                 tabHwnd = NativeMethods.FindWindowByTarget(prof.SimpleTargetProcessName, prof.SimpleTargetWindowTitle, prof.SimpleTargetWindowIndex, tabPid);
-                if (tabHwnd != IntPtr.Zero && tabIndex >= 0 && tabIndex < 5)
+                if (tabHwnd != IntPtr.Zero && tabIndex >= 0 && tabIndex < AppSettings.SimpleTabCount)
                 {
                     _simpleTargetHwnds[tabIndex] = tabHwnd;
                     uint p;
@@ -1692,7 +1908,7 @@ namespace ModernAutoClicker
                         _simpleTargetPids[tabIndex] = p;
                     }
                 }
-                else if (tabIndex >= 0 && tabIndex < 5)
+                else if (tabIndex >= 0 && tabIndex < AppSettings.SimpleTabCount)
                 {
                     _simpleTargetHwnds[tabIndex] = IntPtr.Zero;
                 }
@@ -1700,13 +1916,14 @@ namespace ModernAutoClicker
 
             if (!UacHelper.IsRunningAsAdmin() && prof.SimpleRelativeToWindow && tabHwnd != IntPtr.Zero && UacHelper.IsProcessElevated(tabHwnd))
             {
-                DialogResult dr = MessageBox.Show(
-                    Loc.IsVietnamese 
+                DialogResult dr = ModernMessageBox.Show(
+                    Loc.IsVietnamese
                         ? "Cửa sổ mục tiêu đang chạy với quyền Administrator.\nĐể gửi phím/chuột vào cửa sổ này, Auto Clicker cần quyền Administrator.\n\nBạn có muốn khởi động lại ứng dụng dưới quyền Administrator ngay bây giờ?"
                         : "Target window is running with Administrator privileges.\nTo send input to this window, Auto Clicker requires Administrator privileges.\n\nWould you like to restart Auto Clicker as Administrator now?",
                     "Administrator Required",
                     MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning);
+                    MessageBoxIcon.Warning,
+                    this);
 
                 if (dr == DialogResult.Yes)
                 {
@@ -1721,7 +1938,7 @@ namespace ModernAutoClicker
                 IntervalMs = Math.Max(1, prof.IntervalMs),
                 Loops = prof.SimpleLoops,
                 JitterPx = prof.SimpleJitterPx,
-                MouseButton = 0,
+                MouseButton = prof.MouseButton,
                 ClickMode = clickMode,
                 FreeMouseMode = forceFreeMouse,
                 SmoothMouseMove = (chkSmoothMove != null && chkSmoothMove.Checked),
@@ -1741,7 +1958,7 @@ namespace ModernAutoClicker
 
         private void StopSimpleTab(int tabIndex)
         {
-            if (tabIndex < 0 || tabIndex >= 5) return;
+            if (tabIndex < 0 || tabIndex >= AppSettings.SimpleTabCount) return;
             if (_simpleEngines[tabIndex] != null && _simpleEngines[tabIndex].IsRunning)
             {
                 _simpleEngines[tabIndex].Stop();
@@ -1811,13 +2028,14 @@ namespace ModernAutoClicker
 
                 if (targetIsElevated)
                 {
-                    DialogResult dr = MessageBox.Show(
-                        Loc.IsVietnamese 
+                    DialogResult dr = ModernMessageBox.Show(
+                        Loc.IsVietnamese
                             ? "Cửa sổ mục tiêu trong kịch bản đang chạy với quyền Administrator.\nĐể gửi phím/chuột vào cửa sổ này, Auto Clicker cần quyền Administrator.\n\nBạn có muốn khởi động lại ứng dụng dưới quyền Administrator ngay bây giờ?"
                             : "A target window in this script is running with Administrator privileges.\nTo send input to this window, Auto Clicker requires Administrator privileges.\n\nWould you like to restart Auto Clicker as Administrator now?",
                         "Administrator Required",
                         MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Warning);
+                        MessageBoxIcon.Warning,
+                        this);
 
                     if (dr == DialogResult.Yes)
                     {
@@ -1850,19 +2068,19 @@ namespace ModernAutoClicker
                 }
             };
 
-            runner.OnProgressUpdated += (cycles, elapsed) =>
+            runner.OnTargetLost += (problem) =>
             {
                 if (this.IsHandleCreated)
                 {
-                    this.BeginInvoke((Action)(() =>
-                    {
-                        if (_currentTabIndex == 2 && pnlTabAdvanced != null && pnlTabAdvanced.GetCurrentProfile().Name == scriptKey)
-                        {
-                            lblCurrentClicksVal.Text = cycles.ToString();
-                            lblCurrentTimeVal.Text = string.Format("{0:D2}:{1:D2}:{2:D2}",
-                                (int)elapsed.TotalHours, elapsed.Minutes, elapsed.Seconds);
-                        }
-                    }));
+                    this.BeginInvoke((Action)(() => QueueTargetProblem(problem)));
+                }
+            };
+
+            runner.OnRunFailed += (ex) =>
+            {
+                if (this.IsHandleCreated)
+                {
+                    this.BeginInvoke((Action)(() => ShowRunFailure(Loc.RunningAsianName(scriptKey), ex)));
                 }
             };
 
@@ -1872,6 +2090,9 @@ namespace ModernAutoClicker
                 {
                     this.BeginInvoke((Action)(() =>
                     {
+                        // A runner replaced by a newer Start of the same script must not mark that new run as stopped
+                        ModernAutoClicker.Advanced.MacroRunner current;
+                        if (_asianRunners.TryGetValue(scriptKey, out current) && current != runner) return;
                         HandleAsianRunnerStopped(scriptKey);
                     }));
                 }
@@ -1933,8 +2154,8 @@ namespace ModernAutoClicker
                 return;
             }
 
-            // 1. Stop all 5 Simple engines
-            for (int i = 0; i < 5; i++)
+            // 1. Stop all Simple engines
+            for (int i = 0; i < AppSettings.SimpleTabCount; i++)
             {
                 if (_simpleEngines[i] != null && _simpleEngines[i].IsRunning)
                 {
@@ -1973,11 +2194,7 @@ namespace ModernAutoClicker
             UpdateSimpleTabButtons();
             UpdateSimpleLocalUILock();
             UpdateRunningState();
-
-            if (lblMainStatusInfo != null)
-            {
-                lblMainStatusInfo.Text = "Stopped ALL tasks.";
-            }
+            UpdateMainStatusText();
 
             HandleWindowFocusChanged(true);
         }
@@ -1985,7 +2202,7 @@ namespace ModernAutoClicker
         private int GetTotalRunningCount()
         {
             int count = 0;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < AppSettings.SimpleTabCount; i++)
             {
                 if (_simpleEngines[i] != null && _simpleEngines[i].IsRunning) count++;
             }
@@ -1998,41 +2215,111 @@ namespace ModernAutoClicker
 
         private void UpdateMainStatusText()
         {
-            List<string> runningNames = new List<string>();
-            for (int i = 0; i < 5; i++)
+            UpdateRunningTasksRow(true);
+            UpdateTabStatus(_isBasicTab);
+            if (_runStatsTimer != null && IsAnyRunning) _runStatsTimer.Start();
+        }
+
+        // Timer tick: only touches the status line when it shows, or has to stop showing, the live numbers (the Ready text is costly to rebuild)
+        private void RefreshRunStats()
+        {
+            UpdateRunningTasksRow(true);
+
+            string stats = GetActiveRunStats();
+            if (stats != null)
             {
-                if (_simpleEngines[i] != null && _simpleEngines[i].IsRunning)
-                {
-                    runningNames.Add("Simple #" + (i + 1));
-                }
+                ShowRunStats(stats);
             }
-            if (_asianRunners != null)
+            else if (_statusShowsRunStats)
             {
-                foreach (var kvp in _asianRunners)
+                UpdateTabStatus(_isBasicTab);
+            }
+
+            if (!IsAnyRunning) _runStatsTimer.Stop();
+        }
+
+        private void ShowRunStats(string stats)
+        {
+            _statusShowsRunStats = true;
+            if (lblMainStatusInfo.Text != stats) lblMainStatusInfo.Text = stats;
+        }
+
+        // Live numbers of the tab on screen, or null when that tab is not running (even if other tabs are)
+        private string GetActiveRunStats()
+        {
+            if (_currentTabIndex == 1)
+            {
+                if (_simpleEngines == null || _simpleTabIndex < 0 || _simpleTabIndex >= AppSettings.SimpleTabCount) return null;
+                ClickEngine engine = _simpleEngines[_simpleTabIndex];
+                if (engine == null || !engine.IsRunning) return null;
+                return Loc.RunStatsSimple(engine.TotalClicks, FormatElapsed(engine.Elapsed), FormatLoops(engine.CompletedLoops, engine.TargetLoops));
+            }
+
+            if (_currentTabIndex == 2 && pnlTabAdvanced != null)
+            {
+                string scriptName = pnlTabAdvanced.ActiveScriptName;
+                ModernAutoClicker.Advanced.MacroRunner runner;
+                if (string.IsNullOrEmpty(scriptName) || !_asianRunners.TryGetValue(scriptName, out runner) || runner == null || !runner.IsRunning) return null;
+                return Loc.RunStatsAsian(runner.StepsExecuted, FormatElapsed(runner.Elapsed), FormatLoops(runner.TotalCyclesCompleted, runner.TargetLoops));
+            }
+
+            return null;
+        }
+
+        private static string FormatElapsed(TimeSpan elapsed)
+        {
+            return string.Format("{0:D2}:{1:D2}:{2:D2}", (int)elapsed.TotalHours, elapsed.Minutes, elapsed.Seconds);
+        }
+
+        private static string FormatLoops(int completed, int target)
+        {
+            return target > 0 ? completed + "/" + target : completed.ToString();
+        }
+
+        // The row under the settings card lists every running task and only exists while something runs.
+        // relayout: false when the caller (SwitchTab) lays the window out itself right after.
+        private void UpdateRunningTasksRow(bool relayout)
+        {
+            if (lblRunningTasks == null) return;
+
+            List<string> runningNames = new List<string>();
+            if (_simpleEngines != null)
+            {
+                for (int i = 0; i < AppSettings.SimpleTabCount; i++)
                 {
-                    if (kvp.Value != null && kvp.Value.IsRunning)
+                    if (_simpleEngines[i] != null && _simpleEngines[i].IsRunning)
                     {
-                        runningNames.Add("Asian " + kvp.Key);
+                        runningNames.Add(Loc.RunningSimpleName(i + 1));
                     }
                 }
             }
-
-            if (lblMainStatusInfo != null)
+            foreach (var kvp in _asianRunners)
             {
-                if (runningNames.Count == 0)
+                if (kvp.Value != null && kvp.Value.IsRunning)
                 {
-                    UpdateTabStatus(_isBasicTab);
+                    runningNames.Add(Loc.RunningAsianName(kvp.Key));
                 }
-                else if (runningNames.Count == 1)
+            }
+
+            bool show = runningNames.Count > 0 && _currentTabIndex != 0;
+            if (show)
+            {
+                string text = Loc.RunningTasks(runningNames.Count, string.Join(", ", runningNames.ToArray()));
+                if (lblRunningTasks.Text != text)
                 {
-                    lblMainStatusInfo.Text = (Loc.IsVietnamese ? "Đang chạy: " : "Running: ") + runningNames[0];
+                    lblRunningTasks.Text = text;
+                    if (_startToolTip != null) _startToolTip.SetToolTip(lblRunningTasks, text);
                 }
-                else
-                {
-                    lblMainStatusInfo.Text = Loc.IsVietnamese
-                        ? string.Format("Đang chạy: {0} tác vụ ({1})", runningNames.Count, string.Join(", ", runningNames.ToArray()))
-                        : string.Format("Running: {0} tasks ({1})", runningNames.Count, string.Join(", ", runningNames.ToArray()));
-                }
+            }
+
+            if (_runningRowShown == show) return;
+            _runningRowShown = show;
+            lblRunningTasks.Visible = show;
+
+            // Simple's form auto-sizes around the row; Asian keeps its window size and gives the height to the step table
+            if (relayout && _currentTabIndex == 2 && this.WindowState != FormWindowState.Minimized)
+            {
+                ApplyAsianDynamicLayout(this.ClientSize.Width, this.ClientSize.Height);
             }
         }
 
@@ -2042,14 +2329,15 @@ namespace ModernAutoClicker
 
             if (isCurrentRunning)
             {
-                btnStart.Text = Loc.IsVietnamese ? "Dừng" : "Stop";
-                btnStart.Subtitle = Loc.IsVietnamese ? "(F6 để dừng)" : "(F6 to stop)";
+                btnStart.Icon = null;
+                btnStart.Text = Loc.BtnStopRun;
+                btnStart.Subtitle = Loc.BtnStopRunHint;
                 btnStart.NormalColor = currentTheme.Danger;
                 btnStart.HoverColor = currentTheme.CRed;
                 btnStart.ForeColor = Color.White;
                 btnStart.IsDisabled = false;
                 btnStart.Enabled = true;
-                if (_startToolTip != null) _startToolTip.SetToolTip(btnStart, Loc.IsVietnamese ? "Dừng tab đang hoạt động (F6)" : "Stop active tab (F6)");
+                if (_startToolTip != null) _startToolTip.SetToolTip(btnStart, Loc.TipStopActiveTab);
                 btnStart.Invalidate();
             }
             else
@@ -2064,8 +2352,8 @@ namespace ModernAutoClicker
             }
 
             // Local Lockout:
-            // Tab navigation, 5 Simple tab buttons, and Global Settings are ALWAYS enabled!
-            if (pnlTabBar != null) pnlTabBar.Enabled = true;
+            // Tab navigation, Simple tab buttons, and Global Settings are ALWAYS enabled!
+            if (tabBar != null) tabBar.Enabled = true;
             if (pnlContentHost != null) pnlContentHost.Enabled = true;
             if (pnlGlobalSettings != null) pnlGlobalSettings.Enabled = true;
             if (btnTransformTool != null) btnTransformTool.Enabled = !isCurrentRunning;
@@ -2080,12 +2368,24 @@ namespace ModernAutoClicker
             }
 
             if (titleBar != null) titleBar.IsRunning = IsAnyRunning;
-            if (btnStopAll != null) btnStopAll.Enabled = IsAnyRunning;
+            UpdateStopAllButtonLook();
+        }
+
+        // Stop ALL only takes its red color while something is running; otherwise it stays neutral gray
+        private void UpdateStopAllButtonLook()
+        {
+            if (btnStopAll == null || currentTheme == null) return;
+            bool anyRunning = IsAnyRunning;
+            btnStopAll.Enabled = anyRunning;
+            btnStopAll.NormalColor = anyRunning ? currentTheme.Danger : currentTheme.BgElevated;
+            btnStopAll.HoverColor = anyRunning ? currentTheme.CRed : currentTheme.BgElevated;
+            btnStopAll.ForeColor = anyRunning ? Color.White : currentTheme.TextTertiary;
+            btnStopAll.Invalidate();
         }
 
         public void SwitchSimpleTab(int targetIdx)
         {
-            if (targetIdx < 0 || targetIdx >= 5 || targetIdx == _simpleTabIndex) return;
+            if (targetIdx < 0 || targetIdx >= AppSettings.SimpleTabCount || targetIdx == _simpleTabIndex) return;
 
             // 1. Save current UI to old tab's profile
             SaveActiveSimpleProfileFromUI();
@@ -2126,7 +2426,8 @@ namespace ModernAutoClicker
             AppSettings config = AppSettings.Load();
             SimpleProfileConfig prof = config.GetProfile(_simpleTabIndex);
 
-            prof.IntervalMs = numInterval != null ? numInterval.Value : 250;
+            prof.IntervalMs = numInterval != null ? numInterval.ValueMs : 250;
+            prof.IntervalUnit = numInterval != null ? numInterval.Unit : TimeUnit.Milliseconds;
             prof.SimpleLoops = numSimpleLoop != null ? numSimpleLoop.Value : 0;
             prof.SimpleJitterPx = numSimpleJitter != null ? numSimpleJitter.Value : 0;
             prof.SimpleClickMode = (radModeCursor != null && radModeCursor.Checked) ? 1 : 0;
@@ -2148,7 +2449,12 @@ namespace ModernAutoClicker
                 if (config == null) config = AppSettings.Load();
                 SimpleProfileConfig prof = config.GetProfile(index);
 
-                if (numInterval != null) numInterval.Value = Math.Max(1, prof.IntervalMs);
+                if (numInterval != null)
+                {
+                    numInterval.Unit = prof.IntervalUnit;
+                    numInterval.ValueMs = Math.Max(1, prof.IntervalMs);
+                }
+                if (cboIntervalUnit != null) cboIntervalUnit.SelectedIndex = TimeUnit.Clamp(prof.IntervalUnit);
                 if (numSimpleLoop != null) numSimpleLoop.Value = Math.Max(0, prof.SimpleLoops);
                 if (numSimpleJitter != null) numSimpleJitter.Value = Math.Max(0, prof.SimpleJitterPx);
 
@@ -2183,7 +2489,7 @@ namespace ModernAutoClicker
                     }
                 }
                 _simpleRelativeToWindow = prof.SimpleRelativeToWindow;
-                if (_simpleRelativeToWindow && index >= 0 && index < 5)
+                if (_simpleRelativeToWindow && index >= 0 && index < AppSettings.SimpleTabCount)
                 {
                     if (!NativeMethods.IsValidWindowHandle(_simpleTargetHwnds[index], _simpleTargetPids[index], _simpleTargetProcessName))
                     {
@@ -2231,12 +2537,13 @@ namespace ModernAutoClicker
 
         private void UpdateSimpleLocalUILock()
         {
-            bool isCurrentRunning = _simpleEngines != null && _simpleTabIndex >= 0 && _simpleTabIndex < 5 &&
+            bool isCurrentRunning = _simpleEngines != null && _simpleTabIndex >= 0 && _simpleTabIndex < AppSettings.SimpleTabCount &&
                                     _simpleEngines[_simpleTabIndex] != null && _simpleEngines[_simpleTabIndex].IsRunning;
 
             if (pnlClickMode != null) pnlClickMode.Enabled = !isCurrentRunning;
             if (pnlSimpleTarget != null) pnlSimpleTarget.Enabled = !isCurrentRunning;
             if (numInterval != null) numInterval.Enabled = !isCurrentRunning;
+            if (cboIntervalUnit != null) cboIntervalUnit.Enabled = !isCurrentRunning;
             if (numSimpleLoop != null) numSimpleLoop.Enabled = !isCurrentRunning;
             if (numSimpleJitter != null) numSimpleJitter.Enabled = !isCurrentRunning;
             if (btnClearList != null) btnClearList.Enabled = !isCurrentRunning;
@@ -2249,7 +2556,7 @@ namespace ModernAutoClicker
         {
             ThemeTokens t = currentTheme ?? ThemeTokens.DarkTheme();
             AppSettings config = AppSettings.Load();
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < AppSettings.SimpleTabCount; i++)
             {
                 if (btnSimpleTabs[i] == null) continue;
 
@@ -2300,6 +2607,17 @@ namespace ModernAutoClicker
                 }
                 btnSimpleTabs[i].Invalidate();
             }
+            UpdateSimpleListButtonLook();
+        }
+
+        // "Clear" has nothing to clear on an empty point list: gray text and no danger hover until points exist
+        private void UpdateSimpleListButtonLook()
+        {
+            if (btnClearList == null || currentTheme == null) return;
+            bool hasPoints = lstPoints != null && lstPoints.Count > 0;
+            btnClearList.ForeColor = hasPoints ? currentTheme.TextPrimary : currentTheme.TextTertiary;
+            btnClearList.HoverColor = hasPoints ? currentTheme.Danger : currentTheme.BgElevated;
+            AppIcons.Set(btnClearList, AppIcons.Clear, btnClearList.ForeColor, ContentAlignment.MiddleCenter);
         }
 
         private void SavePointsToFile()
@@ -2324,7 +2642,7 @@ namespace ModernAutoClicker
             AppSettings config = AppSettings.Load();
             _isFirstRun = config.IsFirstRun;
 
-            _simpleTabIndex = Math.Max(0, Math.Min(4, config.ActiveSimpleTabIndex));
+            _simpleTabIndex = Math.Max(0, Math.Min(AppSettings.SimpleTabCount - 1, config.ActiveSimpleTabIndex));
             LoadSimpleProfileToUI(_simpleTabIndex, config);
             UpdateSimpleTabButtons();
 
@@ -2343,6 +2661,8 @@ namespace ModernAutoClicker
             }
             if (chkFreeMouse != null) chkFreeMouse.Checked = config.FreeMouseMode;
             if (chkSmoothMove != null) chkSmoothMove.Checked = config.SmoothMouseMove;
+            _settingsCollapsed = config.SettingsCollapsed;
+            ApplySettingsCollapse();
 
             if (!config.IsDarkTheme)
             {
@@ -2359,7 +2679,7 @@ namespace ModernAutoClicker
             }
 
             _savedAsianWidth = Math.Max(700, config.AsianWindowWidth);
-            _savedAsianHeight = Math.Max(760, config.AsianWindowHeight);
+            _savedAsianHeight = Math.Max(AsianMinHeight, config.AsianWindowHeight);
 
             if (config.IsAdvancedTab)
             {
@@ -2380,7 +2700,8 @@ namespace ModernAutoClicker
 
             // 1. Sync current UI into active Simple profile
             SimpleProfileConfig prof = config.GetProfile(_simpleTabIndex);
-            prof.IntervalMs = (numInterval != null) ? numInterval.Value : 250;
+            prof.IntervalMs = (numInterval != null) ? numInterval.ValueMs : 250;
+            prof.IntervalUnit = (numInterval != null) ? numInterval.Unit : TimeUnit.Milliseconds;
             prof.SimpleLoops = (numSimpleLoop != null) ? numSimpleLoop.Value : 0;
             prof.SimpleJitterPx = (numSimpleJitter != null) ? numSimpleJitter.Value : 0;
             prof.SimpleClickMode = (radModeCursor != null && radModeCursor.Checked) ? 1 : 0;
@@ -2395,6 +2716,7 @@ namespace ModernAutoClicker
             config.AlwaysOnTop = chkAlwaysOnTop.Checked;
             config.ShowMapOverlay = chkShowMap.Checked;
             config.MapOverlayOpacity = _mapOverlayOpacity;
+            config.SettingsCollapsed = _settingsCollapsed;
             config.FreeMouseMode = (chkFreeMouse != null && chkFreeMouse.Checked);
             config.SmoothMouseMove = (chkSmoothMove != null && chkSmoothMove.Checked);
             config.IsDarkTheme = currentTheme.IsDark;
@@ -2403,13 +2725,14 @@ namespace ModernAutoClicker
             if (_currentTabIndex == 2 && this.WindowState != FormWindowState.Minimized)
             {
                 _savedAsianWidth = Math.Max(700, this.Width);
-                _savedAsianHeight = Math.Max(760, this.Height);
+                _savedAsianHeight = Math.Max(AsianMinHeight, this.Height);
             }
             config.AsianWindowWidth = _savedAsianWidth;
             config.AsianWindowHeight = _savedAsianHeight;
             config.AdvancedProfileJson = (pnlTabAdvanced != null) ? ModernAutoClicker.Advanced.MacroStorage.ProjectToJson(pnlTabAdvanced.GetAllProfiles(), pnlTabAdvanced.ActiveProfileIndex) : null;
 
             AppSettings.Save(config);
+            ReportSettingsProblem();
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -2418,9 +2741,18 @@ namespace ModernAutoClicker
             SaveSettings();
             UnregisterGlobalHotkeys();
             StopAll();
+            if (_runStatsTimer != null)
+            {
+                _runStatsTimer.Stop();
+                _runStatsTimer.Dispose();
+                _runStatsTimer = null;
+            }
+            _targetProblemTimer.Stop();
+            _targetProblemTimer.Dispose();
             if (overlayForm != null && !overlayForm.IsDisposed)
             {
                 overlayForm.Close();
+                overlayForm.Dispose();
             }
             if (_unfocusFilter != null)
             {
@@ -2436,6 +2768,8 @@ namespace ModernAutoClicker
                 _startToolTip.Dispose();
                 _startToolTip = null;
             }
+
+            base.OnFormClosing(e);
         }
     }
 

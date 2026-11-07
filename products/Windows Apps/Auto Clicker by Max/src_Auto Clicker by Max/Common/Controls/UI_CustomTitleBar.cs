@@ -482,11 +482,12 @@ namespace MaxApp.Common
                 {
                     if (!UacHelper.IsRunningAsAdmin())
                     {
-                        DialogResult dr = MessageBox.Show(
+                        DialogResult dr = ModernMessageBox.Show(
                             Loc.AdminRestartPrompt,
                             Loc.AdminPromptTitle,
                             MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question);
+                            MessageBoxIcon.Question,
+                            this);
                         if (dr == DialogResult.Yes)
                         {
                             UacHelper.RestartAsAdmin();
@@ -519,7 +520,7 @@ namespace MaxApp.Common
                     }
                 }
             }
-            catch { }
+            catch (Exception caught) { AppLog.Caught(caught); }
 
             return null;
         }
@@ -597,7 +598,7 @@ namespace MaxApp.Common
                     }
                 }
 
-                Image adminIcon = SvgFileRenderer.GetCachedTintedIcon("admin.svg", 16, 16, t.TextPrimary);
+                Image adminIcon = SvgFileRenderer.GetCachedTintedIcon(CommonIcons.Admin, 16, 16, t.TextPrimary);
                 if (adminIcon != null)
                 {
                     int ax = _rectAdmin.X + (_rectAdmin.Width - 16) / 2;
@@ -632,7 +633,8 @@ namespace MaxApp.Common
                     }
                 }
 
-                Image themeIcon = SvgFileRenderer.GetThemeIconImage(t.IsDark, 16);
+                // Icon in the page background colour on the text-coloured button: dark icon on a light button in dark mode, and the reverse in light mode
+                Image themeIcon = SvgFileRenderer.GetCachedTintedIcon(t.IsDark ? CommonIcons.LightMode : CommonIcons.DarkMode, 16, 16, t.BgPrimary);
                 if (themeIcon != null)
                 {
                     int tx = _rectTheme.X + (_rectTheme.Width - 16) / 2;
@@ -785,12 +787,12 @@ namespace MaxApp.Common
                 Loc.OnLanguageChanged -= HandleLanguageChanged;
                 if (_toolTip != null)
                 {
-                    try { _toolTip.Dispose(); } catch { }
+                    try { _toolTip.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                     _toolTip = null;
                 }
                 if (_cachedIcon != null)
                 {
-                    try { _cachedIcon.Dispose(); } catch { }
+                    try { _cachedIcon.Dispose(); } catch (Exception caught) { AppLog.Caught(caught); }
                     _cachedIcon = null;
                 }
             }

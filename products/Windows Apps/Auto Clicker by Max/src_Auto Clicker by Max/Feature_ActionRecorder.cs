@@ -14,8 +14,10 @@ namespace ModernAutoClicker
     /// High-performance Action Recorder for Asian Mode.
     /// Uses Win32 Low-Level Hooks (WH_MOUSE_LL & WH_KEYBOARD_LL) to capture
     /// user actions system-wide and classifies them into MacroSteps with zero collision:
-    /// Left Click, Right Click, Middle / Scroll, Double Click, Drag n Drop,
-    /// Press n Click, Key Press, Type Text.
+    /// Left Click, Right Click, Middle / Scroll, Double Click, Drag &amp; Drop,
+    /// Press &amp; Click, Key Press, Type Text.
+    /// Press &amp; Click: a key held while a mouse button goes down (key first), or a key pressed while a button is held (click first).
+    /// Key Press steps are recorded when the key is released, so a key that turns into a Press &amp; Click is not recorded twice.
     /// </summary>
     public class ActionRecorder : IDisposable
     {
@@ -65,11 +67,6 @@ namespace ModernAutoClicker
         [DllImport("user32.dll")]
         private static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpKeyState, [Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pwszBuff, int cchBuff, uint wFlags);
 
-        [DllImport("user32.dll")]
-        private static extern bool GetKeyboardState(byte[] lpKeyState);
-
-        [DllImport("user32.dll")]
-        private static extern short GetKeyState(int nVirtKey);
 
         private const int WH_MOUSE_LL = 14;
         private const int WH_KEYBOARD_LL = 13;
@@ -89,6 +86,8 @@ namespace ModernAutoClicker
         private const int WM_SYSKEYUP = 0x0105;
 
         private const int VK_F6 = 0x72;
+        private const uint VK_PACKET = 0xE7;      // Unicode character injected with KEYEVENTF_UNICODE (scanCode holds the UTF-16 unit)
+        private const uint LLKHF_INJECTED = 0x10; // Sent by software (e.g. Unikey/EVKey rewriting a word), not by the physical keyboard
 
         #endregion
 
@@ -112,6 +111,8 @@ namespace ModernAutoClicker
 
         // Events
         public event Action<MacroStep> OnActionCaptured;
+        // The Delay of an already captured step was set (the pause until the next action is now known)
+        public event Action<MacroStep> OnStepDelayChanged;
         public event Action<bool> OnRecordingStateChanged;
 
         // Hooks and delegates
@@ -124,8 +125,13 @@ namespace ModernAutoClicker
         // Thread synchronization context to marshal events safely to UI
         private SynchronizationContext _syncContext;
 
-        // Timing stopwatch
-        private Stopwatch _stepStopwatch = new Stopwatch();
+        // Delay timing: the last captured step gets the pause between its end and the start of the next action
+        private const int MinRecordedDelayMs = 30;
+        private const int MaxRecordedDelayMs = 30000;
+        private MacroStep _lastCapturedStep;
+        private int _lastCapturedEndTick;
+        private int _textStartTick;
+        private int _textEndTick;
 
         // Mouse tracking state
         private bool _isMouseDown = false;
@@ -136,27 +142,52 @@ namespace ModernAutoClicker
 
         // Double click detection state
         private MacroStep _pendingSingleClick = null;
+        private int _pendingClickStartTick;
+        private int _pendingClickEndTick;
         private System.Threading.Timer _clickTimer = null;
         private Point _lastClickUpPoint = Point.Empty;
         private int _lastClickUpTick = 0;
 
-        // Keyboard tracking state
-        private Dictionary<uint, string> _activeDownKeys = new Dictionary<uint, string>();
-        private HashSet<string> _consumedPressClickKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Keys currently held down, by virtual-key code
+        private sealed class HeldKey
+        {
+            public string Name;             // key name as stored in KeyData ("Space", "A", "F5"...)
+            public bool IsModifier;
+            public int DownTick;
+            public string TypedText;        // what this key added to the text being typed, if anything
+            public bool IsPendingKeyPress;  // a Key Press step that is recorded when the key is released
+        }
+        private readonly Dictionary<uint, HeldKey> _heldKeys = new Dictionary<uint, HeldKey>();
 
-        // Press n Click detection state
-        private bool _isPressAndClickPending = false;
+        // Press & Click state of the current mouse gesture
+        private const int PressClickNone = -1;
+        private const int PressClickKeyFirst = 0;   // MacroStep.PressClickOrder values
+        private const int PressClickClickFirst = 1;
+        // A key that typed a character joins a click only when it was pressed on its own or held this long (not just the end of fast typing)
+        private const int PressClickTypingHoldMs = 500;
+        private int _pressClickOrder = PressClickNone;
         private string _pressClickKey = "";
+        private bool _pressClickHasMainKey;
+        private uint _pressClickKeyVk;
+        private int _pressClickKeyDownTick;
+        private int _pressClickKeyHoldMs;           // click first: how long the key was held, 0 while it is still down
 
-        // Text debouncing buffer
-        private StringBuilder _textBuffer = new StringBuilder();
+        // Real-time key state (GetAsyncKeyState); replaceable so recorded event sequences can be tested
+        public Func<int, bool> IsKeyPhysicallyDown { get; set; }
+
+        // Text debouncing buffer: a pause this long ends the current Type Text step
+        private const int TypingPauseMs = 1500;
+        private readonly RecordedTextBuffer _textBuffer = new RecordedTextBuffer();
         private System.Threading.Timer _textTimer = null;
         private readonly object _lock = new object();
+        // Caps Lock tracked from the keys seen while recording: the per-thread key state is stale while another app has focus
+        private bool _capsLockOn = false;
 
         public ActionRecorder()
         {
             _mouseProc = LowLevelMouseProc;
             _keyboardProc = LowLevelKeyboardProc;
+            IsKeyPhysicallyDown = NativeMethods.IsKeyDown;
         }
 
         public bool StartRecording()
@@ -166,16 +197,17 @@ namespace ModernAutoClicker
             _syncContext = SynchronizationContext.Current;
 
             RecordedCount = 0;
-            _activeDownKeys.Clear();
-            _consumedPressClickKeys.Clear();
+            _heldKeys.Clear();
             _isMouseDown = false;
             _isDragging = false;
-            _isPressAndClickPending = false;
+            _pressClickOrder = PressClickNone;
             _pendingSingleClick = null;
+            _lastCapturedStep = null;
             lock (_lock)
             {
-                _textBuffer.Length = 0;
+                _textBuffer.Take();
             }
+            _capsLockOn = Control.IsKeyLocked(Keys.CapsLock);
 
             using (Process curProcess = Process.GetCurrentProcess())
             using (ProcessModule curModule = curProcess.MainModule)
@@ -192,7 +224,6 @@ namespace ModernAutoClicker
             }
 
             _isRecording = true;
-            _stepStopwatch.Restart();
 
             if (OnRecordingStateChanged != null) OnRecordingStateChanged(true);
             return true;
@@ -201,7 +232,6 @@ namespace ModernAutoClicker
         public void StopRecording()
         {
             if (!_isRecording) return;
-            _isRecording = false;
 
             if (_mouseHook != IntPtr.Zero)
             {
@@ -214,9 +244,11 @@ namespace ModernAutoClicker
                 _keyboardHook = IntPtr.Zero;
             }
 
-            // Flush any remaining buffers
+            // Flush any remaining buffers while still recording (EmitCapturedStep drops steps once recording has stopped)
+            EmitPendingKeyPresses(Environment.TickCount);
             FlushPendingSingleClick();
             FlushTextBuffer();
+            _isRecording = false;
 
             CancelClickTimer();
             CancelTextTimer();
@@ -243,7 +275,9 @@ namespace ModernAutoClicker
                 int msg = wParam.ToInt32();
 
                 // If user clicks on Auto Clicker app window, do not record self clicks!
-                if (IsClickOnAppWindow != null && IsClickOnAppWindow(pt))
+                // A press that started outside is still followed onto the window, so its release (drop) is not lost.
+                bool isFollowingPress = _isMouseDown && IsMouseButtonHeld(_activeMouseButton);
+                if (!isFollowingPress && IsClickOnAppWindow != null && IsClickOnAppWindow(pt))
                 {
                     return CallNextHookEx(_mouseHook, nCode, wParam, lParam);
                 }
@@ -286,8 +320,11 @@ namespace ModernAutoClicker
                         break;
 
                     case WM_MOUSEWHEEL:
-                        FlushTextBuffer();
+                        int wheelTick = Environment.TickCount;
+                        EmitPendingKeyPresses(wheelTick);
+                        // A click still waiting for a possible double click happened before any text typed after it
                         FlushPendingSingleClick();
+                        FlushTextBuffer();
                         short delta = (short)((hookStruct.mouseData >> 16) & 0xFFFF);
                         MacroStep scrollStep = new MacroStep
                         {
@@ -296,7 +333,7 @@ namespace ModernAutoClicker
                             ScrollStep = delta,
                             HoldMs = 10
                         };
-                        EmitCapturedStep(scrollStep);
+                        EmitCapturedStep(scrollStep, wheelTick, wheelTick);
                         break;
                 }
             }
@@ -306,28 +343,104 @@ namespace ModernAutoClicker
 
         private void HandleMouseDown(Point pt, int button)
         {
+            int now = Environment.TickCount;
+
+            // Keys held when the button goes down make this a Press & Click (key first). Decided before the typed text is
+            // flushed, because the held key may have typed the last character and has to be taken back out of the text.
+            string heldCombo = TakeHeldKeysForClick(now);
+            _pressClickOrder = heldCombo.Length > 0 ? PressClickKeyFirst : PressClickNone;
+            _pressClickKey = heldCombo;
+
             // Flush any typed text before click
             FlushTextBuffer();
 
             _isMouseDown = true;
             _mouseDownPoint = pt;
-            _mouseDownTick = Environment.TickCount;
+            _mouseDownTick = now;
             _isDragging = false;
             _activeMouseButton = button;
+        }
 
-            // Check if any key is currently held down -> This will be a Press n Click!
-            if (_activeDownKeys.Count > 0)
+        /// <summary>
+        /// Builds the key combination of a key-first Press &amp; Click from the keys held right now ("" when none qualifies):
+        /// the held modifiers plus, at most, the most recently pressed other key. That key must be a Key Press still waiting
+        /// for its release, or a key that typed the last character on its own or has been held a while; a key that merely ends
+        /// fast typing stays text. The chosen key is taken out of the text / pending Key Press so it is not recorded twice.
+        /// </summary>
+        private string TakeHeldKeysForClick(int now)
+        {
+            ForgetReleasedKeys(now);
+
+            HeldKey mainKey = null;
+            lock (_lock)
             {
-                _isPressAndClickPending = true;
-                // Grab the most recently pressed key
-                foreach (var kvp in _activeDownKeys)
+                foreach (HeldKey key in _heldKeys.Values)
                 {
-                    _pressClickKey = kvp.Value;
+                    if (key.IsModifier) continue;
+                    bool qualifies = key.IsPendingKeyPress ||
+                                     (key.TypedText != null && _textBuffer.EndsWith(key.TypedText) &&
+                                      (_textBuffer.Length == key.TypedText.Length || unchecked(now - key.DownTick) >= PressClickTypingHoldMs));
+                    if (qualifies && (mainKey == null || unchecked(key.DownTick - mainKey.DownTick) > 0))
+                    {
+                        mainKey = key;
+                    }
                 }
+
+                string combo = BuildHeldCombo(mainKey != null ? mainKey.Name : null, null);
+                if (combo.Length == 0) return "";
+
+                if (mainKey != null)
+                {
+                    if (mainKey.TypedText != null) _textBuffer.RemoveLast(mainKey.TypedText);
+                    mainKey.TypedText = null;
+                    mainKey.IsPendingKeyPress = false;
+                }
+                return combo;
             }
-            else
+        }
+
+        // "Ctrl+Shift+A": the held modifiers in a fixed order, then the main key (null for modifiers only).
+        // modifierPressedNow is the modifier of the current key-down event, which the real-time key state does not report as down yet.
+        private string BuildHeldCombo(string mainKeyName, string modifierPressedNow)
+        {
+            List<string> parts = new List<string>();
+            if (modifierPressedNow == "Ctrl" || IsKeyPhysicallyDown((int)Keys.ControlKey)) parts.Add("Ctrl");
+            if (modifierPressedNow == "Shift" || IsKeyPhysicallyDown((int)Keys.ShiftKey)) parts.Add("Shift");
+            if (modifierPressedNow == "Alt" || IsKeyPhysicallyDown((int)Keys.Menu)) parts.Add("Alt");
+            if (modifierPressedNow == "Win" || IsKeyPhysicallyDown((int)Keys.LWin) || IsKeyPhysicallyDown((int)Keys.RWin)) parts.Add("Win");
+            if (mainKeyName != null) parts.Add(mainKeyName);
+            return string.Join("+", parts.ToArray());
+        }
+
+        // button: 0 left, 1 right, 2 middle (logical, as in the hook messages). GetAsyncKeyState reports physical buttons.
+        private bool IsMouseButtonHeld(int button)
+        {
+            int vk = button == 2 ? 0x04 : (button == 1 ? 0x02 : 0x01); // VK_MBUTTON / VK_RBUTTON / VK_LBUTTON
+            if (button != 2 && SystemInformation.MouseButtonsSwapped) vk = (vk == 0x01) ? 0x02 : 0x01;
+            return IsKeyPhysicallyDown(vk);
+        }
+
+        private static string GetModifierName(uint vkCode)
+        {
+            Keys k = (Keys)vkCode;
+            if (k == Keys.ControlKey || k == Keys.LControlKey || k == Keys.RControlKey) return "Ctrl";
+            if (k == Keys.ShiftKey || k == Keys.LShiftKey || k == Keys.RShiftKey) return "Shift";
+            if (k == Keys.Menu || k == Keys.LMenu || k == Keys.RMenu) return "Alt";
+            if (k == Keys.LWin || k == Keys.RWin) return "Win";
+            return null; // the menu (Apps) key counts as a modifier for recording but is not part of combinations
+        }
+
+        // A key whose key-up never reached the hook (e.g. swallowed by another program) is treated as released now
+        private void ForgetReleasedKeys(int now)
+        {
+            List<uint> released = new List<uint>();
+            foreach (uint vk in _heldKeys.Keys)
             {
-                _isPressAndClickPending = false;
+                if (!IsKeyPhysicallyDown((int)vk)) released.Add(vk);
+            }
+            foreach (uint vk in released)
+            {
+                HandleKeyUp(vk, now);
             }
         }
 
@@ -338,33 +451,40 @@ namespace ModernAutoClicker
             int now = Environment.TickCount;
             int holdTime = Math.Max(10, now - _mouseDownTick);
 
-            // 1. Press n Click (Simultaneous Key + Mouse)
-            if (_isPressAndClickPending)
+            // 1. Press & Click (key held with the click, either order)
+            if (_pressClickOrder != PressClickNone)
             {
-                _isPressAndClickPending = false;
+                int order = _pressClickOrder;
+                _pressClickOrder = PressClickNone;
                 FlushPendingSingleClick();
 
-                int mode = button; // 0: Left, 1: Right, 2: Middle
-                if (_isDragging) mode = 3; // DragDrop
+                int mode = _isDragging ? 3 : button; // 0: Left, 1: Right, 2: Middle, 3: Drag & Drop
+                // Click first replays as button down -> key held for Hold -> button up, so Hold is the key's hold time;
+                // otherwise (key first, or a drag) Hold is the click / drag time, as for plain clicks and drags
+                int hold = holdTime;
+                if (order == PressClickClickFirst && mode != 3)
+                {
+                    hold = _pressClickKeyHoldMs > 0 ? _pressClickKeyHoldMs : Math.Max(10, unchecked(now - _pressClickKeyDownTick));
+                }
 
                 MacroStep pncStep = new MacroStep
                 {
                     ActionType = MacroActionType.PressAndClick,
-                    KeyData = !string.IsNullOrEmpty(_pressClickKey) ? _pressClickKey : "Ctrl",
+                    KeyData = _pressClickKey,
                     PressClickMode = mode,
-                    PressClickOrder = 0, // PressFirst
+                    PressClickOrder = order,
+                    DragButton = button,
                     StartPoint = _mouseDownPoint,
                     EndPoint = _isDragging ? pt : Point.Empty,
-                    HoldMs = holdTime
+                    HoldMs = hold
                 };
 
-                _consumedPressClickKeys.Add(_pressClickKey);
-                EmitCapturedStep(pncStep);
+                EmitCapturedStep(pncStep, _mouseDownTick, now);
                 _isDragging = false;
                 return;
             }
 
-            // 2. Drag n Drop
+            // 2. Drag & Drop
             if (_isDragging)
             {
                 _isDragging = false;
@@ -378,7 +498,7 @@ namespace ModernAutoClicker
                     DragButton = button,
                     HoldMs = holdTime
                 };
-                EmitCapturedStep(dragStep);
+                EmitCapturedStep(dragStep, _mouseDownTick, now);
                 return;
             }
 
@@ -392,7 +512,7 @@ namespace ModernAutoClicker
                     StartPoint = pt,
                     HoldMs = holdTime
                 };
-                EmitCapturedStep(rightStep);
+                EmitCapturedStep(rightStep, _mouseDownTick, now);
                 return;
             }
 
@@ -407,7 +527,7 @@ namespace ModernAutoClicker
                     ScrollStep = 0,
                     HoldMs = holdTime
                 };
-                EmitCapturedStep(midStep);
+                EmitCapturedStep(midStep, _mouseDownTick, now);
                 return;
             }
 
@@ -424,7 +544,7 @@ namespace ModernAutoClicker
                     _pendingSingleClick.StartPoint = pt;
                     MacroStep dcStep = _pendingSingleClick;
                     _pendingSingleClick = null;
-                    EmitCapturedStep(dcStep);
+                    EmitCapturedStep(dcStep, _pendingClickStartTick, now);
                     return;
                 }
                 else
@@ -435,6 +555,8 @@ namespace ModernAutoClicker
 
             _lastClickUpPoint = pt;
             _lastClickUpTick = now;
+            _pendingClickStartTick = _mouseDownTick;
+            _pendingClickEndTick = now;
             _pendingSingleClick = new MacroStep
             {
                 ActionType = MacroActionType.LeftClick,
@@ -461,18 +583,21 @@ namespace ModernAutoClicker
         private void FlushPendingSingleClick()
         {
             MacroStep stepToEmit = null;
+            int startTick = 0, endTick = 0;
             lock (_lock)
             {
                 if (_pendingSingleClick != null)
                 {
                     stepToEmit = _pendingSingleClick;
+                    startTick = _pendingClickStartTick;
+                    endTick = _pendingClickEndTick;
                     _pendingSingleClick = null;
                 }
             }
 
             if (stepToEmit != null)
             {
-                EmitCapturedStep(stepToEmit);
+                EmitCapturedStep(stepToEmit, startTick, endTick);
             }
         }
 
@@ -480,7 +605,7 @@ namespace ModernAutoClicker
         {
             if (_clickTimer != null)
             {
-                try { _clickTimer.Dispose(); } catch { }
+                try { _clickTimer.Dispose(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                 _clickTimer = null;
             }
         }
@@ -516,99 +641,235 @@ namespace ModernAutoClicker
 
                 if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN)
                 {
-                    HandleKeyDown(vkCode, kbdStruct.scanCode);
+                    bool injected = (kbdStruct.flags & LLKHF_INJECTED) != 0;
+                    if (!injected || !HandleInjectedTextKey(vkCode, kbdStruct.scanCode, (int)kbdStruct.time))
+                    {
+                        HandleKeyDown(vkCode, kbdStruct.scanCode, (int)kbdStruct.time);
+                    }
                 }
                 else if (msg == WM_KEYUP || msg == WM_SYSKEYUP)
                 {
-                    HandleKeyUp(vkCode);
+                    HandleKeyUp(vkCode, (int)kbdStruct.time);
                 }
             }
 
             return CallNextHookEx(_keyboardHook, nCode, wParam, lParam);
         }
 
-        private void HandleKeyDown(uint vkCode, uint scanCode)
+        /// <summary>
+        /// Software-injected keys that edit the text being typed (input-method rewrites): Unicode packets, Backspace and printable keys.
+        /// Returns false for anything else, which is then recorded like a normal key.
+        /// </summary>
+        private bool HandleInjectedTextKey(uint vkCode, uint scanCode, int tick)
         {
-            bool isCtrl = (GetKeyState((int)Keys.ControlKey) & 0x80) != 0;
-            bool isShift = (GetKeyState((int)Keys.ShiftKey) & 0x80) != 0;
-            bool isAlt = (GetKeyState((int)Keys.Menu) & 0x80) != 0;
-            bool isWin = (GetKeyState((int)Keys.LWin) & 0x80) != 0 || (GetKeyState((int)Keys.RWin) & 0x80) != 0;
+            if (vkCode == VK_PACKET)
+            {
+                lock (_lock)
+                {
+                    AddTypedText(((char)scanCode).ToString(), true, tick);
+                }
+                return true;
+            }
+
+            if (vkCode == (uint)Keys.Back)
+            {
+                // An input method rewriting a word that was already emitted has nothing left to edit; the edit is dropped
+                lock (_lock)
+                {
+                    if (_textBuffer.Backspace(true, tick)) _textEndTick = tick;
+                    RestartTextTimer();
+                }
+                return true;
+            }
+
+            if (IsModifierKey(vkCode)) return true;
+
+            string ch = GetCharFromKey(vkCode, scanCode);
+            if (string.IsNullOrEmpty(ch) || char.IsControl(ch[0])) return false;
+            lock (_lock)
+            {
+                AddTypedText(ch, true, tick);
+            }
+            return true;
+        }
+
+        // Call inside _lock. Also remembers when the text started and was last edited, for the Delays around the Type Text step.
+        private void AddTypedText(string text, bool injected, int tick)
+        {
+            if (_textBuffer.Length == 0) _textStartTick = tick;
+            if (injected) _textBuffer.AddInjectedText(text, tick);
+            else _textBuffer.AddRealText(text, tick);
+            _textEndTick = tick;
+            RestartTextTimer();
+        }
+
+        private void HandleKeyDown(uint vkCode, uint scanCode, int tick)
+        {
+            HeldKey existing;
+            if (_heldKeys.TryGetValue(vkCode, out existing))
+            {
+                // Windows repeats a held key: it is recorded once, with how long it was held
+                if (IsKeyPhysicallyDown((int)vkCode)) return;
+                // Not down any more: its key-up was missed, so this is a new press
+                HandleKeyUp(vkCode, tick);
+            }
 
             string keyName = FormatKeyName(vkCode);
-            _activeDownKeys[vkCode] = keyName;
+            HeldKey held = new HeldKey { Name = keyName, IsModifier = IsModifierKey(vkCode), DownTick = tick };
+            _heldKeys[vkCode] = held;
 
-            // 1. Is this a standalone modifier key press (Ctrl/Shift/Alt)?
-            if (IsModifierKey(vkCode))
+            // Caps Lock only changes how the following letters are typed
+            if (vkCode == (uint)Keys.CapsLock)
             {
-                // Modifier keys alone don't emit steps immediately; they wait for either another key or a mouse click
+                _capsLockOn = !_capsLockOn;
                 return;
             }
 
-            // 2. Is this a keyboard shortcut (Ctrl+..., Alt+..., Win+...)?
+            // 1. A key pressed while a mouse button is held: Press & Click, click first
+            //    (checked against the real button state too, in case a button release never reached the hook)
+            if (_isMouseDown && IsMouseButtonHeld(_activeMouseButton))
+            {
+                AddKeyToHeldClick(vkCode, held, tick);
+                return;
+            }
+
+            // 2. Is this a standalone modifier key press (Ctrl/Shift/Alt/Win)?
+            if (held.IsModifier)
+            {
+                // Modifier keys alone don't emit steps; they wait for either another key or a mouse click
+                return;
+            }
+
+            // Any other key ends a Key Press still being held, which is then recorded first (keys stay in the order pressed)
+            EmitPendingKeyPresses(tick);
+
+            // 3. Is this a keyboard shortcut (Ctrl+..., Alt+..., Win+...)?
+            // Real-time key state: GetKeyState only tracks keys sent to this app, but while recording the user types into another app
+            bool isCtrl = IsKeyPhysicallyDown((int)Keys.ControlKey);
+            bool isAlt = IsKeyPhysicallyDown((int)Keys.Menu);
+            bool isWin = IsKeyPhysicallyDown((int)Keys.LWin) || IsKeyPhysicallyDown((int)Keys.RWin);
             if (isCtrl || isAlt || isWin)
             {
-                FlushTextBuffer();
+                // A click still waiting for a possible double click happened before any text typed after it
                 FlushPendingSingleClick();
+                FlushTextBuffer();
 
-                string combo = FormatKeyCombination(vkCode, isCtrl, isShift, isAlt);
                 MacroStep step = new MacroStep
                 {
                     ActionType = MacroActionType.KeyPress,
-                    KeyData = combo,
+                    KeyData = BuildHeldCombo(keyName, null),
                     HoldMs = 20
                 };
-                EmitCapturedStep(step);
+                EmitCapturedStep(step, tick, tick);
                 return;
             }
 
-            // 3. Is this a Control / Navigation / Function key (Enter, Tab, Esc, Backspace, Arrows, F1-F12)?
-            if (IsControlOrFunctionKey(vkCode))
+            // 4. While text is being typed, Space / Enter belong to it and Backspace edits it;
+            //    on their own (nothing typed yet) they stay separate Key Press steps (e.g. jump in a game, confirm a dialog)
+            if (vkCode == (uint)Keys.Space || vkCode == (uint)Keys.Return || vkCode == (uint)Keys.Back)
             {
-                FlushTextBuffer();
-                FlushPendingSingleClick();
-
-                MacroStep step = new MacroStep
+                lock (_lock)
                 {
-                    ActionType = MacroActionType.KeyPress,
-                    KeyData = keyName,
-                    HoldMs = 20
-                };
-                EmitCapturedStep(step);
-                return;
+                    bool handled;
+                    if (vkCode == (uint)Keys.Back)
+                    {
+                        handled = _textBuffer.Backspace(false, tick);
+                        if (handled)
+                        {
+                            _textEndTick = tick;
+                            RestartTextTimer();
+                        }
+                    }
+                    else
+                    {
+                        handled = _textBuffer.Length > 0;
+                        if (handled)
+                        {
+                            held.TypedText = vkCode == (uint)Keys.Space ? " " : "\n";
+                            AddTypedText(held.TypedText, false, tick);
+                        }
+                    }
+                    if (handled) return;
+                }
             }
 
-            // 4. Regular Printable Characters (a-z, 0-9, punctuation) -> Buffer for Type Text
-            string ch = GetCharFromKey(vkCode, scanCode);
+            // 5. Regular Printable Characters (a-z, 0-9, punctuation) -> Buffer for Type Text
+            string ch = IsControlOrFunctionKey(vkCode) ? null : GetCharFromKey(vkCode, scanCode);
             if (!string.IsNullOrEmpty(ch) && !char.IsControl(ch[0]))
             {
-                AppendToTextBuffer(ch);
-            }
-            else
-            {
-                // Fallback: if not printable, emit as KeyPress
-                FlushTextBuffer();
-                MacroStep step = new MacroStep
+                lock (_lock)
                 {
-                    ActionType = MacroActionType.KeyPress,
-                    KeyData = keyName,
-                    HoldMs = 20
-                };
-                EmitCapturedStep(step);
+                    held.TypedText = ch;
+                    AddTypedText(ch, false, tick);
+                }
+                return;
+            }
+
+            // 6. Control / Navigation / Function keys (Enter, Tab, Esc, Backspace, Arrows, F1-F12) and other non-printable keys:
+            //    a Key Press recorded when the key is released (with how long it was held), unless a click happens first
+            FlushPendingSingleClick();
+            FlushTextBuffer();
+            held.IsPendingKeyPress = true;
+        }
+
+        private void HandleKeyUp(uint vkCode, int tick)
+        {
+            HeldKey held;
+            if (!_heldKeys.TryGetValue(vkCode, out held)) return;
+            _heldKeys.Remove(vkCode);
+
+            if (held.IsPendingKeyPress) EmitKeyPress(held, tick);
+
+            // Click first: the key was released while the button is still held
+            if (_pressClickOrder == PressClickClickFirst && _pressClickKeyVk == vkCode && _pressClickKeyHoldMs == 0)
+            {
+                _pressClickKeyHoldMs = Math.Max(10, unchecked(tick - _pressClickKeyDownTick));
             }
         }
 
-        private void HandleKeyUp(uint vkCode)
+        /// <summary>
+        /// A key pressed while a mouse button is held makes the gesture a click-first Press &amp; Click; the key is not recorded on its own.
+        /// The first key decides, except that a modifier can be followed by a main key (button held, then Ctrl, then C).
+        /// A key-first gesture already has its keys, so keys pressed during it are ignored.
+        /// </summary>
+        private void AddKeyToHeldClick(uint vkCode, HeldKey held, int tick)
         {
-            if (_activeDownKeys.ContainsKey(vkCode))
-            {
-                string name = _activeDownKeys[vkCode];
-                _activeDownKeys.Remove(vkCode);
+            if (_pressClickOrder == PressClickKeyFirst) return;
+            if (_pressClickOrder == PressClickClickFirst && (_pressClickHasMainKey || held.IsModifier)) return;
+            if (held.IsModifier && GetModifierName(vkCode) == null) return;
 
-                // If this key was already consumed by a Press n Click, suppress any key up logic
-                if (_consumedPressClickKeys.Contains(name))
-                {
-                    _consumedPressClickKeys.Remove(name);
-                }
+            _pressClickOrder = PressClickClickFirst;
+            _pressClickHasMainKey = !held.IsModifier;
+            _pressClickKey = held.IsModifier ? BuildHeldCombo(null, GetModifierName(vkCode)) : BuildHeldCombo(held.Name, null);
+            _pressClickKeyVk = vkCode;
+            _pressClickKeyDownTick = tick;
+            _pressClickKeyHoldMs = 0;
+        }
+
+        private void EmitKeyPress(HeldKey held, int releaseTick)
+        {
+            held.IsPendingKeyPress = false;
+            MacroStep step = new MacroStep
+            {
+                ActionType = MacroActionType.KeyPress,
+                KeyData = held.Name,
+                HoldMs = Math.Max(20, unchecked(releaseTick - held.DownTick))
+            };
+            EmitCapturedStep(step, held.DownTick, releaseTick);
+        }
+
+        // Records the Key Presses still held (oldest first), with how long they have been held so far
+        private void EmitPendingKeyPresses(int tick)
+        {
+            List<HeldKey> pending = new List<HeldKey>();
+            foreach (HeldKey key in _heldKeys.Values)
+            {
+                if (key.IsPendingKeyPress) pending.Add(key);
+            }
+            pending.Sort((a, b) => unchecked(a.DownTick - b.DownTick));
+            foreach (HeldKey key in pending)
+            {
+                EmitKeyPress(key, tick);
             }
         }
 
@@ -655,31 +916,15 @@ namespace ModernAutoClicker
             return k.ToString();
         }
 
-        private string FormatKeyCombination(uint vkCode, bool ctrl, bool shift, bool alt)
-        {
-            List<string> parts = new List<string>();
-            if (ctrl) parts.Add("Ctrl");
-            if (shift) parts.Add("Shift");
-            if (alt) parts.Add("Alt");
-
-            string name = FormatKeyName(vkCode);
-            if (!parts.Contains(name) && !IsModifierKey(vkCode))
-            {
-                parts.Add(name);
-            }
-
-            return string.Join("+", parts.ToArray());
-        }
-
         private string GetCharFromKey(uint vkCode, uint scanCode)
         {
             try
             {
+                // Only Shift and Caps Lock matter here (Ctrl/Alt combos are recorded as shortcuts before this point),
+                // and both come from real-time / tracked state rather than this app's stale keyboard state
                 byte[] keyboardState = new byte[256];
-                if (!GetKeyboardState(keyboardState)) return null;
-
-                keyboardState[(int)Keys.ShiftKey] = (byte)((GetKeyState((int)Keys.ShiftKey) & 0x80) != 0 ? 0x80 : 0);
-                keyboardState[(int)Keys.Capital] = (byte)(GetKeyState((int)Keys.Capital) & 0x01);
+                keyboardState[(int)Keys.ShiftKey] = (byte)(IsKeyPhysicallyDown((int)Keys.ShiftKey) ? 0x80 : 0);
+                keyboardState[(int)Keys.Capital] = (byte)(_capsLockOn ? 0x01 : 0);
 
                 StringBuilder sb = new StringBuilder(16);
                 int rc = ToUnicode(vkCode, scanCode, keyboardState, sb, sb.Capacity, 0);
@@ -688,48 +933,68 @@ namespace ModernAutoClicker
                     return sb.ToString();
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             return null;
         }
 
-        private void AppendToTextBuffer(string chars)
+        // Call inside _lock after every text edit
+        private void RestartTextTimer()
         {
-            lock (_lock)
+            if (_textTimer == null)
             {
-                _textBuffer.Append(chars);
-                if (_textTimer == null)
-                {
-                    _textTimer = new System.Threading.Timer(TextTimerCallback, null, 600, Timeout.Infinite);
-                }
-                else
-                {
-                    _textTimer.Change(600, Timeout.Infinite);
-                }
+                _textTimer = new System.Threading.Timer(TextTimerCallback, null, TypingPauseMs, Timeout.Infinite);
+            }
+            else
+            {
+                _textTimer.Change(TypingPauseMs, Timeout.Infinite);
             }
         }
 
+        // Runs on a pool thread: the held-key state belongs to the hook (UI) thread, so the check is posted there
         private void TextTimerCallback(object state)
         {
+            if (_syncContext != null) _syncContext.Post(_ => FlushTextBufferAfterPause(), null);
+            else FlushTextBufferAfterPause();
+        }
+
+        private void FlushTextBufferAfterPause()
+        {
+            if (!_isRecording) return;
+            // A key still held after typing may yet become the key of a Press & Click, so its character is kept until it is released
+            foreach (KeyValuePair<uint, HeldKey> entry in _heldKeys)
+            {
+                if (entry.Value.TypedText != null && IsKeyPhysicallyDown((int)entry.Key))
+                {
+                    lock (_lock)
+                    {
+                        RestartTextTimer();
+                    }
+                    return;
+                }
+            }
             FlushTextBuffer();
         }
 
         private void FlushTextBuffer()
         {
             string textToEmit = null;
+            int startTick = 0, endTick = 0;
             lock (_lock)
             {
                 if (_textBuffer.Length > 0)
                 {
-                    textToEmit = _textBuffer.ToString();
-                    _textBuffer.Length = 0;
+                    textToEmit = _textBuffer.Take();
+                    startTick = _textStartTick;
+                    endTick = _textEndTick;
                 }
             }
 
             if (!string.IsNullOrEmpty(textToEmit))
             {
                 MacroStep step = new MacroStep();
-                // If single character isolated -> KeyPress (e.g. 'E' in a game)
-                if (textToEmit.Length == 1)
+                // A single isolated letter/digit -> KeyPress (e.g. 'E' in a game); an accented letter like 'à' has no key, so it stays Type Text
+                char only = textToEmit[0];
+                if (textToEmit.Length == 1 && only < 128 && char.IsLetterOrDigit(only))
                 {
                     step.ActionType = MacroActionType.KeyPress;
                     step.KeyData = textToEmit;
@@ -742,7 +1007,7 @@ namespace ModernAutoClicker
                     step.KeyData = textToEmit;
                     step.HoldMs = 10;
                 }
-                EmitCapturedStep(step);
+                EmitCapturedStep(step, startTick, endTick);
             }
         }
 
@@ -750,38 +1015,54 @@ namespace ModernAutoClicker
         {
             if (_textTimer != null)
             {
-                try { _textTimer.Dispose(); } catch { }
+                try { _textTimer.Dispose(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                 _textTimer = null;
             }
         }
 
         #endregion
 
-        private void EmitCapturedStep(MacroStep step)
+        /// <summary>
+        /// Records a step. startTick / endTick are when its action began and finished. The player runs a step's action and then
+        /// waits its Delay, so the pause between two actions becomes the Delay of the earlier step, set once the next action
+        /// arrives (OnStepDelayChanged). The last step keeps the default Delay.
+        /// </summary>
+        private void EmitCapturedStep(MacroStep step, int startTick, int endTick)
         {
             if (step == null || !_isRecording) return;
 
-            int elapsed = (int)_stepStopwatch.ElapsedMilliseconds;
-            _stepStopwatch.Restart();
-
-            step.DelayMs = Math.Max(30, Math.Min(30000, elapsed));
             step.BaseDelayMs = step.DelayMs;
             step.BaseHoldMs = step.HoldMs;
             step.Enabled = true;
 
-            RecordedCount++;
+            MacroStep previous;
+            lock (_lock)
+            {
+                previous = _lastCapturedStep;
+                if (previous != null)
+                {
+                    previous.DelayMs = Math.Max(MinRecordedDelayMs, Math.Min(MaxRecordedDelayMs, unchecked(startTick - _lastCapturedEndTick)));
+                    previous.BaseDelayMs = previous.DelayMs;
+                }
+                _lastCapturedStep = step;
+                _lastCapturedEndTick = endTick;
+                RecordedCount++;
+            }
 
             if (_syncContext != null)
             {
-                _syncContext.Post(_ =>
-                {
-                    if (OnActionCaptured != null) OnActionCaptured(step);
-                }, null);
+                _syncContext.Post(_ => RaiseStepEvents(previous, step), null);
             }
             else
             {
-                if (OnActionCaptured != null) OnActionCaptured(step);
+                RaiseStepEvents(previous, step);
             }
+        }
+
+        private void RaiseStepEvents(MacroStep previous, MacroStep step)
+        {
+            if (previous != null && OnStepDelayChanged != null) OnStepDelayChanged(previous);
+            if (OnActionCaptured != null) OnActionCaptured(step);
         }
 
         public void Dispose()
@@ -789,12 +1070,12 @@ namespace ModernAutoClicker
             StopRecording();
             if (_clickTimer != null)
             {
-                try { _clickTimer.Dispose(); } catch { }
+                try { _clickTimer.Dispose(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                 _clickTimer = null;
             }
             if (_textTimer != null)
             {
-                try { _textTimer.Dispose(); } catch { }
+                try { _textTimer.Dispose(); } catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
                 _textTimer = null;
             }
         }

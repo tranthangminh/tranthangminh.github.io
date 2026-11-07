@@ -342,7 +342,7 @@ namespace ModernAutoClicker.SpecialApps
                     NativeMethods.PostMessage(crosvmHwnd, 0x0007 /* WM_SETFOCUS */, IntPtr.Zero, IntPtr.Zero);
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             // 4. Send WM_SETCURSOR with HTCLIENT
             IntPtr setCursorLParam = (IntPtr)((0x0200 << 16) | 1 /* HTCLIENT */);

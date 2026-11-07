@@ -35,16 +35,6 @@ namespace ModernAutoClicker
             }
         }
 
-        public static Image CreateDesktopIcon()
-        {
-            return DesktopIcon;
-        }
-
-        public static Image CreateGenericAppIcon()
-        {
-            return GenericAppIcon;
-        }
-
         private static Bitmap GenerateDesktopIcon()
         {
             Bitmap bmp = new Bitmap(16, 16);
@@ -131,7 +121,7 @@ namespace ModernAutoClicker
                     }
                 }
             }
-            catch { }
+            catch (Exception) { /* This process cannot be opened from here (elevated or system): the generic icon is used */ }
 
             return null;
         }
@@ -169,7 +159,7 @@ namespace ModernAutoClicker
                     extracted = GetWindowAppIcon(hWnd);
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             // 2. Fallback: Extract from process executable file
             if (extracted == null)
@@ -196,7 +186,7 @@ namespace ModernAutoClicker
                         foreach (var p in procs) p.Dispose();
                     }
                 }
-                catch { }
+                catch (Exception) { /* This process cannot be opened from here (elevated or system): the generic icon is used */ }
             }
 
             Image result = extracted ?? GenericAppIcon;

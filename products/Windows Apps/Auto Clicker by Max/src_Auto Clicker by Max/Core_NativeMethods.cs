@@ -6,6 +6,16 @@ namespace ModernAutoClicker
 {
     public static class NativeMethods
     {
+        public static readonly uint CurrentProcessId = ReadCurrentProcessId();
+
+        private static uint ReadCurrentProcessId()
+        {
+            using (System.Diagnostics.Process current = System.Diagnostics.Process.GetCurrentProcess())
+            {
+                return (uint)current.Id;
+            }
+        }
+
         public const int WM_SETREDRAW = 0x000B;
         public const int WM_HOTKEY = 0x0312;
 
@@ -358,16 +368,36 @@ namespace ModernAutoClicker
             SendInput(1, inputUp, Marshal.SizeOf(typeof(INPUT)));
         }
 
+        [DllImport("user32.dll")]
+        public static extern short GetAsyncKeyState(int vKey);
+
+        public static bool IsKeyDown(int vKey)
+        {
+            return (GetAsyncKeyState(vKey) & 0x8000) != 0;
+        }
+
+        /// <summary>
+        /// Releases only the mouse buttons that are actually held down (e.g. a script stopped mid-drag).
+        /// Sending an unconditional RIGHTUP makes Windows raise WM_CONTEXTMENU, i.e. a phantom right-click.
+        /// </summary>
         public static void ReleaseAllMouseButtons()
         {
-            INPUT[] upInputs = new INPUT[3];
-            upInputs[0].type = INPUT_MOUSE;
-            upInputs[0].u.mi.dwFlags = MOUSEEVENTF_LEFTUP;
-            upInputs[1].type = INPUT_MOUSE;
-            upInputs[1].u.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
-            upInputs[2].type = INPUT_MOUSE;
-            upInputs[2].u.mi.dwFlags = MOUSEEVENTF_MIDDLEUP;
-            SendInput(3, upInputs, Marshal.SizeOf(typeof(INPUT)));
+            System.Collections.Generic.List<INPUT> upInputs = new System.Collections.Generic.List<INPUT>();
+            if (IsKeyDown(0x01)) upInputs.Add(CreateMouseInput(MOUSEEVENTF_LEFTUP));   // VK_LBUTTON
+            if (IsKeyDown(0x02)) upInputs.Add(CreateMouseInput(MOUSEEVENTF_RIGHTUP));  // VK_RBUTTON
+            if (IsKeyDown(0x04)) upInputs.Add(CreateMouseInput(MOUSEEVENTF_MIDDLEUP)); // VK_MBUTTON
+            if (upInputs.Count > 0)
+            {
+                SendInput((uint)upInputs.Count, upInputs.ToArray(), Marshal.SizeOf(typeof(INPUT)));
+            }
+        }
+
+        private static INPUT CreateMouseInput(uint flags)
+        {
+            INPUT inp = new INPUT();
+            inp.type = INPUT_MOUSE;
+            inp.u.mi.dwFlags = flags;
+            return inp;
         }
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -409,7 +439,12 @@ namespace ModernAutoClicker
             return current;
         }
 
-        public static void SendBackgroundClick(int screenX, int screenY, int mouseBtn, int holdMs = 10)
+        // MK_* key flags carried by mouse messages: a background click cannot change the target's keyboard state, so a held
+        // Ctrl / Shift (Press & Click) is passed in the message itself, which is what most apps read for Ctrl+Click / Shift+Click
+        public const int MK_SHIFT = 0x0004;
+        public const int MK_CONTROL = 0x0008;
+
+        public static void SendBackgroundClick(int screenX, int screenY, int mouseBtn, int holdMs = 10, int keyFlags = 0)
         {
             POINT screenPt = new POINT { X = screenX, Y = screenY };
             IntPtr topHwnd = WindowFromPoint(screenPt);
@@ -463,19 +498,19 @@ namespace ModernAutoClicker
             }
 
             // 1. Send Button Down (Omit WM_MOUSEMOVE to prevent WM_SETCURSOR cursor fluttering)
-            PostMessage(targetHwnd, msgDown, wParam, lParam);
-            
+            PostMessage(targetHwnd, msgDown, (IntPtr)(wParam.ToInt32() | keyFlags), lParam);
+
             // 2. Hold duration (default 10ms or <= interval)
             if (holdMs > 0)
             {
                 System.Threading.Thread.Sleep(holdMs);
             }
-            
+
             // 3. Send Button Up
-            PostMessage(targetHwnd, msgUp, IntPtr.Zero, lParam);
+            PostMessage(targetHwnd, msgUp, (IntPtr)keyFlags, lParam);
         }
 
-        public static void PerformClickDirectToWindow(IntPtr hWnd, int clientX, int clientY, int mouseBtn, int holdMs)
+        public static void PerformClickDirectToWindow(IntPtr hWnd, int clientX, int clientY, int mouseBtn, int holdMs, int keyFlags = 0)
         {
             if (hWnd == IntPtr.Zero) return;
 
@@ -530,12 +565,12 @@ namespace ModernAutoClicker
                 wParam = (IntPtr)0x0001;
             }
 
-            PostMessage(targetHwnd, msgDown, wParam, lParam);
+            PostMessage(targetHwnd, msgDown, (IntPtr)(wParam.ToInt32() | keyFlags), lParam);
             if (holdMs > 0)
             {
                 System.Threading.Thread.Sleep(holdMs);
             }
-            PostMessage(targetHwnd, msgUp, IntPtr.Zero, lParam);
+            PostMessage(targetHwnd, msgUp, (IntPtr)keyFlags, lParam);
         }
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -605,7 +640,7 @@ namespace ModernAutoClicker
                         return vi.ProductName.Trim();
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             try
             {
@@ -614,7 +649,7 @@ namespace ModernAutoClicker
                     return proc.ProcessName;
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             return "App";
         }
@@ -637,7 +672,7 @@ namespace ModernAutoClicker
                     foreach (var p in procs) p.Dispose();
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
             return processName;
         }
 
@@ -699,7 +734,7 @@ namespace ModernAutoClicker
         public static System.Collections.Generic.List<WindowTargetInfo> GetOpenWindows()
         {
             var list = new System.Collections.Generic.List<WindowTargetInfo>();
-            uint myPid = (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+            uint myPid = NativeMethods.CurrentProcessId;
             var seenKeys = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // 0. Explicitly include Windows Desktop
@@ -720,70 +755,8 @@ namespace ModernAutoClicker
 
             EnumWindows((hWnd, lParam) =>
             {
-                // 1. Basic visibility check
-                if (!IsWindowVisible(hWnd)) return true;
-
-                // 2. Cloaked Window check (DWMWA_CLOAKED filters out background UWP/PowerToys/Snipping Tool instances)
-                int cloaked = 0;
-                if (DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, out cloaked, sizeof(int)) == 0 && cloaked != 0)
-                {
-                    return true;
-                }
-
-                // 3. Extended styles: ignore tool windows, tooltip popups unless explicitly an AppWindow
-                int exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-                if ((exStyle & WS_EX_TOOLWINDOW) != 0 && (exStyle & WS_EX_APPWINDOW) == 0)
-                {
-                    return true;
-                }
-
-                // 4. Owner window check: ignore child / popup / owned dialogs of other windows
-                IntPtr owner = GetWindow(hWnd, GW_OWNER);
-                if (owner != IntPtr.Zero && (exStyle & WS_EX_APPWINDOW) == 0)
-                {
-                    return true;
-                }
-
-                // 5. Dimension check: ignore zero-sized / off-screen phantom windows
-                RECT rect;
-                if (GetWindowRect(hWnd, out rect))
-                {
-                    if (rect.Right - rect.Left <= 10 || rect.Bottom - rect.Top <= 10)
-                    {
-                        return true;
-                    }
-                }
-
-                // 6. Title length and content check
-                int len = GetWindowTextLength(hWnd);
-                if (len <= 0) return true;
-
-                var sb = new System.Text.StringBuilder(len + 1);
-                GetWindowText(hWnd, sb, sb.Capacity);
-                string title = sb.ToString().Trim();
-                if (string.IsNullOrEmpty(title)) return true;
-
-                // Blacklisted system titles
-                if (title == "Default IME" || title == "MSCTFIME UI" || title == "MediaContextNotificationWindow" ||
-                    title == "Task Switching" || title == "Windows Shell Experience Host" || title == "PopupHost")
-                {
-                    return true;
-                }
-
-                var sbClass = new System.Text.StringBuilder(256);
-                GetClassName(hWnd, sbClass, sbClass.Capacity);
-                string className = sbClass.ToString();
-
-                // 7. Blacklisted system window classes
-                if (className == "Progman" || className == "WorkerW" ||
-                    className == "Shell_TrayWnd" || className == "Shell_SecondaryTrayWnd" ||
-                    className == "Windows.UI.Core.CoreWindow" || className == "EdgeUiInputTopWndClass" ||
-                    className == "EdgeUiInputWndClass" || className == "DummyDWMListenerWindow" ||
-                    className == "MsgrIMEWindowClass" || className == "SysDragImage" ||
-                    className == "ApplicationFrameTitleBarWindow")
-                {
-                    return true;
-                }
+                string title, className;
+                if (!TryGetPickableWindowInfo(hWnd, out title, out className)) return true;
 
                 uint pid;
                 GetWindowThreadProcessId(hWnd, out pid);
@@ -797,10 +770,10 @@ namespace ModernAutoClicker
                     var p = System.Diagnostics.Process.GetProcessById((int)pid);
                     procName = p.ProcessName;
                     friendlyName = GetFriendlyAppName(p);
-                    try { startTime = p.StartTime; } catch { }
+                    try { startTime = p.StartTime; } catch (Exception) { /* An elevated or system process hides its start time: it simply sorts last */ }
                     p.Dispose();
                 }
-                catch { }
+                catch (Exception) { /* The process ended while the windows were being listed */ }
 
                 // 8. Deduplicate identical window entries by hWnd
                 string dedupKey = hWnd.ToInt64().ToString();
@@ -872,6 +845,75 @@ namespace ModernAutoClicker
             return list;
         }
 
+        // True for a real top-level app window a user could pick as a target (minimized ones included)
+        private static bool TryGetPickableWindowInfo(IntPtr hWnd, out string title, out string className)
+        {
+            title = "";
+            className = "";
+
+            // 1. Basic visibility check
+            if (!IsWindowVisible(hWnd)) return false;
+
+            // 2. Cloaked Window check (DWMWA_CLOAKED filters out background UWP/PowerToys/Snipping Tool instances)
+            int cloaked = 0;
+            if (DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, out cloaked, sizeof(int)) == 0 && cloaked != 0)
+            {
+                return false;
+            }
+
+            // 3. Extended styles: ignore tool windows, tooltip popups unless explicitly an AppWindow
+            int exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+            if ((exStyle & WS_EX_TOOLWINDOW) != 0 && (exStyle & WS_EX_APPWINDOW) == 0)
+            {
+                return false;
+            }
+
+            // 4. Owner window check: ignore child / popup / owned dialogs of other windows
+            IntPtr owner = GetWindow(hWnd, GW_OWNER);
+            if (owner != IntPtr.Zero && (exStyle & WS_EX_APPWINDOW) == 0)
+            {
+                return false;
+            }
+
+            // 5. Dimension check: ignore zero-sized / off-screen phantom windows
+            RECT rect;
+            if (GetWindowRect(hWnd, out rect))
+            {
+                if (rect.Right - rect.Left <= 10 || rect.Bottom - rect.Top <= 10)
+                {
+                    return false;
+                }
+            }
+
+            // 6. Title length and content check
+            title = GetWindowTitleText(hWnd).Trim();
+            if (string.IsNullOrEmpty(title)) return false;
+
+            // Blacklisted system titles
+            if (title == "Default IME" || title == "MSCTFIME UI" || title == "MediaContextNotificationWindow" ||
+                title == "Task Switching" || title == "Windows Shell Experience Host" || title == "PopupHost")
+            {
+                return false;
+            }
+
+            var sbClass = new System.Text.StringBuilder(256);
+            GetClassName(hWnd, sbClass, sbClass.Capacity);
+            className = sbClass.ToString();
+
+            // 7. Blacklisted system window classes
+            if (className == "Progman" || className == "WorkerW" ||
+                className == "Shell_TrayWnd" || className == "Shell_SecondaryTrayWnd" ||
+                className == "Windows.UI.Core.CoreWindow" || className == "EdgeUiInputTopWndClass" ||
+                className == "EdgeUiInputWndClass" || className == "DummyDWMListenerWindow" ||
+                className == "MsgrIMEWindowClass" || className == "SysDragImage" ||
+                className == "ApplicationFrameTitleBarWindow")
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public static int ResolveWindowIndex(IntPtr hWnd)
         {
             if (hWnd == IntPtr.Zero) return 0;
@@ -903,24 +945,64 @@ namespace ModernAutoClicker
 
             if (!string.IsNullOrEmpty(procName))
             {
-                try
+                string actualName = GetProcessNameCached(hWnd, pid);
+                if (actualName == null) return false;
+
+                string clean = procName.Trim();
+                if (clean.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    using (var p = System.Diagnostics.Process.GetProcessById((int)pid))
-                    {
-                        string clean = procName.Trim();
-                        if (clean.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-                        {
-                            clean = clean.Substring(0, clean.Length - 4);
-                        }
-                        return string.Equals(p.ProcessName, clean, StringComparison.OrdinalIgnoreCase);
-                    }
+                    clean = clean.Substring(0, clean.Length - 4);
                 }
-                catch
-                {
-                    return false;
-                }
+                return string.Equals(actualName, clean, StringComparison.OrdinalIgnoreCase);
             }
             return true;
+        }
+
+        private class ProcessNameCacheEntry
+        {
+            public uint Pid;
+            public string Name;
+        }
+
+        private static readonly System.Collections.Generic.Dictionary<IntPtr, ProcessNameCacheEntry> _processNameCache = new System.Collections.Generic.Dictionary<IntPtr, ProcessNameCacheEntry>();
+
+        /// <summary>
+        /// Returns the process name owning hWnd without calling Process.GetProcessById on every click.
+        /// Cached per window handle: a live HWND that still reports the same PID belongs to the same process,
+        /// so the entry cannot go stale (a dead window or a reused PID changes the HWND/PID pair). Returns null on failure (never cached).
+        /// </summary>
+        public static string GetProcessNameCached(IntPtr hWnd, uint pid)
+        {
+            if (hWnd == IntPtr.Zero || pid == 0) return null;
+
+            lock (_processNameCache)
+            {
+                ProcessNameCacheEntry entry;
+                if (_processNameCache.TryGetValue(hWnd, out entry) && entry.Pid == pid)
+                {
+                    return entry.Name;
+                }
+            }
+
+            string name;
+            try
+            {
+                using (var p = System.Diagnostics.Process.GetProcessById((int)pid))
+                {
+                    name = p.ProcessName;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+            lock (_processNameCache)
+            {
+                if (_processNameCache.Count >= 256) _processNameCache.Clear();
+                _processNameCache[hWnd] = new ProcessNameCacheEntry { Pid = pid, Name = name };
+            }
+            return name;
         }
 
         private class TargetWindowCacheEntry
@@ -931,32 +1013,14 @@ namespace ModernAutoClicker
 
         private static readonly System.Collections.Generic.Dictionary<string, TargetWindowCacheEntry> _targetWindowCache = new System.Collections.Generic.Dictionary<string, TargetWindowCacheEntry>(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// Finds the usable target window, or Zero when there is none right now (a minimized window is not usable).
+        /// A session PID is a hard lock: while targetPid > 0 only windows of that exact process can match, whatever else is open.
+        /// Searching by saved identity (process, title, index) only happens with targetPid == 0, i.e. after Auto Clicker was reopened.
+        /// </summary>
         public static IntPtr FindWindowByTarget(string procName, string windowTitle, int windowIndex = 0, uint targetPid = 0)
         {
-            string cleanProc = (procName ?? "").Trim();
-            if (cleanProc.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-            {
-                cleanProc = cleanProc.Substring(0, cleanProc.Length - 4);
-            }
-
-            string cleanTitle = (windowTitle ?? "").Trim();
-            while (cleanTitle.EndsWith("."))
-            {
-                cleanTitle = cleanTitle.Substring(0, cleanTitle.Length - 1).Trim();
-            }
-
-            if (string.IsNullOrEmpty(cleanProc) && string.IsNullOrEmpty(cleanTitle) && targetPid == 0)
-                return IntPtr.Zero;
-
-            // Fast resolution for Windows Desktop
-            if (cleanTitle.Equals("Windows Desktop", StringComparison.OrdinalIgnoreCase) ||
-                cleanTitle.Equals("Program Manager", StringComparison.OrdinalIgnoreCase))
-            {
-                IntPtr pDesk = FindWindow("Progman", null);
-                if (pDesk != IntPtr.Zero && IsWindow(pDesk)) return pDesk;
-            }
-
-            string cacheKey = string.Format("{0}|{1}|{2}|{3}", cleanProc, cleanTitle, windowIndex, targetPid);
+            string cacheKey = string.Format("{0}|{1}|{2}|{3}", CleanProcessName(procName), CleanWindowTitle(windowTitle), windowIndex, targetPid);
 
             lock (_targetWindowCache)
             {
@@ -982,84 +1046,181 @@ namespace ModernAutoClicker
                 }
             }
 
-            IntPtr resultHwnd = IntPtr.Zero;
+            IntPtr resultHwnd = ResolveTargetWindow(procName, windowTitle, windowIndex, targetPid, true);
+            if (resultHwnd == IntPtr.Zero || IsIconic(resultHwnd)) return IntPtr.Zero;
 
-            // Tier 1: Exact PID match in current session (Shields against drifting to other instances)
-            if (targetPid > 0)
+            lock (_targetWindowCache)
             {
-                bool isPidAlive = false;
-                try
+                _targetWindowCache[cacheKey] = new TargetWindowCacheEntry
                 {
-                    using (var p = System.Diagnostics.Process.GetProcessById((int)targetPid))
-                    {
-                        isPidAlive = !p.HasExited;
-                    }
-                }
-                catch { isPidAlive = false; }
+                    Hwnd = resultHwnd,
+                    Timestamp = DateTime.Now
+                };
+            }
+            return resultHwnd;
+        }
 
-                if (isPidAlive)
-                {
-                    System.Collections.Generic.List<IntPtr> pidWindows = new System.Collections.Generic.List<IntPtr>();
-                    IntPtr pidFallbackWin = IntPtr.Zero;
-
-                    EnumWindows((hWnd, lParam) =>
-                    {
-                        if (IsWindowVisible(hWnd) && !IsIconic(hWnd))
-                        {
-                            uint pid;
-                            GetWindowThreadProcessId(hWnd, out pid);
-                            if (pid == targetPid)
-                            {
-                                int len = GetWindowTextLength(hWnd);
-                                string title = "";
-                                if (len > 0)
-                                {
-                                    var sb = new System.Text.StringBuilder(len + 1);
-                                    GetWindowText(hWnd, sb, sb.Capacity);
-                                    title = sb.ToString();
-                                }
-
-                                bool titleMatch = !string.IsNullOrEmpty(cleanTitle) &&
-                                    (title.IndexOf(cleanTitle, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                     cleanTitle.IndexOf(title, StringComparison.OrdinalIgnoreCase) >= 0);
-
-                                if (titleMatch)
-                                {
-                                    pidWindows.Add(hWnd);
-                                }
-                                else if (pidFallbackWin == IntPtr.Zero && len > 0)
-                                {
-                                    pidFallbackWin = hWnd;
-                                }
-                            }
-                        }
-                        return true;
-                    }, IntPtr.Zero);
-
-                    if (pidWindows.Count > 0)
-                    {
-                        if (windowIndex > 0 && windowIndex <= pidWindows.Count)
-                            resultHwnd = pidWindows[windowIndex - 1];
-                        else
-                            resultHwnd = pidWindows[0];
-                    }
-                    else if (pidFallbackWin != IntPtr.Zero)
-                    {
-                        resultHwnd = pidFallbackWin;
-                    }
-
-                    if (resultHwnd != IntPtr.Zero)
-                    {
-                        lock (_targetWindowCache)
-                        {
-                            _targetWindowCache[cacheKey] = new TargetWindowCacheEntry { Hwnd = resultHwnd, Timestamp = DateTime.Now };
-                        }
-                        return resultHwnd;
-                    }
-                }
+        /// <summary>
+        /// Says whether a target can be used now and why not. resolved is the window to use when the state is Ok.
+        /// Cheap while the session handle is still good (no window enumeration), so the engines call it before every action.
+        /// </summary>
+        public static TargetWindowState GetTargetWindowState(IntPtr hWnd, uint targetPid, string procName, string windowTitle, int windowIndex, out IntPtr resolved)
+        {
+            resolved = IntPtr.Zero;
+            if (IsValidWindowHandle(hWnd, targetPid, procName))
+            {
+                resolved = hWnd;
+                return TargetWindowState.Ok;
             }
 
-            // Tier 2: Target PID died or not set (Startup, or Single/Multi-instance reconnect)
+            string cleanProc = CleanProcessName(procName);
+
+            // The exact window of this session still exists: report what happened to it and never look at its siblings
+            if (hWnd != IntPtr.Zero && IsWindow(hWnd) && IsSameTargetProcess(hWnd, targetPid, cleanProc))
+            {
+                if (IsIconic(hWnd)) return TargetWindowState.Minimized;
+                if (!IsWindowVisible(hWnd)) return TargetWindowState.Hidden;
+            }
+
+            // A non-zero handle that no longer exists means that window was really closed, so "the only window left" is not the same window
+            IntPtr candidate = ResolveTargetWindow(procName, windowTitle, windowIndex, targetPid, hWnd == IntPtr.Zero);
+            if (candidate != IntPtr.Zero)
+            {
+                if (IsIconic(candidate)) return TargetWindowState.Minimized;
+                resolved = candidate;
+                return TargetWindowState.Ok;
+            }
+
+            if (targetPid > 0 && !IsTargetProcessAlive(targetPid, cleanProc)) return TargetWindowState.Closed;
+            return TargetWindowState.NotFound;
+        }
+
+        private static string CleanProcessName(string procName)
+        {
+            string cleanProc = (procName ?? "").Trim();
+            if (cleanProc.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            {
+                cleanProc = cleanProc.Substring(0, cleanProc.Length - 4);
+            }
+            return cleanProc;
+        }
+
+        private static string CleanWindowTitle(string windowTitle)
+        {
+            string cleanTitle = (windowTitle ?? "").Trim();
+            while (cleanTitle.EndsWith("."))
+            {
+                cleanTitle = cleanTitle.Substring(0, cleanTitle.Length - 1).Trim();
+            }
+            return cleanTitle;
+        }
+
+        private static bool IsSameTargetProcess(IntPtr hWnd, uint targetPid, string cleanProc)
+        {
+            uint pid;
+            GetWindowThreadProcessId(hWnd, out pid);
+            if (pid == 0) return false;
+            if (targetPid > 0) return pid == targetPid;
+            if (string.IsNullOrEmpty(cleanProc)) return true;
+            return string.Equals(GetProcessNameCached(hWnd, pid), cleanProc, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Windows can hand a dead PID to another program, so the name has to match too. ProcessName (unlike HasExited) also works on elevated processes.
+        private static bool IsTargetProcessAlive(uint targetPid, string cleanProc)
+        {
+            try
+            {
+                using (var p = System.Diagnostics.Process.GetProcessById((int)targetPid))
+                {
+                    string name = p.ProcessName;
+                    return string.IsNullOrEmpty(cleanProc) || string.Equals(name, cleanProc, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool TitlesMatch(string cleanTitle, string title)
+        {
+            if (string.IsNullOrEmpty(cleanTitle) || string.IsNullOrEmpty(title)) return false;
+            return title.IndexOf(cleanTitle, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   cleanTitle.IndexOf(title, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static string GetWindowTitleText(IntPtr hWnd)
+        {
+            int len = GetWindowTextLength(hWnd);
+            if (len <= 0) return "";
+            var sb = new System.Text.StringBuilder(len + 1);
+            GetWindowText(hWnd, sb, sb.Capacity);
+            return sb.ToString();
+        }
+
+        // May return a minimized window: the caller decides what that means
+        private static IntPtr ResolveTargetWindow(string procName, string windowTitle, int windowIndex, uint targetPid, bool allowOnlyWindowFallback)
+        {
+            string cleanProc = CleanProcessName(procName);
+            string cleanTitle = CleanWindowTitle(windowTitle);
+
+            if (string.IsNullOrEmpty(cleanProc) && string.IsNullOrEmpty(cleanTitle) && targetPid == 0)
+                return IntPtr.Zero;
+
+            // Fast resolution for Windows Desktop
+            if (cleanTitle.Equals("Windows Desktop", StringComparison.OrdinalIgnoreCase) ||
+                cleanTitle.Equals("Program Manager", StringComparison.OrdinalIgnoreCase))
+            {
+                IntPtr pDesk = FindWindow("Progman", null);
+                if (pDesk != IntPtr.Zero && IsWindow(pDesk)) return pDesk;
+            }
+
+            if (targetPid > 0)
+            {
+                return ResolveWithinProcess(targetPid, cleanProc, cleanTitle, windowIndex, allowOnlyWindowFallback);
+            }
+            return ResolveBySavedIdentity(cleanProc, cleanTitle, windowIndex);
+        }
+
+        // Session lock: only this PID. Several windows can share one PID (Chrome, VS Code), so among them only a title match counts,
+        // or the app's only window (its title may have changed since it was picked).
+        private static IntPtr ResolveWithinProcess(uint targetPid, string cleanProc, string cleanTitle, int windowIndex, bool allowOnlyWindowFallback)
+        {
+            if (!IsTargetProcessAlive(targetPid, cleanProc)) return IntPtr.Zero;
+
+            System.Collections.Generic.List<IntPtr> titleMatches = new System.Collections.Generic.List<IntPtr>();
+            System.Collections.Generic.List<IntPtr> appWindows = new System.Collections.Generic.List<IntPtr>();
+
+            EnumWindows((hWnd, lParam) =>
+            {
+                if (IsWindowVisible(hWnd))
+                {
+                    uint pid;
+                    GetWindowThreadProcessId(hWnd, out pid);
+                    if (pid == targetPid)
+                    {
+                        if (TitlesMatch(cleanTitle, GetWindowTitleText(hWnd))) titleMatches.Add(hWnd);
+
+                        string title, className;
+                        if (TryGetPickableWindowInfo(hWnd, out title, out className)) appWindows.Add(hWnd);
+                    }
+                }
+                return true;
+            }, IntPtr.Zero);
+
+            if (titleMatches.Count > 0)
+            {
+                titleMatches.Sort((a, b) => a.ToInt64().CompareTo(b.ToInt64()));
+                if (windowIndex <= 0) return titleMatches[0];
+                return windowIndex <= titleMatches.Count ? titleMatches[windowIndex - 1] : IntPtr.Zero;
+            }
+
+            return (allowOnlyWindowFallback && appWindows.Count == 1) ? appWindows[0] : IntPtr.Zero;
+        }
+
+        // No session PID (Auto Clicker was reopened): saved process, title and index, and among equal candidates the process opened first.
+        private static IntPtr ResolveBySavedIdentity(string cleanProc, string cleanTitle, int windowIndex)
+        {
             System.Collections.Generic.List<System.Diagnostics.Process> runningProcs = new System.Collections.Generic.List<System.Diagnostics.Process>();
             if (!string.IsNullOrEmpty(cleanProc))
             {
@@ -1068,12 +1229,10 @@ namespace ModernAutoClicker
                     var procs = System.Diagnostics.Process.GetProcessesByName(cleanProc);
                     runningProcs.AddRange(procs);
                 }
-                catch { }
+                catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
-                if (runningProcs.Count == 0 && string.IsNullOrEmpty(cleanTitle))
-                {
-                    return IntPtr.Zero;
-                }
+                // The saved app is not running: a window of another app that happens to share the title is not the target
+                if (runningProcs.Count == 0) return IntPtr.Zero;
             }
 
             // Deterministic sorting: Earliest opened process first (Instance 1, 2...)
@@ -1082,8 +1241,8 @@ namespace ModernAutoClicker
                 runningProcs.Sort((a, b) =>
                 {
                     DateTime tA = DateTime.MaxValue, tB = DateTime.MaxValue;
-                    try { tA = a.StartTime; } catch { }
-                    try { tB = b.StartTime; } catch { }
+                    try { tA = a.StartTime; } catch (Exception) { /* An elevated or system process hides its start time: it simply sorts last */ }
+                    try { tB = b.StartTime; } catch (Exception) { /* An elevated or system process hides its start time: it simply sorts last */ }
                     int c = tA.CompareTo(tB);
                     if (c != 0) return c;
                     return a.Id.CompareTo(b.Id);
@@ -1099,11 +1258,11 @@ namespace ModernAutoClicker
 
             System.Collections.Generic.List<IntPtr> matchingHwnds = new System.Collections.Generic.List<IntPtr>();
             System.Collections.Generic.List<IntPtr> allAppWindows = new System.Collections.Generic.List<IntPtr>();
-            IntPtr processMatch = IntPtr.Zero;
 
+            // Minimized windows stay in the lists so that "the one opened first" does not silently become the next one when it is minimized
             EnumWindows((hWnd, lParam) =>
             {
-                if (IsWindowVisible(hWnd) && !IsIconic(hWnd))
+                if (IsWindowVisible(hWnd))
                 {
                     uint pid;
                     GetWindowThreadProcessId(hWnd, out pid);
@@ -1114,29 +1273,14 @@ namespace ModernAutoClicker
                         return true;
                     }
 
-                    int len = GetWindowTextLength(hWnd);
-                    string title = "";
-                    if (len > 0)
-                    {
-                        var sb = new System.Text.StringBuilder(len + 1);
-                        GetWindowText(hWnd, sb, sb.Capacity);
-                        title = sb.ToString();
-                    }
+                    string title = GetWindowTitleText(hWnd);
 
-                    bool titleMatch = !string.IsNullOrEmpty(cleanTitle) &&
-                        (title.IndexOf(cleanTitle, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                         cleanTitle.IndexOf(title, StringComparison.OrdinalIgnoreCase) >= 0);
-
-                    if (isPidMatch && len > 0)
+                    if (isPidMatch && title.Length > 0)
                     {
                         allAppWindows.Add(hWnd);
-                        if (processMatch == IntPtr.Zero)
-                        {
-                            processMatch = hWnd;
-                        }
                     }
 
-                    if (titleMatch && (prioritizedPids.Count == 0 || isPidMatch))
+                    if (TitlesMatch(cleanTitle, title))
                     {
                         matchingHwnds.Add(hWnd);
                     }
@@ -1148,111 +1292,29 @@ namespace ModernAutoClicker
                 return true;
             }, IntPtr.Zero);
 
-            // Sort matching windows by process priority (Earliest StartTime first), then HWND
-            if (matchingHwnds.Count > 1)
+            Comparison<IntPtr> openedFirst = (a, b) =>
             {
-                matchingHwnds.Sort((a, b) =>
-                {
-                    uint pidA, pidB;
-                    GetWindowThreadProcessId(a, out pidA);
-                    GetWindowThreadProcessId(b, out pidB);
-                    int idxA = prioritizedPids.IndexOf(pidA);
-                    int idxB = prioritizedPids.IndexOf(pidB);
-                    if (idxA >= 0 && idxB >= 0 && idxA != idxB) return idxA.CompareTo(idxB);
-                    int cmp = pidA.CompareTo(pidB);
-                    if (cmp != 0) return cmp;
-                    return a.ToInt64().CompareTo(b.ToInt64());
-                });
-            }
+                uint pidA, pidB;
+                GetWindowThreadProcessId(a, out pidA);
+                GetWindowThreadProcessId(b, out pidB);
+                int idxA = prioritizedPids.IndexOf(pidA);
+                int idxB = prioritizedPids.IndexOf(pidB);
+                if (idxA >= 0 && idxB >= 0 && idxA != idxB) return idxA.CompareTo(idxB);
+                int cmp = pidA.CompareTo(pidB);
+                if (cmp != 0) return cmp;
+                return a.ToInt64().CompareTo(b.ToInt64());
+            };
+            matchingHwnds.Sort(openedFirst);
+            allAppWindows.Sort(openedFirst);
 
-            if (allAppWindows.Count > 1)
-            {
-                allAppWindows.Sort((a, b) =>
-                {
-                    uint pidA, pidB;
-                    GetWindowThreadProcessId(a, out pidA);
-                    GetWindowThreadProcessId(b, out pidB);
-                    int idxA = prioritizedPids.IndexOf(pidA);
-                    int idxB = prioritizedPids.IndexOf(pidB);
-                    if (idxA >= 0 && idxB >= 0 && idxA != idxB) return idxA.CompareTo(idxB);
-                    int cmp = pidA.CompareTo(pidB);
-                    if (cmp != 0) return cmp;
-                    return a.ToInt64().CompareTo(b.ToInt64());
-                });
-            }
+            // A title that matches wins; otherwise the title has changed since it was picked (Chrome, Word, Notepad...)
+            System.Collections.Generic.List<IntPtr> candidates = matchingHwnds.Count > 0 ? matchingHwnds : allAppWindows;
+            if (candidates.Count == 0) return IntPtr.Zero;
+            if (windowIndex <= 0) return candidates[0];
+            if (candidates.Count == 1 && candidates == allAppWindows) return candidates[0];
 
-            // Window Selection:
-            if (matchingHwnds.Count > 0)
-            {
-                if (windowIndex > 0)
-                {
-                    if (windowIndex <= matchingHwnds.Count)
-                    {
-                        resultHwnd = matchingHwnds[windowIndex - 1];
-                    }
-                    else
-                    {
-                        // Explicit instance out of range -> never hijack another instance
-                        resultHwnd = IntPtr.Zero;
-                    }
-                }
-                else
-                {
-                    // Multi-Instance Shield:
-                    // If targetPid died and multiple windows of the same app are open, do not hijack another instance!
-                    if (targetPid > 0 && allAppWindows.Count > 1)
-                    {
-                        resultHwnd = IntPtr.Zero;
-                    }
-                    else
-                    {
-                        resultHwnd = matchingHwnds[0];
-                    }
-                }
-            }
-            else if (processMatch != IntPtr.Zero)
-            {
-                // Dynamic title fallback (Antigravity, Chrome, Word, Notepad changed workspace/tab/file)
-                if (allAppWindows.Count == 1)
-                {
-                    // Single window instance: smoothly bind to the application window!
-                    resultHwnd = processMatch;
-                }
-                else
-                {
-                    // Multiple windows exist:
-                    if (windowIndex > 0)
-                    {
-                        if (windowIndex <= allAppWindows.Count)
-                            resultHwnd = allAppWindows[windowIndex - 1];
-                        else
-                            resultHwnd = IntPtr.Zero;
-                    }
-                    else if (targetPid > 0)
-                    {
-                        // Target PID died in multi-instance environment -> do not hijack!
-                        resultHwnd = IntPtr.Zero;
-                    }
-                    else
-                    {
-                        resultHwnd = allAppWindows[0];
-                    }
-                }
-            }
-
-            if (resultHwnd != IntPtr.Zero)
-            {
-                lock (_targetWindowCache)
-                {
-                    _targetWindowCache[cacheKey] = new TargetWindowCacheEntry
-                    {
-                        Hwnd = resultHwnd,
-                        Timestamp = DateTime.Now
-                    };
-                }
-            }
-
-            return resultHwnd;
+            // An explicit instance that does not exist is never replaced by another one
+            return windowIndex <= candidates.Count ? candidates[windowIndex - 1] : IntPtr.Zero;
         }
     }
 }

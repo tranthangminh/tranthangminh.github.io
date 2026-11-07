@@ -24,7 +24,7 @@ namespace ModernAutoClicker.Advanced
         {
             _theme = theme ?? ThemeTokens.DarkTheme();
             this.BorderRadius = _theme.RadiusMd;
-            this.BorderSize = 0;
+            this.BorderSize = 1;
             this.Size = new Size(408, 74);
 
             // Left Section: Hotkeys
@@ -65,7 +65,7 @@ namespace ModernAutoClicker.Advanced
         private void AdvancedHotkeyCard_Paint(object sender, PaintEventArgs e)
         {
             // Subtle vertical separator between hotkeys and tips
-            Color divColor = _theme != null ? _theme.BorderColor : Color.FromArgb(40, 255, 255, 255);
+            Color divColor = (_theme ?? ThemeTokens.Current).BorderColor;
             using (Pen pen = new Pen(divColor, 1))
             {
                 e.Graphics.DrawLine(pen, 138, 8, 138, 66);
@@ -100,15 +100,16 @@ namespace ModernAutoClicker.Advanced
         {
             if (t == null) return;
             _theme = t;
-            this.BackColor = t.HotkeyBoxBg;
+            this.BackColor = t.BgSecondary;
+            this.BorderColor = t.BorderColor;
             this.BorderRadius = t.RadiusMd;
 
-            if (lblHelp1 != null) lblHelp1.ForeColor = t.HotkeyBoxText;
-            if (lblHelp2 != null) lblHelp2.ForeColor = t.HotkeyBoxText;
-            if (lblHelp3 != null) lblHelp3.ForeColor = t.HotkeyBoxText;
-            if (lblHelpVal1 != null) lblHelpVal1.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
-            if (lblHelpVal2 != null) lblHelpVal2.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
-            if (lblHelpVal3 != null) lblHelpVal3.ForeColor = t.IsDark ? t.TextPrimary : t.TextSecondary;
+            if (lblHelp1 != null) lblHelp1.ForeColor = t.TextPrimary;
+            if (lblHelp2 != null) lblHelp2.ForeColor = t.TextPrimary;
+            if (lblHelp3 != null) lblHelp3.ForeColor = t.TextPrimary;
+            if (lblHelpVal1 != null) lblHelpVal1.ForeColor = t.TextSecondary;
+            if (lblHelpVal2 != null) lblHelpVal2.ForeColor = t.TextSecondary;
+            if (lblHelpVal3 != null) lblHelpVal3.ForeColor = t.TextSecondary;
 
             if (lblTip1 != null) lblTip1.ForeColor = t.TextSecondary;
             if (lblTip2 != null) lblTip2.ForeColor = t.TextSecondary;

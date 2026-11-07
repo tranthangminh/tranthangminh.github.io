@@ -241,7 +241,7 @@ namespace ModernAutoClicker.SpecialApps
                 // Send synthetic WM_SETFOCUS
                 NativeMethods.SendMessage(targetHwnd, 0x0007 /* WM_SETFOCUS */, IntPtr.Zero, IntPtr.Zero);
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             // 4. Send WM_SETCURSOR with HTCLIENT to prepare BlueStacks Qt surface
             IntPtr setCursorLParam = (IntPtr)((0x0200 << 16) | 1 /* HTCLIENT */);

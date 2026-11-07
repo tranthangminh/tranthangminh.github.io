@@ -38,7 +38,7 @@ namespace ModernAutoClicker
                     return _cachedIcon;
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             try
             {
@@ -49,7 +49,7 @@ namespace ModernAutoClicker
                     return _cachedIcon;
                 }
             }
-            catch { }
+            catch (Exception caught) { MaxApp.Common.AppLog.Caught(caught); }
 
             // Dynamic fallback: Generate from vector geometry
             try
