@@ -1,0 +1,6 @@
+_BookForgeConfig
+_BookForgeConfig.json
+*.exe
+node_modules/
+_dist_temp/
+crash.log
