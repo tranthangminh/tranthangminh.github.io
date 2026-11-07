@@ -1,1 +1,6 @@
 /_SOURCE
+
+# Data the apps write while they run: settings, saved scripts, logs
+AutoClicker-Save&Load/
+_BookForgeConfig
+error.log
