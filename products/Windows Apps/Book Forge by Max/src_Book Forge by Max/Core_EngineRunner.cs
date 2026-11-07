@@ -26,6 +26,10 @@ namespace BookForge
             get { return isCancelled; }
         }
 
+        // Share of the overall progress bar that the running script's stages map onto.
+        public int ProgressStart { get; set; }
+        public int ProgressSpan { get; set; }
+
         public void Reset()
         {
             isCancelled = false;
@@ -236,30 +240,18 @@ namespace BookForge
         {
             if (OnProgressUpdated == null) return;
 
-            // Pattern detection for progress %
-            if (line.Contains("[Pass 1/4]"))
+            // Stage markers printed by 07__pdf_publisher.js
+            if (line.StartsWith("[2/4] Pass 1:"))
             {
-                OnProgressUpdated(25, "Pass 1/4: Page measurement & layout inspection...");
+                OnProgressUpdated(ProgressStart + ProgressSpan * 15 / 100, "Pass 1: Measuring pages & chapter positions...");
             }
-            else if (line.Contains("[Pass 2/4]"))
+            else if (line.StartsWith("[3/4] Pass 2:"))
             {
-                OnProgressUpdated(50, "Pass 2/4: Alternating gutter rendering & image layout...");
+                OnProgressUpdated(ProgressStart + ProgressSpan * 45 / 100, "Pass 2: Rendering pages, gutters & Table of Contents...");
             }
-            else if (line.Contains("[Pass 3/4]"))
+            else if (line.StartsWith("[4/4] Merging"))
             {
-                OnProgressUpdated(75, "Pass 3/4: Dynamic running headers & TOC stamping...");
-            }
-            else if (line.Contains("[Pass 4/4]"))
-            {
-                OnProgressUpdated(90, "Pass 4/4: PDF compilation & outline merging...");
-            }
-            else if (line.Contains("COMPILATION COMPLETE") || line.Contains("EXTRACTION COMPLETE") || line.Contains("PUBLISHING COMPLETE"))
-            {
-                OnProgressUpdated(100, "Completed!");
-            }
-            else if (line.Contains("Saved: chapters_original/"))
-            {
-                OnProgressUpdated(60, "Decomposing chapter chunks...");
+                OnProgressUpdated(ProgressStart + ProgressSpan * 90 / 100, "Merging cover & PDF bookmarks...");
             }
         }
 

@@ -101,7 +101,7 @@ echo.
 
 set "DIST_TEMP=%~dp0_dist_temp"
 set "PACKAGE_NAME=Book Forge by Max"
-set "ZIP_NAME=Book Forge by Max v1.0 (Beta).zip"
+set "ZIP_NAME=Book Forge by Max v1.0.1 (Beta).zip"
 set "FOR_ZIP_DIR=%~dp0for_zip"
 for %%I in ("%~dp0..") do set "PARENT_DIR=%%~fI"
 set "ZIP_OUT=!PARENT_DIR!\!ZIP_NAME!"

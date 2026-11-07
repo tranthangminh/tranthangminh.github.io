@@ -11,6 +11,13 @@ const os = require('os');
  * - Automatically purges temporary user-data-dir on browser close
  */
 async function launchRobustBrowser(puppeteerMod, options = {}) {
+    // A killed run (Stop, closing the app) cannot clean up after itself, so the next launch does.
+    for (const name of fs.readdirSync(os.tmpdir())) {
+        if (name.startsWith('bf-pup-')) {
+            try { fs.rmSync(path.join(os.tmpdir(), name), { recursive: true, force: true }); } catch (e) {}
+        }
+    }
+
     const tempProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-pup-'));
 
     const defaultArgs = [

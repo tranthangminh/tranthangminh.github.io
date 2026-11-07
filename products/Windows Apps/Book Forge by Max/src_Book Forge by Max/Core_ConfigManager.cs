@@ -23,7 +23,6 @@ namespace BookForge
         public bool SourceTranslated { get; set; }
         public bool SourceOriginal { get; set; }
         public string PaperSize { get; set; }
-        public string FontFamily { get; set; }
         public string MenuDepth { get; set; } // "H1", "H1 & H2", "H1, H2 & H3"
         public string BindingMode { get; set; } // "Print", "Digital"
         public bool IncludeTranslatorNote { get; set; }
@@ -52,7 +51,6 @@ namespace BookForge
             SourceTranslated = true;
             SourceOriginal = true;
             PaperSize = "A5";
-            FontFamily = "Lora (Recommended)";
             MenuDepth = "H1";
             BindingMode = "Print";
             IncludeTranslatorNote = true;
@@ -215,7 +213,6 @@ namespace BookForge
             sb.AppendLine(string.Format("  \"SourceTranslated\": {0},", c.SourceTranslated ? "true" : "false"));
             sb.AppendLine(string.Format("  \"SourceOriginal\": {0},", c.SourceOriginal ? "true" : "false"));
             sb.AppendLine(string.Format("  \"PaperSize\": \"{0}\",", EscapeJson(c.PaperSize)));
-            sb.AppendLine(string.Format("  \"FontFamily\": \"{0}\",", EscapeJson(c.FontFamily)));
             sb.AppendLine(string.Format("  \"MenuDepth\": \"{0}\",", EscapeJson(c.MenuDepth)));
             sb.AppendLine(string.Format("  \"BindingMode\": \"{0}\",", EscapeJson(c.BindingMode)));
             sb.AppendLine(string.Format("  \"IncludeTranslatorNote\": {0},", c.IncludeTranslatorNote ? "true" : "false"));
@@ -235,14 +232,15 @@ namespace BookForge
             BookForgeConfig config = new BookForgeConfig();
             if (string.IsNullOrEmpty(json)) return config;
 
-            Regex regex = new Regex("\"(?<key>[a-zA-Z0-9_]+)\"\\s*:\\s*(?:\"(?<val>[^\"]*)\"|(?<val>true|false|-?[0-9]+))", RegexOptions.IgnoreCase);
+            Regex regex = new Regex("\"(?<key>[a-zA-Z0-9_]+)\"\\s*:\\s*(?:\"(?<val>(?:[^\"\\\\]|\\\\.)*)\"|(?<val>true|false|-?[0-9]+))", RegexOptions.IgnoreCase);
             MatchCollection matches = regex.Matches(json);
 
             foreach (Match m in matches)
             {
                 string key = m.Groups["key"].Value;
                 string val = m.Groups["val"].Value;
-                string unescaped = val.Replace("\\\\", "\\").Replace("\\\"", "\"").Replace("\\n", "\n");
+                // Single pass: sequential Replace calls would turn the end of "D:\\new" into a line break.
+                string unescaped = Regex.Replace(val, @"\\(.)", e => e.Groups[1].Value == "n" ? "\n" : e.Groups[1].Value);
 
                 switch (key.ToLowerInvariant())
                 {
@@ -271,7 +269,6 @@ namespace BookForge
                     case "sourcetranslated": config.SourceTranslated = ParseBool(val, true); break;
                     case "sourceoriginal": config.SourceOriginal = ParseBool(val, true); break;
                     case "papersize": config.PaperSize = unescaped; break;
-                    case "fontfamily": config.FontFamily = unescaped; break;
                     case "menudepth": config.MenuDepth = unescaped; break;
                     case "bindingmode": config.BindingMode = unescaped; break;
                     case "includetranslatornote": config.IncludeTranslatorNote = ParseBool(val, true); break;

@@ -33,10 +33,10 @@
                 downloadAria: 'Tải về Auto Clicker by Max v1.1.3'
             },
             bookforge: {
-                title: 'Book Forge by Max v1.0 (Beta)',
+                title: 'Book Forge by Max v1.0.1 (Beta)',
                 desc: 'Ứng dụng Windows hỗ trợ bóc tách nội dung sách, tự động chia chương, trích xuất hình ảnh và dàn trang xuất bản sách PDF theo chuẩn in ấn chuyên nghiệp.',
-                downloadTitle: 'Tải về Book Forge by Max v1.0 (Beta) (.zip)',
-                downloadAria: 'Tải về Book Forge by Max v1.0 (Beta)'
+                downloadTitle: 'Tải về Book Forge by Max v1.0.1 (Beta) (.zip)',
+                downloadAria: 'Tải về Book Forge by Max v1.0.1 (Beta)'
             },
             blockInternetBigRed: {
                 title: 'Block Internet "Nhà Đỏ"',
@@ -152,10 +152,10 @@
                 downloadAria: 'Download Auto Clicker by Max v1.1.3'
             },
             bookforge: {
-                title: 'Book Forge by Max v1.0 (Beta)',
+                title: 'Book Forge by Max v1.0.1 (Beta)',
                 desc: 'Windows application for smart book content parsing, automatic chapter splitting, image extraction, and PDF book typesetting ready for professional printing.',
-                downloadTitle: 'Download Book Forge by Max v1.0 (Beta) (.zip)',
-                downloadAria: 'Download Book Forge by Max v1.0 (Beta)'
+                downloadTitle: 'Download Book Forge by Max v1.0.1 (Beta) (.zip)',
+                downloadAria: 'Download Book Forge by Max v1.0.1 (Beta)'
             },
             blockInternetBigRed: {
                 title: 'Block Internet "Big Red"',

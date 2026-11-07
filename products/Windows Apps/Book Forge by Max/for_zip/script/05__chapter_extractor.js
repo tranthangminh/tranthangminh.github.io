@@ -3,8 +3,8 @@
  * Location: script/05_chapter_extractor.js
  * 
  * Usage:
- *   node script/05_chapter_extractor.js [pdfPath] [projectDir]
- * 
+ *   node script/05_chapter_extractor.js [pdfPath] [projectDir] [--threshold=25000] [--split=none|h2|h2-h3]
+ *
  * Responsibilities:
  * - Extracts complete book components:
  *   - Front Matter (00-front-matter.md): Cover image, Title Page, Series description, Copyright, ISBN.
@@ -18,11 +18,24 @@ const { analyzeGeometry } = require('./01__pdf_geometry');
 const { detectChapters } = require('./02__toc_parser');
 const { buildTypographyProfile, formatRichChapterMarkdown } = require('./03__rich_markdown_formatter');
 const { extractCleanFrontMatterItems } = require('./05_toc_filter');
+const { writeChapterFiles } = require('./05_chunk_writer');
 
 // Parse CLI arguments
 const args = process.argv.slice(2);
-let pdfPath = args[0];
-let projectDir = args[1] || process.cwd();
+const positionalArgs = args.filter(a => !a.startsWith('--'));
+let pdfPath = positionalArgs[0];
+let projectDir = positionalArgs[1] || process.cwd();
+let splitThreshold = 25000;
+let splitMode = 'h2-h3';
+
+for (const a of args) {
+    if (a.startsWith('--threshold=')) {
+        const val = parseInt(a.replace('--threshold=', ''), 10);
+        if (val > 0) splitThreshold = val;
+    } else if (a.startsWith('--split=')) {
+        splitMode = a.replace('--split=', '').trim().toLowerCase();
+    }
+}
 
 // Auto-detect PDF if not supplied
 if (!pdfPath) {
@@ -119,6 +132,12 @@ async function run() {
     console.log(`[4/4] Generating Complete Book Files into "chapters_original/"...`);
     const pagesData = geom.pagesData;
     let fileSeq = 0;
+    let totalSavedFiles = 0;
+
+    // Chunk names depend on the split settings, so leftovers from an earlier run would be compiled twice.
+    for (const f of fs.readdirSync(chaptersOriginalDir)) {
+        if (f.endsWith('.md')) fs.unlinkSync(path.join(chaptersOriginalDir, f));
+    }
 
     // --- STEP A: Extract Front Matter (Excluding TOC Pages) ---
     const firstChapterPageIndex = chapters.length > 0 ? chapters[0].pageIndex : 0;
@@ -150,15 +169,13 @@ async function run() {
         fs.writeFileSync(path.join(chaptersOriginalDir, frontMatterFileName), frontMatterMd, 'utf8');
         console.log(`  [${String(fileSeq).padStart(2, '0')}] Saved: chapters_original/${frontMatterFileName} (${frontMatterMd.length} chars)`);
         fileSeq++;
+        totalSavedFiles++;
     }
 
     // --- STEP B: Extract Content Chapters ---
     for (let c = 0; c < chapters.length; c++) {
         const startP = chapters[c].pageIndex;
         const endP = c < chapters.length - 1 ? chapters[c + 1].pageIndex : pagesData.length;
-        const rawTitle = chapters[c].title.replace(/[^a-zA-Z0-9_\s-]/g, '').trim();
-        const safeTitle = rawTitle.toLowerCase().replace(/\s+/g, '-').slice(0, 50);
-        const fileName = `${String(fileSeq).padStart(2, '0')}-${safeTitle}.md`;
 
         const chapterItems = [];
         for (let pIdx = startP; pIdx < endP; pIdx++) {
@@ -167,12 +184,14 @@ async function run() {
 
         const mdContent = formatRichChapterMarkdown(c, chapters[c].title, chapterItems, typoProfile);
 
-        fs.writeFileSync(path.join(chaptersOriginalDir, fileName), mdContent, 'utf8');
-        console.log(`  [${String(fileSeq).padStart(2, '0')}] Saved: chapters_original/${fileName} (${mdContent.length} chars)`);
+        totalSavedFiles += writeChapterFiles(chaptersOriginalDir, String(fileSeq).padStart(2, '0'), chapters[c].title, mdContent.split('\n'), splitThreshold, splitMode);
         fileSeq++;
     }
 
-    console.log(`\n🎉 EXTRACTION COMPLETE! Successfully saved ${fileSeq} files (Front Matter + ${chapters.length} Chapters) to "chapters_original/".\n`);
+    console.log(`\n🎉 EXTRACTION COMPLETE! Successfully saved ${totalSavedFiles} files (${chapters.length} Chapters) to "chapters_original/".\n`);
 }
 
-run().catch(console.error);
+run().catch(err => {
+    console.error(err);
+    process.exit(1);
+});

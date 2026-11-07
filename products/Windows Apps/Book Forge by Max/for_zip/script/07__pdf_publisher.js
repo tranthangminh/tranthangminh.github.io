@@ -41,7 +41,7 @@ const headerEngine = require('./07_header_engine.js');
 const { launchRobustBrowser } = require('./browser_launcher');
 
 // External libraries
-const puppeteerMod = requireGlobal('puppeteer');
+const puppeteerMod = requireGlobal('puppeteer-core') || requireGlobal('puppeteer');
 const markdownItMod = requireGlobal('markdown-it');
 const pdfLibMod = requireGlobal('pdf-lib');
 const pdfParseMod = requireGlobal('pdf-parse');

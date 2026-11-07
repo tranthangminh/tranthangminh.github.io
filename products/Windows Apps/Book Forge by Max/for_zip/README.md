@@ -1,10 +1,10 @@
-# 📖 Book Forge by Max v1.0 (Beta)
+# 📖 Book Forge by Max v1.0.1 (Beta)
 ### Hệ Thống Bóc Tách Nội Dung Sách & Dàn Trang Xuất Bản Sách In Chuyên Nghiệp
 
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(64--bit)-0078D6?logo=windows&logoColor=white)](https://tranthangminh.github.io/products)
 [![Framework: .NET 4.8](https://img.shields.io/badge/Framework-.NET%20Framework%204.8-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![Engine: Node.js & Puppeteer](https://img.shields.io/badge/Engine-Node.js%20%7C%20Puppeteer-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![Status: Beta](https://img.shields.io/badge/Version-v1.0%20(Beta)-orange)](#)
+[![Status: Beta](https://img.shields.io/badge/Version-v1.0.1%20(Beta)-orange)](#)
 [![Author: Tran Thang Minh](https://img.shields.io/badge/Author-Trần%20Thắng%20Minh%20(Max)-informational)](https://fb.me/maxiechen)
 
 ---
@@ -68,17 +68,16 @@ Thông thường, khi bóc tách một cuốn sách PDF để dịch thuật ho�
 - **Running Headers động**:
   - Tự động lấy tiêu đề chương hiện tại để hiển thị trên đầu mỗi trang, chẵn lẻ đảo chiều tinh tế.
 - **Đa dạng khổ sách chuẩn quốc tế**:
-  - Hỗ trợ ngay lập tức: **A5** (148 x 210 mm), **B5** (176 x 250 mm), **A4** (210 x 297 mm), **Pocket Book** (110 x 178 mm), **Kindle Format**, **US-Trade** (152 x 229 mm).
+  - Hỗ trợ 9 khổ: **A6** (105 x 148 mm), **A5** (148 x 210 mm), **B5** (176 x 250 mm), **A4** (210 x 297 mm), **US-Trade** (152 x 229 mm), **US-Letter** (216 x 279 mm), **Mass-Market** (108 x 175 mm), **Kindle** (120 x 160 mm), **Crown** (189 x 246 mm).
 - **Typography đỉnh cao với nhúng Font Lora**:
   - Tích hợp sẵn bộ font serif quốc tế cao cấp **Lora** (hỗ trợ trọn vẹn dấu tiếng Việt Unicode, biến thể Regular, Bold và Italic), tối ưu độ tương phản cho mắt khi đọc lâu.
 
 ### 2.3. Bộ Soạn Thảo Front Matter & Header Editor (Live Preview)
-- Mở cửa sổ soạn thảo độc lập chuyên nghiệp cho các trang mở đầu cuốn sách:
-  - Trang bìa lót (Half Title & Title Page).
-  - Trang thông tin bản quyền & nhà xuất bản (Copyright Page).
-  - Lời nói đầu / Lời bạt / Ghi chú của Dịch giả (Translator's Note).
+- Mở cửa sổ soạn thảo độc lập cho hai phần của từng phiên bản (Translated / Original):
+  - Running Header 2 cột trên đầu trang.
+  - Ghi chú của Dịch giả (Translator's Note), nằm sau bìa và trước mục lục.
 - **Giao diện 2 cột song song**: Soạn thảo Markdown bên trái $\leftrightarrow$ Hiển thị trực quan (Live HTML/CSS Preview) bên phải theo thời gian thực.
-- Tự động lưu và gắn kết trực tiếp vào cuốn sách khi bấm xuất bản.
+- Bấm lưu để ghi vào thư mục dự án, các file này được dùng khi xuất PDF.
 
 ### 2.4. Khung Dự Án Translation Bible & QA Audit
 - **Tự động khởi tạo Translation Bible**:
@@ -88,7 +87,9 @@ Thông thường, khi bóc tách một cuốn sách PDF để dịch thuật ho�
     3. `Character-Voice.md`: Định hình ngữ điệu riêng cho từng nhân vật.
     4. `Context-Anchor.md`: Tóm tắt bối cảnh, niên đại, thế giới quan của tác phẩm.
 - **QA Audit Engine**:
-  - Kiểm tra tính toàn vẹn giữa nguyên tác và bản dịch: đối soát số lượng chương, kiểm tra thẻ đóng mở (`*`, `**`, `[]`, `()`), kiểm tra đường dẫn hình ảnh tránh tình trạng in ra bị mất hình.
+  - **Báo lỗi**: thiếu ảnh (tránh in ra bị mất hình), file master lệch so với các chương.
+  - **Cảnh báo**: lỗi typography, thẻ `**` / `***` chưa đóng, bản dịch thiếu file hoặc lệch số heading, ảnh, đoạn so với nguyên tác, Markdown chứa dưới 90% số từ của PDF gốc.
+  - Bước so với PDF cần file `[Tên sách].pdf` nằm cạnh hoặc trong thư mục dự án; không có thì bỏ qua.
 
 ---
 
@@ -110,23 +111,16 @@ Thông thường, khi bóc tách một cuốn sách PDF để dịch thuật ho�
 ## 🚀 4. Hướng Dẫn Cài Đặt & Khởi Chạy Lần Đầu
 
 ### Bước 1: Tải về ứng dụng
-- Tải file nén phát hành chính thức: **`Book Forge by Max v1.0 (Beta).zip`**.
+- Tải file nén phát hành chính thức: **`Book Forge by Max v1.0.1 (Beta).zip`**.
 - Giải nén file `.zip` vào bất kỳ thư mục nào trên máy tính của bạn (Ví dụ: `D:\Book Forge by Max\`).
 
 ### Bước 2: Chuẩn bị Node.js
 - Nếu máy tính của bạn chưa có Node.js:
   - Truy cập trang chủ chính thức: [https://nodejs.org/](https://nodejs.org/)
   - Tải về và cài đặt bản **LTS (Long Term Support)** với các thiết lập mặc định.
+- Các thư viện xử lý sách đã đi kèm trong thư mục `script/`, không cần cài thêm.
 
-### Bước 3: Chạy thiết lập tự động 1-Click (`setup.bat`)
-- Vào thư mục vừa giải nén, nhấp đúp chuột vào file **`setup.bat`** (chỉ cần thực hiện **1 lần duy nhất**).
-- File sẽ tự động kiểm tra Node.js và tải 5 gói thư viện xử lý sách cần thiết:
-  ```bash
-  npm install -g puppeteer pdf-lib pdf-parse markdown-it @pdf-lib/fontkit
-  ```
-- Khi màn hình hiện `[SUCCESS] All dependencies have been installed successfully!`, bạn nhấn phím bất kỳ để đóng cửa sổ.
-
-### Bước 4: Khởi động phần mềm
+### Bước 3: Khởi động phần mềm
 - Nhấp đúp chuột vào **`Book Forge by Max.exe`** để mở ứng dụng và bắt đầu sáng tạo!
 
 ---
@@ -151,30 +145,29 @@ flowchart LR
    - `App folder`: Lưu tập trung tại thư mục `Book Forge by Max-Files/`.
    - `Custom folder`: Tự chọn thư mục mong muốn.
 4. Tích chọn các tính năng nâng cao:
-   - ☑ **Split H2/H3**: Tự động chia các chương dài thành các mục nhỏ.
-   - ☑ **Extract Images**: Tự động bóc tách và lưu ảnh minh họa.
-   - ☑ **Scaffold Bible**: Tạo bộ 4 file Translation Bible chuẩn mẫu.
-5. Bấm nút **🚀 Start Extraction** và theo dõi thanh tiến trình xử lý.
+   - **Smart chunking** và **Split threshold**: Chương dài hơn ngưỡng sẽ được chia theo H2 rồi H3. Đoạn không có tiêu đề con có thể dài hơn ngưỡng.
+   - ☑ **Extract images & vectors**: Tự động bóc tách và lưu ảnh minh họa.
+   - ☑ **Scaffold translation_bible**: Tạo bộ 4 file Translation Bible chuẩn mẫu.
+5. Bấm nút **Extract Content** và theo dõi thanh tiến trình xử lý.
 
-### 2️⃣ Quy trình Soạn Thảo Trang Lót (Front Matter Editor)
-1. Sau khi đã có bản thảo dịch, bấm vào nút **Front Matter & Header Editor** trên thanh công cụ.
-2. Cửa sổ 2 cột mở ra:
-   - Nhập thông tin Tựa sách, Tác giả, Dịch giả, Lời đề tặng, Trang bản quyền.
-   - Sử dụng các nút mẫu có sẵn (*Insert Header Template*, *Insert Translator Note*).
+> ⚠️ Bóc tách lại một cuốn sách sẽ xóa toàn bộ file `.md` cũ trong `chapters_original/` rồi tạo lại. Thư mục `chapters_translated/` không bị ảnh hưởng.
+
+### 2️⃣ Quy trình Soạn Thảo Header & Ghi Chú Dịch Giả
+1. Sau khi đã có bản thảo dịch, chuyển sang thẻ **Markdown to PDF** và bấm **Edit Header and Translator Note**.
+2. Cửa sổ 2 cột mở ra: nhập các dòng Running Header và soạn Ghi chú của Dịch giả bằng Markdown.
 3. Cột bên phải sẽ tự động hiển thị bản xem trước (Live Preview) theo định dạng Typography của trang sách in.
-4. Bấm **Save Changes** để lưu lại vào dự án.
+4. Bấm lưu để ghi vào dự án.
 
 ### 3️⃣ Quy trình Xuất Bản Sách In (Markdown to PDF)
 1. Chuyển sang thẻ **Markdown to PDF**.
 2. Chọn thư mục dự án chứa các file Markdown (hoặc file Markdown đơn lẻ).
 3. Thiết lập các thông số xuất bản:
-   - **Source Mode**: Chọn `Translated` (Bản dịch) hoặc `Original` (Nguyên tác).
-   - **Paper Size**: Chọn khổ sách mong muốn (phổ biến nhất là `A5` cho sách văn học, `B5` cho giáo trình).
-   - **Binding Mode**: Chọn `Print (Bookbinding Gutter)` để tạo lề so le cho việc đóng gáy in.
+   - **Content source**: Chọn `Translated` (Bản dịch), `Original` (Nguyên tác), hoặc cả hai.
+   - **Paper size**: Chọn khổ sách mong muốn (phổ biến nhất là `A5` cho sách văn học, `B5` cho giáo trình).
+   - **Binding mode**: Chọn `Print book (Gutter)` để tạo lề so le cho việc đóng gáy in.
    - **Menu depth**: Chọn độ sâu mục lục in (`H1`, `H1 & H2`, hoặc `H1, H2 & H3`).
-   - **Font**: Chọn `Lora (Recommended)` để nhúng font serif tiêu chuẩn.
-4. Bấm nút **🖨️ Publish to PDF**.
-5. Sau vài giây, file PDF in ấn tuyệt đẹp sẽ được tạo ra, tự động mở lên để bạn kiểm tra!
+4. Bấm nút **Publish PDF Book**.
+5. Khi xong, file PDF nằm trong thư mục dự án; bấm **Open PDF File** để mở kiểm tra.
 
 ---
 
@@ -198,8 +191,8 @@ flowchart LR
 - Trước khi yêu cầu AI dịch bất kỳ chương nào, hãy đính kèm nội dung của `Glossary.md` và `Style-Guide.md` vào câu lệnh (System Prompt). AI sẽ dịch chuẩn xác 100% ngôi xưng hô và thuật ngữ thống nhất từ đầu sách đến cuối sách!
 
 ### 📌 Mẹo 4: Quản lý hình ảnh minh họa
-- Thư mục `images/` được đặt cùng cấp với các file Markdown.
-- Trong file Markdown, giữ nguyên cú pháp liên kết tương đối: `![Mô tả](images/fig_01.png)`. Khi xuất PDF, Book Forge sẽ tự động căn giữa ảnh, tối ưu kích thước để ảnh không bị tràn trang và tự động ngắt trang thông minh.
+- Ảnh nằm trong `images_original/` và `images_translated/`, cùng cấp với `chapters_original/` và `chapters_translated/`.
+- Trong file chương, giữ nguyên cú pháp liên kết tương đối: `![Mô tả](../images_original/fig_01.png)`. Khi xuất PDF, Book Forge sẽ tự động căn giữa ảnh, tối ưu kích thước để ảnh không bị tràn trang và tự động ngắt trang thông minh.
 
 ---
 
@@ -208,8 +201,7 @@ flowchart LR
 ### ❓ Câu hỏi 1: Khi bấm bóc tách hoặc xuất PDF, phần mềm báo lỗi thiếu Node.js?
 - **Khắc phục**:
   1. Kiểm tra xem bạn đã cài Node.js chưa bằng cách mở cửa sổ cmd và gõ `node -v`.
-  2. Nếu chưa có, tải bản LTS tại [nodejs.org](https://nodejs.org/).
-  3. Sau khi cài Node.js, nhớ nhấp đúp vào file `setup.bat` trong thư mục phần mềm để cài đặt các thư viện lõi.
+  2. Nếu chưa có, tải bản LTS tại [nodejs.org](https://nodejs.org/), cài xong thì mở lại phần mềm.
 
 ### ❓ Câu hỏi 2: Xuất PDF xong trang Mục lục có bị đè chữ hoặc thiếu số trang không?
 - **Khắc phục**: Hoàn toàn không! Từ phiên bản **v1.0 (Beta)**, Book Forge đã áp dụng thuật toán `Token Marker Extraction` kết hợp `Pass 1 Draft Injection` và hệ thống Flexbox co giãn (`box-sizing: border-box`), đảm bảo cột tên chương co lại tự động và số trang luôn căn thẳng tắp lề phải bất kể cấp độ thụt lề H1, H2 hay H3.
@@ -225,42 +217,50 @@ flowchart LR
 📁 Book Forge by Max/
 │
 ├── Book Forge by Max.exe                 # File chạy ứng dụng Windows chính (Portable)
-├── build.bat                             # Script biên dịch C# & tự động đóng gói release .zip
-├── setup.bat                             # Script 1-click cài đặt môi trường Node.js & npm
-├── README.txt                            # Hướng dẫn nhanh đính kèm gói phát hành
-├── Book Forge by Max.md                  # Tài liệu hướng dẫn toàn diện của dự án
-├── README.md                             # Tài liệu hiển thị trang chủ GitHub
-├── _BookForgeConfig.json                 # Tự động lưu cấu hình và tùy chọn người dùng
+├── README.md                             # Tài liệu này
+├── _BookForgeConfig                      # Tự tạo khi đóng phần mềm, lưu cấu hình người dùng
 │
-└── 📁 src_Book Forge by Max/             # Mã nguồn dự án
-    ├── app.ico / app.png                 # Icon và nhận diện thương hiệu
-    ├── Program.cs                        # Entry point, Single-Instance Guard & Exception Handler
-    ├── MainForm.cs / Designer.cs         # Giao diện chính WinForms (Tab PDF, Tab MD, Tab QA, Tab Info)
-    ├── UI_CustomTitleBar.cs              # Thanh tiêu đề hiện đại không viền (Custom Chrome Bar)
-    ├── UI_FrontMatterEditorForm.cs       # Cửa sổ soạn thảo Front Matter 2 cột Live Preview
-    ├── UI_InfoTabPanel.cs                # Thẻ thông tin phiên bản, tác giả và liên kết
-    ├── Core_WorkspaceScaffolder.cs       # Khởi tạo khung thư mục dự án và Translation Bible
-    ├── Core_EngineRunner.cs              # Bộ điều phối luồng thực thi Node.js ngầm và bắt log
-    │
-    ├── 📁 Templates/                     # Các mẫu văn bản Markdown chuẩn
-    │   ├── _HEADER-original.md
-    │   ├── _HEADER-translated.md
-    │   ├── _TRANSLATOR_NOTE_original.md
-    │   ├── _TRANSLATOR_NOTE_translated.md
-    │   └── 📁 translation_bible/         # Mẫu khung Character, Context, Glossary, Style
-    │
-    └── 📁 script/                        # 38 Module xử lý sách lõi (Node.js Engine)
-        ├── 01__pdf_geometry.js          # Phân tích hình học và đo tọa độ PDF
-        ├── 02__toc_parser.js            # Trích xuất và phân tích mục lục PDF gốc
-        ├── 03__rich_markdown_formatter.js # Định dạng Markdown giàu ngữ nghĩa
-        ├── 04__image_extractor.js       # Trích xuất hình ảnh độ nét cao
-        ├── 05_md_chapter_splitter.js    # Chia nhỏ chương theo ngưỡng ký tự
-        ├── 07__pdf_publisher.js         # Engine xuất bản PDF 2-Pass chuẩn in ấn
-        ├── 07_outline_engine.js         # Engine tạo cây Bookmark PDF phân cấp
-        ├── 07_toc_engine.js             # Engine tạo trang Mục lục in động
-        ├── 07_gutter_engine.js          # Engine căn lề gáy so le trang chẵn / lẻ
-        ├── 07_header_engine.js          # Engine tạo Running Header theo chương
-        └── Lora-VariableFont_wght.ttf   # Font chữ in ấn quốc tế Lora nhúng sẵn
+├── 📁 Templates/                         # Các mẫu văn bản Markdown chuẩn
+│   ├── _HEADER-original.md
+│   ├── _HEADER-translated.md
+│   ├── _TRANSLATOR_NOTE_original.md
+│   ├── _TRANSLATOR_NOTE_translated.md
+│   ├── logo.svg
+│   └── 📁 translation_bible/             # Mẫu khung Character, Context, Glossary, Style
+│
+└── 📁 script/                            # 39 Module xử lý sách lõi (Node.js Engine)
+    ├── SCRIPTS_DOCUMENTATION.md         # Tài liệu kỹ thuật toàn bộ script
+    ├── 01__pdf_geometry.js              # Phân tích hình học và đo tọa độ PDF
+    ├── 02__toc_parser.js                # Trích xuất và phân tích mục lục PDF gốc
+    ├── 03__rich_markdown_formatter.js   # Định dạng Markdown giàu ngữ nghĩa
+    ├── 04__image_extractor.js           # Trích xuất hình ảnh độ nét cao
+    ├── 05__chapter_extractor.js         # Tách PDF thành các file chương
+    ├── 05_chunk_writer.js               # Chia chương dài theo H2, H3 và ngưỡng ký tự
+    ├── 05_md_chapter_splitter.js        # Tách file Markdown thành các file chương
+    ├── 06__book_compiler.js             # Ghép các chương thành file master
+    ├── 07__pdf_publisher.js             # Engine xuất bản PDF 2-Pass chuẩn in ấn
+    ├── 07_outline_engine.js             # Engine tạo cây Bookmark PDF phân cấp
+    ├── 07_toc_engine.js                 # Engine tạo trang Mục lục in động
+    ├── 07_gutter_engine.js              # Engine căn lề gáy so le trang chẵn / lẻ
+    ├── 07_header_engine.js              # Engine tạo Running Header theo chương
+    ├── audit_pdf_vs_md.js               # QA Audit
+    ├── Lora-VariableFont_wght.ttf       # Font chữ in ấn quốc tế Lora nhúng sẵn
+    └── 📁 node_modules/                 # Thư viện đi kèm (puppeteer, pdf-lib, pdf-parse, markdown-it...)
+```
+
+Thư mục một cuốn sách sau khi bóc tách:
+
+```text
+📁 [Tên sách]/
+├── [Tên sách]-original.md                # File master, tạo lại mỗi lần xuất PDF
+├── [Tên sách]-original (A5).pdf          # PDF đã xuất
+├── _HEADER-original.md / _HEADER-translated.md
+├── _TRANSLATOR_NOTE_original.md / _TRANSLATOR_NOTE_translated.md
+├── 📁 chapters_original/
+├── 📁 chapters_translated/
+├── 📁 images_original/
+├── 📁 images_translated/
+└── 📁 translation_bible/
 ```
 
 ---

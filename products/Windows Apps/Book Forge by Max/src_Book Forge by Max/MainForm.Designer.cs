@@ -59,8 +59,6 @@ namespace BookForge
         private CheckBox chkSourceOriginal;
         private Label lblPaper;
         private ModernDropdown cbPaperSize;
-        private Label lblFont;
-        private ModernDropdown cbFont;
         private Label lblMenuDepth;
         private ModernDropdown cbMenuDepth;
         private Label lblGutter;
@@ -153,8 +151,6 @@ namespace BookForge
             this.chkSourceOriginal = new CheckBox();
             this.lblPaper = new Label();
             this.cbPaperSize = new ModernDropdown();
-            this.lblFont = new Label();
-            this.cbFont = new ModernDropdown();
             this.lblMenuDepth = new Label();
             this.cbMenuDepth = new ModernDropdown();
             this.lblGutter = new Label();
@@ -174,13 +170,13 @@ namespace BookForge
             this.FormBorderStyle = FormBorderStyle.None;
             this.ClientSize = new Size(660, 812);
             this.MinimumSize = new Size(640, 532);
-            this.Text = "Book Forge by Max v1.0 (Beta)";
+            this.Text = "Book Forge by Max v1.0.1 (Beta)";
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = t.BgPrimary;
 
             // 0. Custom Title Bar (Auto Clicker by Max style)
             this.titleBarCustom.AttachToForm(this, padX: 16, padTop: 8);
-            this.titleBarCustom.TitleText = "Book Forge by Max v1.0 (Beta)";
+            this.titleBarCustom.TitleText = "Book Forge by Max v1.0.1 (Beta)";
             this.titleBarCustom.ShowMaximizeButton = true;
             this.titleBarCustom.ShowAdminButton = false;
             this.titleBarCustom.ShowLanguageButton = true;
@@ -311,13 +307,13 @@ namespace BookForge
             this.lblThreshold.Location = new Point(18, 70);
             this.lblThreshold.AutoSize = true;
             this.lblThreshold.ForeColor = t.TextSecondary;
-            this.fastTip.SetToolTip(this.lblThreshold, "Chapter split threshold:\nMaximum characters per file chunk. Default 25,000 chars (~3,500 words) is the golden standard for Claude 3.5 Sonnet & Gemini Pro.");
+            this.fastTip.SetToolTip(this.lblThreshold, "Chapter split threshold:\nChapters longer than this are split at their H2/H3 headings. A section with no sub-heading can stay longer. Default: 25,000 characters.");
 
             this.cbThreshold.Items.AddRange(new string[] { "15,000 characters", "20,000 characters", "25,000 characters (Golden Standard)", "30,000 characters", "40,000 characters" });
             this.cbThreshold.SelectedIndex = 2;
             this.cbThreshold.Location = new Point(135, 66);
             this.cbThreshold.Size = new Size(275, 26);
-            this.fastTip.SetToolTip(this.cbThreshold, "Chapter split threshold:\nMaximum characters per file chunk. Default 25,000 chars (~3,500 words) is the golden standard for Claude 3.5 Sonnet & Gemini Pro.");
+            this.fastTip.SetToolTip(this.cbThreshold, "Chapter split threshold:\nChapters longer than this are split at their H2/H3 headings. A section with no sub-heading can stay longer. Default: 25,000 characters.");
 
             // Line 3: Extract Images (Short Label)
             this.chkExtractImages.Text = "Extract images & vectors";
@@ -369,7 +365,7 @@ namespace BookForge
 
             // 3. Tab 2 Panel (Markdown to PDF)
             this.pnlTabPublish.Location = new Point(0, 86);
-            this.pnlTabPublish.Size = new Size(660, 452);
+            this.pnlTabPublish.Size = new Size(660, 428);
             this.pnlTabPublish.BackColor = t.BgPrimary;
             this.pnlTabPublish.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             this.pnlTabPublish.Visible = false;
@@ -412,7 +408,7 @@ namespace BookForge
 
             // Card 3: Publish Options (Vertical Layout, Short Labels, Instant ToolTips)
             this.cardPublishOptions.Location = new Point(16, 154);
-            this.cardPublishOptions.Size = new Size(628, 248);
+            this.cardPublishOptions.Size = new Size(628, 216);
             this.cardPublishOptions.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
             this.lblPubTitle.Text = "Professional print book layout settings:";
@@ -454,69 +450,56 @@ namespace BookForge
             this.cbPaperSize.Size = new Size(260, 26);
             this.fastTip.SetToolTip(this.cbPaperSize, "Paper size profile:\nStandard print formats: A5 (Standard Book), B5 (Monograph), A4 (Document), A6 (Pocket), US-Trade, US-Letter, Mass-Market, Kindle, Crown.");
 
-            // Row 3: Font (Placed directly under Paper Size as requested!)
-            this.lblFont.Text = "Typography font:";
-            this.lblFont.Location = new Point(18, 100);
-            this.lblFont.AutoSize = true;
-            this.lblFont.ForeColor = t.TextSecondary;
-            this.fastTip.SetToolTip(this.lblFont, "Typography font:\nLora is an elegant literary serif typeface engineered for book printing.");
-
-            this.cbFont.Items.AddRange(new string[] { "Lora (Recommended)", "Times New Roman", "Garamond", "Georgia", "Palatino" });
-            this.cbFont.SelectedIndex = 0;
-            this.cbFont.Location = new Point(150, 96);
-            this.cbFont.Size = new Size(260, 26);
-            this.fastTip.SetToolTip(this.cbFont, "Typography font:\nLora is an elegant literary serif typeface engineered for book printing.");
-
-            // Row 4: Menu Depth (H1 / H1 & H2 / H1, H2 & H3)
+            // Row 3: Menu Depth (H1 / H1 & H2 / H1, H2 & H3)
             this.lblMenuDepth.Text = "Menu depth:";
-            this.lblMenuDepth.Location = new Point(18, 132);
+            this.lblMenuDepth.Location = new Point(18, 100);
             this.lblMenuDepth.AutoSize = true;
             this.lblMenuDepth.ForeColor = t.TextSecondary;
             this.fastTip.SetToolTip(this.lblMenuDepth, "Menu depth:\nSelect heading levels included in the Table of Contents and PDF Document Outline (Bookmarks).");
 
             this.cbMenuDepth.Items.AddRange(new string[] { "H1", "H1 & H2", "H1, H2 & H3" });
             this.cbMenuDepth.SelectedIndex = 0;
-            this.cbMenuDepth.Location = new Point(150, 128);
+            this.cbMenuDepth.Location = new Point(150, 96);
             this.cbMenuDepth.Size = new Size(260, 26);
             this.fastTip.SetToolTip(this.cbMenuDepth, "Menu depth:\nH1: Chapters only (Default)\nH1 & H2: Chapters and major sections\nH1, H2 & H3: Chapters, sections, and sub-sections");
 
-            // Row 5: Binding Gutter Mode (Short Label)
+            // Row 4: Binding Gutter Mode (Short Label)
             this.lblGutter.Text = "Binding mode:";
-            this.lblGutter.Location = new Point(18, 164);
+            this.lblGutter.Location = new Point(18, 132);
             this.lblGutter.AutoSize = true;
             this.lblGutter.ForeColor = t.TextSecondary;
             this.fastTip.SetToolTip(this.lblGutter, "Binding gutter mode:\nSelect alternating gutter margins for printed books or symmetrical margins for digital screens.");
 
             this.rbGutterPrint.Text = "Print book (Gutter)";
             this.rbGutterPrint.Checked = true;
-            this.rbGutterPrint.Location = new Point(150, 162);
+            this.rbGutterPrint.Location = new Point(150, 130);
             this.rbGutterPrint.Size = new Size(150, 22);
             this.rbGutterPrint.ForeColor = t.TextPrimary;
             this.fastTip.SetToolTip(this.rbGutterPrint, "Print book (Gutter):\nAlternating inside (22mm) and outside (14mm) gutter margins for book binding.");
 
             this.rbGutterDigital.Text = "Digital screen (Even)";
-            this.rbGutterDigital.Location = new Point(310, 162);
+            this.rbGutterDigital.Location = new Point(310, 130);
             this.rbGutterDigital.Size = new Size(160, 22);
             this.rbGutterDigital.ForeColor = t.TextPrimary;
             this.fastTip.SetToolTip(this.rbGutterDigital, "Digital screen (Even):\nSymmetrical 18mm margins optimized for tablets, phones, and desktop screens.");
 
-            // Row 6: Translator Note (Checkbox & Header/Note editor button)
+            // Row 5: Translator Note (Checkbox & Header/Note editor button)
             this.chkTranslatorNote.Text = "Include translator note";
             this.chkTranslatorNote.Checked = true;
-            this.chkTranslatorNote.Location = new Point(18, 194);
+            this.chkTranslatorNote.Location = new Point(18, 162);
             this.chkTranslatorNote.Size = new Size(165, 22);
             this.chkTranslatorNote.ForeColor = t.TextPrimary;
             this.fastTip.SetToolTip(this.chkTranslatorNote, "Translator note:\nAutomatically injects _TRANSLATOR_NOTE_translated.md or _TRANSLATOR_NOTE_original.md depending on the selected Content source.");
 
-            this.btnEditNote.Location = new Point(195, 190);
+            this.btnEditNote.Location = new Point(195, 158);
             this.btnEditNote.Size = new Size(230, 28);
             this.btnEditNote.Text = "Edit Header and Translator Note";
             this.btnEditNote.Click += new EventHandler(this.btnEditNote_Click);
             this.fastTip.SetToolTip(this.btnEditNote, "Edit Header and Translator Note:\nOpen Markdown editor and live A5 page preview to edit running headers and translator notes.");
 
-            // Row 7: Note Hint
+            // Row 6: Note Hint
             this.lblNoteHint.Text = "\u2139 Note: Auto-selects translated/original note. Unfilled fields auto-use project metadata.";
-            this.lblNoteHint.Location = new Point(18, 222);
+            this.lblNoteHint.Location = new Point(18, 190);
             this.lblNoteHint.AutoSize = true;
             this.lblNoteHint.ForeColor = t.TextSecondary;
             this.lblNoteHint.Font = new Font("Segoe UI", 11f, FontStyle.Italic, GraphicsUnit.Pixel);
@@ -528,8 +511,6 @@ namespace BookForge
             this.cardPublishOptions.Controls.Add(this.chkSourceOriginal);
             this.cardPublishOptions.Controls.Add(this.lblPaper);
             this.cardPublishOptions.Controls.Add(this.cbPaperSize);
-            this.cardPublishOptions.Controls.Add(this.lblFont);
-            this.cardPublishOptions.Controls.Add(this.cbFont);
             this.cardPublishOptions.Controls.Add(this.lblMenuDepth);
             this.cardPublishOptions.Controls.Add(this.cbMenuDepth);
             this.cardPublishOptions.Controls.Add(this.lblGutter);
@@ -540,20 +521,20 @@ namespace BookForge
             this.cardPublishOptions.Controls.Add(this.lblNoteHint);
 
             // Action Buttons Tab 2
-            this.btnRunAudit.Location = new Point(16, 412);
+            this.btnRunAudit.Location = new Point(16, 380);
             this.btnRunAudit.Size = new Size(140, 36);
             this.btnRunAudit.Text = "Run QA Audit";
             this.btnRunAudit.Click += new EventHandler(this.btnRunAudit_Click);
-            this.fastTip.SetToolTip(this.btnRunAudit, "Run QA Audit:\nValidate Markdown syntax, unclosed tags, and paragraph parity.");
+            this.fastTip.SetToolTip(this.btnRunAudit, "Run QA Audit:\nCheck for missing images, unclosed ** markers, typography errors, translation parity with the original, and text lost from the source PDF.");
 
-            this.btnStartPublish.Location = new Point(166, 412);
+            this.btnStartPublish.Location = new Point(166, 380);
             this.btnStartPublish.Size = new Size(180, 36);
             this.btnStartPublish.Text = "Publish PDF Book";
             this.btnStartPublish.IsPrimary = true;
             this.btnStartPublish.Click += new EventHandler(this.btnStartPublish_Click);
             this.fastTip.SetToolTip(this.btnStartPublish, "Publish PDF Book:\nCompile master document and render print-ready PDF via headless Edge engine.");
 
-            this.btnOpenPdf.Location = new Point(356, 412);
+            this.btnOpenPdf.Location = new Point(356, 380);
             this.btnOpenPdf.Size = new Size(140, 36);
             this.btnOpenPdf.Text = "Open PDF File";
             this.btnOpenPdf.Enabled = false;

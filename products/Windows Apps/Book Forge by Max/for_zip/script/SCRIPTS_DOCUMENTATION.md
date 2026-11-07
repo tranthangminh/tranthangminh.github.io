@@ -1,6 +1,6 @@
 # 📚 KIẾN TRÚC HỆ THỐNG SCRIPT ENGINE - BOOK FORGE BY MAX
-> Tài liệu kỹ thuật chi tiết về toàn bộ các module xử lý (37 scripts) trong Book Forge by Max.  
-> Phiên bản: **v1.0 (Beta)** | Ngôn ngữ: **JavaScript (Node.js Engine)**
+> Tài liệu kỹ thuật chi tiết về toàn bộ các module xử lý (39 scripts) trong Book Forge by Max.  
+> Phiên bản: **v1.0.1 (Beta)** | Ngôn ngữ: **JavaScript (Node.js Engine)**
 
 ---
 
@@ -15,7 +15,7 @@ Quá trình xử lý sách trong Book Forge được chia thành 7 nhóm module 
 ┌────────────────────────────────────────────────────────┐
 │ NHÓM 04: BÓC TÁCH ẢNH & ĐỒ HỌA TRƯỚC (04__image_...)  │
 └────────────────────────────────────────────────────────┘
-      │ (Tạo thư mục images/ và _images_metadata.json)
+      │ (Tạo thư mục images_original/ và _images_metadata.json)
       ▼
 ┌────────────────────────────────────────────────────────┐
 │ NHÓM 01: HÌNH HỌC 2D & CHUẨN HÓA KÝ TỰ (01__pdf_geom..)│
@@ -43,7 +43,7 @@ Quá trình xử lý sách trong Book Forge được chia thành 7 nhóm module 
 ┌────────────────────────────────────────────────────────┐
 │ NHÓM 06: BIÊN DỊCH VÀ KHỚP ẢNH DỊCH (06__book_compiler)│
 └────────────────────────────────────────────────────────┘
-      │ (Tạo file Book_original.md hoặc Book_translated.md)
+      │ (Tạo file [Tên sách]-original.md hoặc [Tên sách]-translated.md)
       ▼
 ┌────────────────────────────────────────────────────────┐
 │ NHÓM 07: NHÀ IN SỐ & XUẤT BẢN PDF (07__pdf_publisher) │
@@ -127,7 +127,7 @@ Quá trình xử lý sách trong Book Forge được chia thành 7 nhóm module 
 
 #### ⭐ Script Lớn (Điều phối):
 * **`04__image_extractor.js`** *(Master Image & Graphics Pipeline)*:
-  - Điểm khởi động quá trình cào ảnh, tạo thư mục `images/` trong dự án.
+  - Điểm khởi động quá trình cào ảnh, tạo thư mục `images_original/` trong dự án.
   - Kích hoạt song song các luồng bóc tách ảnh raster, đồ họa vector và ảnh bìa.
 
 #### 🧩 Các Script Nhỏ:
@@ -156,6 +156,8 @@ Quá trình xử lý sách trong Book Forge được chia thành 7 nhóm module 
   - Đối chiếu tiêu đề tìm được trên trang với bảng mục lục từ Nhóm 02 để đảm bảo không bị cắt chương bừa bãi.
 * **`05_md_chapter_splitter.js`** *(Markdown Chapter Splitter)*:
   - Script phụ trợ cho phép cắt một file Markdown tổng duy nhất thành từng file chương riêng rẽ dựa trên ngưỡng số lượng ký tự hoặc cấp độ Heading.
+* **`05_chunk_writer.js`** *(Chapter Chunk Writer)*:
+  - Ghi một chương vào `chapters_original/`, tự chia theo H2 rồi H3 khi vượt ngưỡng ký tự. Dùng chung cho cả nhánh PDF (`--threshold`, `--split` của `05__chapter_extractor.js`) và nhánh Markdown.
 
 ---
 
@@ -165,10 +167,11 @@ Quá trình xử lý sách trong Book Forge được chia thành 7 nhóm module 
 #### ⭐ Script Lớn:
 * **`06__book_compiler.js`** *(Master Book Markdown Compiler)*:
   - Gom toàn bộ các file chương từ `chapters_original/` hoặc `chapters_translated/` theo đúng thứ tự.
-  - Tự động nạp file thông tin sách `_HEADER-original.md` / `_HEADER-translated.md` và `_TRANSLATOR_NOTE.md`.
-  - Xuất ra file duy nhất: `Book_original.md` hoặc `Book_translated.md`.
+  - Xuất ra file duy nhất: `[Tên sách]-original.md` hoặc `[Tên sách]-translated.md`. Các file `_HEADER-*.md` và `_TRANSLATOR_NOTE_*.md` do `07__pdf_publisher.js` nạp khi xuất PDF.
 
 #### 🧩 Các Script Nhỏ:
+* **`06_master_builder.js`** *(Master Book Builder)*:
+  - Quy tắc duy nhất để ghép các chương thành file master, dùng chung cho `06__book_compiler.js` (ghi file) và `audit_pdf_vs_md.js` (đối chiếu).
 * **`06_translated_image_resolver.js`** *(Translated Image Matcher)*:
   - Kiểm tra xem hình ảnh trong chương dịch có bản ảnh dịch tiếng Việt tương ứng chưa (ví dụ sơ đồ có chữ tiếng Việt). Nếu có thì trỏ đến ảnh mới, nếu chưa thì giữ nguyên ảnh gốc.
 
@@ -206,9 +209,11 @@ Quá trình xử lý sách trong Book Forge được chia thành 7 nhóm module 
 * **`word_segmenter_EN.js`** *(NLP English Vocabulary & De-spacing Engine)*:
   - Nhận diện ranh giới từ vựng tiếng Anh / Latin khi PDF bị lỗi giãn cách chữ (letter-spacing) ở tiêu đề bằng thuật toán quy hoạch động Scored DP.
   - **Rào chắn bảo vệ tiếng Việt** (Vietnamese Language Guard): Tự động phát hiện và bỏ qua 100% các chuỗi có dấu tiếng Việt, ngăn chặn hoàn toàn việc gom nhầm hay nuốt mất khoảng trắng giữa các từ tiếng Việt.
-* **`audit_pdf_vs_md.js`** *(Audit Integrity Verifier)*:
-  - Công cụ kiểm toán so sánh tổng số từ giữa PDF gốc và file Markdown để phát hiện rò rỉ hoặc thiếu chữ.
+* **`audit_pdf_vs_md.js`** *(Book Project QA Audit)*:
+  - **Lỗi** (thoát mã 1): thiếu ảnh, file master lệch so với các chương, dự án không có chương nào.
+  - **Cảnh báo** (không đánh fail): lỗi typography, thẻ `**` / `***` chưa đóng, bản dịch thiếu file hoặc lệch số heading, ảnh, đoạn so với nguyên tác, Markdown chứa dưới 90% số từ của PDF gốc.
+  - PDF gốc phải tên `[Tên sách].pdf`, nằm cạnh hoặc trong thư mục dự án. Không có thì bỏ qua bước so với PDF.
 
 ---
 
-> 💡 **Ghi chú**: Tất cả 37 script trên đều là module độc lập (CommonJS), được đóng gói 100% trong `for_zip/script/` và hoạt động hoàn toàn offline thông qua Node.js runtime.
+> 💡 **Ghi chú**: Tất cả 39 script trên đều là module độc lập (CommonJS), được đóng gói 100% trong `for_zip/script/` và hoạt động hoàn toàn offline thông qua Node.js runtime.

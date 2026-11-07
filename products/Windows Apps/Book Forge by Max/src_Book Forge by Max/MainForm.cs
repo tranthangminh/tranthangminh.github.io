@@ -20,6 +20,7 @@ namespace BookForge
         private bool isExtractSettingsCollapsed = false;
         private bool isPublishSettingsCollapsed = false;
         private bool isExecuting = false;
+        private bool closeWhenStopped = false;
         private ToolTip toolTipValidation = new ToolTip();
         private EngineRunner runner = new EngineRunner();
         private string activeBookDir = "";
@@ -258,7 +259,6 @@ namespace BookForge
             lblThreshold.ForeColor = t.TextSecondary;
             lblSrcChoice.ForeColor = t.TextSecondary;
             lblPaper.ForeColor = t.TextSecondary;
-            lblFont.ForeColor = t.TextSecondary;
             lblMenuDepth.ForeColor = t.TextSecondary;
             lblGutter.ForeColor = t.TextSecondary;
             lblNoteHint.ForeColor = t.TextSecondary;
@@ -280,11 +280,10 @@ namespace BookForge
             txtOutputCustom.ApplyTheme();
             txtPublishFolder.ApplyTheme();
 
-            cbSmartChunking.Invalidate();
-            cbThreshold.Invalidate();
-            cbPaperSize.Invalidate();
-            cbFont.Invalidate();
-            cbMenuDepth.Invalidate();
+            cbSmartChunking.ApplyTheme(t);
+            cbThreshold.ApplyTheme(t);
+            cbPaperSize.ApplyTheme(t);
+            cbMenuDepth.ApplyTheme(t);
 
             btnBrowseSource.Invalidate();
             btnBrowsePublishFolder.Invalidate();
@@ -527,6 +526,8 @@ namespace BookForge
                 btnRunAudit.IsPrimary = false;
 
                 UpdateActionButtonsValidation();
+
+                if (closeWhenStopped) BeginInvoke(new Action(Close));
             }
 
             btnStartExtract.Invalidate();
@@ -851,7 +852,7 @@ namespace BookForge
             }
             btnRunAudit.Enabled = canAudit;
             toolTipValidation.SetToolTip(btnRunAudit, canAudit 
-                ? "Click to run QA syntax & parity audit" 
+                ? "Click to run the QA audit on this book project"
                 : "QA Audit requires a book project folder structure");
 
             bool hasActiveBook = !string.IsNullOrEmpty(activeBookDir) && Directory.Exists(activeBookDir);
@@ -1091,7 +1092,7 @@ namespace BookForge
             {
                 rtbLogExtract.Clear();
                 int successCount = 0;
-                System.Collections.Generic.List<string> createdBookDirs = new System.Collections.Generic.List<string>();
+                System.Collections.Generic.List<string> extractedBookDirs = new System.Collections.Generic.List<string>();
 
                 for (int itemIdx = 0; itemIdx < items.Count; itemIdx++)
                 {
@@ -1101,7 +1102,6 @@ namespace BookForge
                     string bookTargetDir = WorkspaceScaffolder.ResolveBookTargetDirectory(src, mode, txtOutputCustom.Text.Trim());
                     if (string.IsNullOrEmpty(bookTargetDir)) continue;
 
-                    createdBookDirs.Add(bookTargetDir);
                     activeBookDir = bookTargetDir;
 
                     int baseProg = (itemIdx * 100) / items.Count;
@@ -1115,6 +1115,16 @@ namespace BookForge
                     UpdateProgress(baseProg + (5 * spanProg / 100), string.Format("Batch [{0}/{1}]: Setting up workspace...", itemIdx + 1, items.Count));
 
                     // 1. Scaffold Workspace
+                    try
+                    {
+                        Directory.CreateDirectory(bookTargetDir);
+                    }
+                    catch (Exception ex)
+                    {
+                        AppendLog(string.Format("[ERROR] Could not create workspace folder: {0}. Continuing...", ex.Message));
+                        continue;
+                    }
+
                     if (chkScaffoldBible.Checked)
                     {
                         WorkspaceScaffolder.ScaffoldWorkspace(bookTargetDir);
@@ -1132,49 +1142,61 @@ namespace BookForge
                             UpdateProgress(baseProg + (25 * spanProg / 100), string.Format("Batch [{0}/{1}]: Extracting images...", itemIdx + 1, items.Count));
                             bool imgOk = await runner.RunCommandAsync(bookTargetDir, "04__image_extractor.js", string.Format("\"{0}\" \"{1}\"", src, bookTargetDir));
                             if (runner.IsCancelled) break;
+                            if (!imgOk)
+                            {
+                                AppendLog(string.Format("[WARNING] Image extraction failed for: {0}. Continuing without images...", Path.GetFileName(src)));
+                            }
                         }
 
-                        if (runner.IsCancelled) break;
-
                         UpdateProgress(baseProg + (50 * spanProg / 100), string.Format("Batch [{0}/{1}]: Extracting chapters & Markdown structure...", itemIdx + 1, items.Count));
-                        bool extractOk = await runner.RunCommandAsync(bookTargetDir, "05__chapter_extractor.js", string.Format("\"{0}\" \"{1}\"", src, bookTargetDir));
+                        string extractorArgs = string.Format("\"{0}\" \"{1}\" --threshold={2} --split={3}", src, bookTargetDir, threshold, splitArg);
+                        bool extractOk = await runner.RunCommandAsync(bookTargetDir, "05__chapter_extractor.js", extractorArgs);
                         if (runner.IsCancelled) break;
                         if (!extractOk)
                         {
                             AppendLog(string.Format("[ERROR] PDF extraction failed for: {0}. Continuing...", Path.GetFileName(src)));
                             continue;
                         }
-
-                        if (runner.IsCancelled) break;
-
-                        UpdateProgress(baseProg + (80 * spanProg / 100), string.Format("Batch [{0}/{1}]: Compiling master book...", itemIdx + 1, items.Count));
-                        await runner.RunCommandAsync(bookTargetDir, "06__book_compiler.js", "--source=chapters_original");
-                        if (runner.IsCancelled) break;
-
-                        successCount++;
                     }
                     else
                     {
-                        // Markdown file
+                        // Markdown file: refresh the project copy so edits to the source are picked up on re-extraction
                         UpdateProgress(baseProg + (40 * spanProg / 100), string.Format("Batch [{0}/{1}]: Decomposing chapters recursively...", itemIdx + 1, items.Count));
                         string targetMd = Path.Combine(bookTargetDir, Path.GetFileName(src));
-                        if (!File.Exists(targetMd))
+                        try
                         {
-                            try { File.Copy(src, targetMd, true); } catch (Exception) { /* Non-critical markdown copy fallback */ }
+                            if (!string.Equals(Path.GetFullPath(src), Path.GetFullPath(targetMd), StringComparison.OrdinalIgnoreCase))
+                            {
+                                File.Copy(src, targetMd, true);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            AppendLog(string.Format("[ERROR] Could not copy {0} into the workspace: {1}. Continuing...", Path.GetFileName(src), ex.Message));
+                            continue;
                         }
 
-                        if (runner.IsCancelled) break;
-
                         string splitterArgs = string.Format("\"{0}\" --threshold={1} --split={2}", targetMd, threshold, splitArg);
-                        await runner.RunCommandAsync(bookTargetDir, "05_md_chapter_splitter.js", splitterArgs);
+                        bool splitOk = await runner.RunCommandAsync(bookTargetDir, "05_md_chapter_splitter.js", splitterArgs);
                         if (runner.IsCancelled) break;
-
-                        UpdateProgress(baseProg + (80 * spanProg / 100), string.Format("Batch [{0}/{1}]: Compiling master book...", itemIdx + 1, items.Count));
-                        await runner.RunCommandAsync(bookTargetDir, "06__book_compiler.js", "--source=chapters_original");
-                        if (runner.IsCancelled) break;
-
-                        successCount++;
+                        if (!splitOk)
+                        {
+                            AppendLog(string.Format("[ERROR] Markdown splitting failed for: {0}. Continuing...", Path.GetFileName(src)));
+                            continue;
+                        }
                     }
+
+                    UpdateProgress(baseProg + (80 * spanProg / 100), string.Format("Batch [{0}/{1}]: Compiling master book...", itemIdx + 1, items.Count));
+                    bool compileOk = await runner.RunCommandAsync(bookTargetDir, "06__book_compiler.js", "--source=chapters_original");
+                    if (runner.IsCancelled) break;
+                    if (!compileOk)
+                    {
+                        AppendLog(string.Format("[ERROR] Master book compilation failed for: {0}. Continuing...", Path.GetFileName(src)));
+                        continue;
+                    }
+
+                    successCount++;
+                    extractedBookDirs.Add(bookTargetDir);
                 }
 
                 if (runner.IsCancelled)
@@ -1184,21 +1206,21 @@ namespace BookForge
                 }
                 else
                 {
-                    UpdateProgress(100, string.Format("Batch extraction completed ({0}/{1} books processed).", successCount, items.Count));
+                    bool allExtracted = successCount == items.Count;
+                    UpdateProgress(100, string.Format(allExtracted ? "Batch extraction completed ({0}/{1} books processed)." : "Extraction finished with errors ({0}/{1} books succeeded).", successCount, items.Count));
                     AppendLog("════════════════════════════════════════════════════════════════");
-                    AppendLog(string.Format("[COMPLETED] Finished extracting {0}/{1} book(s) successfully.", successCount, items.Count));
+                    AppendLog(string.Format(allExtracted ? "[COMPLETED] Finished extracting {0}/{1} book(s) successfully." : "[WARNING] Only {0}/{1} book(s) extracted. Check the errors above.", successCount, items.Count));
                     AppendLog("════════════════════════════════════════════════════════════════");
 
                     btnOpenOutputFolder.Enabled = !string.IsNullOrEmpty(activeBookDir) && Directory.Exists(activeBookDir);
 
-                    if (createdBookDirs.Count > 0)
+                    if (extractedBookDirs.Count > 0)
                     {
-                        string nextPath = (createdBookDirs.Count > 1) ? string.Join("; ", createdBookDirs.ToArray()) : createdBookDirs[0];
+                        string nextPath = (extractedBookDirs.Count > 1) ? string.Join("; ", extractedBookDirs.ToArray()) : extractedBookDirs[0];
                         txtPublishFolder.Text = nextPath;
                         UpdatePublishProjectInspector(nextPath);
+                        AppendLog("[NEXT STEP] Project ready! Switch to Tab 2 ('Markdown to PDF') to publish your PDF book(s).");
                     }
-
-                    AppendLog("[NEXT STEP] Project ready! Switch to Tab 2 ('Markdown to PDF') to publish your PDF book(s).");
                 }
             }
             finally
@@ -1322,6 +1344,8 @@ namespace BookForge
                         UpdateProgress(baseProg + (30 * spanProg / 100), string.Format("Batch [{0}/{1}]: Rendering Markdown PDF ({2})...", itemIdx + 1, items.Count, fileName));
                         string pubArgs = string.Format("--input=\"{0}\" --project=\"{1}\" --profile={2} --binding={3}{4}{5}", fileName, workingDir, profile, bindingMode, noteArg, tocArg);
 
+                        runner.ProgressStart = baseProg + (30 * spanProg / 100);
+                        runner.ProgressSpan = 70 * spanProg / 100;
                         bool pubOk = await runner.RunCommandAsync(workingDir, "07__pdf_publisher.js", pubArgs);
                         if (runner.IsCancelled)
                         {
@@ -1408,6 +1432,8 @@ namespace BookForge
                             }
 
                             string pubArgs = string.Format("--input=\"{0}\" --profile={1} --binding={2}{3}{4}", mdFileName, profile, bindingMode, noteArg, tocArg);
+                            runner.ProgressStart = subProgBase + (40 * subProgSpan / 100);
+                            runner.ProgressSpan = 60 * subProgSpan / 100;
                             bool pubOk = await runner.RunCommandAsync(bookDir, "07__pdf_publisher.js", pubArgs);
                             if (runner.IsCancelled)
                             {
@@ -1445,7 +1471,7 @@ namespace BookForge
                 {
                     UpdateProgress(0, "Process stopped.");
                 }
-                else if (allSuccess)
+                else if (allSuccess && successCount > 0)
                 {
                     UpdateProgress(100, string.Format("PUBLICATION SUCCESSFUL! Generated {0} PDF book(s).", successCount));
                     AppendLog("════════════════════════════════════════════════════════════════");
@@ -1505,12 +1531,14 @@ namespace BookForge
             try
             {
                 rtbLogPublish.Clear();
+                int failedCount = 0;
                 for (int i = 0; i < bookDirs.Count; i++)
                 {
                     if (runner.IsCancelled) break;
                     string bookDir = bookDirs[i];
                     UpdateProgress((i * 100) / bookDirs.Count + 10, string.Format("Running QA audit on [{0}/{1}]: {2}...", i + 1, bookDirs.Count, Path.GetFileName(bookDir)));
-                    await runner.RunCommandAsync(bookDir, "audit_pdf_vs_md.js", "");
+                    bool auditOk = await runner.RunCommandAsync(bookDir, "audit_pdf_vs_md.js", "");
+                    if (!auditOk) failedCount++;
                 }
 
                 if (runner.IsCancelled)
@@ -1520,7 +1548,7 @@ namespace BookForge
                 }
                 else
                 {
-                    UpdateProgress(100, "QA Audit completed.");
+                    UpdateProgress(100, failedCount == 0 ? "QA Audit completed." : string.Format("QA Audit found errors in {0}/{1} book(s). Check the log.", failedCount, bookDirs.Count));
                 }
             }
             finally
@@ -1662,10 +1690,10 @@ namespace BookForge
             {
                 cardPublishOptions.Visible = true;
                 cardPublishOptions.Top = 154;
-                btnRunAudit.Top = 412;
-                btnStartPublish.Top = 412;
-                btnOpenPdf.Top = 412;
-                pnlTabPublish.Height = 460;
+                btnRunAudit.Top = 380;
+                btnStartPublish.Top = 380;
+                btnOpenPdf.Top = 380;
+                pnlTabPublish.Height = 428;
             }
 
             // Check if Info tab is active
@@ -1822,14 +1850,15 @@ namespace BookForge
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            try
+            // The run handlers still touch the controls while stopping, so the window closes once they finish.
+            if (isExecuting)
             {
-                if (runner != null && runner.IsRunning)
-                {
-                    runner.Cancel();
-                }
+                closeWhenStopped = true;
+                e.Cancel = true;
+                runner.Cancel();
+                base.OnFormClosing(e);
+                return;
             }
-            catch (Exception) { /* Non-critical runner cancellation fallback */ }
 
             try
             {
@@ -1941,23 +1970,6 @@ namespace BookForge
                     PaperProfiles.SetSelectedKey(cbPaperSize, c.PaperSize);
                 }
 
-                if (!string.IsNullOrEmpty(c.FontFamily))
-                {
-                    cbFont.SelectedItem = c.FontFamily;
-                    if (cbFont.SelectedIndex < 0)
-                    {
-                        for (int i = 0; i < cbFont.Items.Count; i++)
-                        {
-                            if (cbFont.Items[i].IndexOf(c.FontFamily, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                c.FontFamily.IndexOf(cbFont.Items[i], StringComparison.OrdinalIgnoreCase) >= 0)
-                            {
-                                cbFont.SelectedIndex = i;
-                                break;
-                            }
-                        }
-                    }
-                }
-
                 if (!string.IsNullOrEmpty(c.MenuDepth))
                 {
                     cbMenuDepth.SelectedItem = c.MenuDepth;
@@ -2065,7 +2077,6 @@ namespace BookForge
                 c.SourceTranslated = chkSourceTranslated.Checked;
                 c.SourceOriginal = chkSourceOriginal.Checked;
                 c.PaperSize = PaperProfiles.GetSelectedKey(cbPaperSize);
-                c.FontFamily = cbFont.SelectedItem != null ? cbFont.SelectedItem.ToString() : cbFont.Text;
                 c.MenuDepth = cbMenuDepth.SelectedItem != null ? cbMenuDepth.SelectedItem.ToString() : "H1";
                 c.BindingMode = rbGutterDigital.Checked ? "Digital" : "Print";
                 c.IncludeTranslatorNote = chkTranslatorNote.Checked;

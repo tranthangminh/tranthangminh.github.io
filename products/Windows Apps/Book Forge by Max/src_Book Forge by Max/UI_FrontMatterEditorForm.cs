@@ -679,17 +679,17 @@ namespace BookForge
             btnResetTemplate.Invalidate();
             btnSave.Invalidate();
             btnClose.Invalidate();
-            cbTargetFile.Invalidate();
+            cbTargetFile.ApplyTheme(t);
             btnCollapseHeader.Invalidate();
 
             if (pnlRatioRow != null) pnlRatioRow.BackColor = t.BgSecondary;
             if (lblRatioTitle != null) lblRatioTitle.ForeColor = t.TextPrimary;
             if (btnRatioMinus != null) btnRatioMinus.Invalidate();
-            if (cbHeaderRatio != null) cbHeaderRatio.Invalidate();
+            if (cbHeaderRatio != null) cbHeaderRatio.ApplyTheme(t);
             if (btnRatioPlus != null) btnRatioPlus.Invalidate();
 
             if (lblPaperSize != null) lblPaperSize.ForeColor = t.TextSecondary;
-            if (cbPreviewPaperSize != null) cbPreviewPaperSize.Invalidate();
+            if (cbPreviewPaperSize != null) cbPreviewPaperSize.ApplyTheme(t);
         }
 
         private void btnCollapseHeader_Click(object sender, EventArgs e)
@@ -927,11 +927,12 @@ namespace BookForge
 
         private void btnResetTemplate_Click(object sender, EventArgs e)
         {
-            DialogResult dr = MessageBox.Show(
+            DialogResult dr = ModernMessageBox.Show(
                 string.Format("Reset settings for \"{0}\" to default templates?\nAny unsaved edits will be replaced.", currentDocSelection),
                 "Reset Confirmation",
                 MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
+                MessageBoxIcon.Question,
+                this
             );
 
             if (dr != DialogResult.Yes) return;
@@ -1022,7 +1023,7 @@ namespace BookForge
             }
             catch (Exception ex)
             {
-                MessageBox.Show(string.Format("Failed to save files: {0}", ex.Message), "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ModernMessageBox.Show(string.Format("Failed to save files: {0}", ex.Message), "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error, this);
                 SetStatus("Save failed.", true);
             }
         }

@@ -9,7 +9,7 @@
         bookForge: {
             breadcrumb: 'Book Forge by Max',
             meta: {
-                title: 'Book Forge by Max v1.0 (Beta)',
+                title: 'Book Forge by Max v1.0.1 (Beta)',
                 pillVersion: 'Version 1.0 (Beta)',
                 pillStack: 'C# WinForms + Node.js Engine',
                 pillStandard: 'Chuẩn Nhà Xuất Bản',
@@ -24,8 +24,8 @@
                 f3: '<strong>Soạn thảo Front Matter 2 cột:</strong> Biên tập trang bìa lót, trang bản quyền, lời tựa dịch giả với khung Live Preview HTML/CSS thời gian thực song song.',
                 f4: '<strong>Translation Bible &amp; QA Audit:</strong> Tự động khởi tạo bộ 4 tài liệu cốt lõi (Glossary, Style Guide, Character Voice, Context) chuẩn vàng để kết hợp cùng AI dịch thuật (Claude, ChatGPT, Gemini).'
             },
-            ctaDownload: 'Tải Book Forge by Max v1.0 (Beta) (.zip)',
-            ctaFinalDownload: 'Tải Ngay Book Forge by Max v1.0 (Beta) (.zip)',
+            ctaDownload: 'Tải Book Forge by Max v1.0.1 (Beta) (.zip)',
+            ctaFinalDownload: 'Tải Ngay Book Forge by Max v1.0.1 (Beta) (.zip)',
             downloadUnit: 'lượt tải',
             previewCaption: 'Ảnh chụp giao diện phần mềm',
             previewAlt: 'Book Forge by Max - Giao diện chính hệ thống',
@@ -87,15 +87,13 @@
             },
             setup: {
                 title: 'Hướng Dẫn Cài Đặt &amp; Khởi Chạy Lần Đầu',
-                intro: 'Chỉ cần 4 bước đơn giản, thực hiện thiết lập môi trường 1 lần duy nhất:',
+                intro: 'Chỉ cần 3 bước đơn giản, thực hiện thiết lập môi trường 1 lần duy nhất:',
                 s1Title: 'Tải &amp; Giải Nén',
-                s1Desc: 'Tải file nén <strong>Book Forge by Max v1.0 (Beta).zip</strong> và giải nén vào thư mục mong muốn (Ví dụ: <code>D:\\Book Forge by Max\\</code>).',
+                s1Desc: 'Tải file nén <strong>Book Forge by Max v1.0.1 (Beta).zip</strong> và giải nén vào thư mục mong muốn (Ví dụ: <code>D:\\Book Forge by Max\\</code>).',
                 s2Title: 'Cài Node.js LTS',
                 s2Desc: 'Truy cập <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer" style="color: var(--accent-primary); font-weight: 700;">nodejs.org</a>, tải và cài đặt bản Node.js LTS với các thiết lập mặc định (nếu máy đã có Node.js, bỏ qua bước này).',
-                s3Title: 'Chạy setup.bat (1-Click)',
-                s3Desc: 'Nhấp đúp vào file <strong>setup.bat</strong> trong thư mục vừa giải nén. Script sẽ tự động cài 5 gói engine dàn trang cốt lõi qua npm.',
-                s4Title: 'Mở &amp; Sử Dụng',
-                s4Desc: 'Nhấp đúp vào <strong>Book Forge by Max.exe</strong> để mở ứng dụng và bắt đầu dự án xuất bản sách của bạn!'
+                s3Title: 'Mở &amp; Sử Dụng',
+                s3Desc: 'Nhấp đúp vào <strong>Book Forge by Max.exe</strong> để mở ứng dụng và bắt đầu dự án xuất bản sách của bạn!'
             },
             requirements: {
                 title: 'Yêu Cầu Cấu Hình Hệ Thống',
@@ -136,7 +134,7 @@
         bookForge: {
             breadcrumb: 'Book Forge by Max',
             meta: {
-                title: 'Book Forge by Max v1.0 (Beta)',
+                title: 'Book Forge by Max v1.0.1 (Beta)',
                 pillVersion: 'Version 1.0 (Beta)',
                 pillStack: 'C# WinForms + Node.js Engine',
                 pillStandard: 'Publisher Standard',
@@ -151,8 +149,8 @@
                 f3: '<strong>2-Column Front Matter Editor:</strong> Compose half-title pages, copyright notices, and translator prefaces with side-by-side real-time HTML/CSS live preview.',
                 f4: '<strong>Translation Bible &amp; QA Audit:</strong> Automatically generates the 4 core guideline documents (Glossary, Style Guide, Character Voice, Context) optimized for AI-assisted translation (Claude, ChatGPT, Gemini).'
             },
-            ctaDownload: 'Download Book Forge by Max v1.0 (Beta) (.zip)',
-            ctaFinalDownload: 'Download Now Book Forge by Max v1.0 (Beta) (.zip)',
+            ctaDownload: 'Download Book Forge by Max v1.0.1 (Beta) (.zip)',
+            ctaFinalDownload: 'Download Now Book Forge by Max v1.0.1 (Beta) (.zip)',
             downloadUnit: 'downloads',
             previewCaption: 'Software Interface Screenshot',
             previewAlt: 'Book Forge by Max - Main Application Interface',
@@ -214,15 +212,13 @@
             },
             setup: {
                 title: 'Installation &amp; First-Run Guide',
-                intro: 'Four straightforward steps, one-time environment setup:',
+                intro: 'Three straightforward steps, one-time environment setup:',
                 s1Title: 'Download &amp; Extract',
-                s1Desc: 'Download <strong>Book Forge by Max v1.0 (Beta).zip</strong> and extract it into your desired folder (e.g., <code>D:\\Book Forge by Max\\</code>).',
+                s1Desc: 'Download <strong>Book Forge by Max v1.0.1 (Beta).zip</strong> and extract it into your desired folder (e.g., <code>D:\\Book Forge by Max\\</code>).',
                 s2Title: 'Install Node.js LTS',
                 s2Desc: 'Visit <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer" style="color: var(--accent-primary); font-weight: 700;">nodejs.org</a>, download and install Node.js LTS with default settings (skip if already installed).',
-                s3Title: 'Run setup.bat (1-Click)',
-                s3Desc: 'Double-click <strong>setup.bat</strong> in the extracted folder. The script automatically installs the 5 core typesetting engine packages via npm.',
-                s4Title: 'Launch &amp; Use',
-                s4Desc: 'Double-click <strong>Book Forge by Max.exe</strong> to launch the application and start your book publishing project!'
+                s3Title: 'Launch &amp; Use',
+                s3Desc: 'Double-click <strong>Book Forge by Max.exe</strong> to launch the application and start your book publishing project!'
             },
             requirements: {
                 title: 'System Requirements',

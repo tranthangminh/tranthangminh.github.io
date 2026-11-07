@@ -21,7 +21,7 @@ function loadModule(name) {
 }
 
 const { launchRobustBrowser } = require('./browser_launcher');
-const puppeteerMod = loadModule('puppeteer');
+const puppeteerMod = loadModule('puppeteer-core') || loadModule('puppeteer');
 let sharedBrowser = null;
 
 async function getBrowser() {

@@ -1,24 +1,25 @@
 /**
- * Module: Universal PDF vs. Markdown Comprehensive Audit & Verification Suite
- * Location: script/compare/audit_pdf_vs_md.js
- * 
+ * Module: Book Project QA Audit
+ * Location: script/audit_pdf_vs_md.js
+ *
  * Usage:
- *   node script/compare/audit_pdf_vs_md.js [projectDir]
- * 
- * Responsibilities:
- * 1. Automatic Discovery: Detects book PDF and project structure without hardcoding.
- * 2. Structure & Completeness: Verifies Front Matter, Table of Contents, and all Content Chapters.
- * 3. Page & Boundary Check: Maps start/end PDF pages to chapter opening and closing sentences.
- * 4. Typography & Encoding Anomaly Scanner:
- *    - Scans for font glyph corruptions ('MM').
- *    - Scans for decomposed / malformed diacritics (e´, c¸, aˆ, etc.).
- *    - Scans for phantom single-character dropcap headers (## A).
- *    - Scans for empty markdown headings.
- * 5. Full Compilation Parity: Validates 100% exact match between compiled [Book]-original.md and original/*.md.
+ *   node script/audit_pdf_vs_md.js [projectDir]
+ *
+ * Exit code 1 means a defect that reaches the printed book or a stale master file:
+ *   - A referenced image cannot be found.
+ *   - A compiled "[Book]-<edition>.md" does not match its chapter files.
+ *   - No chapters exist in the project.
+ *
+ * Warnings do not fail the audit:
+ *   - Typography anomalies (glyph corruption, decomposed diacritics, phantom or empty headings).
+ *   - Unclosed ** or *** markers.
+ *   - Translated chapters that are missing, or differ from the original in headings, images or paragraphs.
+ *   - Markdown holding far fewer words than the source PDF.
  */
 
 const fs = require('fs');
 const path = require('path');
+const { listChapterFiles, lintMarkdown, buildMasterContent } = require('./06_master_builder');
 
 const localBundled = path.join(__dirname, 'node_modules', 'pdf-parse');
 const appDataNpm = path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'pdf-parse');
@@ -35,174 +36,261 @@ if (!pdfParseMod) {
     process.exit(1);
 }
 
-async function auditBook(projectDir) {
-    projectDir = projectDir || process.cwd();
-    const folderName = path.basename(path.resolve(projectDir));
-    const parentDir = path.join(projectDir, '..');
-    let originalDir = path.join(projectDir, 'chapters_original');
-    if (!fs.existsSync(originalDir) && fs.existsSync(path.join(projectDir, 'original'))) {
-        originalDir = path.join(projectDir, 'original');
+const MIN_PDF_WORD_RATIO = 0.9;
+const PARAGRAPH_TOLERANCE = 0.2;
+const EDITIONS = [
+    { label: 'Original', folder: 'chapters_original', baseName: 'original', isOriginal: true },
+    { label: 'Translated', folder: 'chapters_translated', baseName: 'translated', isOriginal: false }
+];
+
+let errorCount = 0;
+let warningCount = 0;
+
+function addError(message) {
+    errorCount++;
+    console.log(`  [ERROR] ${message}`);
+}
+
+function addWarning(message) {
+    warningCount++;
+    console.log(`  [!] ${message}`);
+}
+
+function countWords(text) {
+    return text.split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w)).length;
+}
+
+function stripMarkup(md) {
+    return md
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/[#*_]/g, ' ');
+}
+
+function getTextBlocks(md) {
+    return md.split(/\r?\n\r?\n/).map(p => p.trim()).filter(p => p && !p.startsWith('#') && !p.startsWith('![') && p !== '---');
+}
+
+function countHeadings(md) {
+    const counts = { 1: 0, 2: 0, 3: 0 };
+    let inCode = false;
+    for (const line of md.split('\n')) {
+        if (line.trim().startsWith('```')) inCode = !inCode;
+        const match = !inCode && line.match(/^(#{1,3})\s/);
+        if (match) counts[match[1].length]++;
+    }
+    return counts;
+}
+
+function findImageRefs(md) {
+    const refs = [];
+    const regex = /!\[[^\]]*\]\(([^)\s]+)[^)]*\)|<img\b[^>]*\bsrc=["']([^"']+)["']/gi;
+    let match;
+    while ((match = regex.exec(md)) !== null) {
+        const ref = match[1] || match[2];
+        if (!/^(https?:|data:)/i.test(ref) && !path.basename(ref).startsWith('cover.')) refs.push(ref);
+    }
+    return refs;
+}
+
+// Mirrors the lookup order of 07_image_layout_engine.js so a pass here means the image reaches the PDF.
+function imageExists(ref, chaptersDir, projectDir) {
+    const fileName = path.basename(ref);
+    return [
+        path.join(chaptersDir, ref),
+        path.join(projectDir, ref),
+        path.join(projectDir, 'images_translated', fileName),
+        path.join(projectDir, 'images_original', fileName),
+        path.join(projectDir, 'images', fileName)
+    ].some(p => fs.existsSync(p));
+}
+
+function findSourcePdf(projectDir, folderName) {
+    const target = `${folderName}.pdf`.toLowerCase();
+    for (const dir of [path.dirname(projectDir), projectDir]) {
+        const match = fs.readdirSync(dir).find(f => f.toLowerCase() === target);
+        if (match) return path.join(dir, match);
+    }
+    return null;
+}
+
+function auditChapterFile(fileName, text, idx, chaptersDir, projectDir) {
+    const words = countWords(stripMarkup(text));
+    const textBlocks = getTextBlocks(text);
+    const headingTotal = Object.values(countHeadings(text)).reduce((a, b) => a + b, 0);
+    const first = (textBlocks[0] || '').replace(/\s+/g, ' ').slice(0, 65);
+    const last = (textBlocks[textBlocks.length - 1] || '').replace(/\s+/g, ' ').slice(-65);
+
+    console.log(`  ✓ [${String(idx).padStart(2, '0')}] ${fileName.padEnd(45, ' ')} | ${String(words).padStart(6, ' ')} words | ${headingTotal} headings | ${textBlocks.length} paras`);
+    console.log(`       Start: "${first}..."`);
+    console.log(`       End:   "...${last}"`);
+
+    const glyphArtifacts = text.match(/\b\w+MM\b/g);
+    if (glyphArtifacts) addWarning(`[${fileName}] Glyph corruption: ${glyphArtifacts.join(', ')}`);
+
+    const diacritics = text.match(/[A-Za-z]+[´`ˆ¸¨~][A-Za-z]*/g);
+    if (diacritics) addWarning(`[${fileName}] Decomposed diacritics: ${diacritics.join(', ')}`);
+
+    text.split('\n').forEach((line, lineIdx) => {
+        const trimmed = line.trim();
+        if (/^#{1,3}\s+[A-Za-z]$/.test(trimmed)) addWarning(`[${fileName}:${lineIdx + 1}] Single-letter heading: "${trimmed}"`);
+        if (/^#{1,4}\s*$/.test(trimmed)) addWarning(`[${fileName}:${lineIdx + 1}] Empty heading`);
+    });
+
+    lintMarkdown(text).forEach(issue => addWarning(`[${fileName}] ${issue}`));
+
+    findImageRefs(text).forEach(ref => {
+        if (!imageExists(ref, chaptersDir, projectDir)) addError(`[${fileName}] Missing image: ${ref}`);
+    });
+
+    return { words, paragraphs: textBlocks.length };
+}
+
+function auditEdition(edition, projectDir, folderName) {
+    const chaptersDir = path.join(projectDir, edition.folder);
+    const files = fs.existsSync(chaptersDir) ? listChapterFiles(chaptersDir) : [];
+    if (files.length === 0) return null;
+
+    console.log(`\n📚 ${edition.label} edition: ${files.length} file(s) in ${edition.folder}/`);
+
+    const chapters = {};
+    let totalWords = 0;
+    let totalParagraphs = 0;
+    files.forEach((fileName, idx) => {
+        const text = fs.readFileSync(path.join(chaptersDir, fileName), 'utf8');
+        const stats = auditChapterFile(fileName, text, idx, chaptersDir, projectDir);
+        chapters[fileName] = { text, ...stats };
+        totalWords += stats.words;
+        totalParagraphs += stats.paragraphs;
+    });
+    console.log(`  📊 Total: ${files.length} files | ${totalParagraphs.toLocaleString()} paragraphs | ${totalWords.toLocaleString()} words`);
+
+    const masterName = `${folderName}-${edition.baseName}.md`;
+    const masterPath = path.join(projectDir, masterName);
+    if (fs.existsSync(masterPath)) {
+        const expected = buildMasterContent(projectDir, folderName, chaptersDir, files, edition.isOriginal);
+        if (fs.readFileSync(masterPath, 'utf8').trim() === expected.trim()) {
+            console.log(`  ✓ ${masterName} matches its chapter files`);
+        } else {
+            addError(`${masterName} does not match its chapter files. Publishing rebuilds it automatically.`);
+        }
+    } else {
+        console.log(`  [INFO] ${masterName} has not been compiled yet`);
     }
 
-    console.log('================================================================');
-    console.log(`🔬 COMPREHENSIVE BOOK AUDIT: ${folderName}`);
-    console.log('================================================================\n');
+    return { files, chapters, totalWords };
+}
 
-    // 1. Auto-detect PDF file
-    let pdfPath = null;
-    const searchDirs = [parentDir, projectDir]; // check parent first
-    for (const dir of searchDirs) {
-        if (fs.existsSync(dir)) {
-            const files = fs.readdirSync(dir);
-            // 1. Try exact match
-            let exactMatch = files.find(f => f.toLowerCase() === `${folderName.toLowerCase()}.pdf`);
-            if (exactMatch) {
-                pdfPath = path.join(dir, exactMatch);
-                break;
-            }
+// Translators may rename a chapter's slug, so files pair up by their numeric prefix (e.g. "02_01").
+function chapterKey(fileName) {
+    const match = fileName.match(/^\d+(?:_\d+)*/);
+    return match ? match[0] : fileName;
+}
 
-            // 2. Try clean match
-            const match = files.find(f => {
-                const fLow = f.toLowerCase();
-                return fLow.endsWith('.pdf') && 
-                       !fLow.includes('(a4') &&
-                       !fLow.includes('(a5') &&
-                       !fLow.includes('(b5') &&
-                       !fLow.includes('(kindle') &&
-                       !fLow.includes('translated') && 
-                       !fLow.includes('ban dich') &&
-                       !fLow.includes('-exported');
-            });
-            if (match) {
-                pdfPath = path.join(dir, match);
-                break;
+function auditTranslation(original, translated) {
+    console.log('\n🔁 Translation parity (Original vs Translated)');
+
+    const translatedByKey = new Map(translated.files.map(f => [chapterKey(f), f]));
+    const originalKeys = new Set(original.files.map(chapterKey));
+    const missing = original.files.filter(f => !translatedByKey.has(chapterKey(f)));
+    const extra = translated.files.filter(f => !originalKeys.has(chapterKey(f)));
+
+    console.log(`  ${original.files.length - missing.length}/${original.files.length} original file(s) have a translation`);
+    if (missing.length > 0) addWarning(`Not translated yet (${missing.length}): ${missing.join(', ')}`);
+    if (extra.length > 0) addWarning(`Translated files with no original (${extra.length}): ${extra.join(', ')}`);
+
+    for (const originalFile of original.files) {
+        const translatedFile = translatedByKey.get(chapterKey(originalFile));
+        if (!translatedFile) continue;
+
+        const o = original.chapters[originalFile];
+        const t = translated.chapters[translatedFile];
+
+        const originalHeadings = countHeadings(o.text);
+        const translatedHeadings = countHeadings(t.text);
+        for (const level of [1, 2, 3]) {
+            if (originalHeadings[level] !== translatedHeadings[level]) {
+                addWarning(`[${translatedFile}] H${level} count: original ${originalHeadings[level]}, translated ${translatedHeadings[level]}`);
             }
         }
+
+        const originalImages = findImageRefs(o.text).length;
+        const translatedImages = findImageRefs(t.text).length;
+        if (originalImages !== translatedImages) {
+            addWarning(`[${translatedFile}] Image count: original ${originalImages}, translated ${translatedImages}`);
+        }
+
+        if (Math.abs(o.paragraphs - t.paragraphs) > Math.max(2, o.paragraphs * PARAGRAPH_TOLERANCE)) {
+            addWarning(`[${translatedFile}] Paragraph count: original ${o.paragraphs}, translated ${t.paragraphs}`);
+        }
     }
+}
 
-    if (!pdfPath || !fs.existsSync(pdfPath)) {
-        console.error(`❌ Cannot locate PDF file for "${folderName}". Looked in: ${searchDirs.join(', ')}`);
-        process.exit(1);
-    }
-
-    console.log(`📄 PDF Source: ${path.basename(pdfPath)}`);
-    console.log(`📁 Project Folder: ${projectDir}`);
-    console.log(`📁 Original Chapters: ${originalDir}\n`);
-
-    // 2. Load PDF
-    const buf = fs.readFileSync(pdfPath);
-    const parser = new pdfParseMod.PDFParse(new Uint8Array(buf));
+async function auditSourcePdf(pdfPath, original) {
+    const parser = new pdfParseMod.PDFParse(new Uint8Array(fs.readFileSync(pdfPath)));
     await parser.load();
     const doc = parser.doc;
-    console.log(`[1/4] PDF Document Loaded: ${doc.numPages} Pages.`);
 
-    // 3. Load Markdown Chapters
-    if (!fs.existsSync(originalDir)) {
-        console.error(`❌ "original/" directory not found. Please run 01_EXTRACT_PDF.bat first.`);
-        process.exit(1);
-    }
-    const chapterFiles = fs.readdirSync(originalDir).filter(f => f.endsWith('.md') && f !== 'full_book_original.md').sort();
-    console.log(`[2/4] Extracted Chapters: ${chapterFiles.length} files found in original/.\n`);
-
-    // 4. Detailed Chapter-by-Chapter Integrity & Boundary Audit
-    console.log(`[3/4] Checking Chapter Structure, Boundaries & Word Counts...`);
-    let totalMdWords = 0;
-    let totalParagraphs = 0;
-
-    for (let idx = 0; idx < chapterFiles.length; idx++) {
-        const fileName = chapterFiles[idx];
-        const filePath = path.join(originalDir, fileName);
-        const mdText = fs.readFileSync(filePath, 'utf8');
-
-        const cleanText = mdText.replace(/<[^>]+>/g, ' ').replace(/[#*_]/g, ' ').replace(/\s+/g, ' ').trim();
-        const words = cleanText.split(/\s+/).filter(Boolean).length;
-        totalMdWords += words;
-
-        const rawParagraphs = mdText.split('\n\n').map(p => p.trim()).filter(Boolean);
-        const headings = rawParagraphs.filter(p => p.startsWith('#'));
-        const textBlocks = rawParagraphs.filter(p => !p.startsWith('#') && !p.startsWith('![') && p !== '---');
-        totalParagraphs += textBlocks.length;
-
-        const firstSentence = (textBlocks[0] || '').replace(/\n+/g, ' ').slice(0, 65);
-        const lastSentence = (textBlocks[textBlocks.length - 1] || '').replace(/\n+/g, ' ').slice(-65);
-
-        console.log(`  ✓ [${String(idx).padStart(2, '0')}] ${fileName.padEnd(45, ' ')} | ${String(words).padStart(6, ' ')} words | ${headings.length} headings | ${textBlocks.length} paras`);
-        console.log(`       Start: "${firstSentence}..."`);
-        console.log(`       End:   "...${lastSentence}"`);
+    let pdfWords = 0;
+    for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
+        const page = await doc.getPage(pageNum);
+        const content = await page.getTextContent();
+        pdfWords += countWords(content.items.map(item => item.str + (item.hasEOL ? ' ' : '')).join(''));
+        page.cleanup();
     }
 
-    console.log(`\n  📊 Total Book Stats: ${chapterFiles.length} files | ${totalParagraphs.toLocaleString()} paragraphs | ${totalMdWords.toLocaleString()} words.`);
-
-    // 5. Typography & Encoding Anomaly Scanner
-    console.log(`\n[4/4] Scanning for Typography & Encoding Anomalies...`);
-    const anomalies = [];
-    const compiledPath = path.join(projectDir, `${folderName}-original.md`);
-    let compiledText = '';
-    if (fs.existsSync(compiledPath)) {
-        compiledText = fs.readFileSync(compiledPath, 'utf8');
+    console.log(`\n📄 Source PDF: ${path.basename(pdfPath)} (${doc.numPages} pages)`);
+    if (!original) {
+        console.log('  [INFO] No original chapters to compare with the PDF');
+        return;
     }
 
-    for (const fileName of chapterFiles) {
-        const text = fs.readFileSync(path.join(originalDir, fileName), 'utf8');
+    const ratio = pdfWords > 0 ? original.totalWords / pdfWords : 1;
+    console.log(`  PDF ${pdfWords.toLocaleString()} words | Original chapters ${original.totalWords.toLocaleString()} words | ${(ratio * 100).toFixed(1)}%`);
+    if (ratio < MIN_PDF_WORD_RATIO) {
+        addWarning(`Original chapters hold only ${(ratio * 100).toFixed(1)}% of the PDF's words. Text may have been lost during extraction.`);
+    }
+}
 
-        // Check for 'MM' artifact
-        const mmMatches = text.match(/\b\w+MM\b/g);
-        if (mmMatches) {
-            anomalies.push({ file: fileName, type: 'Glyph Corruption', detail: `Found 'MM' artifact: ${mmMatches.join(', ')}` });
-        }
+async function auditBook(projectDir) {
+    const folderName = path.basename(projectDir);
 
-        // Check for floating diacritic artifacts (e´, c¸, aˆ, etc.)
-        const diacriticMatches = text.match(/[A-Za-z]+[´`ˆ¸¨~][A-Za-z]*/g);
-        if (diacriticMatches) {
-            anomalies.push({ file: fileName, type: 'Malformed Diacritic', detail: `Found decomposed diacritics: ${diacriticMatches.join(', ')}` });
-        }
+    console.log('================================================================');
+    console.log(`🔬 BOOK AUDIT: ${folderName}`);
+    console.log('================================================================');
 
-        // Check for phantom single-letter headers (## A)
-        const lines = text.split('\n');
-        lines.forEach((l, lIdx) => {
-            if (/^#{1,3}\s+[A-Za-z]$/.test(l.trim())) {
-                anomalies.push({ file: fileName, line: lIdx + 1, type: 'Phantom Header', detail: `Single-letter heading: "${l.trim()}"` });
-            }
-            if (/^#{1,4}\s*$/.test(l.trim())) {
-                anomalies.push({ file: fileName, line: lIdx + 1, type: 'Empty Header', detail: `Empty header at line ${lIdx + 1}` });
-            }
-        });
+    const original = auditEdition(EDITIONS[0], projectDir, folderName);
+    const translated = auditEdition(EDITIONS[1], projectDir, folderName);
+
+    if (!original && !translated) {
+        addError('No chapter files found in chapters_original/ or chapters_translated/.');
     }
 
-    if (anomalies.length === 0) {
-        console.log(`  ✅ 0 Anomalies detected! Unicode NFC, diacritics, and ligatures are 100% clean.`);
+    if (original && translated) {
+        auditTranslation(original, translated);
+    }
+
+    const pdfPath = findSourcePdf(projectDir, folderName);
+    if (pdfPath) {
+        await auditSourcePdf(pdfPath, original);
     } else {
-        console.log(`  ⚠️ Found ${anomalies.length} potential anomalies:`);
-        anomalies.forEach(a => console.log(`     - [${a.file}] ${a.type}: ${a.detail}`));
-    }
-
-    // 6. Full Compilation Verification
-    if (compiledText) {
-        let reconstructed = '';
-        const coverRelPath = fs.existsSync(path.join(projectDir, 'images', 'cover.png')) ? 'images/cover.png' : 'images/cover.jpg';
-        if (fs.existsSync(path.join(projectDir, coverRelPath))) {
-            reconstructed += `<div class="cover-page" align="center">\n  <img src="${coverRelPath}" alt="${folderName} Cover" style="max-width: 95%; max-height: 90vh; object-fit: contain;" />\n</div>\n\n---\n\n`;
-        }
-        const fileContents = chapterFiles.map(f => {
-            let content = fs.readFileSync(path.join(originalDir, f), 'utf8').trim();
-            content = content.replace(/!\[.*?\]\([^)]*cover\.(png|jpg|jpeg|webp)\)\s*/gi, '');
-            return content
-                .replace(/\(\.\.\/images\//g, '(images/')
-                .replace(/src="\.\.\/images\//g, 'src="images/')
-                .replace(/src='\.\.\/images\//g, "src='images/")
-                .replace(/\(\.\.\/assets\//g, '(images/')
-                .replace(/src="\.\.\/assets\//g, 'src="images/')
-                .replace(/src='\.\.\/assets\//g, "src='images/");
-        });
-        reconstructed += fileContents.join('\n\n---\n\n');
-        const isMatched = compiledText.trim() === reconstructed.trim();
-        console.log(`\n📚 Compiled File (${path.basename(compiledPath)}): ${compiledText.length.toLocaleString()} chars | ${isMatched ? '✅ 100% EXACT MATCH' : '⚠️ DIFFERS'}`);
+        console.log(`\n[INFO] "${folderName}.pdf" not found beside or inside the project. Skipping the source PDF comparison.`);
     }
 
     console.log('\n================================================================');
-    console.log('🎉 AUDIT COMPLETE: Book extraction is fully verified and publication-ready!');
+    if (errorCount > 0) {
+        console.log(`[ERROR] AUDIT FINISHED: ${errorCount} error(s), ${warningCount} warning(s).`);
+    } else if (warningCount > 0) {
+        console.log(`[!] AUDIT FINISHED: ${warningCount} warning(s), no errors. Review them before publishing.`);
+    } else {
+        console.log('🎉 AUDIT COMPLETE: no problems found.');
+    }
     console.log('================================================================\n');
+
+    process.exitCode = errorCount > 0 ? 1 : 0;
 }
 
-const targetDir = process.argv[2] || process.cwd();
-auditBook(targetDir).catch(console.error);
+auditBook(path.resolve(process.argv[2] || process.cwd())).catch(err => {
+    console.error(err);
+    process.exit(1);
+});

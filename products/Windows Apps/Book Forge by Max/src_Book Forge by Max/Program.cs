@@ -59,7 +59,7 @@ namespace BookForge
             {
                 try
                 {
-                    IntPtr hwnd = FindWindow(null, "Book Forge by Max v1.0 (Beta)");
+                    IntPtr hwnd = FindWindow(null, "Book Forge by Max v1.0.1 (Beta)");
                     if (hwnd == IntPtr.Zero) hwnd = FindWindow(null, "Book Forge by Max");
                     if (hwnd == IntPtr.Zero) hwnd = FindWindow(null, "Book Forge by Max Studio");
                     if (hwnd == IntPtr.Zero) hwnd = FindWindow(null, "BookForge Studio");
@@ -80,7 +80,7 @@ namespace BookForge
                 return; // Exit duplicate
             }
 
-            AppInfo.Init("Book Forge by Max", "v1.0 (Beta)", "book-forge.html");
+            AppInfo.Init("Book Forge by Max", "v1.0.1 (Beta)", "book-forge.html");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
