@@ -4,3 +4,6 @@
 AutoClicker-Save&Load/
 _BookForgeConfig
 error.log
+
+# Test builds and results
+products/Windows Apps/*/tests/out/

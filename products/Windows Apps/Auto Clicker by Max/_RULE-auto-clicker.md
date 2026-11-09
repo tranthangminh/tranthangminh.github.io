@@ -201,3 +201,11 @@
 ## 5.2 Lưu Dữ Liệu Tự Động & An Toàn (Atomic Save)
 - Mọi thay đổi cấu hình cần được ghi xuống đĩa một cách an toàn, tránh ghi đè lỗi làm hỏng toàn bộ file config khi app bị tắt đột ngột.
 - Khi người dùng bấm chuyển tab, phải gọi `FlushCurrentProfileFromUI()` để đồng bộ trạng thái của tab hiện tại vào bộ nhớ trước khi nạp dữ liệu tab mới.
+
+---
+
+# 6. KIỂM THỬ (TESTS)
+
+- Bộ test nằm ở `tests/`, chạy bằng `tests/run-tests.ps1`. Cách dùng, các nhóm và thời gian: `tests/README.md`.
+- Sửa nhỏ: chạy `-Changed` hoặc `-Group` của phần đã sửa. Trước khi commit hoặc phát hành: chạy `-All`.
+- Dùng bộ test có sẵn và thêm vào đó, không viết lại test mới trong thư mục tạm.
