@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using MaxApp.Common;
@@ -31,7 +32,10 @@ namespace ModernAutoClicker
         private long _totalClicks = 0;
         private volatile int _completedLoops = 0;
         private int _targetLoops = 0;
-        private DateTime _startTime;
+
+        // Stops with the run, so the numbers of the last run stay on screen after it ends
+        private readonly Stopwatch _runClock = new Stopwatch();
+        private bool _hasRun = false;
 
         [ThreadStatic]
         private static Random _rngInstance;
@@ -48,12 +52,12 @@ namespace ModernAutoClicker
         public long TotalClicks { get { return Interlocked.Read(ref _totalClicks); } }
         public int CompletedLoops { get { return _completedLoops; } }
         public int TargetLoops { get { return _targetLoops; } }
-        public TimeSpan Elapsed { get { return DateTime.Now - _startTime; } }
+        public TimeSpan Elapsed { get { return _runClock.Elapsed; } }
+        public bool HasRun { get { return _hasRun; } }
 
         // The engine is reused across runs: after Stop + Start, an old worker still waiting out its interval sees a newer thread here and exits instead of clicking alongside the new run
         private bool IsCurrentRunActive { get { return _isRunning && _workerThread == Thread.CurrentThread; } }
 
-        public event Action<long, TimeSpan> OnProgressUpdated;
         public event Action<int> OnPointExecuting;
         public event Action<TargetProblem> OnTargetLost; // Raised on the worker thread before OnStopped
         public event Action<Exception> OnRunFailed; // Raised on the worker thread before OnStopped
@@ -108,7 +112,7 @@ namespace ModernAutoClicker
             // Only the current run may end the engine; a superseded worker just exits
             if (_workerThread == Thread.CurrentThread)
             {
-                _isRunning = false;
+                EndRun();
                 if (OnTargetLost != null)
                 {
                     OnTargetLost(new TargetProblem
@@ -135,7 +139,8 @@ namespace ModernAutoClicker
             _totalClicks = 0;
             _completedLoops = 0;
             _targetLoops = config.Loops;
-            _startTime = DateTime.Now;
+            _hasRun = true;
+            _runClock.Restart();
 
             _workerThread = new Thread(() =>
             {
@@ -160,7 +165,7 @@ namespace ModernAutoClicker
             AppLog.Error("Running a Simple tab", failure);
             if (_workerThread != Thread.CurrentThread) return;
 
-            _isRunning = false;
+            EndRun();
             try
             {
                 NativeMethods.ReleaseAllMouseButtons();
@@ -182,7 +187,6 @@ namespace ModernAutoClicker
         int pointIndex = 0;
         int currentLoop = 0;
         bool hasPoints = (config.ClickMode == 0) && config.PointsList != null && config.PointsList.Count > 0;
-        DateTime lastUiUpdate = DateTime.MinValue;
 
         if (!EnsureTargetReady(config)) return;
 
@@ -301,25 +305,13 @@ namespace ModernAutoClicker
             Interlocked.Increment(ref _totalClicks);
             _completedLoops = currentLoop;
 
-            // Realtime callback update: every single click for normal speeds, 25ms throttle for ultra-fast speeds
-            DateTime now = DateTime.Now;
-            if (interval >= 10 || (now - lastUiUpdate).TotalMilliseconds >= 25 || _totalClicks == 1 || (config.Loops > 0 && currentLoop >= config.Loops))
-            {
-                lastUiUpdate = now;
-                if (OnProgressUpdated != null)
-                {
-                    OnProgressUpdated(_totalClicks, now - _startTime);
-                }
-            }
-
             // Check Loops limit
             if (config.Loops > 0 && currentLoop >= config.Loops)
             {
                 // Only the current run may end the engine; a superseded worker just exits
                 if (_workerThread == Thread.CurrentThread)
                 {
-                    _isRunning = false;
-                    if (OnProgressUpdated != null) OnProgressUpdated(_totalClicks, DateTime.Now - _startTime);
+                    EndRun();
                     if (OnPointExecuting != null) OnPointExecuting(-1);
                     if (OnStopped != null) OnStopped();
                 }
@@ -346,9 +338,16 @@ namespace ModernAutoClicker
         }
         }
 
-        public void Stop()
+        // Every way a run ends goes through here, so the clock stops with it
+        private void EndRun()
         {
             _isRunning = false;
+            _runClock.Stop();
+        }
+
+        public void Stop()
+        {
+            EndRun();
             if (_workerThread != null && _workerThread.IsAlive)
             {
                 try

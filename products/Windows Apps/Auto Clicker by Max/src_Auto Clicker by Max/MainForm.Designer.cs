@@ -29,6 +29,8 @@ namespace ModernAutoClicker
         // Simple keeps a fixed width; Asian takes the rest of the frame
         private const int SimpleModeTabW = 147;
         private const int RunBarIconW = 44;
+        // Height of the Simple tab content: the Click Mode and Target cards (160) above the Click Settings card (128)
+        private const int SimpleContentHeight = 288;
 
         // Collapsible bottom settings card: header row + body (checkboxes and hotkey card)
         private Label lblSettingsHeader;
@@ -122,8 +124,6 @@ namespace ModernAutoClicker
         private NumberInput numSimpleLoop, numSimpleJitter;
         private DurationInput numInterval;
         private ModernDropdown cboIntervalUnit;
-        private Label lblCurrentTimeTitle, lblCurrentTimeVal;
-        private Label lblCurrentClicksTitle, lblCurrentClicksVal, lblClicksUnit2;
 
         // Click Mode Controls (Tab Simple)
         private RoundedPanel pnlClickMode;
@@ -223,7 +223,7 @@ namespace ModernAutoClicker
             // ==========================================
             pnlContentHost = new Panel
             {
-                Size = new Size(388, 342),
+                Size = new Size(388, SimpleContentHeight),
                 Margin = new Padding(0, 0, 0, 6)
             };
 
@@ -240,7 +240,7 @@ namespace ModernAutoClicker
             pnlTabBasic = new Panel
             {
                 Location = new Point(0, 0),
-                Size = new Size(388, 342),
+                Size = new Size(388, SimpleContentHeight),
                 Margin = new Padding(0)
             };
 
@@ -301,8 +301,8 @@ namespace ModernAutoClicker
             btnSimpleTargetWindow.Click += (s, e) => ShowSimpleTargetWindowMenu();
             pnlSimpleTarget.Controls.Add(btnSimpleTargetWindow);
 
-            // 3. Time / Click Setting Card (Btm-Left: 196 x 182)
-            pnlTime = CreateCard(196, 182);
+            // 3. Time / Click Setting Card (Btm-Left: 196 x 128)
+            pnlTime = CreateCard(196, SimpleContentHeight - 160);
             pnlTime.Location = new Point(0, 160);
             lblHeaderTime = CreateHeader("Click Settings");
             lblHeaderTime.Location = new Point(10, 6);
@@ -344,25 +344,14 @@ namespace ModernAutoClicker
             numSimpleJitter.TextChanged += (s, e) => { SyncOverlay(); SaveSettings(); };
             lblSimpleJitterUnit = CreateLabel("± px", 140, tY + 2);
 
-            tY += 30;
-            lblCurrentClicksTitle = CreateLabel("Current:", 10, tY);
-            lblCurrentClicksVal = CreateValueLabel("0", 86, tY - 1);
-            lblClicksUnit2 = CreateLabel("Clicks", 140, tY);
-
-            tY += 24;
-            lblCurrentTimeTitle = CreateLabel("Current:", 10, tY);
-            lblCurrentTimeVal = CreateValueLabel("00:00:00", 86, tY - 1);
-
             pnlTime.Controls.AddRange(new Control[] {
                 lblInterval, numInterval, cboIntervalUnit,
                 lblSimpleLoop, numSimpleLoop, lblSimpleLoopHint,
-                lblSimpleJitter, numSimpleJitter, lblSimpleJitterUnit,
-                lblCurrentClicksTitle, lblCurrentClicksVal, lblClicksUnit2,
-                lblCurrentTimeTitle, lblCurrentTimeVal
+                lblSimpleJitter, numSimpleJitter, lblSimpleJitterUnit
             });
 
-            // 4. Target List Card (Right: 184 x 312, lowered to Y = 30 to align with pnlClickMode)
-            pnlList = CreateCard(184, 312);
+            // 4. Target List Card (Right: 184 x 258, lowered to Y = 30 to align with pnlClickMode)
+            pnlList = CreateCard(184, SimpleContentHeight - 30);
             pnlList.Location = new Point(204, 30);
             lblHeaderList = CreateHeader("Target (0 Points)");
             lblHeaderList.Location = new Point(10, 8);
@@ -393,10 +382,11 @@ namespace ModernAutoClicker
             };
             btnLoadList.Click += (s, e) => LoadPointsFromFile();
 
+            // The list and the Follow Cursor card keep the card's 8px inset on every side
             lstPoints = new PointListControl
             {
                 Location = new Point(8, 54),
-                Size = new Size(168, 250)
+                Size = new Size(168, pnlList.Height - 54 - 8)
             };
             lstPoints.OnPointListChanged += () =>
             {
@@ -412,6 +402,7 @@ namespace ModernAutoClicker
 
             cardCursorGuide = new ModernAutoClicker.Simple.CursorModeGuideCard(currentTheme);
             cardCursorGuide.Location = new Point(8, 28);
+            cardCursorGuide.Size = new Size(168, pnlList.Height - 28 - 8);
             cardCursorGuide.Visible = false;
 
             pnlList.Controls.AddRange(new Control[] {
@@ -735,7 +726,7 @@ namespace ModernAutoClicker
             }
 
             int targetW = isAdvanced ? (this.ClientSize.Width - 24) : 388;
-            int targetContentH = isAdvanced ? (this.ClientSize.Height - AsianChromeBaseH - SettingsCardHeight - RunningRowHeight) : (tabIndex == 0 ? 508 : 342);
+            int targetContentH = isAdvanced ? (this.ClientSize.Height - AsianChromeBaseH - SettingsCardHeight - RunningRowHeight) : (tabIndex == 0 ? 508 : SimpleContentHeight);
 
             // 0. Title Bar
             if (titleBar != null) titleBar.Size = new Size(targetW, 32);
@@ -845,7 +836,7 @@ namespace ModernAutoClicker
         {
             if (lblMainStatusInfo == null) return;
 
-            string runStats = GetActiveRunStats();
+            string runStats = GetTabRunStats();
             if (runStats != null)
             {
                 ShowRunStats(runStats);
@@ -855,9 +846,7 @@ namespace ModernAutoClicker
 
             if (_currentTabIndex == 0)
             {
-                lblMainStatusInfo.Text = Loc.IsVietnamese
-                    ? string.Format("{0} • Thông tin ứng dụng", AppInfo.AppName)
-                    : string.Format("{0} • Information", AppInfo.AppName);
+                lblMainStatusInfo.Text = Loc.StatusInfoTab(AppInfo.AppName);
             }
             else if (_currentTabIndex == 1)
             {
@@ -871,16 +860,12 @@ namespace ModernAutoClicker
                 bool isCursor = (radModeCursor != null && radModeCursor.Checked);
                 if (isCursor)
                 {
-                    lblMainStatusInfo.Text = Loc.IsVietnamese
-                        ? string.Format("Sẵn sàng | Bám Con trỏ | Chế độ: {0} | Khoảng cách: {1}", modeStr, interval)
-                        : string.Format("Ready | Follow Cursor | Mode: {0} | Every: {1}", modeStr, interval);
+                    lblMainStatusInfo.Text = Loc.StatusReadyFollowCursor(modeStr, interval);
                 }
                 else
                 {
                     int ptsCount = (lstPoints != null) ? lstPoints.Count : 0;
-                    lblMainStatusInfo.Text = Loc.IsVietnamese
-                        ? string.Format("Sẵn sàng | Chế độ: {0} | Khoảng cách: {1} | Tọa độ: {2}", modeStr, interval, ptsCount)
-                        : string.Format("Ready | Mode: {0} | Every: {1} | Points: {2}", modeStr, interval, ptsCount);
+                    lblMainStatusInfo.Text = Loc.StatusReadyPoints(modeStr, interval, ptsCount);
                 }
             }
             else
@@ -920,9 +905,6 @@ namespace ModernAutoClicker
                 if (lblSimpleLoopHint != null) lblSimpleLoopHint.Text = Loc.LoopHintInfinite;
                 if (lblSimpleJitter != null) lblSimpleJitter.Text = Loc.LabelJitter;
                 if (lblSimpleJitterUnit != null) lblSimpleJitterUnit.Text = Loc.UnitJitterPx;
-                if (lblCurrentTimeTitle != null) lblCurrentTimeTitle.Text = Loc.LabelCurrentTime;
-                if (lblCurrentClicksTitle != null) lblCurrentClicksTitle.Text = Loc.LabelCurrentClicks;
-                if (lblClicksUnit2 != null) lblClicksUnit2.Text = Loc.UnitClicks;
 
                 // Target List Card
                 UpdatePointsHeader();
@@ -1028,25 +1010,18 @@ namespace ModernAutoClicker
             }
 
             // Sub labels
-            Label[] subLabels = new Label[] {
-                lblInterval, lblSimpleLoop, lblSimpleJitter,
-                lblCurrentClicksTitle, lblCurrentTimeTitle
-            };
+            Label[] subLabels = new Label[] { lblInterval, lblSimpleLoop, lblSimpleJitter };
             foreach (Label l in subLabels)
             {
                 if (l != null) l.ForeColor = t.TextSecondary;
             }
 
             // Hint / Unit labels (TextTertiary)
-            Label[] hintLabels = new Label[] { lblSimpleLoopHint, lblSimpleJitterUnit, lblClicksUnit2 };
+            Label[] hintLabels = new Label[] { lblSimpleLoopHint, lblSimpleJitterUnit };
             foreach (Label hl in hintLabels)
             {
                 if (hl != null) hl.ForeColor = t.TextTertiary;
             }
-
-            // Dynamic live value labels (TextPrimary)
-            lblCurrentClicksVal.ForeColor = t.TextPrimary;
-            lblCurrentTimeVal.ForeColor = t.TextPrimary;
 
             // Radio & Checkbox
             if (radModePoints != null) radModePoints.ForeColor = t.TextPrimary;

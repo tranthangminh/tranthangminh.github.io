@@ -244,24 +244,34 @@ namespace ModernAutoClicker
             if (OnSelectionChanged != null) OnSelectionChanged(_selectedIndex);
         }
 
+        // The scroll bar takes room only while it is shown, so a short list keeps the same margin on both sides
+        private const int ScrollBarW = 8;
+
         private void ReorderRows()
         {
-            pnlContent.SuspendLayout();
             int totalH = 4 + _rows.Count * 21;
+            bool showBar = totalH > this.Height;
+            int availW = Math.Max(50, this.Width - (showBar ? ScrollBarW : 0));
+            pnlScrollContainer.Size = new Size(availW, this.Height);
+            scrollBar.Location = new Point(availW, 0);
+            scrollBar.Size = new Size(ScrollBarW, this.Height);
+
+            pnlContent.SuspendLayout();
+            pnlContent.Width = availW;
             pnlContent.Height = Math.Max(pnlScrollContainer.Height, totalH);
 
             for (int i = 0; i < _rows.Count; i++)
             {
                 _rows[i].Index = i;
                 _rows[i].Location = new Point(0, 2 + i * 21);
-                _rows[i].Width = pnlContent.Width;
+                _rows[i].Width = availW;
             }
             pnlContent.ResumeLayout();
 
             scrollBar.Maximum = totalH;
             scrollBar.LargeChange = pnlScrollContainer.Height;
             scrollBar.SmallChange = 21;
-            scrollBar.Visible = (totalH > pnlScrollContainer.Height);
+            scrollBar.Visible = showBar;
 
             if (!scrollBar.Visible)
             {
@@ -391,14 +401,6 @@ namespace ModernAutoClicker
         {
             base.OnResize(e);
             if (pnlScrollContainer == null || scrollBar == null || _rows == null) return;
-
-            int scrollBarW = 8;
-            int availW = Math.Max(50, this.Width - scrollBarW);
-            int availH = this.Height;
-
-            pnlScrollContainer.Size = new Size(availW, availH);
-            scrollBar.Location = new Point(availW, 0);
-            scrollBar.Size = new Size(scrollBarW, availH);
             ReorderRows();
         }
 

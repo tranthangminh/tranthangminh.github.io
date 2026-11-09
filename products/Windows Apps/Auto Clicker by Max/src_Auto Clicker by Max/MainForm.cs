@@ -232,21 +232,6 @@ namespace ModernAutoClicker
             {
                 int tabIdx = i;
                 _simpleEngines[i] = new ClickEngine();
-                _simpleEngines[i].OnProgressUpdated += (clicks, elapsed) =>
-                {
-                    if (this.IsHandleCreated)
-                    {
-                        this.BeginInvoke((Action)(() =>
-                        {
-                            if (_currentTabIndex == 1 && _simpleTabIndex == tabIdx)
-                            {
-                                lblCurrentClicksVal.Text = clicks.ToString();
-                                lblCurrentTimeVal.Text = FormatElapsed(elapsed);
-                            }
-                        }));
-                    }
-                };
-
                 _simpleEngines[i].OnPointExecuting += (idx) =>
                 {
                     if (this.IsHandleCreated)
@@ -304,7 +289,7 @@ namespace ModernAutoClicker
 
                 pnlTabAdvanced.OnStatusChanged += (status) =>
                 {
-                    if (!_isBasicTab && lblMainStatusInfo != null && GetActiveRunStats() == null)
+                    if (!_isBasicTab && lblMainStatusInfo != null && GetTabRunStats() == null)
                     {
                         lblMainStatusInfo.Text = status;
                     }
@@ -1808,7 +1793,7 @@ namespace ModernAutoClicker
 
                 SyncOverlay();
                 SaveSettings();
-                if (GetActiveRunStats() == null) lblMainStatusInfo.Text = Loc.TargetChangedPressStart;
+                if (!IsActiveTabRunning) lblMainStatusInfo.Text = Loc.TargetChangedPressStart;
             }
             finally
             {
@@ -2225,7 +2210,7 @@ namespace ModernAutoClicker
         {
             UpdateRunningTasksRow(true);
 
-            string stats = GetActiveRunStats();
+            string stats = GetTabRunStats();
             if (stats != null)
             {
                 ShowRunStats(stats);
@@ -2244,14 +2229,15 @@ namespace ModernAutoClicker
             if (lblMainStatusInfo.Text != stats) lblMainStatusInfo.Text = stats;
         }
 
-        // Live numbers of the tab on screen, or null when that tab is not running (even if other tabs are)
-        private string GetActiveRunStats()
+        // Numbers of the tab on screen: live while it runs, then those of its last run until it starts again.
+        // Null before that tab has run in this session.
+        private string GetTabRunStats()
         {
             if (_currentTabIndex == 1)
             {
                 if (_simpleEngines == null || _simpleTabIndex < 0 || _simpleTabIndex >= AppSettings.SimpleTabCount) return null;
                 ClickEngine engine = _simpleEngines[_simpleTabIndex];
-                if (engine == null || !engine.IsRunning) return null;
+                if (engine == null || !engine.HasRun) return null;
                 return Loc.RunStatsSimple(engine.TotalClicks, FormatElapsed(engine.Elapsed), FormatLoops(engine.CompletedLoops, engine.TargetLoops));
             }
 
@@ -2259,7 +2245,7 @@ namespace ModernAutoClicker
             {
                 string scriptName = pnlTabAdvanced.ActiveScriptName;
                 ModernAutoClicker.Advanced.MacroRunner runner;
-                if (string.IsNullOrEmpty(scriptName) || !_asianRunners.TryGetValue(scriptName, out runner) || runner == null || !runner.IsRunning) return null;
+                if (string.IsNullOrEmpty(scriptName) || !_asianRunners.TryGetValue(scriptName, out runner) || runner == null || !runner.HasRun) return null;
                 return Loc.RunStatsAsian(runner.StepsExecuted, FormatElapsed(runner.Elapsed), FormatLoops(runner.TotalCyclesCompleted, runner.TargetLoops));
             }
 
@@ -2407,13 +2393,10 @@ namespace ModernAutoClicker
             // 6. Update Start button (Start / Stop) for the target tab
             UpdateStartButtonState();
 
-            // 7. Update timer/clicks stats display
-            UpdateSimpleStatsDisplay(targetIdx);
-
-            // 8. Sync Map Overlay with target tab's points
+            // 7. Sync Map Overlay with target tab's points
             SyncOverlay();
 
-            // 9. Update status bar with target tab's details
+            // 8. Update status bar with target tab's details
             UpdateTabStatus(_isBasicTab);
             UpdateMainStatusText();
 
@@ -2520,19 +2503,6 @@ namespace ModernAutoClicker
                 _isLoadingProfile = false;
             }
             UpdateTabStatus(_isBasicTab);
-        }
-
-        private void UpdateSimpleStatsDisplay(int tabIdx)
-        {
-            if (_simpleEngines[tabIdx] != null && _simpleEngines[tabIdx].IsRunning)
-            {
-                lblCurrentClicksVal.Text = _simpleEngines[tabIdx].TotalClicks.ToString();
-            }
-            else
-            {
-                lblCurrentClicksVal.Text = "0";
-                lblCurrentTimeVal.Text = "00:00:00";
-            }
         }
 
         private void UpdateSimpleLocalUILock()

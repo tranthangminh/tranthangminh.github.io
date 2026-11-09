@@ -67,9 +67,6 @@ namespace ModernAutoClicker.Localization
         public static string LoopHintInfinite { get { return "(0 = ∞)"; } }
         public static string LabelJitter { get { return IsVietnamese ? "Độ lệch:" : "Jitter:"; } }
         public static string UnitJitterPx { get { return "± px"; } }
-        public static string LabelCurrentClicks { get { return IsVietnamese ? "Đã click:" : "Current:"; } }
-        public static string UnitClicks { get { return IsVietnamese ? "Lần" : "Clicks"; } }
-        public static string LabelCurrentTime { get { return IsVietnamese ? "Thời gian:" : "Current:"; } }
 
         // ========================================================
         // 5. TARGET LIST CARD
@@ -92,10 +89,15 @@ namespace ModernAutoClicker.Localization
         public static string BtnResume { get { return IsVietnamese ? "Tiếp tục" : "Resume"; } }
         public static string BtnStopAll { get { return IsVietnamese ? "Dừng HẾT" : "Stop ALL"; } }
         public static string BtnTransformToolTip { get { return IsVietnamese ? "Di chuyển & thu phóng toàn bộ điểm click" : "Move and scale all click points"; } }
-        public static string StatusReady { get { return IsVietnamese ? "Sẵn sàng" : "Ready"; } }
-        public static string StatusRunning { get { return IsVietnamese ? "Đang chạy..." : "Running..."; } }
-        public static string StatusPaused { get { return IsVietnamese ? "Đang tạm dừng" : "Paused"; } }
-        public static string StatusStopped { get { return IsVietnamese ? "Đã dừng" : "Stopped"; } }
+        public static string StatusInfoTab(string appName) { return string.Format(IsVietnamese ? "{0} • Thông tin ứng dụng" : "{0} • Information", appName); }
+        public static string StatusReadyFollowCursor(string mode, string interval)
+        {
+            return string.Format(IsVietnamese ? "Sẵn sàng | Bám Con trỏ | Chế độ: {0} | Khoảng cách: {1}" : "Ready | Follow Cursor | Mode: {0} | Every: {1}", mode, interval);
+        }
+        public static string StatusReadyPoints(string mode, string interval, int points)
+        {
+            return string.Format(IsVietnamese ? "Sẵn sàng | Chế độ: {0} | Khoảng cách: {1} | Tọa độ: {2}" : "Ready | Mode: {0} | Every: {1} | Points: {2}", mode, interval, points);
+        }
         public static string RunStatsSimple(long clicks, string time, string loops)
         {
             return string.Format(IsVietnamese ? "Click: {0:N0} | Thời gian: {1} | Vòng lặp: {2}" : "Clicks: {0:N0} | Time: {1} | Loops: {2}", clicks, time, loops);
@@ -223,8 +225,8 @@ namespace ModernAutoClicker.Localization
             get
             {
                 return IsVietnamese
-                    ? "Click liên tục bất cứ nơi nào con trỏ chuột di chuyển tới.\n\nSau khi bắt đầu, việc dùng chuột để bấm nút Dừng sẽ gần như bất khả thi!"
-                    : "Clicks continuously wherever your mouse moves.\n\nOnce started, clicking the Stop button with the mouse will be nearly impossible!";
+                    ? "Click liên tục bất cứ nơi nào con trỏ chuột di chuyển tới.\nSau khi bắt đầu, việc dùng chuột để bấm nút Dừng sẽ gần như bất khả thi!"
+                    : "Clicks continuously wherever your mouse moves.\nOnce started, clicking the Stop button with the mouse will be nearly impossible!";
             }
         }
         public static string CursorGuideHotkeyKey { get { return IsVietnamese ? "SẴN SÀNG PHÍM F6" : "KEEP F6 READY"; } }
@@ -235,15 +237,6 @@ namespace ModernAutoClicker.Localization
                 return IsVietnamese
                     ? "Luôn nhấn phím [F6] trên bàn phím để Dừng bất kỳ lúc nào."
                     : "Always press [F6] on your keyboard to Stop anytime.";
-            }
-        }
-        public static string CursorGuideTip
-        {
-            get
-            {
-                return IsVietnamese
-                    ? "• Di chuột tự do.\n• Áp dụng bộ hẹn giờ khoảng cách."
-                    : "• Move mouse freely.\n• Interval timer applies.";
             }
         }
 

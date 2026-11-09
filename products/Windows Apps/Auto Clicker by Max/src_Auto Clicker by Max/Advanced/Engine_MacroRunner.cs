@@ -12,7 +12,7 @@ namespace ModernAutoClicker.Advanced
     {
         private volatile bool _isRunning = false;
         private Thread _workerThread = null;
-        private DateTime _startTime;
+        private bool _hasRun = false;
         private volatile int _totalCyclesCompleted = 0;
         private long _stepsExecuted = 0;
         private int _targetLoops = 0;
@@ -20,7 +20,9 @@ namespace ModernAutoClicker.Advanced
         public bool IsRunning { get { return _isRunning; } }
         public int TotalCyclesCompleted { get { return _totalCyclesCompleted; } }
         public int TargetLoops { get { return _targetLoops; } }
-        public TimeSpan Elapsed { get { return DateTime.Now - _startTime; } }
+        // The run clock stops with the run, so the numbers of the last run stay on screen after it ends
+        public TimeSpan Elapsed { get { return _runClock.Elapsed; } }
+        public bool HasRun { get { return _hasRun; } }
 
         // Every enabled step the run has gone through, including the steps of scripts called via RunScript and steps repeated by a jump
         public long StepsExecuted { get { return Interlocked.Read(ref _stepsExecuted); } }
@@ -97,7 +99,7 @@ namespace ModernAutoClicker.Advanced
             _targetLoops = profile.LoopCount;
             _rootScriptName = profile.Name ?? "";
             _currentScriptName = _rootScriptName;
-            _startTime = DateTime.Now;
+            _hasRun = true;
             _runClock.Restart();
             _nextStepReportMs = 0;
             _stepsSinceRest = 0;
@@ -133,7 +135,7 @@ namespace ModernAutoClicker.Advanced
         // Whatever went wrong inside a run, it ends here: an exception on this thread would close the whole app with keys and buttons still held down
         private void FinishRun(Exception failure)
         {
-            _isRunning = false;
+            EndRun();
             try
             {
                 KeyboardSimulator.ReleaseAllKeys();
@@ -314,7 +316,7 @@ namespace ModernAutoClicker.Advanced
                 return true;
             }
 
-            _isRunning = false;
+            EndRun();
             if (OnTargetLost != null)
             {
                 TargetProblem problem = new TargetProblem
@@ -556,7 +558,7 @@ namespace ModernAutoClicker.Advanced
                 if (jumpAction == -1)
                 {
                     // Stop Script
-                    _isRunning = false;
+                    EndRun();
                     return;
                 }
 
@@ -636,7 +638,7 @@ namespace ModernAutoClicker.Advanced
                 if (jumpAction == -1)
                 {
                     // Stop Script
-                    _isRunning = false;
+                    EndRun();
                     return;
                 }
 
@@ -738,7 +740,7 @@ namespace ModernAutoClicker.Advanced
                     // 0: Next Step (default), -1: Stop Script, >0: Jump to Step
                     if (step.IfFalseStep == -1)
                     {
-                        _isRunning = false;
+                        EndRun();
                         return;
                     }
                     else if (step.IfFalseStep > 0)
@@ -827,9 +829,16 @@ namespace ModernAutoClicker.Advanced
             CancellableSleep.Sleep(ms, () => _isRunning);
         }
 
-        public void Stop()
+        // Every way a run ends goes through here, so the clock stops with it
+        private void EndRun()
         {
             _isRunning = false;
+            _runClock.Stop();
+        }
+
+        public void Stop()
+        {
+            EndRun();
             if (_workerThread != null && _workerThread.IsAlive)
             {
                 try
