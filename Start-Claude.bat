@@ -8,14 +8,12 @@ rem  Cach dung: double-click file nay.
 rem ==================================================
 cd /d "%~dp0"
 
-rem --- 1. Kiem tra Git (Claude Code tren Windows can Git) ---
+rem --- 1. Kiem tra Git: chi canh bao, khong dung lai ---
 where git >nul 2>nul
 if errorlevel 1 (
-  echo [LOI] May chua cai Git.
-  echo Tai va cai Git tai: https://git-scm.com/download/win
-  echo Cai xong thi chay lai file nay.
-  pause
-  exit /b 1
+  echo [CANH BAO] Khong thay lenh git trong PATH.
+  echo Neu Claude bao thieu Git thi cai tai: https://git-scm.com/download/win
+  echo.
 )
 
 rem --- 2. Tim lenh claude, chua co thi cai ---
