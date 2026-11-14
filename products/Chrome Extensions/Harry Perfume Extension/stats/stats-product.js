@@ -290,21 +290,21 @@ function renderProductListView(container, allProducts) {
           }
 
           return `
-            <div class="product-card" data-product="${escAttr(p.name)}">
+            <div class="stats-product-card" data-product="${escAttr(p.name)}">
               ${imgUrl 
-                ? `<img src="${escAttr(imgUrl)}" class="product-card-thumb" alt="${escAttr(p.name)}" loading="lazy">` 
-                : `<div class="product-card-avatar-fallback">🧴</div>`
+                ? `<img src="${escAttr(imgUrl)}" class="stats-product-card-thumb" alt="${escAttr(p.name)}" loading="lazy">` 
+                : `<div class="stats-product-card-avatar-fallback">🧴</div>`
               }
-              <div class="product-card-info">
-                <span class="product-card-name" title="${escAttr(p.name)}">${escHtml(p.name)}</span>
-                <div class="product-card-sub">${subText}</div>
+              <div class="stats-product-card-info">
+                <span class="stats-product-card-name" title="${escAttr(p.name)}">${escHtml(p.name)}</span>
+                <div class="stats-product-card-sub">${subText}</div>
               </div>
-              <div class="product-card-right">
-                <div class="product-card-price-row">
-                  <span class="product-card-price">${priceDisplay}</span>
-                  <span class="product-card-arrow">›</span>
+              <div class="stats-product-card-right">
+                <div class="stats-product-card-price-row">
+                  <span class="stats-product-card-price">${priceDisplay}</span>
+                  <span class="stats-product-card-arrow">›</span>
                 </div>
-                <span class="product-card-date">${p.latestDate ? "🗓️ " + escHtml(p.latestDate) : "—"}</span>
+                <span class="stats-product-card-date">${p.latestDate ? "🗓️ " + escHtml(p.latestDate) : "—"}</span>
               </div>
             </div>
           `;
@@ -371,7 +371,7 @@ function setupProductListEventListeners(container) {
   }
 
   // Click vào thẻ sản phẩm để mở lịch sử chi tiết
-  const cards = container.querySelectorAll(".product-card");
+  const cards = container.querySelectorAll(".stats-product-card");
   cards.forEach(card => {
     card.addEventListener("click", () => {
       const prodName = card.getAttribute("data-product");

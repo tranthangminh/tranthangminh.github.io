@@ -3,6 +3,7 @@
 ## 1.0.13
 
 ### Fixed
+- Nước Hoa tab: the product detail card is laid out top to bottom again (name, badges, image and scent notes, similar scents, tags) instead of squeezed into one row. The Thống Kê product list used the same `.product-card` class and overrode it; its classes are now `.stats-product-card` and `.stats-product-card-*`.
 - Mini Tools: the filter dropdown list follows the theme instead of showing white text on a white background.
 - Nhập tab: editing a price or quantity no longer blanks the line totals and the order total. The status dropdown was read as "Hỏi Giá" because its text included every option.
 

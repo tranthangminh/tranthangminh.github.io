@@ -19,6 +19,7 @@
 2. **Thẩm định Anti-Bloat 1.1.5 (Tuyệt đối tuân thủ SSOT)**:
    - Khi hàm hoặc tiện ích đã được định nghĩa tại `common/` và nạp sẵn vào DOM (`panel.html`), mọi file script con (`panel.js`, `perfume-search.js`, `order.js`, `import.js`, `stats/*.js`...) **phải gọi trực tiếp hàm đó**.
    - **Nghiêm cấm phòng thủ thái quá**: Tuyệt đối không viết `typeof func === "function" ? func(...) : fallback` hoặc viết lại logic lặp để dự phòng khi thứ tự nạp script đã được đảm bảo chắc chắn.
+   - **Không trùng tên class CSS giữa các tab**: class chỉ dùng trong một tab phải có tiền tố của tab/phân hệ đó, class con lấy tên class cha làm tiền tố (ví dụ `.stats-product-card`, `.stats-product-card-thumb`). Lý do: mọi file CSS nạp chung vào `panel.html`, file nạp sau sẽ đè class trùng tên của tab khác.
    - **Triệt tiêu toàn diện Dead Code & Listener trùng lặp**: Không lưu lại thẻ DOM thừa (như datalist mồ côi đã chuyển sang combobox động). Không gắn lặp lại các listener đóng modal trên nền mờ hoặc phím Escape khi `modal-controller.js` đã phụ trách.
 
 ## 1.2. Tài khoản quản trị & Bảo mật (Auth & Security)
