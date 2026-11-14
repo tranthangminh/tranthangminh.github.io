@@ -5,7 +5,7 @@
 
 const KOFI_URL = 'https://ko-fi.com/maxiechen96';
 const NUDGE_KEY = 'maxDonateNudgeLastShown';
-const KOFI_ICON_HTML = `<img class="donate-kofi-icon" src="${chrome.runtime.getURL('svg/kofi.svg')}" alt="">`;
+const KOFI_ICON_HTML = '<span class="icon-img icon-kofi donate-kofi-icon" aria-hidden="true"></span>';
 
 function openSupportLink() {
   if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {

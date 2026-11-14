@@ -92,9 +92,7 @@ function syncPromotionsFromProducts(products) {
   orderAvailablePromotions = [...DEFAULT_PROMOTIONS, ...promoMap.values()];
   window.orderAvailablePromotions = orderAvailablePromotions;
 
-  if (typeof renderOrderTotals === "function") {
-    renderOrderTotals();
-  }
+  renderOrderTotals();
 }
 
 if (typeof window !== "undefined") {
@@ -111,7 +109,7 @@ let currentPickerItemId = null;
 
 // Khởi tạo tab Đơn Hàng
 async function initOrderModule() {
-  if (typeof allProducts !== "undefined" && Array.isArray(allProducts) && allProducts.length > 0) {
+  if (allProducts.length > 0) {
     syncPromotionsFromProducts(allProducts);
   }
   await loadOrderDraft();
@@ -131,9 +129,7 @@ async function saveOrderDraft() {
     shippingFee: orderShippingFee
   };
   try {
-    if (typeof StorageHelper !== "undefined") {
-      await StorageHelper.set("activeOrderDraft", draft);
-    }
+    await StorageHelper.set("activeOrderDraft", draft);
   } catch (e) {
     // Bỏ qua lỗi ghi storage bản nháp
   }
@@ -142,19 +138,17 @@ async function saveOrderDraft() {
 // Tải bản nháp đơn hàng
 async function loadOrderDraft() {
   try {
-    if (typeof StorageHelper !== "undefined") {
-      const draft = await StorageHelper.get("activeOrderDraft", null);
-      if (draft && typeof draft === "object") {
-        if (Array.isArray(draft.items)) orderItems = draft.items;
-        if (draft.customer && typeof draft.customer === "object") {
-          orderCustomer = { ...orderCustomer, ...draft.customer };
-        }
-        if (typeof draft.memberDiscountPercent === "number") orderMemberDiscountPercent = draft.memberDiscountPercent;
-        if (typeof draft.discountValue === "number") orderDiscountValue = draft.discountValue;
-        if (draft.discountType) orderDiscountType = draft.discountType;
-        if (Array.isArray(draft.appliedPromoIds)) orderAppliedPromoIds = draft.appliedPromoIds;
-        if (typeof draft.shippingFee === "number") orderShippingFee = draft.shippingFee;
+    const draft = await StorageHelper.get("activeOrderDraft", null);
+    if (draft && typeof draft === "object") {
+      if (Array.isArray(draft.items)) orderItems = draft.items;
+      if (draft.customer && typeof draft.customer === "object") {
+        orderCustomer = { ...orderCustomer, ...draft.customer };
       }
+      if (typeof draft.memberDiscountPercent === "number") orderMemberDiscountPercent = draft.memberDiscountPercent;
+      if (typeof draft.discountValue === "number") orderDiscountValue = draft.discountValue;
+      if (draft.discountType) orderDiscountType = draft.discountType;
+      if (Array.isArray(draft.appliedPromoIds)) orderAppliedPromoIds = draft.appliedPromoIds;
+      if (typeof draft.shippingFee === "number") orderShippingFee = draft.shippingFee;
     }
   } catch (e) {
     // Bản nháp lỗi hoặc rỗng
@@ -340,11 +334,12 @@ function setupOrderEventListeners() {
             saveOrderDraft();
             renderOrderCart();
           } else {
-            if (confirm(`Xóa "${item.name}" khỏi đơn hàng?`)) {
+            confirmAction(`Xóa "${item.name}" khỏi đơn hàng?`, "Xóa").then((ok) => {
+              if (!ok) return;
               orderItems = orderItems.filter((it) => it.id !== item.id);
               saveOrderDraft();
               renderOrderCart();
-            }
+            });
           }
         }
         return;
@@ -528,11 +523,11 @@ function setupOrderEventListeners() {
 
   // 6. Nút Làm mới đơn hàng (Reset Cart)
   if (btnReset) {
-    btnReset.addEventListener("click", () => {
+    btnReset.addEventListener("click", async () => {
       if (orderItems.length === 0 && !orderCustomer.name && !orderCustomer.phone) {
         return;
       }
-      if (confirm("Bạn có chắc chắn muốn làm mới toàn bộ đơn hàng này?")) {
+      if (await confirmAction("Bạn có chắc chắn muốn làm mới toàn bộ đơn hàng này?", "Làm mới")) {
         orderItems = [];
         orderCustomer = { name: "", phone: "", address: "" };
         orderMemberDiscountPercent = 0;
@@ -580,7 +575,7 @@ function handleOrderSearch(query) {
   const searchDropdown = document.getElementById("orderSearchDropdown");
   if (!searchDropdown) return;
 
-  if (!query || typeof allProducts === "undefined" || !Array.isArray(allProducts) || allProducts.length === 0) {
+  if (!query || allProducts.length === 0) {
     searchDropdown.style.display = "none";
     return;
   }
@@ -608,7 +603,7 @@ function handleOrderSearch(query) {
       ? `<img src="${imgUrl}" class="order-search-thumb" alt="${prod.name}">` 
       : `<img src="svg/logo.svg" class="order-search-thumb" alt="Logo">`;
 
-    const dispName = (typeof getProductDisplayName === "function") ? getProductDisplayName(prod) : prod.name;
+    const dispName = getProductDisplayName(prod);
 
     groupEl.innerHTML = `
       <div class="order-search-result-header">
@@ -657,9 +652,7 @@ function extractProductVariants(prod) {
   const variants = [];
 
   const getPriceNum = (pStr) => {
-    if (typeof parsePriceToNumber === "function") return parsePriceToNumber(pStr);
-    const s = String(pStr || "").replace(/\D/g, "");
-    return s ? parseInt(s, 10) : 0;
+    return parsePriceToNumber(pStr);
   };
 
   // 1. Fullbox 1..5
@@ -668,7 +661,7 @@ function extractProductVariants(prod) {
     const dt = prod['dungtich' + i];
     const pNum = getPriceNum(p);
     if (pNum > 0) {
-      const unit = typeof getDungTichText === "function" ? getDungTichText("Full", dt) : (dt ? `Fullbox ${dt}` : "Fullbox");
+      const unit = getDungTichText("Full", dt);
       const cost = getPriceNum(prod['giavonfull' + i]);
       variants.push({ unit, price: pNum, costPrice: cost });
     }
@@ -680,7 +673,7 @@ function extractProductVariants(prod) {
     const dt = prod['dungtich' + i];
     const pNum = getPriceNum(p);
     if (pNum > 0) {
-      const unit = typeof getDungTichText === "function" ? getDungTichText("Tester", dt) : (dt ? `Tester ${dt}` : "Tester");
+      const unit = getDungTichText("Tester", dt);
       const cost = getPriceNum(prod['giavontest' + i]);
       variants.push({ unit, price: pNum, costPrice: cost });
     }
@@ -702,7 +695,7 @@ function extractProductVariants(prod) {
     const dt = prod['dungtichgoc' + i];
     const pNum = getPriceNum(p);
     if (pNum > 0) {
-      const unit = typeof getDungTichText === "function" ? getDungTichText("Gốc", dt) : (dt ? `Gốc ${dt}` : "Gốc");
+      const unit = getDungTichText("Gốc", dt);
       variants.push({ unit, price: pNum, costPrice: 0 });
     }
   }
@@ -1097,11 +1090,6 @@ function openUnitPickerModal(item) {
   }
 
   // Tìm sản phẩm trong kho allProducts
-  if (typeof allProducts === "undefined" || !Array.isArray(allProducts)) {
-    showToast("⚠️ Chưa có dữ liệu kho sản phẩm!");
-    return;
-  }
-
   const prod = allProducts.find((p) => p.name === item.name);
   if (!prod) {
     listEl.innerHTML = `<div style="padding: 10px; text-align: center; color: var(--text-secondary); font-size: 11.5px;">Không tìm thấy biến thể sẵn có trong kho</div>`;
@@ -1400,7 +1388,7 @@ async function handleCreateInvoice() {
     return;
   }
 
-  if (typeof OrderCanvasEngine === "undefined" || !OrderCanvasEngine.generateInvoiceImage) {
+  if (!OrderCanvasEngine.generateInvoiceImage) {
     showToast("❌ Lỗi: Chưa tải được engine tạo ảnh!");
     return;
   }

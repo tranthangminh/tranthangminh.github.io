@@ -20,11 +20,9 @@ try {
 async function initStatsModule() {
   setupStatsSubnavListeners();
 
-  if (typeof StorageHelper !== "undefined") {
-    const savedSubtab = await StorageHelper.get("statsActiveSubtab", activeStatsSubtab);
-    if (savedSubtab && ["finance", "sender", "product"].includes(savedSubtab)) {
-      activeStatsSubtab = savedSubtab;
-    }
+  const savedSubtab = await StorageHelper.get("statsActiveSubtab", activeStatsSubtab);
+  if (savedSubtab && ["finance", "sender", "product"].includes(savedSubtab)) {
+    activeStatsSubtab = savedSubtab;
   }
 
   updateStatsSubnavUI(activeStatsSubtab);
@@ -59,9 +57,7 @@ function switchStatsSubtab(subtabId) {
   activeStatsSubtab = subtabId;
 
   // Lưu trạng thái subtab cuối cùng vào storage
-  if (typeof StorageHelper !== "undefined") {
-    StorageHelper.set("statsActiveSubtab", subtabId);
-  }
+  StorageHelper.set("statsActiveSubtab", subtabId);
   try {
     localStorage.setItem("statsActiveSubtab", JSON.stringify(subtabId));
   } catch (e) {}
@@ -79,25 +75,19 @@ function switchStatsSubtab(subtabId) {
     const pane = document.getElementById("statsFinancePane");
     if (pane) {
       pane.style.display = "flex";
-      if (typeof window.renderFinanceStatsView === "function") {
-        window.renderFinanceStatsView();
-      }
+      window.renderFinanceStatsView();
     }
   } else if (subtabId === "sender") {
     const pane = document.getElementById("statsSenderPane");
     if (pane) {
       pane.style.display = "flex";
-      if (typeof window.renderSenderStatsView === "function") {
-        window.renderSenderStatsView();
-      }
+      window.renderSenderStatsView();
     }
   } else if (subtabId === "product") {
     const pane = document.getElementById("statsProductPane");
     if (pane) {
       pane.style.display = "flex";
-      if (typeof window.renderProductStatsView === "function") {
-        window.renderProductStatsView();
-      }
+      window.renderProductStatsView();
     }
   }
 }
@@ -111,11 +101,9 @@ async function refreshStatsView() {
   }
 
   // Khôi phục sub-tab từ storage trước khi render
-  if (typeof StorageHelper !== "undefined") {
-    const savedSubtab = await StorageHelper.get("statsActiveSubtab", activeStatsSubtab);
-    if (savedSubtab && ["finance", "sender", "product"].includes(savedSubtab)) {
-      activeStatsSubtab = savedSubtab;
-    }
+  const savedSubtab = await StorageHelper.get("statsActiveSubtab", activeStatsSubtab);
+  if (savedSubtab && ["finance", "sender", "product"].includes(savedSubtab)) {
+    activeStatsSubtab = savedSubtab;
   }
 
   switchStatsSubtab(activeStatsSubtab);
@@ -129,15 +117,9 @@ function clearStatsData() {
   panes.forEach(p => {
     p.innerHTML = "";
   });
-  if (typeof window.resetFinanceFilters === "function") {
-    window.resetFinanceFilters();
-  }
-  if (typeof window.clearSenderStatsData === "function") {
-    window.clearSenderStatsData();
-  }
-  if (typeof window.clearProductStatsData === "function") {
-    window.clearProductStatsData();
-  }
+  window.resetFinanceFilters();
+  window.clearSenderStatsData();
+  window.clearProductStatsData();
 }
 
 // Hook được gọi khi dữ liệu tab Nhập có cập nhật (Thêm mới / sửa / reload)

@@ -5,119 +5,111 @@
   <title>Kiểm Tra Giá Vốn - Harry Perfume</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="common/tool-base.css">
   <link rel="stylesheet" href="cost-checker.css">
+  <script src="../theme-init.js"></script>
 </head>
 <body>
-  <div class="cost-checker-app">
-    <!-- Header Topbar -->
-    <header class="checker-header">
-      <div class="checker-brand">
-        <span class="checker-logo-icon">🏷️</span>
-        <h1 class="checker-title">Kiểm Tra Giá Vốn</h1>
+  <div class="tool-app">
+    <!-- Header -->
+    <header class="tool-header">
+      <div class="tool-brand">
+        <span class="tool-logo-icon">🏷️</span>
+        <h1 class="tool-title">Kiểm Tra Giá Vốn</h1>
       </div>
 
-      <div class="checker-header-actions">
-        <!-- Badge đếm sản phẩm trong kho -->
+      <div class="tool-header-actions">
         <div class="db-status-badge" id="dbStatusBadge" title="Trạng thái kho dữ liệu">
           <span class="status-dot"></span>
           <span id="dbCountText">Đang tải kho...</span>
         </div>
-
-        <!-- Nút Đổi Theme Sáng / Tối -->
-        <button type="button" class="btn-topbar btn-icon-only" id="btnToggleTheme" title="Chuyển đổi giao diện Sáng / Tối">
-          <span id="themeIcon">☀️</span>
+        <button type="button" class="btn-topbar" id="btnToggleTheme" title="Chuyển đổi giao diện Sáng / Tối">
+          <span id="themeIcon" class="icon-mask tool-icon"></span>
         </button>
       </div>
     </header>
 
-    <!-- Toolbar Thao Tác Nhanh -->
-    <section class="checker-toolbar">
+    <!-- Toolbar -->
+    <section class="tool-toolbar">
       <div class="toolbar-left">
-        <span class="counter-label" id="rowCountLabel">0 dòng</span>
-        <span class="separator">•</span>
-        <span class="counter-label matched-count" id="matchedCountLabel">0 khớp tên</span>
-        <span class="separator" id="costSeparator" style="display: none;">•</span>
-        <span class="counter-label cost-count" id="costCountLabel" style="display: none;">0 khớp giá</span>
+        <div class="row-summary" id="rowSummary"></div>
       </div>
       <div class="toolbar-right">
-        <button type="button" class="btn-action btn-toggle-preview" id="btnTogglePreview" title="Bật/Tắt hiển thị ảnh phóng to 128x128 khi rê chuột vào dòng">
-          🖼️ Hiện ảnh lớn
-        </button>
-        <button type="button" class="btn-action btn-clear" id="btnClearAll" title="Xóa trắng toàn bộ nội dung">
-          🗑️ Xóa trắng
-        </button>
+        <select id="filterSelect" class="toolbar-select" title="Lọc dòng hiển thị">
+          <option value="all">Tất Cả</option>
+          <option value="ok">Đã Đúng</option>
+          <option value="review">Cần Xem Xét</option>
+          <option value="fix">Cần Sửa</option>
+        </select>
+        <button type="button" class="btn-action btn-toolbar-icon" id="btnTogglePreview" title="Ảnh lớn: Bật (bấm để tắt)" aria-label="Ảnh lớn"><span class="icon-mask tool-icon" style="mask-image:url('../svg/images.svg');-webkit-mask-image:url('../svg/images.svg')"></span></button>
+        <button type="button" class="btn-action btn-clear btn-toolbar-icon" id="btnClearAll" title="Xóa trắng toàn bộ nội dung" aria-label="Xóa trắng"><span class="icon-mask tool-icon" style="mask-image:url('../svg/delete.svg');-webkit-mask-image:url('../svg/delete.svg')"></span></button>
       </div>
     </section>
 
-    <!-- Main Spreadsheet Container: Dạng bảng Excel với thanh cuộn chung -->
+    <!-- Bảng Excel với thanh cuộn chung -->
     <main class="spreadsheet-container" id="spreadsheetContainer">
       <table class="excel-table" id="excelTable">
         <thead>
           <tr>
             <th class="th-num">#</th>
-            <th class="th-output">
-              <span class="th-title">Output</span>
-              <button type="button" class="btn-th-action" id="btnCopyCol1" title="Copy toàn bộ cột Output để dán vào Google Sheet">
-                📋 Copy
-              </button>
-            </th>
             <th class="th-thumb">Hình</th>
-            <th class="th-input">
-              <span class="th-title">Input</span>
-              <div class="th-actions">
-                <button type="button" class="btn-th-action" id="btnPasteCol2" title="Dán danh sách tên vào cột Input">
-                  📋 Dán
-                </button>
-                <button type="button" class="btn-th-action btn-th-clear" id="btnClearCol2" title="Xóa cột Input">
-                  ✕
-                </button>
+            <!-- Tiêu đề 2 dòng khớp ô 2 hàng: trên Input Name (Dán, Xóa cột), dưới Output Name (Copy) -->
+            <th class="th-name">
+              <div class="th-stack">
+                <div class="th-line th-line-input">
+                  <span class="th-title">Input Name</span>
+                  <div class="th-actions">
+                    <button type="button" class="btn-th-action" id="btnPasteCol2" title="Dán danh sách tên vào cột Input Name">Dán</button>
+                    <button type="button" class="btn-th-action btn-th-clear btn-icon-square" id="btnClearCol2" title="Xóa cột Input Name" aria-label="Xóa cột"><span class="icon-mask tool-icon" style="mask-image:url('../svg/close.svg');-webkit-mask-image:url('../svg/close.svg')"></span></button>
+                  </div>
+                </div>
+                <div class="th-line th-line-output">
+                  <span class="th-title">Output Name</span>
+                  <button type="button" class="btn-th-action btn-icon-square" id="btnCopyCol1" title="Copy toàn bộ cột Output Name để dán vào Google Sheet" aria-label="Copy"><span class="icon-mask tool-icon" style="mask-image:url('../svg/copy.svg');-webkit-mask-image:url('../svg/copy.svg')"></span></button>
+                </div>
               </div>
             </th>
-            <th class="th-recheck">
-              <span class="th-title">Giá Recheck</span>
-              <div class="th-actions">
-                <button type="button" class="btn-th-action" id="btnPasteCol3" title="Dán giá vào cột Giá Recheck">
-                  📋 Dán
-                </button>
-                <button type="button" class="btn-th-action btn-th-clear" id="btnClearCol3" title="Xóa cột Giá Recheck">
-                  ✕
-                </button>
-              </div>
-            </th>
+            <!-- Tiêu đề 2 dòng khớp ô 2 hàng: trên Input Vốn (Dán, Xóa cột), dưới Output Vốn (Copy) -->
             <th class="th-cost">
-              <span class="th-title">Giá Vốn</span>
-              <button type="button" class="btn-th-action" id="btnCopyCol4" title="Copy toàn bộ cột Giá Vốn để dán vào Google Sheet">
-                📋 Copy
-              </button>
+              <div class="th-stack">
+                <div class="th-line th-line-input">
+                  <span class="th-title">Input Vốn</span>
+                  <div class="th-actions">
+                    <button type="button" class="btn-th-action" id="btnPasteCol3" title="Dán giá vào cột Input Vốn">Dán</button>
+                    <button type="button" class="btn-th-action btn-th-clear btn-icon-square" id="btnClearCol3" title="Xóa cột Input Vốn" aria-label="Xóa cột"><span class="icon-mask tool-icon" style="mask-image:url('../svg/close.svg');-webkit-mask-image:url('../svg/close.svg')"></span></button>
+                  </div>
+                </div>
+                <div class="th-line th-line-output">
+                  <span class="th-title">Output Vốn</span>
+                  <button type="button" class="btn-th-action btn-icon-square" id="btnCopyCol4" title="Copy toàn bộ cột Output Vốn để dán vào Google Sheet" aria-label="Copy"><span class="icon-mask tool-icon" style="mask-image:url('../svg/copy.svg');-webkit-mask-image:url('../svg/copy.svg')"></span></button>
+                </div>
+              </div>
             </th>
             <th class="th-merge">
-              <span class="th-title">Merge</span>
-              <button type="button" class="btn-th-action" id="btnCopyMerge" title="Copy toàn bộ cột Merge để dán vào Google Sheet">
-                📋 Copy
-              </button>
+              <span class="th-title">Merge Vốn</span>
+              <button type="button" class="btn-th-action btn-icon-square" id="btnCopyMerge" title="Copy toàn bộ cột Merge Vốn để dán vào Google Sheet" aria-label="Copy"><span class="icon-mask tool-icon" style="mask-image:url('../svg/copy.svg');-webkit-mask-image:url('../svg/copy.svg')"></span></button>
             </th>
           </tr>
         </thead>
-        <tbody id="excelTableBody">
-          <!-- Các dòng Excel được render động bởi cost-checker.js -->
-        </tbody>
+        <tbody id="excelTableBody"></tbody>
       </table>
     </main>
 
-    <!-- Toast Thông Báo Nhanh -->
-    <div id="costCheckerToast" class="checker-toast" style="display: none;">
-      <span id="costCheckerToastMsg">Đã copy vào bộ nhớ tạm!</span>
+    <div id="toolToast" class="tool-toast" style="display: none;">
+      <span id="toolToastMsg"></span>
     </div>
 
-    <!-- Preview Ảnh Chai 256x256 Follow Cursor Khi Hover Dòng -->
+    <!-- Ảnh lớn 128x128 khi hover dòng -->
     <div id="cursorImagePreview" class="cursor-image-preview" style="display: none;">
-      <img id="cursorImageTag" src="" alt="">
+      <img id="cursorImageTag" alt="">
     </div>
   </div>
 
   <script src="../common/formatters.js"></script>
   <script src="../storage-helper.js"></script>
+  <script src="../common/api-config.js"></script>
   <script src="../common/product-search.js"></script>
+  <script src="common/tool-shell.js"></script>
   <script src="cost-checker-parser.js"></script>
   <script src="cost-checker.js"></script>
 </body>

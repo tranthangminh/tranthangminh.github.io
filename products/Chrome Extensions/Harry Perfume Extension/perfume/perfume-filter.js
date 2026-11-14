@@ -58,9 +58,7 @@ filterSizeButtons.forEach(btn => {
     }
     
     // Áp dụng bộ lọc
-    if (typeof performSearch === "function") {
-      performSearch(searchBox.value);
-    }
+    performSearch(searchBox.value);
   });
 });
 
@@ -78,9 +76,7 @@ filterGenderButtons.forEach(btn => {
     }
     
     // Áp dụng bộ lọc
-    if (typeof performSearch === "function") {
-      performSearch(searchBox.value);
-    }
+    performSearch(searchBox.value);
   });
 });
 
@@ -106,9 +102,7 @@ filterTagButtons.forEach(btn => {
     }
     
     // Áp dụng bộ lọc
-    if (typeof performSearch === "function") {
-      performSearch(searchBox.value);
-    }
+    performSearch(searchBox.value);
   });
 });
 
@@ -167,9 +161,7 @@ function formatInputWithSuffix(inputEl) {
 
 // Ràng buộc con trỏ và định dạng cho ô nhập khoảng giá
 const debouncedPriceFilterSearch = debounce(() => {
-  if (typeof performSearch === "function") {
-    performSearch(searchBox.value);
-  }
+  performSearch(searchBox.value);
 }, 200);
 
 function setupPriceInputFormatting(inputEl) {
@@ -211,9 +203,7 @@ if (btnClearFilter) {
     filterSizeButtons.forEach(btn => btn.classList.remove("active"));
     filterGenderButtons.forEach(btn => btn.classList.remove("active"));
     filterTagButtons.forEach(btn => btn.classList.remove("active"));
-    if (typeof performSearch === "function") {
-      performSearch(searchBox.value);
-    }
+    performSearch(searchBox.value);
   });
 }
 
@@ -229,9 +219,7 @@ if (btnResetSummary) {
     filterSizeButtons.forEach(btn => btn.classList.remove("active"));
     filterGenderButtons.forEach(btn => btn.classList.remove("active"));
     filterTagButtons.forEach(btn => btn.classList.remove("active"));
-    if (typeof performSearch === "function") {
-      performSearch(searchBox.value);
-    }
+    performSearch(searchBox.value);
   });
 }
 
@@ -314,7 +302,7 @@ function updateFilterSummary() {
   activeFilterGenders.forEach(gender => {
     const badge = document.createElement("span");
     badge.className = "summary-badge";
-    const iconHTML = typeof getGenderIconHTML === "function" ? getGenderIconHTML(gender) : "";
+    const iconHTML = getGenderIconHTML(gender);
     badge.title = `Click để bỏ lọc giới tính ${gender}`;
     badge.innerHTML = `${iconHTML} ${gender} <span class="badge-remove">✕</span>`;
     badge.addEventListener("click", () => {
@@ -372,103 +360,99 @@ function updateFilterSummary() {
 }
 
 // Ghi đè hàm performSearch trong perfume.js để tích hợp bộ lọc khoảng giá, dung tích và mùa/thời điểm
-if (typeof performSearch === "function") {
-  performSearch = function(keyword) {
-    const normalizedKeyword = removeAccents(keyword).trim();
-    const tokens = normalizedKeyword.split(/\s+/).filter(t => t.length > 0);
-    
-    const hasMinPrice = filterMinPrice && filterMinPrice.value.trim() !== "";
-    const hasMaxPrice = filterMaxPrice && filterMaxPrice.value.trim() !== "";
-    
-    const minVal = hasMinPrice ? parsePriceToNumber(filterMinPrice.value) : null;
-    const maxVal = hasMaxPrice ? parsePriceToNumber(filterMaxPrice.value) : null;
-    
-    const filtered = allProducts.filter(prod => {
-      // 1. Lọc theo từ khóa tìm kiếm (kết hợp cả tên đầy đủ và tên rút gọn)
-      if (tokens.length > 0) {
-        const displayName = getProductDisplayName(prod);
-        const normalizedDisplay = removeAccents(displayName);
-        const normalizedName = removeAccents(prod.name);
-        const normalizedShort = removeAccents(prod.tenrutgon);
-        const combinedStr = `${normalizedDisplay} ${normalizedName} ${normalizedShort}`;
-        const matchKeyword = tokens.every(token => combinedStr.includes(token));
-        if (!matchKeyword) return false;
-      }
-      
-      // 2. Lọc theo dung tích & khoảng giá (Full, Tester, 5ml, 10ml, 20ml, Gốc)
-      const hasSizeFilter = activeFilterSizes.length > 0;
-      const hasPriceRange = (minVal !== null || maxVal !== null);
-
-      if (hasSizeFilter || hasPriceRange) {
-        const sizesToCheck = hasSizeFilter ? activeFilterSizes : ["Full", "Tester", "5ml", "10ml", "20ml", "Gốc"];
-        
-        const hasMatchingPrice = sizesToCheck.some(size => {
-          let priceStrs = [];
-          if (size === "Full") {
-            priceStrs = [prod.giafull1, prod.giafull2, prod.giafull3, prod.giafull4, prod.giafull5];
-          } else if (size === "Tester") {
-            priceStrs = [prod.giatester1, prod.giatester2, prod.giatester3, prod.giatester4, prod.giatester5];
-          } else if (size === "Gốc") {
-            priceStrs = [prod.giagoc1, prod.giagoc2, prod.giagoc3, prod.giagoc4, prod.giagoc5];
-          } else if (size === "5ml") {
-            priceStrs = [prod.gia5ml];
-          } else if (size === "10ml") {
-            priceStrs = [prod.gia10ml];
-          } else if (size === "20ml") {
-            priceStrs = [prod.gia20ml];
-          }
-          
-          return priceStrs.some(priceStr => {
-            const cleanP = cleanString(priceStr);
-            if (!cleanP || cleanP === "-") return false;
-            
-            if (hasPriceRange) {
-              const priceNum = parsePriceToNumber(priceStr);
-              if (minVal !== null && priceNum < minVal) return false;
-              if (maxVal !== null && priceNum > maxVal) return false;
-            }
-            
-            return true;
-          });
-        });
-        
-        if (!hasMatchingPrice) return false;
-      }
-      
-      // 3. Lọc theo nhóm mùa (Xuân, Hạ, Thu, Đông) - logic AND trong nhóm
-      if (activeFilterSeasons.length > 0) {
-        const matchSeason = activeFilterSeasons.every(tag => isProductTagActive(prod, tag));
-        if (!matchSeason) return false;
-      }
-      
-      // 4. Lọc theo nhóm thời điểm (Ngày, Đêm) - logic AND trong nhóm
-      if (activeFilterTimes.length > 0) {
-        const matchTime = activeFilterTimes.every(tag => isProductTagActive(prod, tag));
-        if (!matchTime) return false;
-      }
-      
-      // 5. Lọc theo Giới tính (Nam, Nữ, Unisex) - Khớp một trong các giới tính chọn (OR logic)
-      if (activeFilterGenders.length > 0) {
-        const prodSex = cleanString(prod.sex).trim().toLowerCase();
-        const matchGender = activeFilterGenders.some(g => {
-          const targetG = g.toLowerCase();
-          if (targetG === "nam") return prodSex === "nam";
-          if (targetG === "nữ" || targetG === "nu") return prodSex === "nữ" || prodSex === "nu";
-          if (targetG === "unisex") return prodSex === "unisex";
-          return false;
-        });
-        if (!matchGender) return false;
-      }
-      
-      return true;
-    });
-    
-    // Gọi hàm renderList có sẵn từ perfume.js
-    if (typeof renderList === "function") {
-      renderList(filtered);
+performSearch = function(keyword) {
+  const normalizedKeyword = removeAccents(keyword).trim();
+  const tokens = normalizedKeyword.split(/\s+/).filter(t => t.length > 0);
+  
+  const hasMinPrice = filterMinPrice && filterMinPrice.value.trim() !== "";
+  const hasMaxPrice = filterMaxPrice && filterMaxPrice.value.trim() !== "";
+  
+  const minVal = hasMinPrice ? parsePriceToNumber(filterMinPrice.value) : null;
+  const maxVal = hasMaxPrice ? parsePriceToNumber(filterMaxPrice.value) : null;
+  
+  const filtered = allProducts.filter(prod => {
+    // 1. Lọc theo từ khóa tìm kiếm (kết hợp cả tên đầy đủ và tên rút gọn)
+    if (tokens.length > 0) {
+      const displayName = getProductDisplayName(prod);
+      const normalizedDisplay = removeAccents(displayName);
+      const normalizedName = removeAccents(prod.name);
+      const normalizedShort = removeAccents(prod.tenrutgon);
+      const combinedStr = `${normalizedDisplay} ${normalizedName} ${normalizedShort}`;
+      const matchKeyword = tokens.every(token => combinedStr.includes(token));
+      if (!matchKeyword) return false;
     }
     
-    // Cập nhật lại thanh hiển thị tóm tắt bộ lọc đang hoạt động
-    updateFilterSummary();
-  };
-}
+    // 2. Lọc theo dung tích & khoảng giá (Full, Tester, 5ml, 10ml, 20ml, Gốc)
+    const hasSizeFilter = activeFilterSizes.length > 0;
+    const hasPriceRange = (minVal !== null || maxVal !== null);
+
+    if (hasSizeFilter || hasPriceRange) {
+      const sizesToCheck = hasSizeFilter ? activeFilterSizes : ["Full", "Tester", "5ml", "10ml", "20ml", "Gốc"];
+      
+      const hasMatchingPrice = sizesToCheck.some(size => {
+        let priceStrs = [];
+        if (size === "Full") {
+          priceStrs = [prod.giafull1, prod.giafull2, prod.giafull3, prod.giafull4, prod.giafull5];
+        } else if (size === "Tester") {
+          priceStrs = [prod.giatester1, prod.giatester2, prod.giatester3, prod.giatester4, prod.giatester5];
+        } else if (size === "Gốc") {
+          priceStrs = [prod.giagoc1, prod.giagoc2, prod.giagoc3, prod.giagoc4, prod.giagoc5];
+        } else if (size === "5ml") {
+          priceStrs = [prod.gia5ml];
+        } else if (size === "10ml") {
+          priceStrs = [prod.gia10ml];
+        } else if (size === "20ml") {
+          priceStrs = [prod.gia20ml];
+        }
+        
+        return priceStrs.some(priceStr => {
+          const cleanP = cleanString(priceStr);
+          if (!cleanP || cleanP === "-") return false;
+          
+          if (hasPriceRange) {
+            const priceNum = parsePriceToNumber(priceStr);
+            if (minVal !== null && priceNum < minVal) return false;
+            if (maxVal !== null && priceNum > maxVal) return false;
+          }
+          
+          return true;
+        });
+      });
+      
+      if (!hasMatchingPrice) return false;
+    }
+    
+    // 3. Lọc theo nhóm mùa (Xuân, Hạ, Thu, Đông) - logic AND trong nhóm
+    if (activeFilterSeasons.length > 0) {
+      const matchSeason = activeFilterSeasons.every(tag => isProductTagActive(prod, tag));
+      if (!matchSeason) return false;
+    }
+    
+    // 4. Lọc theo nhóm thời điểm (Ngày, Đêm) - logic AND trong nhóm
+    if (activeFilterTimes.length > 0) {
+      const matchTime = activeFilterTimes.every(tag => isProductTagActive(prod, tag));
+      if (!matchTime) return false;
+    }
+    
+    // 5. Lọc theo Giới tính (Nam, Nữ, Unisex) - Khớp một trong các giới tính chọn (OR logic)
+    if (activeFilterGenders.length > 0) {
+      const prodSex = cleanString(prod.sex).trim().toLowerCase();
+      const matchGender = activeFilterGenders.some(g => {
+        const targetG = g.toLowerCase();
+        if (targetG === "nam") return prodSex === "nam";
+        if (targetG === "nữ" || targetG === "nu") return prodSex === "nữ" || prodSex === "nu";
+        if (targetG === "unisex") return prodSex === "unisex";
+        return false;
+      });
+      if (!matchGender) return false;
+    }
+    
+    return true;
+  });
+  
+  // Gọi hàm renderList có sẵn từ perfume.js
+  renderList(filtered);
+  
+  // Cập nhật lại thanh hiển thị tóm tắt bộ lọc đang hoạt động
+  updateFilterSummary();
+};

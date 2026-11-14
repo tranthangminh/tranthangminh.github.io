@@ -21,24 +21,16 @@ try {
   if (pdMode) productDetailSortMode = JSON.parse(pdMode);
 } catch (e) {}
 
-if (typeof StorageHelper !== "undefined") {
-  StorageHelper.get("statsProductSortMode", productSortMode).then(val => {
-    if (val) productSortMode = val;
-  });
-  StorageHelper.get("statsProductDetailSortMode", productDetailSortMode).then(val => {
-    if (val) productDetailSortMode = val;
-  });
-}
+StorageHelper.get("statsProductSortMode", productSortMode).then(val => {
+  if (val) productSortMode = val;
+});
+StorageHelper.get("statsProductDetailSortMode", productDetailSortMode).then(val => {
+  if (val) productDetailSortMode = val;
+});
 
 // Lấy danh sách dòng nhập từ import module (Single Source of Truth)
 function getProductRawData() {
-  if (typeof window.getImportRawData === "function") {
-    return window.getImportRawData() || [];
-  }
-  if (typeof importRawData !== "undefined" && Array.isArray(importRawData)) {
-    return importRawData;
-  }
-  return [];
+  return window.getImportRawData();
 }
 
 // Lấy danh sách sản phẩm chuẩn từ Dropdown Cache (Cột "List-Sản phẩm")
@@ -123,7 +115,7 @@ function aggregateProductData(rawData) {
       prodObj.totalBottles += qty;
 
       // Tính ngày nhập và giá
-      const dateTs = typeof parseDateValue === "function" ? parseDateValue(item.ngay) : 0;
+      const dateTs = parseDateValue(item.ngay);
       if (dateTs >= prodObj.latestDateTimestamp) {
         prodObj.latestDateTimestamp = dateTs;
         prodObj.latestDate = cleanString(item.ngay);
@@ -151,8 +143,8 @@ function aggregateProductData(rawData) {
   // Đảm bảo các đơn nhập trong từng sản phẩm được sắp xếp mới nhất ở trên
   productList.forEach(prod => {
     prod.items.sort((a, b) => {
-      const tsA = typeof parseDateValue === "function" ? parseDateValue(a.ngay) : 0;
-      const tsB = typeof parseDateValue === "function" ? parseDateValue(b.ngay) : 0;
+      const tsA = parseDateValue(a.ngay);
+      const tsB = parseDateValue(b.ngay);
       return tsB - tsA;
     });
     // Nếu chưa có latestPrice từ loop trước (do ngày không thứ tự), lấy từ item đầu tiên
@@ -286,7 +278,7 @@ function renderProductListView(container, allProducts) {
           </div>
         ` : ""}
         ${filteredProducts.map(p => {
-          const imgUrl = typeof getProductImageByName === "function" ? getProductImageByName(p.name) : "";
+          const imgUrl = getProductImageByName(p.name);
           const importCount = p.items.length;
           const subText = importCount > 0 
             ? `<span class="badge-count">${importCount} lần</span> • ${p.totalBottles} chai`
@@ -367,9 +359,7 @@ function setupProductListEventListeners(container) {
         const sortVal = item.getAttribute("data-sort");
         if (sortVal) {
           productSortMode = sortVal;
-          if (typeof StorageHelper !== "undefined") {
-            StorageHelper.set("statsProductSortMode", sortVal);
-          }
+          StorageHelper.set("statsProductSortMode", sortVal);
           try {
             localStorage.setItem("statsProductSortMode", JSON.stringify(sortVal));
           } catch (err) {}
@@ -397,7 +387,7 @@ function setupProductListEventListeners(container) {
 
 // 2. MÀN HÌNH CHI TIẾT LỊCH SỬ CỦA 1 SẢN PHẨM
 function renderProductDetailView(container, product) {
-  const imgUrl = typeof getProductImageByName === "function" ? getProductImageByName(product.name) : "";
+  const imgUrl = getProductImageByName(product.name);
 
   // Tạo bản sao các đơn nhập để sắp xếp và lọc
   const itemsList = [...product.items];
@@ -405,8 +395,8 @@ function renderProductDetailView(container, product) {
   // Sắp xếp danh sách lịch sử
   itemsList.sort((a, b) => {
     if (productDetailSortMode === "oldest") {
-      const tsA = typeof parseDateValue === "function" ? parseDateValue(a.ngay) : 0;
-      const tsB = typeof parseDateValue === "function" ? parseDateValue(b.ngay) : 0;
+      const tsA = parseDateValue(a.ngay);
+      const tsB = parseDateValue(b.ngay);
       return tsA - tsB;
     } else if (productDetailSortMode === "price_desc") {
       const priceA = parseNumber(a.gia || a.thanh_tien, 0);
@@ -422,8 +412,8 @@ function renderProductDetailView(container, product) {
       return sA.localeCompare(sB, "vi");
     } else {
       // Mặc định: "recent" (ngày nhập mới nhất lên trước)
-      const tsA = typeof parseDateValue === "function" ? parseDateValue(a.ngay) : 0;
-      const tsB = typeof parseDateValue === "function" ? parseDateValue(b.ngay) : 0;
+      const tsA = parseDateValue(a.ngay);
+      const tsB = parseDateValue(b.ngay);
       return tsB - tsA;
     }
   });
@@ -614,9 +604,7 @@ function setupProductDetailEventListeners(container) {
         const sortVal = item.getAttribute("data-sort");
         if (sortVal) {
           productDetailSortMode = sortVal;
-          if (typeof StorageHelper !== "undefined") {
-            StorageHelper.set("statsProductDetailSortMode", sortVal);
-          }
+          StorageHelper.set("statsProductDetailSortMode", sortVal);
           try {
             localStorage.setItem("statsProductDetailSortMode", JSON.stringify(sortVal));
           } catch (err) {}

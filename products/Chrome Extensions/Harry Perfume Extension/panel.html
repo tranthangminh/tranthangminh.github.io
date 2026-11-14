@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="stats/stats-sender.css">
   <link rel="stylesheet" href="stats/stats-product.css">
   <link rel="stylesheet" href="mini-tools/mini-tools.css">
+  <script src="theme-init.js"></script>
 </head>
 <body>
   <!-- Toast thông báo -->
@@ -193,10 +194,24 @@
         <h3 class="mini-tools-section-title">Tools</h3>
         <div class="mini-tools-grid">
           <!-- Thẻ 1: Kiểm Tra Giá Vốn -->
-          <div class="mini-tool-card" id="cardToolCostChecker" role="button" tabindex="0" title="Mở cửa sổ Kiểm tra giá Vốn">
+          <div class="mini-tool-card" data-tool-page="mini-tools/cost-checker.html" role="button" tabindex="0" title="Mở cửa sổ Kiểm tra giá Vốn">
             <div class="tool-card-icon">🏷️</div>
             <div class="tool-card-info">
               <h4 class="tool-card-title">Kiểm tra giá Vốn</h4>
+            </div>
+          </div>
+          <!-- Thẻ 2: (M) Chuẩn hóa Tên file Nhập (chỉ tài khoản Minh) -->
+          <div class="mini-tool-card" data-tool-page="mini-tools/name-normalizer.html" role="button" tabindex="0" title="Mở cửa sổ (M) Chuẩn hóa Tên file Nhập">
+            <div class="tool-card-icon">🧹</div>
+            <div class="tool-card-info">
+              <h4 class="tool-card-title">(M) Chuẩn hóa Tên file Nhập</h4>
+            </div>
+          </div>
+          <!-- Thẻ 3: (M) Kiểm Tra Dung Tích (chỉ tài khoản Minh) -->
+          <div class="mini-tool-card" data-tool-page="mini-tools/volume-checker.html" role="button" tabindex="0" title="Mở cửa sổ (M) Kiểm Tra Dung Tích">
+            <div class="tool-card-icon">📏</div>
+            <div class="tool-card-info">
+              <h4 class="tool-card-title">(M) Kiểm Tra Dung Tích</h4>
             </div>
           </div>
         </div>
@@ -243,6 +258,22 @@
             <div class="tool-card-icon">📗</div>
             <div class="tool-card-info">
               <h4 class="tool-card-title">Bảng Giá CTV</h4>
+            </div>
+          </div>
+
+          <!-- Thẻ 7: (M) Data Sets (chỉ tài khoản Minh) -->
+          <div class="mini-tool-card" data-url="https://docs.google.com/spreadsheets/d/1gZ67ufW3saPQfE5qC7XapLt8feuuFCE9mJwLY06qTBE/edit?usp=sharing" role="button" tabindex="0" title="Mở trang tính (M) Data Sets">
+            <div class="tool-card-icon">📗</div>
+            <div class="tool-card-info">
+              <h4 class="tool-card-title">(M) Data Sets</h4>
+            </div>
+          </div>
+
+          <!-- Thẻ 8: (M) Sapo Data (chỉ tài khoản Minh) -->
+          <div class="mini-tool-card" data-url="https://docs.google.com/spreadsheets/d/1YnsjpWdine38XIkSsihAGzIMhNPaJ1I6Cj-JlVNUyKw/edit?usp=drive_link" role="button" tabindex="0" title="Mở trang tính (M) Sapo Data">
+            <div class="tool-card-icon">📗</div>
+            <div class="tool-card-info">
+              <h4 class="tool-card-title">(M) Sapo Data</h4>
             </div>
           </div>
         </div>
@@ -823,7 +854,7 @@
               </div>
               <div class="import-top-cell">
                 <span>👤</span>
-                <span id="addImportNguoiGui" class="import-top-val is-placeholder" data-field="nguoi_gui" contenteditable="true" title="Người gửi / nơi bán">+ Người gửi</span>
+                <span id="addImportNguoiGui" class="import-top-val" data-field="nguoi_gui" contenteditable="true" data-ph="Người gửi" title="Người gửi / nơi bán"></span>
               </div>
             </div>
 
@@ -840,10 +871,10 @@
             <!-- Cột 3: Người nhập và Nguồn tiền -->
             <div class="import-top-col import-top-col-3">
               <div class="import-top-cell">
-                <select id="addImportNguoiNhap" class="import-badge badge-importer is-placeholder" data-field="nguoi_nhap" title="Người nhập"></select>
+                <select id="addImportNguoiNhap" class="import-badge badge-importer is-empty" data-field="nguoi_nhap" title="Người nhập"></select>
               </div>
               <div class="import-top-cell">
-                <select id="addImportNguonTien" class="import-badge badge-fund is-placeholder" data-field="nguon_tien" title="Nguồn tiền / Quỹ"></select>
+                <select id="addImportNguonTien" class="import-badge badge-fund is-empty" data-field="nguon_tien" title="Nguồn tiền / Quỹ"></select>
               </div>
             </div>
           </div>
@@ -862,9 +893,8 @@
             </div>
           </div>
 
-          <!-- Footer thẻ: Ghi chú chung & Tóm tắt tổng kiện -->
+          <!-- Footer thẻ: Tóm tắt tổng kiện (ghi chú nằm ở từng dòng sản phẩm) -->
           <div class="import-card-footer add-import-card-footer">
-            <div id="addImportGhiChu" class="import-card-note is-placeholder" data-field="ghi_chu" contenteditable="true" title="Ghi chú">+ Thêm ghi chú...</div>
             <div class="import-card-group-summary add-import-summary">
               <span>Đơn hàng: <strong id="addImportItemsCount">1 món</strong></span>
               <span class="import-group-total">💵 <strong id="addImportTotalAmount">0</strong></span>
@@ -879,7 +909,25 @@
     </div>
   </div>
 
+  <!-- Modal xác nhận dùng chung (thay window.confirm) - đặt cuối DOM để luôn nằm trên cùng -->
+  <div id="confirmModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Xác nhận</h4>
+        <button type="button" id="btnCloseConfirmModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmModalMsg" class="confirm-modal-msg"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCancelConfirmModal" class="btn-secondary">Hủy</button>
+        <button type="button" id="btnOkConfirmModal" class="btn-primary">Đồng ý</button>
+      </div>
+    </div>
+  </div>
+
   <script src="common/formatters.js"></script>
+  <script src="common/api-config.js"></script>
   <script src="storage-helper.js"></script>
   <script src="common/date-helper.js"></script>
   <script src="common/toast.js"></script>

@@ -1,5 +1,7 @@
 /* --------------------------------------------------------------------------
-   ICONS: the only place that maps monochrome icon names to SVG files.
+   ICONS: the only place that maps icon names to SVG files.
+   .icon-mask = monochrome, painted with currentColor.
+   .icon-img  = multicolor, keeps the SVG's own colors.
    Add an icon: drop the file in svg/ and add one line below (class = file name).
    Selectors are compound so generic site classes like .icon-close stay untouched.
    This file is injected into web pages, where a relative url() would resolve
@@ -19,6 +21,30 @@
   mask-position: center;
   pointer-events: none !important;
   border-radius: 0 !important;
+}
+
+.icon-img {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none !important;
+  border-radius: 0 !important;
+}
+
+/* The floating dock lives in a shadow root that cannot use the classes below.
+   Custom properties inherit into it, so the dock reads these instead of loading this file. */
+:root {
+  --max-logo: url('chrome-extension://__MSG_@@extension_id__/svg/logo-MAX.svg');
+  --max-dock-icon-brush: url('chrome-extension://__MSG_@@extension_id__/svg/brush.svg');
+  --max-dock-icon-camera: url('chrome-extension://__MSG_@@extension_id__/svg/camera.svg');
+  --max-dock-icon-colorpicker: url('chrome-extension://__MSG_@@extension_id__/svg/colorpicker.svg');
+  --max-dock-icon-crop: url('chrome-extension://__MSG_@@extension_id__/svg/crop.svg');
+  --max-dock-icon-fullscreen: url('chrome-extension://__MSG_@@extension_id__/svg/fullscreen.svg');
+  --max-dock-icon-videos: url('chrome-extension://__MSG_@@extension_id__/svg/videos.svg');
 }
 
 .icon-mask.icon-align-center { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/align-center.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/align-center.svg'); }
@@ -52,7 +78,6 @@
 .icon-mask.icon-layers { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/layers.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/layers.svg'); }
 .icon-mask.icon-light-mode { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/light-mode.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/light-mode.svg'); }
 .icon-mask.icon-log { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/log.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/log.svg'); }
-.icon-mask.icon-logo-MAX { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/logo-MAX.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/logo-MAX.svg'); }
 .icon-mask.icon-minus { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/minus.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/minus.svg'); }
 .icon-mask.icon-mouse { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/mouse.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/mouse.svg'); }
 .icon-mask.icon-open-tab { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/open-tab.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/open-tab.svg'); }
@@ -97,3 +122,8 @@
 .icon-mask.icon-yandex { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/yandex.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/yandex.svg'); }
 .icon-mask.icon-zap { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/zap.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/zap.svg'); }
 .icon-mask.icon-zoom { -webkit-mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/zoom.svg'); mask-image: url('chrome-extension://__MSG_@@extension_id__/svg/zoom.svg'); }
+
+.icon-img.icon-kofi { background-image: url('chrome-extension://__MSG_@@extension_id__/svg/kofi.svg'); }
+.icon-img.icon-lang-EN { background-image: url('chrome-extension://__MSG_@@extension_id__/svg/lang-EN.svg'); }
+.icon-img.icon-lang-VN { background-image: url('chrome-extension://__MSG_@@extension_id__/svg/lang-VN.svg'); }
+.icon-img.icon-logo-MAX { background-image: var(--max-logo); }

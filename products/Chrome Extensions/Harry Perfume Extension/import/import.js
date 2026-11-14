@@ -4,8 +4,6 @@
 // Sắp xếp mặc định: Ngày mới nhất ở trên cùng
 // ==========================================================================
 
-const IMPORT_API_URL = "https://script.google.com/macros/s/AKfycby6OJtOZFpRldqw5oEZK318FsF-YV-gFZVPT2RycNdkezdpilFNGvhb-ax24ZFeD1pzOw/exec";
-
 let importRawData = [];
 let importGroupedData = [];
 let importFilteredGroups = [];
@@ -43,29 +41,21 @@ async function initImportModule() {
     }
 
     // Khôi phục bộ lọc đã lưu từ phiên trước (nếu có)
-    if (typeof StorageHelper !== "undefined") {
-      try {
-        const savedFilter = await StorageHelper.get("activeImportFilter", "all");
-        if (savedFilter && IMPORT_FILTER_LABELS[savedFilter]) {
-          activeImportFilter = savedFilter;
-          applyImportFilterUI(activeImportFilter);
-        }
-      } catch (e) {}
+    const savedFilter = await StorageHelper.get("activeImportFilter", "all");
+    if (savedFilter && IMPORT_FILTER_LABELS[savedFilter]) {
+      activeImportFilter = savedFilter;
+      applyImportFilterUI(activeImportFilter);
     }
 
-    if (typeof StorageHelper !== "undefined") {
-      const cached = await StorageHelper.get("cachedImportData", []);
-      if (Array.isArray(cached) && cached.length > 0) {
-        importRawData = sortImportData(cached);
-        renderImportList();
-        if (typeof window.onImportDataUpdated === "function") {
-          window.onImportDataUpdated();
-        }
-      }
-      const cachedLists = await StorageHelper.get("cachedImportLists", null);
-      if (cachedLists) {
-        window.cachedImportLists = cachedLists;
-      }
+    const cached = await StorageHelper.get("cachedImportData", []);
+    if (Array.isArray(cached) && cached.length > 0) {
+      importRawData = sortImportData(cached);
+      renderImportList();
+      window.onImportDataUpdated();
+    }
+    const cachedLists = await StorageHelper.get("cachedImportLists", null);
+    if (cachedLists) {
+      window.cachedImportLists = cachedLists;
     }
     fetchImportData(true);
   } catch (e) {
@@ -121,19 +111,13 @@ async function fetchImportData(silent = false) {
 
     if (rawItems.length > 0) {
       importRawData = sortImportData(rawItems);
-      if (typeof StorageHelper !== "undefined") {
-        await StorageHelper.set("cachedImportData", importRawData);
-      }
+      await StorageHelper.set("cachedImportData", importRawData);
       if (data && (data.lists || data.dropdowns)) {
         window.cachedImportLists = data.lists || data.dropdowns;
-        if (typeof StorageHelper !== "undefined") {
-          await StorageHelper.set("cachedImportLists", window.cachedImportLists);
-        }
+        await StorageHelper.set("cachedImportLists", window.cachedImportLists);
       }
       renderImportList();
-      if (typeof window.onImportDataUpdated === "function") {
-        window.onImportDataUpdated();
-      }
+      window.onImportDataUpdated();
       if (!silent) {
         showToast(`✨ Đã nạp ${importRawData.length.toLocaleString("vi-VN")} dòng nhập hàng!`);
       }
@@ -160,6 +144,7 @@ function clearImportData() {
   importFilteredGroups = [];
   activeEditingGroupId = null;
   editedRowsMap.clear();
+  window.cachedImportLists = null;
   hideImportLoadingIndicator();
   hideComboboxMenu();
   const listContainer = document.getElementById("importListContainer");
@@ -172,9 +157,7 @@ function clearImportData() {
   applyImportFilterUI("all");
   const filterDropdown = document.getElementById("importFilterDropdown");
   if (filterDropdown) filterDropdown.style.display = "none";
-  if (typeof window.clearStatsData === "function") {
-    window.clearStatsData();
-  }
+  window.clearStatsData();
 }
 
 // Gom các dòng nhập hàng theo Ngày + Người gửi + Trạng thái thành từng Kiện Hàng (Package)
@@ -208,7 +191,6 @@ function groupImportData(rawItems) {
         tinh_trang: item.tinh_trang || "",
         da_thanh_toan: item.da_thanh_toan || "",
         nguon_tien: item.nguon_tien || "",
-        ghi_chu: item.ghi_chu || "",
         items: []
       };
       groupsMap.set(groupKey, group);
@@ -221,7 +203,7 @@ function groupImportData(rawItems) {
     if (!grp.tinh_trang && item.tinh_trang) grp.tinh_trang = item.tinh_trang;
     if (!grp.da_thanh_toan && item.da_thanh_toan) grp.da_thanh_toan = item.da_thanh_toan;
     if (!grp.nguon_tien && item.nguon_tien) grp.nguon_tien = item.nguon_tien;
-    if (!grp.ghi_chu && item.ghi_chu) grp.ghi_chu = item.ghi_chu;
+    // Ghi chú là của từng chai (item.ghi_chu), không gom lên kiện
 
     grp.items.push(item);
   });
@@ -264,39 +246,28 @@ function applyStatusToCardUI(card, statusVal) {
   if (isInactive) {
     card.classList.remove("theme-pay-paid", "theme-pay-unpaid");
     card.classList.add("theme-pay-none");
-    if (paidEl) {
-      if (paidEl.tagName === "SELECT") {
-        paidEl.disabled = true;
-        paidEl.innerHTML = '<option value="" selected>—</option>';
-        paidEl.className = "import-badge badge-disabled import-val-locked";
+    // Hỏi Giá / Hoàn Hàng: Thanh toán, Nguồn tiền, SL, Thành tiền không áp dụng -> khóa và để trống
+    [paidEl, fundEl].forEach(el => {
+      if (!el) return;
+      if (el.tagName === "SELECT") {
+        el.disabled = true;
+        el.innerHTML = '<option value="" selected></option>';
       } else {
-        paidEl.setAttribute("data-val", "");
-        paidEl.innerText = "—";
-        paidEl.className = "import-badge badge-disabled import-val-locked";
-        paidEl.removeAttribute("contenteditable");
+        el.setAttribute("data-val", "");
+        el.innerText = "";
+        el.removeAttribute("contenteditable");
       }
-    }
-    if (fundEl) {
-      if (fundEl.tagName === "SELECT") {
-        fundEl.disabled = true;
-        fundEl.innerHTML = '<option value="" selected>—</option>';
-        fundEl.className = "import-badge badge-disabled import-val-locked";
-      } else {
-        fundEl.setAttribute("data-val", "");
-        fundEl.innerText = "—";
-        fundEl.className = "import-badge badge-disabled import-val-locked";
-        fundEl.removeAttribute("contenteditable");
-      }
-    }
+      el.className = "import-badge badge-disabled import-val-locked";
+    });
     slEls.forEach(el => {
-      el.innerText = "—";
+      el.innerText = "";
       el.classList.add("import-val-locked");
       el.removeAttribute("contenteditable");
     });
     totalEls.forEach(el => {
-      el.innerText = "—";
+      el.innerText = "";
     });
-    if (groupTotalEl) groupTotalEl.innerText = "—";
+    if (groupTotalEl) groupTotalEl.innerText = "";
   } else {
     if (paidEl) {
       if (paidEl.tagName === "SELECT") {
@@ -323,18 +294,18 @@ function applyStatusToCardUI(card, statusVal) {
           fundEl.disabled = false;
           fundEl.innerHTML = getFundSelectOptionsHtml("", false);
           fundEl.value = "";
-          fundEl.className = "import-badge badge-fund is-placeholder";
+          fundEl.className = "import-badge badge-fund is-empty";
         }
       } else if (fundEl.classList.contains("badge-disabled")) {
         fundEl.setAttribute("data-val", "");
-        fundEl.innerText = isCardEditing ? "💳 + Nguồn" : "💳 —";
-        fundEl.className = isCardEditing ? "import-badge badge-fund is-placeholder" : "import-badge badge-fund badge-fund-empty";
+        fundEl.innerText = "";
+        fundEl.className = "import-badge badge-fund badge-fund-empty";
         if (isCardEditing) fundEl.setAttribute("contenteditable", "true");
       }
     }
     slEls.forEach(el => {
       el.classList.remove("import-val-locked");
-      if (el.innerText === "—") el.innerText = "1";
+      if (!el.innerText.trim()) el.innerText = "1";
       if (isCardEditing) el.setAttribute("contenteditable", "true");
     });
     let gTot = 0;
@@ -439,12 +410,12 @@ function createImportCardHtml(group, idx = 0) {
     sClass = "badge-status-cancel";
     statusThemeClass = "theme-status-cancel";
   }
-  const displayStatus = statusVal || (isCardEditing ? "+ Trạng thái" : "—");
-  const isPlaceholderClass = !statusVal ? " is-placeholder" : "";
+  // Ô trống để trống (select trống: class is-empty ẩn chữ "(Trống)" của lựa chọn đang chọn)
+  const emptyCls = (v) => (v ? "" : " is-empty");
   if (isCardEditing) {
-    statusHtml = `<select class="import-badge ${sClass}" data-field="tinh_trang" title="Trạng thái kiện hàng">${getStatusSelectOptionsHtml(ttRaw)}</select>`;
+    statusHtml = `<select class="import-badge ${sClass}${emptyCls(statusVal)}" data-field="tinh_trang" title="Trạng thái kiện hàng">${getStatusSelectOptionsHtml(ttRaw)}</select>`;
   } else {
-    statusHtml = `<span class="import-badge ${sClass}${isPlaceholderClass}" data-field="tinh_trang" data-val="${esc(ttRaw)}">${esc(displayStatus)}</span>`;
+    statusHtml = `<span class="import-badge ${sClass}" data-field="tinh_trang" data-val="${esc(ttRaw)}">${esc(statusVal)}</span>`;
   }
 
   // Hàng 4 (Dùng chung): Đã thanh toán
@@ -460,11 +431,11 @@ function createImportCardHtml(group, idx = 0) {
     if (isCardEditing) {
       paidHtml = `<select class="import-badge badge-disabled import-val-locked" data-field="da_thanh_toan" disabled title="Không áp dụng">${getPaymentSelectOptionsHtml(ttPay, true)}</select>`;
     } else {
-      paidHtml = `<span class="import-badge badge-disabled import-val-locked" data-field="da_thanh_toan" data-val="" contenteditable="false" title="Không áp dụng">—</span>`;
+      paidHtml = `<span class="import-badge badge-disabled import-val-locked" data-field="da_thanh_toan" data-val="" contenteditable="false" title="Không áp dụng"></span>`;
     }
   } else {
     let badgeClass = "badge-paid-none";
-    let displayPay = "—";
+    let displayPay = "";
     let dataVal = "";
 
     if (isPaid) {
@@ -480,12 +451,11 @@ function createImportCardHtml(group, idx = 0) {
     } else {
       payThemeClass = "theme-pay-none";
       badgeClass = "badge-paid-none";
-      displayPay = isCardEditing ? "+ Thanh toán" : "—";
       dataVal = "";
     }
 
     if (isCardEditing) {
-      paidHtml = `<select class="import-badge ${badgeClass}" data-field="da_thanh_toan" title="Tình trạng thanh toán">${getPaymentSelectOptionsHtml(ttPay, false)}</select>`;
+      paidHtml = `<select class="import-badge ${badgeClass}${emptyCls(dataVal)}" data-field="da_thanh_toan" title="Tình trạng thanh toán">${getPaymentSelectOptionsHtml(ttPay, false)}</select>`;
     } else {
       paidHtml = `<span class="import-badge ${badgeClass}" data-field="da_thanh_toan" data-val="${dataVal}">${displayPay}</span>`;
     }
@@ -495,12 +465,12 @@ function createImportCardHtml(group, idx = 0) {
   let importerHtml = "";
   const ttImporter = cleanStr(group.nguoi_nhap);
   if (isCardEditing) {
-    importerHtml = `<select class="import-badge badge-importer${!ttImporter ? ' is-placeholder' : ''}" data-field="nguoi_nhap" title="Người nhập">${getImporterSelectOptionsHtml(ttImporter)}</select>`;
+    importerHtml = `<select class="import-badge badge-importer${emptyCls(ttImporter)}" data-field="nguoi_nhap" title="Người nhập">${getImporterSelectOptionsHtml(ttImporter)}</select>`;
   } else {
     if (ttImporter) {
       importerHtml = `<span class="import-badge badge-importer" data-field="nguoi_nhap" data-val="${esc(ttImporter)}" title="Người nhập: ${esc(ttImporter)}">👤 ${esc(ttImporter)}</span>`;
     } else {
-      importerHtml = `<span class="import-badge badge-importer badge-importer-empty" data-val="" title="Chưa có người nhập">👤 —</span>`;
+      importerHtml = `<span class="import-badge badge-importer badge-importer-empty" data-val="" title="Chưa có người nhập"></span>`;
     }
   }
 
@@ -511,57 +481,52 @@ function createImportCardHtml(group, idx = 0) {
     if (isCardEditing) {
       fundHtml = `<select class="import-badge badge-disabled import-val-locked" data-field="nguon_tien" disabled title="Không áp dụng">${getFundSelectOptionsHtml(ttFund, true)}</select>`;
     } else {
-      fundHtml = `<span class="import-badge badge-disabled import-val-locked" data-field="nguon_tien" data-val="" contenteditable="false" title="Không áp dụng">—</span>`;
+      fundHtml = `<span class="import-badge badge-disabled import-val-locked" data-field="nguon_tien" data-val="" contenteditable="false" title="Không áp dụng"></span>`;
     }
   } else {
     if (isCardEditing) {
-      fundHtml = `<select class="import-badge badge-fund${!ttFund ? ' is-placeholder' : ''}" data-field="nguon_tien" title="Nguồn tiền / Quỹ">${getFundSelectOptionsHtml(ttFund, false)}</select>`;
+      fundHtml = `<select class="import-badge badge-fund${emptyCls(ttFund)}" data-field="nguon_tien" title="Nguồn tiền / Quỹ">${getFundSelectOptionsHtml(ttFund, false)}</select>`;
     } else {
       if (ttFund) {
         fundHtml = `<span class="import-badge badge-fund" data-field="nguon_tien" data-val="${esc(ttFund)}" title="Nguồn tiền / Quỹ">💳 ${esc(ttFund)}</span>`;
       } else {
-        fundHtml = `<span class="import-badge badge-fund badge-fund-empty" data-val="" title="Chưa có nguồn tiền">💳 —</span>`;
+        fundHtml = `<span class="import-badge badge-fund badge-fund-empty" data-val="" title="Chưa có nguồn tiền"></span>`;
       }
     }
   }
 
-  // Ghi chú (Dùng chung)
-  let noteHtml = "";
-  if (group.ghi_chu) {
-    const cleanNote = String(group.ghi_chu).replace(/^[📝\s]+/, "").trim();
-    noteHtml = `<div class="import-card-note" data-field="ghi_chu" ${ce}>${esc(cleanNote)}</div>`;
-  } else if (isCardEditing) {
-    noteHtml = `<div class="import-card-note is-placeholder" data-field="ghi_chu" contenteditable="true">+ Thêm ghi chú...</div>`;
-  }
+  // Ô sửa trống: chữ gợi ý hiện bằng CSS từ data-ph (ô thật sự trống, không ghi chữ gợi ý vào nội dung)
+  const ph = (text) => (isCardEditing ? ` data-ph="${text}"` : "");
 
   // Danh sách sản phẩm riêng biệt trong kiện
   const productsHtml = group.items.map((item, pIdx) => {
     const rowId = item._row !== undefined ? String(item._row) : `idx_${pIdx}`;
     let sizeHtml = "";
-    if (item.dung_tich) {
-      sizeHtml = `<span class="import-badge-size" data-field="dung_tich" ${ce}>${esc(item.dung_tich)}</span>`;
-    } else if (isCardEditing) {
-      sizeHtml = `<span class="import-badge-size is-placeholder" data-field="dung_tich" contenteditable="true">+ Dung tích</span>`;
+    if (isCardEditing) {
+      sizeHtml = buildCapacityEditorHtml(item.dung_tich);
+    } else if (item.dung_tich) {
+      sizeHtml = `<span class="import-badge-size" data-field="dung_tich">${esc(item.dung_tich)}</span>`;
     }
 
     const showNum = group.items.length > 1;
     const rawGia = formatInputPrice(item.gia);
     const hasGia = rawGia > 0;
-    const giaText = hasGia ? formatMoneyVND(rawGia) : (isCardEditing ? "+ Giá" : "0");
-    const giaPlaceholderClass = (!hasGia && isCardEditing) ? "is-placeholder" : "";
+    const giaText = hasGia ? formatMoneyVND(rawGia) : (isCardEditing ? "" : "0");
 
     const rawSl = parseInt(String(item.sl || "").replace(/\D/g, ""), 10);
     const hasSl = !isNaN(rawSl) && rawSl > 0;
-    const slDisplay = isInactive ? "—" : (hasSl ? String(rawSl) : (isCardEditing ? "+ SL" : "1"));
+    const slDisplay = isInactive ? "" : (hasSl ? String(rawSl) : (isCardEditing ? "" : "1"));
     const slCe = (isCardEditing && !isInactive) ? 'contenteditable="true"' : 'contenteditable="false"';
     const slLockedClass = isInactive ? "import-val-locked" : "";
-    const slPlaceholderClass = (!hasSl && !isInactive && isCardEditing) ? "is-placeholder" : "";
 
     const itemTotal = item.thanh_tien ? formatMoneyVND(item.thanh_tien) : (hasGia && hasSl ? formatMoneyVND(rawGia * rawSl) : (hasGia ? formatMoneyVND(rawGia) : "0"));
-    const totalDisplay = isInactive ? "—" : itemTotal;
+    const totalDisplay = isInactive ? "" : itemTotal;
 
-    const prodNameText = item.ten || (isCardEditing ? "+ Tên sản phẩm" : "Chưa có tên");
-    const prodNamePlaceholderClass = (!item.ten && isCardEditing) ? "is-placeholder" : "";
+    // Ghi chú riêng của chai: không có thì ẩn (đang sửa thì luôn có ô để gõ)
+    const note = String(item.ghi_chu || "").replace(/^[📝\s]+/, "").trim();
+    const noteHtml = (note || isCardEditing)
+      ? `<div class="import-card-note" data-field="ghi_chu" ${ce}${ph("Ghi chú")}>${esc(note)}</div>`
+      : "";
 
     // Tìm ảnh chai nước hoa tương ứng nếu có
     const prodImgUrl = getProductImageByName(item.ten);
@@ -581,7 +546,7 @@ function createImportCardHtml(group, idx = 0) {
             <div class="import-prod-title">
               ${showNum ? `<span class="import-prod-num">${pIdx + 1}.</span>` : ""}
               <div class="import-prod-text-flow">
-                <span class="import-card-name ${prodNamePlaceholderClass}" data-field="ten" ${ce} title="${esc(item.ten || '')}">${esc(prodNameText)}</span>
+                <span class="import-card-name" data-field="ten" ${ce}${ph("Tên sản phẩm")} title="${esc(item.ten || '')}">${esc(item.ten || "")}</span>
                 ${sizeHtml}
               </div>
             </div>
@@ -591,17 +556,18 @@ function createImportCardHtml(group, idx = 0) {
           <div class="import-card-pricing">
             <div class="import-price-col import-col-price">
               <span class="import-label">Giá:</span>
-              <span class="import-val-price ${giaPlaceholderClass}" data-field="gia" ${ce}>${giaText}</span>
+              <span class="import-val-price" data-field="gia" ${ce}${ph("Giá")}>${giaText}</span>
             </div>
             <div class="import-price-col import-col-qty">
               <span class="import-label">SL:</span>
-              <span class="import-val-bold ${slLockedClass} ${slPlaceholderClass}" data-field="sl" ${slCe}>${slDisplay}</span>
+              <span class="import-val-bold ${slLockedClass}" data-field="sl" ${slCe}${isInactive ? "" : ph("SL")}>${slDisplay}</span>
             </div>
             <div class="import-price-col import-col-total">
               <span class="import-label">💵</span>
               <span class="import-val-total import-val-locked" data-field="thanh_tien" contenteditable="false" title="${isInactive ? 'Không áp dụng tổng tiền' : 'Tổng tiền tự động tính theo Giá × SL'}">${totalDisplay}</span>
             </div>
           </div>
+          ${noteHtml}
         </div>
       </div>
     `;
@@ -611,14 +577,14 @@ function createImportCardHtml(group, idx = 0) {
   const groupSummaryHtml = group.items.length > 1 ? `
     <div class="import-card-group-summary">
       <span>Đơn hàng: <strong>${group.items.length} món</strong>${isInactive ? "" : ` (${groupQty} chai)`}</span>
-      <span class="import-group-total">💵 <strong>${isInactive ? "—" : formatMoneyVND(groupTotal)}</strong></span>
+      <span class="import-group-total">💵 <strong>${isInactive ? "" : formatMoneyVND(groupTotal)}</strong></span>
     </div>
   ` : "";
 
   return `
     <div class="import-card ${statusThemeClass} ${payThemeClass} ${isCardEditing ? "card-editable" : ""}" data-group-id="${groupId}" data-index="${idx}">
       ${actionsHtml}
-      <!-- Hàng 1: Tiêu đề 3 cột x 2 hàng (DÙNG CHUNG) -->
+      <!-- Hàng 1: Đầu thẻ - Ngày + Người gửi, 4 badge (cột 2, 3 display: contents; xếp hàng bằng CSS, RULE §5.5) -->
       <div class="import-card-row-top">
         <!-- Cột 1: Ngày và người gửi -->
         <div class="import-top-col import-top-col-1">
@@ -626,12 +592,12 @@ function createImportCardHtml(group, idx = 0) {
             <span>📅</span>
             ${isCardEditing 
               ? `<select class="import-top-val" data-field="ngay" title="Ngày nhập">${getDateSelectOptionsHtml(group.ngay)}</select>`
-              : `<span class="import-top-val" data-field="ngay">${esc(group.ngay || "--/--/----")}</span>`
+              : `<span class="import-top-val" data-field="ngay">${esc(group.ngay || "")}</span>`
             }
           </div>
           <div class="import-top-cell">
             <span>👤</span>
-            <span class="import-top-val ${(!group.nguoi_gui && isCardEditing) ? 'is-placeholder' : ''}" data-field="nguoi_gui" ${ce} title="Người gửi: ${esc(group.nguoi_gui || '')}">${esc(group.nguoi_gui || (isCardEditing ? "+ Người gửi" : "—"))}</span>
+            <span class="import-top-val" data-field="nguoi_gui" ${ce}${ph("Người gửi")} title="Người gửi: ${esc(group.nguoi_gui || '')}">${esc(group.nguoi_gui || "")}</span>
           </div>
         </div>
 
@@ -653,12 +619,7 @@ function createImportCardHtml(group, idx = 0) {
         ${productsHtml}
       </div>
 
-      ${(noteHtml || groupSummaryHtml) ? `
-        <div class="import-card-footer">
-          ${noteHtml}
-          ${groupSummaryHtml}
-        </div>
-      ` : ""}
+      ${groupSummaryHtml ? `<div class="import-card-footer">${groupSummaryHtml}</div>` : ""}
     </div>
   `;
 }
@@ -895,7 +856,7 @@ async function setImportFilter(filterKey, saveState = true) {
   if (filterDropdown) filterDropdown.style.display = "none";
 
   // Lưu trạng thái người dùng (Rule 6.2 - SSOT)
-  if (saveState && typeof StorageHelper !== "undefined") {
+  if (saveState) {
     try {
       await StorageHelper.set("activeImportFilter", activeImportFilter);
     } catch (e) {}
@@ -941,16 +902,16 @@ function renderImportList(resetLimit = true) {
       (grp.nguoi_gui && grp.nguoi_gui.toLowerCase().includes(query)) ||
       (grp.nguoi_nhap && grp.nguoi_nhap.toLowerCase().includes(query)) ||
       (grp.tinh_trang && grp.tinh_trang.toLowerCase().includes(query)) ||
-      (grp.nguon_tien && grp.nguon_tien.toLowerCase().includes(query)) ||
-      (grp.ghi_chu && grp.ghi_chu.toLowerCase().includes(query))
+      (grp.nguon_tien && grp.nguon_tien.toLowerCase().includes(query))
     ) {
       return true;
     }
-    // Tìm kiếm ở cấp từng sản phẩm bên trong kiện
+    // Tìm kiếm ở cấp từng sản phẩm bên trong kiện (kể cả ghi chú riêng của chai)
     return grp.items.some((it) =>
       (it.ten && it.ten.toLowerCase().includes(query)) ||
       (it.dung_tich && it.dung_tich.toLowerCase().includes(query)) ||
-      (it.gia && String(it.gia).includes(query))
+      (it.gia && String(it.gia).includes(query)) ||
+      (it.ghi_chu && String(it.ghi_chu).toLowerCase().includes(query))
     );
   });
 
@@ -984,7 +945,6 @@ function renderImportList(resetLimit = true) {
 
 // 1. Tên sản phẩm: CHỈ lấy danh sách nước hoa hiện tại (allProducts), KHÔNG lấy từ lịch sử 2.587 dòng nhập
 function getProductSuggestions() {
-  if (typeof allProducts === "undefined" || !Array.isArray(allProducts)) return [];
   const set = new Set();
   allProducts.forEach(p => {
     const name = (p && p.name) ? String(p.name).trim() : "";
@@ -993,74 +953,104 @@ function getProductSuggestions() {
   return Array.from(set).sort((a, b) => a.localeCompare(b, "vi"));
 }
 
-// 2. Dung tích: Hiển thị biến thể Full, Tester theo 5 cột dungtich1..dungtich5 của sản phẩm hiện tại, chiết mặc định 5, 10, 20ml
-function getCapacitySuggestions(currentProductName) {
-  const results = [];
-  const added = new Set();
-  function add(val) {
-    if (!val) return;
-    const v = String(val).trim();
-    if (v && !added.has(v)) {
-      added.add(v);
-      results.push(v);
-    }
+// 2. Dung tích 2 phần khi sửa/thêm: [Loại ▾] [Số] ml
+//    - Loại: lấy từ cột "List-Dung tích" của Google Sheet (Full, Full Nobox, Tester, Tester Nobox, Chiết, Gốc Full...)
+//    - Số: người dùng tự gõ (cho phép chữ số, "/" cho Gốc 35/50, "." hoặc "," cho Mini 7.5), chữ "ml" luôn cố định phía sau
+//    - Lưu lên Sheet dạng "Loại Sốml" (vd: "Full 100ml", "Chiết 10ml"); không có Loại -> "100ml"; không có Số -> "Full"
+function sanitizeCapacityNum(txt) {
+  return String(txt || "").replace(/[^\d.,/]/g, "");
+}
+
+// "Full 100ml" -> { type: "Full", num: "100" }; "Gốc 35/50ml" -> { type: "Gốc", num: "35/50" }; "10ml" -> { type: "", num: "10" }
+// Tên loại cũ được đổi sang tên mới khi mở thẻ ra sửa (chỉ ghi lên Sheet khi bấm Lưu):
+// Full (có hộp) · Full Nobox (không hộp) · Tester (có hộp) · Tester Nobox (không hộp)
+// Loại lạ khác không có trong danh sách được giữ nguyên để không mất dữ liệu cũ
+const LEGACY_CAPACITY_TYPES = {
+  "nobox": "Full Nobox",
+  "no box": "Full Nobox",
+  "gốc nobox": "Gốc Full Nobox",
+  "gốc no box": "Gốc Full Nobox",
+  "fullbox": "Full",
+  "fullseal": "Full",
+  "testerbox": "Tester",
+  "gốc fullbox": "Gốc Full",
+  "gốc testerbox": "Gốc Tester"
+};
+
+function splitCapacityValue(raw) {
+  const text = cleanString(raw);
+  const m = text.match(/^(.*?)\s*(\d[\d.,/]*)?\s*(?:ml)?\s*$/i);
+  let type = m ? m[1].trim() : text;
+  const num = (m && m[2]) || "";
+  type = LEGACY_CAPACITY_TYPES[type.normalize("NFC").toLowerCase().replace(/\s+/g, " ")] || type;
+  const known = getDropdownListByField("dung_tich").find(t => t.toLowerCase() === type.toLowerCase());
+  if (known) type = known;
+  return { type, num };
+}
+
+function joinCapacityValue(type, num) {
+  if (!num) return type;
+  return type ? `${type} ${num}ml` : `${num}ml`;
+}
+
+function getCapacityTypeOptionsHtml(currentType) {
+  const types = getDropdownListByField("dung_tich");
+  const isKnown = types.some(t => t.toLowerCase() === currentType.toLowerCase());
+  const list = (currentType && !isKnown) ? [currentType, ...types] : types;
+  return `<option value="">(Trống)</option>` + list.map(t =>
+    `<option value="${escAttr(t)}"${t === currentType ? " selected" : ""}>${escHtml(t)}</option>`
+  ).join("");
+}
+
+// Ô Dung tích ở chế độ sửa (thẻ đang sửa và modal "+ Thêm đơn" dùng chung)
+function buildCapacityEditorHtml(rawValue) {
+  const { type, num } = splitCapacityValue(rawValue);
+  return `<span class="import-badge-size import-size-editor" title="Dung tích">` +
+    `<select class="import-size-type${type ? "" : " is-empty"}" title="Loại">${getCapacityTypeOptionsHtml(type)}</select>` +
+    `<span class="import-size-num" data-field="dung_tich_ml" contenteditable="true" data-ph="Số" title="Số ml">${escHtml(num)}</span>` +
+    `<span class="import-size-unit">ml</span>` +
+    `</span>`;
+}
+
+// Đọc giá trị Dung tích đã ghép từ ô sửa trong một dòng sản phẩm
+function readCapacityValue(scopeEl) {
+  const editor = scopeEl ? scopeEl.querySelector(".import-size-editor") : null;
+  if (!editor) return "";
+  const type = editor.querySelector(".import-size-type").value.trim();
+  const num = sanitizeCapacityNum(editor.querySelector('[data-field="dung_tich_ml"]').innerText);
+  return joinCapacityValue(type, num);
+}
+
+function setCapacityEditorValue(scopeEl, type, num) {
+  const editor = scopeEl ? scopeEl.querySelector(".import-size-editor") : null;
+  if (!editor) return;
+  const select = editor.querySelector(".import-size-type");
+  if (type && !Array.from(select.options).some(o => o.value === type)) {
+    select.add(new Option(type, type), 1);
   }
+  select.value = type;
+  select.classList.toggle("is-empty", !type);
+  editor.querySelector('[data-field="dung_tich_ml"]').innerText = num || "";
+}
 
-  // Tìm sản phẩm trong danh mục hiện tại allProducts
-  let currentProd = null;
-  if (currentProductName && typeof allProducts !== "undefined" && Array.isArray(allProducts)) {
-    const cleanName = removeAccents(currentProductName).trim();
-    currentProd = allProducts.find(p => {
-      if (!p || !p.name) return false;
-      const n = removeAccents(p.name).trim();
-      return n === cleanName;
-    });
+// Các dung tích (chỉ phần số) của chai trùng tên 100% trong danh mục allProducts (cột dungtich1..dungtich5)
+function getProductCapacityNumbers(prodName) {
+  const nums = [];
+  const cleanName = removeAccents(prodName);
+  const prod = cleanName ? allProducts.find(p => p && p.name && removeAccents(p.name) === cleanName) : null;
+  if (!prod) return nums;
+  for (let i = 1; i <= 5; i++) {
+    const num = sanitizeCapacityNum(formatDungTichValue(prod['dungtich' + i]));
+    if (num && !nums.includes(num)) nums.push(num);
   }
+  return nums;
+}
 
-  if (currentProd) {
-    // Lấy biến thể Full, Tester theo dungtich1..dungtich5 của chính sản phẩm đó
-    for (let i = 1; i <= 5; i++) {
-      const rawDt = currentProd['dungtich' + i];
-      if (rawDt && rawDt !== "-") {
-        const dtVal = formatDungTichValue(rawDt);
-        if (dtVal) {
-          const fullVal = dtVal.toLowerCase().startsWith("full") ? dtVal : `Full ${dtVal}`;
-          const testerVal = dtVal.toLowerCase().startsWith("tester") ? dtVal : `Tester ${dtVal}`;
-          add(fullVal);
-          add(testerVal);
-        }
-      }
-    }
-  } else {
-    // Fallback: nếu chưa chọn sản phẩm hoặc không tìm thấy, gợi ý các dung tích chuẩn từ allProducts
-    if (typeof allProducts !== "undefined" && Array.isArray(allProducts)) {
-      const allDt = new Set();
-      allProducts.forEach(p => {
-        for (let i = 1; i <= 5; i++) {
-          const raw = p['dungtich' + i];
-          if (raw && raw !== "-") {
-            const dt = formatDungTichValue(raw);
-            if (dt) allDt.add(dt);
-          }
-        }
-      });
-      ["100ml", "50ml", "75ml", "90ml", "125ml", "30ml"].forEach(dt => {
-        if (allDt.has(dt)) {
-          add(`Full ${dt}`);
-          add(`Tester ${dt}`);
-        }
-      });
-      allDt.forEach(dt => {
-        add(`Full ${dt}`);
-        add(`Tester ${dt}`);
-      });
-    }
-  }
-
-  // Chiết mặc định: 5ml, 10ml, 20ml
-  ["5ml", "10ml", "20ml"].forEach(add);
-
-  return results;
+// Gợi ý cho ô Số ml: Chiết -> 5/10/20; còn lại -> dungtich1..5 của chai trùng tên trong tab Nước Hoa.
+// Tên chưa có trong tab Nước Hoa (sản phẩm mới) -> không gợi ý
+function getCapacityNumberSuggestions(prodName, type) {
+  const nums = removeAccents(type) === "chiet" ? ["5", "10", "20"] : getProductCapacityNumbers(prodName);
+  return nums.map(n => ({ val: n, label: `${n}ml` }));
 }
 
 // 3. Toàn bộ gợi ý các trường Người gửi, Người nhập, Tình trạng, Nguồn tiền, Ghi chú
@@ -1083,10 +1073,9 @@ function getDropdownListByField(fieldName) {
       return window.cachedImportLists[colKey];
     }
     // Fallback tìm key không phân biệt hoa thường
-    const targetNorm = typeof removeAccents === "function" ? removeAccents(colKey) : colKey.toLowerCase();
+    const targetNorm = removeAccents(colKey);
     for (const k in window.cachedImportLists) {
-      const kNorm = typeof removeAccents === "function" ? removeAccents(k) : k.toLowerCase();
-      if (kNorm === targetNorm && Array.isArray(window.cachedImportLists[k])) {
+      if (removeAccents(k) === targetNorm && Array.isArray(window.cachedImportLists[k])) {
         return window.cachedImportLists[k];
       }
     }
@@ -1099,7 +1088,7 @@ function getPaymentSuggestions(card) {
   return [
     { label: "Đã TT", val: "Đã TT" },
     { label: "Chưa TT", val: "Chưa TT" },
-    { label: "— (Để trống)", val: "" }
+    { label: "(Trống)", val: "" }
   ];
 }
 
@@ -1159,8 +1148,8 @@ function getDateSelectOptionsHtml(selectedVal = "") {
     return `<option value="${esc(d.val)}" ${isSel ? "selected" : ""}>${esc(d.label)}</option>`;
   }).join("");
 
-  if (selectedVal && !found && selectedVal !== "+ Ngày" && selectedVal !== "--/--/----") {
-    html += `<option value="${esc(selectedVal)}" selected>📅 ${esc(selectedVal)}</option>`;
+  if (selectedVal && !found) {
+    html += `<option value="${esc(selectedVal)}" selected>${esc(selectedVal)}</option>`;
   }
   return html;
 }
@@ -1170,14 +1159,14 @@ function getStatusSelectOptionsHtml(selectedVal = "") {
   const list = getDropdownListByField("tinh_trang");
   const candidates = (Array.isArray(list) && list.length > 0) ? list : ["Đã Nhận", "Đang Về", "Hỏi Giá", "Hoàn Hàng"];
   let found = false;
-  let html = `<option value="" ${(!selectedVal || selectedVal === "—") ? "selected" : ""}>— (Trống)</option>`;
+  let html = `<option value="" ${!selectedVal ? "selected" : ""}>(Trống)</option>`;
   html += candidates.map(st => {
     const isSel = (st === selectedVal);
     if (isSel) found = true;
     return `<option value="${esc(st)}" ${isSel ? "selected" : ""}>${esc(st)}</option>`;
   }).join("");
 
-  if (selectedVal && !found && selectedVal !== "+ Trạng thái" && selectedVal !== "—") {
+  if (selectedVal && !found) {
     html += `<option value="${esc(selectedVal)}" selected>${esc(selectedVal)}</option>`;
   }
   return html;
@@ -1185,7 +1174,7 @@ function getStatusSelectOptionsHtml(selectedVal = "") {
 
 function getPaymentSelectOptionsHtml(selectedVal = "", isInactive = false) {
   if (isInactive) {
-    return `<option value="" selected>—</option>`;
+    return `<option value="" selected></option>`;
   }
   const ttPay = cleanString(selectedVal);
   const pPay = removeAccents(ttPay);
@@ -1196,7 +1185,7 @@ function getPaymentSelectOptionsHtml(selectedVal = "", isInactive = false) {
   return `
     <option value="Đã TT" ${isPaid ? "selected" : ""}>Đã TT</option>
     <option value="Chưa TT" ${isUnpaid ? "selected" : ""}>Chưa TT</option>
-    <option value="" ${isEmptyPay ? "selected" : ""}>— (Trống)</option>
+    <option value="" ${isEmptyPay ? "selected" : ""}>(Trống)</option>
   `;
 }
 
@@ -1207,20 +1196,19 @@ function getImporterSelectOptionsHtml(selectedVal = "") {
   let optionsHtml = (Array.isArray(list) ? list : []).map(name => {
     const isSel = (name === selectedVal);
     if (isSel) found = true;
-    return `<option value="${esc(name)}" ${isSel ? "selected" : ""}>👤 ${esc(name)}</option>`;
+    return `<option value="${esc(name)}" ${isSel ? "selected" : ""}>${esc(name)}</option>`;
   }).join("");
 
-  if (selectedVal && !found && selectedVal !== "+ Người" && selectedVal !== "—") {
-    optionsHtml = `<option value="${esc(selectedVal)}" selected>👤 ${esc(selectedVal)}</option>` + optionsHtml;
-    found = true;
+  if (selectedVal && !found) {
+    optionsHtml = `<option value="${esc(selectedVal)}" selected>${esc(selectedVal)}</option>` + optionsHtml;
   }
 
-  return `<option value="" ${!selectedVal ? "selected" : ""}>👤 + Người</option>` + optionsHtml;
+  return `<option value="" ${!selectedVal ? "selected" : ""}>(Trống)</option>` + optionsHtml;
 }
 
 function getFundSelectOptionsHtml(selectedVal = "", isInactive = false) {
   if (isInactive) {
-    return `<option value="" selected>—</option>`;
+    return `<option value="" selected></option>`;
   }
   const esc = (s) => escAttr(String(s || ""));
   const list = getDropdownListByField("nguon_tien");
@@ -1228,15 +1216,14 @@ function getFundSelectOptionsHtml(selectedVal = "", isInactive = false) {
   let optionsHtml = (Array.isArray(list) ? list : []).map(f => {
     const isSel = (f === selectedVal);
     if (isSel) found = true;
-    return `<option value="${esc(f)}" ${isSel ? "selected" : ""}>💳 ${esc(f)}</option>`;
+    return `<option value="${esc(f)}" ${isSel ? "selected" : ""}>${esc(f)}</option>`;
   }).join("");
 
-  if (selectedVal && !found && selectedVal !== "+ Nguồn" && selectedVal !== "—") {
-    optionsHtml = `<option value="${esc(selectedVal)}" selected>💳 ${esc(selectedVal)}</option>` + optionsHtml;
-    found = true;
+  if (selectedVal && !found) {
+    optionsHtml = `<option value="${esc(selectedVal)}" selected>${esc(selectedVal)}</option>` + optionsHtml;
   }
 
-  return `<option value="" ${!selectedVal ? "selected" : ""}>💳 + Nguồn</option>` + optionsHtml;
+  return `<option value="" ${!selectedVal ? "selected" : ""}>(Trống)</option>` + optionsHtml;
 }
 
 
@@ -1304,21 +1291,11 @@ function selectComboboxValue(val) {
       applyStatusToCardUI(card, val);
     }
   } else if (fieldName === "nguon_tien") {
-    if (val) {
-      target.innerText = `💳 ${val}`;
-      target.className = "import-badge badge-fund";
-    } else {
-      target.innerText = "💳 + Nguồn";
-      target.className = "import-badge badge-fund is-placeholder";
-    }
+    target.innerText = val;
+    target.className = "import-badge badge-fund";
   } else if (fieldName === "nguoi_nhap") {
-    if (val) {
-      target.innerText = `👤 ${val}`;
-      target.className = "import-badge badge-importer";
-    } else {
-      target.innerText = "👤 + Người";
-      target.className = "import-badge badge-importer is-placeholder";
-    }
+    target.innerText = val;
+    target.className = "import-badge badge-importer";
   } else if (fieldName === "da_thanh_toan") {
     const pVal = removeAccents(val);
     const isPaid = val && (pVal.includes("da") || pVal.includes("roi") || pVal.includes("yes") || pVal.includes("ok"));
@@ -1341,7 +1318,7 @@ function selectComboboxValue(val) {
       }
     } else {
       target.setAttribute("data-val", "");
-      target.innerText = "—";
+      target.innerText = "";
       target.className = "import-badge badge-paid-none";
       if (card) {
         card.classList.add("theme-pay-none");
@@ -1351,21 +1328,14 @@ function selectComboboxValue(val) {
   } else {
     target.innerText = val;
   }
-  target.classList.remove("is-placeholder");
 
   if (fieldName === "ten") {
     updateCardProductThumb(target, val);
     const pItem = target.closest(".import-product-item");
-    if (pItem) {
-      const sizeEl = pItem.querySelector('[data-field="dung_tich"]');
-      if (sizeEl && (sizeEl.classList.contains("is-placeholder") || !sizeEl.innerText.trim() || sizeEl.innerText.trim() === "+ Dung tích")) {
-        const caps = getCapacitySuggestions(val);
-        if (caps.length > 0) {
-          const firstCap = caps[0].val || caps[0];
-          sizeEl.innerText = firstCap;
-          sizeEl.classList.remove("is-placeholder");
-        }
-      }
+    // Ô Dung tích còn trống cả 2 phần -> tự điền Full + dung tích đầu tiên của chai
+    const firstNum = getProductCapacityNumbers(val)[0];
+    if (pItem && firstNum && readCapacityValue(pItem) === "") {
+      setCapacityEditorValue(pItem, splitCapacityValue("Full").type, firstNum);
     }
   }
 
@@ -1401,19 +1371,14 @@ function renderComboboxList(isUserTyping = false) {
   const fieldName = fieldEl.getAttribute("data-field");
   const card = fieldEl.closest(".import-card");
 
-  let rawQuery = "";
-  if (isUserTyping) {
-    rawQuery = fieldEl.innerText.trim();
-    rawQuery = rawQuery.replace(/^[📝📦💳✓✗👤\s]+/, "").trim();
-    if (fieldEl.classList.contains("is-placeholder") || rawQuery.startsWith("+") || rawQuery === "—" || rawQuery === "--/--/----" || rawQuery === "Chưa có tên") {
-      rawQuery = "";
-    }
-  }
+  const rawQuery = isUserTyping ? fieldEl.innerText.trim() : "";
 
   let rawCandidates = [];
   if (fieldName === "ten") {
-    if (rawQuery && typeof allProducts !== "undefined") {
-      const matched = searchProducts(rawQuery, allProducts, { limit: 50 });
+    // Ô Tên đã có chữ: vừa mở là tìm theo chữ đó luôn (không đợi gõ/xóa mới tìm); ô trống -> danh sách A-Z
+    const nameQuery = rawQuery || fieldEl.innerText.trim();
+    if (nameQuery) {
+      const matched = searchProducts(nameQuery, allProducts, { limit: 50 });
       rawCandidates = matched.map(p => ({
         val: p.name,
         label: p.name,
@@ -1423,11 +1388,12 @@ function renderComboboxList(isUserTyping = false) {
     } else {
       rawCandidates = getProductSuggestions();
     }
-  } else if (fieldName === "dung_tich") {
+  } else if (fieldName === "dung_tich_ml") {
     const pItem = fieldEl.closest(".import-product-item");
-    const prodNameEl = pItem ? pItem.querySelector('[data-field="ten"]') : (card ? card.querySelector('[data-field="ten"]') : null);
+    const prodNameEl = pItem ? pItem.querySelector('[data-field="ten"]') : null;
     const prodName = prodNameEl ? prodNameEl.innerText.trim() : "";
-    rawCandidates = getCapacitySuggestions(prodName);
+    const typeEl = pItem ? pItem.querySelector(".import-size-type") : null;
+    rawCandidates = getCapacityNumberSuggestions(prodName, typeEl ? typeEl.value : "");
   } else if (fieldName === "da_thanh_toan") {
     rawCandidates = getPaymentSuggestions(card);
   } else if (fieldName === "ngay") {
@@ -1534,11 +1500,18 @@ function cancelEditingCard() {
   showToast("Đã hủy chỉnh sửa.");
 }
 
+// Trạng thái hiện tại của thẻ: ô select đọc .value (innerText của select là chữ của MỌI lựa chọn, có cả "Hỏi Giá")
+function readCardStatus(card) {
+  const el = card.querySelector('[data-field="tinh_trang"]');
+  if (!el) return "";
+  if (el.tagName === "SELECT") return el.value;
+  return el.getAttribute("data-val") || el.innerText;
+}
+
 // Cập nhật tổng tiền tức thì trên thẻ (tính theo Giá × SL của từng món)
 function updateCardLiveTotal(card) {
   if (!card) return;
-  const statusEl = card.querySelector('[data-field="tinh_trang"]');
-  const isInactive = isInactiveStatus(statusEl ? (statusEl.getAttribute("data-val") || statusEl.innerText) : "");
+  const isInactive = isInactiveStatus(readCardStatus(card));
 
   let gTot = 0;
   const pItems = card.querySelectorAll(".import-product-item");
@@ -1547,7 +1520,7 @@ function updateCardLiveTotal(card) {
     const sEl = pItem.querySelector('[data-field="sl"]');
     const tEl = pItem.querySelector('[data-field="thanh_tien"]');
     if (isInactive) {
-      if (tEl) tEl.innerText = "—";
+      if (tEl) tEl.innerText = "";
     } else {
       const nGia = formatInputPrice(gEl ? gEl.innerText : "0");
       const nSl = parseInt((sEl ? sEl.innerText : "1").replace(/\D/g, ""), 10) || 1;
@@ -1559,7 +1532,7 @@ function updateCardLiveTotal(card) {
 
   const summaryTotalEl = card.querySelector(".import-card-group-summary .import-group-total strong");
   if (summaryTotalEl) {
-    summaryTotalEl.innerText = isInactive ? "—" : formatMoneyVND(gTot);
+    summaryTotalEl.innerText = isInactive ? "" : formatMoneyVND(gTot);
   }
 }
 
@@ -1568,25 +1541,15 @@ async function handleSaveSingleCard(card, btnSave) {
   if (!card) return;
   const clean = (val) => String(val || "").trim();
 
-  // Đọc các trường dùng chung ở cấp kiện (Header & Footer)
+  // Đọc các trường dùng chung ở cấp kiện (đầu thẻ). Ô trống là trống thật (chữ gợi ý chỉ hiện bằng CSS)
   const readShared = (f) => {
-    const el = card.querySelector(`.import-card-row-top [data-field="${f}"], .import-card-footer [data-field="${f}"]`);
+    const el = card.querySelector(`.import-card-row-top [data-field="${f}"]`);
     if (!el) return "";
-    if (el.tagName === "SELECT") {
-      const v = el.value.trim();
-      if (!v || v.startsWith("+") || v === "—" || v === "--/--/----") return "";
-      return v;
-    }
-    if (el.classList.contains("is-placeholder")) return "";
+    if (el.tagName === "SELECT") return el.value.trim();
     if (f === "da_thanh_toan") {
-      let v = "";
-      if (el.tagName === "SELECT") {
-        v = el.value.trim();
-      } else {
-        const stored = el.getAttribute("data-val");
-        v = stored !== null && stored !== undefined ? stored.trim() : el.innerText.trim();
-      }
-      if (!v || v === "—" || v === "+ Thanh toán") return "";
+      const stored = el.getAttribute("data-val");
+      const v = stored !== null ? stored.trim() : el.innerText.trim();
+      if (!v) return "";
       const p = removeAccents(v);
       if (p.includes("da") || p.includes("roi") || p.includes("yes") || p.includes("ok")) return "Đã TT";
       if (v === "0" || p.includes("chua") || p === "no" || p === "false") return "Chưa TT";
@@ -1596,9 +1559,7 @@ async function handleSaveSingleCard(card, btnSave) {
       const stored = el.getAttribute("data-val");
       if (stored !== null && stored !== undefined) return clean(stored);
     }
-    let txt = el.innerText.trim().replace(/^[📝📦💳✓✗👤\s]+/, "").trim();
-    if (txt.startsWith("+") || txt === "—" || txt === "--/--/----") return "";
-    return txt;
+    return el.innerText.trim();
   };
 
   const sharedNgay = readShared("ngay");
@@ -1608,15 +1569,10 @@ async function handleSaveSingleCard(card, btnSave) {
   const isInactive = isInactiveStatus(sharedTinhTrang);
   const sharedDaThanhToan = isInactive ? "" : readShared("da_thanh_toan");
   const sharedNguonTien = isInactive ? "" : readShared("nguon_tien");
-  const sharedGhiChu = readShared("ghi_chu");
 
   const readItemField = (pItem, f) => {
     const el = pItem.querySelector(`[data-field="${f}"]`);
-    if (!el) return "";
-    if (el.classList.contains("is-placeholder")) return "";
-    let txt = el.innerText.trim().replace(/^[📝📦💳✓✗👤\s]+/, "").trim();
-    if (txt.startsWith("+") || txt === "—" || txt === "Chưa có tên") return "";
-    return txt;
+    return el ? el.innerText.trim() : "";
   };
 
   const isPayEqual = (a, b) => {
@@ -1646,7 +1602,8 @@ async function handleSaveSingleCard(card, btnSave) {
     const original = importRawData.find(it => String(it._row) === String(rowId)) || {};
 
     const ten = readItemField(pItem, "ten");
-    const dungTich = readItemField(pItem, "dung_tich");
+    const ghiChu = readItemField(pItem, "ghi_chu");
+    const dungTich = readCapacityValue(pItem);
     const numGia = formatInputPrice(readItemField(pItem, "gia"));
     const numSl = isInactive ? "" : (parseInt(readItemField(pItem, "sl").replace(/\D/g, ""), 10) || 1);
     const numTotal = isInactive ? 0 : (numGia * (parseInt(numSl, 10) || 1));
@@ -1665,7 +1622,7 @@ async function handleSaveSingleCard(card, btnSave) {
       !isStatusEqual(sharedTinhTrang, original.tinh_trang) ||
       (isInactive ? clean(original.da_thanh_toan) !== "" : !isPayEqual(sharedDaThanhToan, original.da_thanh_toan)) ||
       (isInactive ? clean(original.nguon_tien) !== "" : clean(sharedNguonTien) !== clean(original.nguon_tien)) ||
-      clean(sharedGhiChu) !== clean(original.ghi_chu);
+      clean(ghiChu) !== clean(original.ghi_chu);
 
     if (isItemChanged) {
       const updatedItem = {
@@ -1682,7 +1639,9 @@ async function handleSaveSingleCard(card, btnSave) {
         tinh_trang: sharedTinhTrang,
         da_thanh_toan: isInactive ? "" : sharedDaThanhToan,
         nguon_tien: isInactive ? "" : sharedNguonTien,
-        ghi_chu: sharedGhiChu
+        ghi_chu: ghiChu,
+        // Giá trị gốc lúc tải: Apps Script đối chiếu lại dòng _row trước khi ghi để tránh ghi nhầm khi Sheet đã bị chèn/xóa/sort dòng
+        _expect: { ten: original.ten || "", ngay: original.ngay || "", nguoi_gui: original.nguoi_gui || "" }
       };
       rowsToSave.push(updatedItem);
     }
@@ -1728,26 +1687,28 @@ async function handleSaveSingleCard(card, btnSave) {
       throw new Error(resJson.error);
     }
 
-    // Cập nhật thành công: Cập nhật lại trong RAM và cache
-    rowsToSave.forEach((updatedItem) => {
+    // Cập nhật lại trong RAM và cache, bỏ qua các dòng Apps Script báo lệch (conflict)
+    const conflictRows = new Set((resJson.conflicts || []).map(c => String(c._row)));
+    rowsToSave.forEach(({ _expect, ...updatedItem }) => {
+      if (conflictRows.has(String(updatedItem._row))) return;
       const idx = importRawData.findIndex(it => (it._row && it._row === updatedItem._row) || (it.ten === updatedItem.ten && it.ngay === updatedItem.ngay));
       if (idx !== -1) {
         importRawData[idx] = { ...importRawData[idx], ...updatedItem };
       }
     });
 
-    if (typeof StorageHelper !== "undefined") {
-      await StorageHelper.set("cachedImportData", importRawData);
-    }
+    await StorageHelper.set("cachedImportData", importRawData);
 
-    showToast(`✨ Đã lưu kiện hàng lên Google Sheet thành công!`);
+    if (conflictRows.size > 0) {
+      showToast(`⚠️ ${conflictRows.size} dòng đã bị đổi trên Google Sheet nên không lưu. Bấm Làm mới rồi sửa lại.`, true, 7000);
+    } else {
+      showToast(`✨ Đã lưu kiện hàng lên Google Sheet thành công!`);
+    }
 
     activeEditingGroupId = null;
     hideComboboxMenu();
     renderImportList(false);
-    if (typeof window.onImportDataUpdated === "function") {
-      window.onImportDataUpdated();
-    }
+    window.onImportDataUpdated();
 
   } catch (err) {
     showToast(`❌ Lỗi lưu Google Sheet: ${err.message}`, true, 6000);
@@ -1759,13 +1720,6 @@ async function handleSaveSingleCard(card, btnSave) {
 }
 
 // Kiểm tra một ô đang hiển thị placeholder text
-function isFieldPlaceholder(el) {
-  if (!el) return false;
-  if (el.classList.contains("is-placeholder")) return true;
-  const txt = el.innerText.trim();
-  return txt.startsWith("+") || txt.startsWith("💳 +") || txt.startsWith("👤 +") || txt === "--/--/----" || txt === "—" || txt === "💳 —" || txt === "👤 —" || txt === "Chưa có tên";
-}
-
 // Gắn các bộ lắng nghe sự kiện chỉnh sửa trực tiếp trên thẻ kiện hàng (.import-card.card-editable)
 // Dùng chung 100% logic giữa các thẻ bên ngoài danh sách và thẻ trong modal "+ Thêm Đơn"
 function bindCardEditableEvents(containerEl, isModal = false) {
@@ -1807,23 +1761,14 @@ function bindCardEditableEvents(containerEl, isModal = false) {
           if (allRows.length > 1) {
             row.remove();
           } else {
-            // Dòng duy nhất: xóa trắng về placeholder
+            // Dòng duy nhất: xóa trắng các ô (chữ gợi ý tự hiện lại bằng CSS)
             const nameEl = row.querySelector('[data-field="ten"]');
             if (nameEl) {
-              nameEl.innerText = "+ Tên sản phẩm";
-              nameEl.classList.add("is-placeholder");
+              nameEl.innerText = "";
               updateCardProductThumb(nameEl, "");
             }
-            const capEl = row.querySelector('[data-field="dung_tich"]');
-            if (capEl) {
-              capEl.innerText = "+ Dung tích";
-              capEl.classList.add("is-placeholder");
-            }
-            const giaEl = row.querySelector('[data-field="gia"]');
-            if (giaEl) {
-              giaEl.innerText = "+ Giá";
-              giaEl.classList.add("is-placeholder");
-            }
+            setCapacityEditorValue(row, "", "");
+            row.querySelectorAll('[data-field="gia"], [data-field="ghi_chu"]').forEach(el => { el.innerText = ""; });
             const slEl = row.querySelector('[data-field="sl"]');
             if (slEl) {
               slEl.innerText = "1";
@@ -1856,6 +1801,8 @@ function bindCardEditableEvents(containerEl, isModal = false) {
 
   // 1b. Change: Lắng nghe sự kiện đổi giá trị trên các dropdown select mặc định
   containerEl.addEventListener("change", (e) => {
+    // Mọi select khi sửa: chọn "(Trống)" thì ô hiện trống (is-empty ẩn chữ của lựa chọn đang chọn)
+    if (e.target.tagName === "SELECT") e.target.classList.toggle("is-empty", !e.target.value);
     const selectEl = e.target.closest("select[data-field]");
     if (!selectEl) return;
     const card = selectEl.closest(".import-card");
@@ -1908,41 +1855,14 @@ function bindCardEditableEvents(containerEl, isModal = false) {
           card.classList.remove("theme-pay-paid", "theme-pay-unpaid");
         }
       }
-    } else if (fieldName === "nguoi_nhap") {
-      selectEl.setAttribute("data-val", val);
-      if (val) {
-        selectEl.classList.remove("is-placeholder");
-      } else {
-        selectEl.classList.add("is-placeholder");
-      }
-    } else if (fieldName === "nguon_tien") {
-      selectEl.setAttribute("data-val", val);
-      if (val) {
-        selectEl.classList.remove("is-placeholder");
-      } else {
-        selectEl.classList.add("is-placeholder");
-      }
-    } else if (fieldName === "ngay") {
+    } else if (fieldName === "nguoi_nhap" || fieldName === "nguon_tien" || fieldName === "ngay") {
       selectEl.setAttribute("data-val", val);
     }
+    // Các nhánh trên có thể đặt lại className -> gắn lại trạng thái trống
+    selectEl.classList.toggle("is-empty", !selectEl.value);
   });
 
-  // 2. Mousedown: xóa placeholder ngay lập tức
-  containerEl.addEventListener("mousedown", (e) => {
-    const card = e.target.closest(".import-card.card-editable");
-    if (!card) return;
-    const target = e.target.closest("[data-field]");
-    if (!target || target.tagName === "SELECT") return;
-    const fieldName = target.getAttribute("data-field");
-    if (fieldName === "thanh_tien" || target.classList.contains("import-val-locked") || target.classList.contains("badge-disabled")) return;
-
-    if (isFieldPlaceholder(target)) {
-      target.innerText = "";
-      target.classList.remove("is-placeholder");
-    }
-  });
-
-  // 3. Focusin
+  // 2. Focusin
   containerEl.addEventListener("focusin", (e) => {
     const card = e.target.closest(".import-card.card-editable");
     if (!card) return;
@@ -1953,11 +1873,6 @@ function bindCardEditableEvents(containerEl, isModal = false) {
     if (fieldName === "thanh_tien" || target.classList.contains("import-val-locked") || target.classList.contains("badge-disabled")) {
       hideComboboxMenu();
       return;
-    }
-
-    if (isFieldPlaceholder(target)) {
-      target.innerText = "";
-      target.classList.remove("is-placeholder");
     }
 
     if (fieldName === "gia") {
@@ -1987,7 +1902,7 @@ function bindCardEditableEvents(containerEl, isModal = false) {
     openComboboxForField(target, false);
   });
 
-  // 4. Focusout
+  // 3. Focusout
   containerEl.addEventListener("focusout", (e) => {
     const card = e.target.closest(".import-card.card-editable");
     if (!card) return;
@@ -1998,29 +1913,12 @@ function bindCardEditableEvents(containerEl, isModal = false) {
 
     if (fieldName === "gia") {
       const numGia = formatInputPrice(target.innerText);
-      if (numGia > 0) {
-        target.innerText = numGia.toLocaleString("vi-VN");
-        target.classList.remove("is-placeholder");
-      } else {
-        target.innerText = "+ Giá";
-        target.classList.add("is-placeholder");
-      }
+      target.innerText = numGia > 0 ? numGia.toLocaleString("vi-VN") : "";
       updateCardLiveTotal(card);
     } else if (fieldName === "sl") {
-      const statusEl = card.querySelector('[data-field="tinh_trang"]');
-      const isInactive = isInactiveStatus(statusEl ? (statusEl.getAttribute("data-val") || statusEl.innerText) : "");
-      if (isInactive) {
-        target.innerText = "—";
-      } else {
-        const rawSl = parseInt(target.innerText.replace(/\D/g, ""), 10);
-        if (rawSl > 0) {
-          target.innerText = String(rawSl);
-          target.classList.remove("is-placeholder");
-        } else {
-          target.innerText = "+ SL";
-          target.classList.add("is-placeholder");
-        }
-      }
+      const isInactive = isInactiveStatus(readCardStatus(card));
+      const rawSl = parseInt(target.innerText.replace(/\D/g, ""), 10);
+      target.innerText = (!isInactive && rawSl > 0) ? String(rawSl) : "";
       updateCardLiveTotal(card);
     } else if (fieldName === "da_thanh_toan") {
       setTimeout(() => {
@@ -2047,7 +1945,7 @@ function bindCardEditableEvents(containerEl, isModal = false) {
           }
         } else {
           target.setAttribute("data-val", "");
-          target.innerText = "—";
+          target.innerText = "";
           target.className = "import-badge badge-paid-none";
           if (card) {
             card.classList.add("theme-pay-none");
@@ -2076,77 +1974,33 @@ function bindCardEditableEvents(containerEl, isModal = false) {
         applyStatusToCardUI(card, val);
         if (activeComboboxTarget === target) hideComboboxMenu();
       }, 150);
-    } else if (fieldName === "nguon_tien") {
+    } else if (fieldName === "nguon_tien" || fieldName === "nguoi_nhap") {
       setTimeout(() => {
-        let val = target.innerText.replace(/^[💳\s]+/, "").trim();
-        if (val === "+ Nguồn" || val === "—") val = "";
+        const val = target.innerText.trim();
         target.setAttribute("data-val", val);
-        if (val) {
-          target.innerText = `💳 ${val}`;
-          target.className = "import-badge badge-fund";
-        } else {
-          target.innerText = "💳 + Nguồn";
-          target.className = "import-badge badge-fund is-placeholder";
-        }
-        if (activeComboboxTarget === target) hideComboboxMenu();
-      }, 150);
-    } else if (fieldName === "nguoi_nhap") {
-      setTimeout(() => {
-        let val = target.innerText.replace(/^[👤\s]+/, "").trim();
-        if (val === "+ Người" || val === "+ Người nhập" || val === "—") val = "";
-        target.setAttribute("data-val", val);
-        if (val) {
-          target.innerText = `👤 ${val}`;
-          target.className = "import-badge badge-importer";
-        } else {
-          target.innerText = "👤 + Người";
-          target.className = "import-badge badge-importer is-placeholder";
-        }
+        target.innerText = val;
         if (activeComboboxTarget === target) hideComboboxMenu();
       }, 150);
     } else {
       setTimeout(() => {
         if (activeComboboxTarget === target) hideComboboxMenu();
-        const raw = target.innerText.trim();
-        if (fieldName === "ngay" && (!raw || raw === "+ Ngày")) {
-          target.innerText = "+ Ngày";
-          target.classList.add("is-placeholder");
-        } else if (fieldName === "nguoi_gui" && (!raw || raw === "+ Người gửi")) {
-          target.innerText = "+ Người gửi";
-          target.classList.add("is-placeholder");
-        } else if (fieldName === "ten") {
-          if (!raw || raw === "+ Tên sản phẩm") {
-            target.innerText = "+ Tên sản phẩm";
-            target.classList.add("is-placeholder");
-            updateCardProductThumb(target, "");
-          } else {
-            target.classList.remove("is-placeholder");
-            updateCardProductThumb(target, raw);
-          }
-        } else if (fieldName === "dung_tich" && (!raw || raw === "+ Dung tích")) {
-          target.innerText = "+ Dung tích";
-          target.classList.add("is-placeholder");
-        } else if (fieldName === "ghi_chu") {
-          if (!raw || raw === "+ Thêm ghi chú...") {
-            target.innerText = "+ Thêm ghi chú...";
-            target.classList.add("is-placeholder");
-          } else {
-            target.classList.remove("is-placeholder");
-          }
-        } else if (raw) {
-          target.classList.remove("is-placeholder");
-        }
+        const raw = fieldName === "dung_tich_ml" ? sanitizeCapacityNum(target.innerText) : target.innerText.trim();
+        // Ô bị xóa hết: làm trống hẳn (bỏ <br> trình duyệt để lại) để chữ gợi ý CSS hiện lại
+        if (!raw) target.innerText = "";
+        else if (fieldName === "dung_tich_ml") target.innerText = raw;
+        if (fieldName === "ten") updateCardProductThumb(target, raw);
       }, 150);
     }
   });
 
-  // 5. Input
+  // 4. Input
   containerEl.addEventListener("input", (e) => {
     const card = e.target.closest(".import-card.card-editable");
     if (!card) return;
     const fieldEl = e.target.closest("[data-field]");
     if (!fieldEl || fieldEl.tagName === "SELECT") return;
-    fieldEl.classList.remove("is-placeholder");
+    // Xóa hết chữ: bỏ <br> còn sót để ô thật sự trống và chữ gợi ý (data-ph) hiện lại ngay
+    if (!fieldEl.innerText.trim() && fieldEl.innerHTML !== "") fieldEl.innerHTML = "";
 
     const fieldName = fieldEl.getAttribute("data-field");
 
@@ -2165,6 +2019,20 @@ function bindCardEditableEvents(containerEl, isModal = false) {
 
       updateCardLiveTotal(card);
     } else {
+      // Ô Số ml: lọc sạch ký tự không hợp lệ khi dán / gõ (kể cả chữ "ml" người dùng tự gõ thêm)
+      if (fieldName === "dung_tich_ml") {
+        const currentText = fieldEl.innerText;
+        const cleanNum = sanitizeCapacityNum(currentText);
+        if (currentText !== cleanNum) {
+          fieldEl.innerText = cleanNum;
+          const range = document.createRange();
+          range.selectNodeContents(fieldEl);
+          range.collapse(false);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
       if (activeComboboxTarget === fieldEl) {
         renderComboboxList(true);
       }
@@ -2186,7 +2054,7 @@ function bindCardEditableEvents(containerEl, isModal = false) {
     }
   });
 
-  // 6. Keydown
+  // 5. Keydown
   containerEl.addEventListener("keydown", (e) => {
     const card = e.target.closest(".import-card.card-editable");
     if (!card) return;
@@ -2213,6 +2081,12 @@ function bindCardEditableEvents(containerEl, isModal = false) {
         e.preventDefault();
         return;
       }
+    }
+
+    // Ô Số ml: chỉ nhận chữ số, "/" (Gốc 35/50), "." và "," (Mini 7.5); phím điều hướng vẫn đi tiếp xuống combobox
+    if (fieldName === "dung_tich_ml" && !e.ctrlKey && !e.metaKey && e.key.length === 1 && !/^[0-9.,/]$/.test(e.key)) {
+      e.preventDefault();
+      return;
     }
 
     if (comboboxMenuEl && comboboxMenuEl.style.display !== "none") {
@@ -2431,46 +2305,22 @@ async function openAddImportModal() {
   // 1. Ngày hôm nay (DD/MM/YYYY)
   const elNgay = document.getElementById("addImportNgay");
   if (elNgay) {
-    if (elNgay.tagName === "SELECT") {
-      elNgay.innerHTML = getDateSelectOptionsHtml(todayStr);
-      elNgay.value = todayStr;
-    } else {
-      elNgay.innerText = todayStr;
-      elNgay.classList.remove("is-placeholder");
-    }
+    elNgay.innerHTML = getDateSelectOptionsHtml(todayStr);
+    elNgay.value = todayStr;
   }
 
   // 2. Người nhập (tên tài khoản Admin đang đăng nhập)
   const elNguoiNhap = document.getElementById("addImportNguoiNhap");
   const adminUser = await getCurrentAdminUser();
   if (elNguoiNhap) {
-    if (elNguoiNhap.tagName === "SELECT") {
-      elNguoiNhap.innerHTML = getImporterSelectOptionsHtml(adminUser || "");
-      elNguoiNhap.value = adminUser || "";
-      if (adminUser) {
-        elNguoiNhap.classList.remove("is-placeholder");
-      } else {
-        elNguoiNhap.classList.add("is-placeholder");
-      }
-    } else {
-      if (adminUser) {
-        elNguoiNhap.setAttribute("data-val", adminUser);
-        elNguoiNhap.innerText = `👤 ${adminUser}`;
-        elNguoiNhap.className = "import-badge badge-importer";
-      } else {
-        elNguoiNhap.setAttribute("data-val", "");
-        elNguoiNhap.innerText = "👤 + Người";
-        elNguoiNhap.className = "import-badge badge-importer is-placeholder";
-      }
-    }
+    elNguoiNhap.innerHTML = getImporterSelectOptionsHtml(adminUser || "");
+    elNguoiNhap.value = adminUser || "";
+    elNguoiNhap.classList.toggle("is-empty", !adminUser);
   }
 
-  // 3. Người gửi
+  // 3. Người gửi (trống, chữ gợi ý hiện bằng CSS)
   const elNguoiGui = document.getElementById("addImportNguoiGui");
-  if (elNguoiGui) {
-    elNguoiGui.innerText = "+ Người gửi";
-    elNguoiGui.classList.add("is-placeholder");
-  }
+  if (elNguoiGui) elNguoiGui.innerText = "";
 
   // 4. Trạng thái (Mặc định: giá trị đầu tiên của List-Tình Trạng hoặc Đã Nhận)
   const elTinhTrang = document.getElementById("addImportTinhTrang");
@@ -2513,25 +2363,13 @@ async function openAddImportModal() {
     }
   }
 
-  // 6. Nguồn tiền & Ghi chú
+  // 6. Nguồn tiền (ghi chú nằm ở từng dòng sản phẩm)
   const elNguonTien = document.getElementById("addImportNguonTien");
   if (elNguonTien) {
-    if (elNguonTien.tagName === "SELECT") {
-      elNguonTien.disabled = false;
-      elNguonTien.innerHTML = getFundSelectOptionsHtml("", false);
-      elNguonTien.value = "";
-      elNguonTien.className = "import-badge badge-fund is-placeholder";
-    } else {
-      elNguonTien.setAttribute("data-val", "");
-      elNguonTien.innerText = "💳 + Nguồn";
-      elNguonTien.className = "import-badge badge-fund is-placeholder";
-      elNguonTien.setAttribute("contenteditable", "true");
-    }
-  }
-  const elGhiChu = document.getElementById("addImportGhiChu");
-  if (elGhiChu) {
-    elGhiChu.innerText = "+ Thêm ghi chú...";
-    elGhiChu.classList.add("is-placeholder");
+    elNguonTien.disabled = false;
+    elNguonTien.innerHTML = getFundSelectOptionsHtml("", false);
+    elNguonTien.value = "";
+    elNguonTien.className = "import-badge badge-fund is-empty";
   }
 
   // 7. Reset theme thẻ
@@ -2578,8 +2416,8 @@ function renderAddProductRow() {
         <div class="import-prod-title">
           <span class="import-prod-num add-product-row-num">${rowNum}.</span>
           <div class="import-prod-text-flow">
-            <span class="import-card-name is-placeholder" data-field="ten" contenteditable="true" title="Tên sản phẩm">+ Tên sản phẩm</span>
-            <span class="import-badge-size is-placeholder" data-field="dung_tich" contenteditable="true" title="Dung tích">+ Dung tích</span>
+            <span class="import-card-name" data-field="ten" contenteditable="true" data-ph="Tên sản phẩm" title="Tên sản phẩm"></span>
+            ${buildCapacityEditorHtml("")}
           </div>
           <button type="button" class="btn-remove-prod-row" title="Xóa món này">✕</button>
         </div>
@@ -2587,17 +2425,18 @@ function renderAddProductRow() {
       <div class="import-card-pricing">
         <div class="import-price-col import-col-price">
           <span class="import-label">Giá:</span>
-          <span class="import-val-price is-placeholder" data-field="gia" contenteditable="true">+ Giá</span>
+          <span class="import-val-price" data-field="gia" contenteditable="true" data-ph="Giá"></span>
         </div>
         <div class="import-price-col import-col-qty">
           <span class="import-label">SL:</span>
-          <span class="import-val-bold" data-field="sl" contenteditable="true">1</span>
+          <span class="import-val-bold" data-field="sl" contenteditable="true" data-ph="SL">1</span>
         </div>
         <div class="import-price-col import-col-total">
           <span class="import-label">💵</span>
           <span class="import-val-total import-val-locked" data-field="thanh_tien" contenteditable="false" title="Tổng tiền tự động tính">0</span>
         </div>
       </div>
+      <div class="import-card-note" data-field="ghi_chu" contenteditable="true" data-ph="Ghi chú" title="Ghi chú riêng của sản phẩm này"></div>
     </div>
   `;
 
@@ -2648,21 +2487,10 @@ async function handleSaveNewImport() {
   const btnSubmit = document.getElementById("btnSubmitAddImport");
   if (!card) return;
 
+  // Ô trống là trống thật (chữ gợi ý chỉ hiện bằng CSS)
   const readField = (el) => {
     if (!el) return "";
-    if (el.tagName === "SELECT") {
-      const v = el.value.trim();
-      if (!v || v.startsWith("+") || v === "—" || v === "--/--/----" || v === "Chưa có tên") return "";
-      return v;
-    }
-    if (el.classList.contains("is-placeholder")) return "";
-    const stored = el.getAttribute("data-val");
-    if (stored !== null && stored !== undefined && stored !== "") {
-      return stored.trim();
-    }
-    let txt = el.innerText.trim().replace(/^[📝📦💳✓✗👤\s]+/, "").trim();
-    if (txt.startsWith("+") || txt === "—" || txt === "--/--/----" || txt === "Chưa có tên") return "";
-    return txt;
+    return (el.tagName === "SELECT" ? el.value : el.innerText).trim();
   };
 
   const rawNgay = readField(card.querySelector('#addImportNgay'));
@@ -2681,21 +2509,19 @@ async function handleSaveNewImport() {
     }
   }
   const rawNguonTien = isInactive ? "" : readField(card.querySelector('#addImportNguonTien'));
-  const rawGhiChu = readField(card.querySelector('#addImportGhiChu'));
 
   // Thu thập danh sách sản phẩm hợp lệ (có tên)
   const rowsToSend = [];
   const rowsEls = card.querySelectorAll(".add-product-row-item");
   rowsEls.forEach(row => {
     const nameEl = row.querySelector('[data-field="ten"]');
-    const capEl = row.querySelector('[data-field="dung_tich"]');
     const priceEl = row.querySelector('[data-field="gia"]');
     const qtyEl = row.querySelector('[data-field="sl"]');
 
     const ten = readField(nameEl);
     if (!ten) return; // Bỏ qua dòng chưa có tên
 
-    const dungTich = readField(capEl);
+    const dungTich = readCapacityValue(row);
     const numGia = formatInputPrice(readField(priceEl));
     const numSl = isInactive ? "" : (parseInt(readField(qtyEl).replace(/\D/g, ""), 10) || 1);
     const numTotal = isInactive ? 0 : (numGia * (parseInt(numSl, 10) || 1));
@@ -2712,7 +2538,7 @@ async function handleSaveNewImport() {
       tinh_trang: rawTinhTrang,
       da_thanh_toan: rawDaThanhToan,
       nguon_tien: rawNguonTien,
-      ghi_chu: rawGhiChu
+      ghi_chu: readField(row.querySelector('[data-field="ghi_chu"]'))
     });
   });
 
@@ -2762,17 +2588,13 @@ async function handleSaveNewImport() {
     importRawData.unshift(...addedRows);
     importRawData = sortImportData(importRawData);
 
-    if (typeof StorageHelper !== "undefined") {
-      await StorageHelper.set("cachedImportData", importRawData);
-    }
+    await StorageHelper.set("cachedImportData", importRawData);
 
     closeAddImportModal();
 
     // Re-render: Sẽ tự động MERGE vào kiện cũ nếu trùng Ngày + Người gửi + Trạng thái!
     renderImportList(true);
-    if (typeof window.onImportDataUpdated === "function") {
-      window.onImportDataUpdated();
-    }
+    window.onImportDataUpdated();
     showToast(`✨ Đã thêm kiện hàng mới (${rowsToSend.length} món) lên Google Sheet thành công!`);
 
   } catch (err) {

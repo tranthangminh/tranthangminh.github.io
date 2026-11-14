@@ -19,7 +19,7 @@ function Show-Menu {
     Write-Host "  [2] Chi chan qua Windows Defender Firewall (Quet tat ca file .exe)"
     Write-Host "  [3] Chi cap nhat danh sach chan Domain qua File Hosts (237 Domains)"
     Write-Host "  [4] Chi xoa bo nho dem ban quyen (SLCache & SLStore)"
-    Write-Host "  [5] GO CHAN (Xoa tat ca Firewall rules & khoi phuc file Hosts)"
+    Write-Host "  [5] GO CHAN (Mo cong cu 3. Big-Red_UnBlock_Internet)"
     Write-Host "  [6] Thoat"
     Write-Host "================================================================" -ForegroundColor Cyan
 }
@@ -377,23 +377,6 @@ function Disable-AdobeServices {
     Write-Host "[+] Da vo hieu hoa cac Scheduled Tasks!" -ForegroundColor Green
 }
 
-function Remove-AllBlocks {
-    Write-Host "`n[*] Dang xoa cac quy tac chan trong Windows Firewall..." -ForegroundColor Cyan
-    Get-NetFirewallRule -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like "AdobeBlock*" } | Remove-NetFirewallRule -ErrorAction SilentlyContinue
-    Write-Host "  [+] Da xoa sach toan bo rule Firewall cua Adobe!" -ForegroundColor Green
-
-    $hostsPath = "$env:SystemRoot\System32\drivers\etc\hosts"
-    if (Test-Path "$hostsPath.bak") {
-        Copy-Item "$hostsPath.bak" $hostsPath -Force
-        Write-Host "  [+] Da phuc hoi file hosts ve ban goc tu hosts.bak!" -ForegroundColor Green
-    } else {
-        $cleanLines = (Get-Content -Path $hostsPath) | Where-Object { $_ -notmatch "adobe" }
-        Set-Content -Path $hostsPath -Value $cleanLines
-        Write-Host "  [+] Da xoa cac dong lien quan toi Adobe trong hosts!" -ForegroundColor Green
-    }
-    Clear-DnsClientCache
-}
-
 # Vong lap Menu
 do {
     Show-Menu
@@ -430,8 +413,7 @@ do {
             Pause
         }
         "5" {
-            Remove-AllBlocks
-            Pause
+            & (Join-Path $PSScriptRoot "3. Big-Red_UnBlock_Internet.ps1")
         }
         "6" {
             exit

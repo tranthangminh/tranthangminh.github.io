@@ -1,5 +1,5 @@
 # 📚 KIẾN TRÚC HỆ THỐNG SCRIPT ENGINE - BOOK FORGE BY MAX
-> Tài liệu kỹ thuật chi tiết về toàn bộ các module xử lý (39 scripts) trong Book Forge by Max.  
+> Tài liệu kỹ thuật chi tiết về toàn bộ các module xử lý (40 scripts) trong Book Forge by Max.  
 > Phiên bản: **v1.0.1 (Beta)** | Ngôn ngữ: **JavaScript (Node.js Engine)**
 
 ---
@@ -100,9 +100,9 @@ Quá trình xử lý sách trong Book Forge được chia thành 7 nhóm module 
 
 #### ⭐ Script Lớn:
 * **`02__toc_parser.js`** *(Table of Contents Analyzer)*:
-  - Tự động lùng sục các trang đầu cuốn sách để tìm trang Mục lục (dựa trên các từ khóa: `Mục lục`, `Table of Contents`, `Contents`...).
-  - Bóc tách danh sách các chương, tiêu đề cấp con, và số trang tương ứng.
-  - Xây dựng cây phân cấp H1, H2, H3 làm "kim chỉ nam" cho Nhóm 05 cắt chương chuẩn xác 100%.
+  - Tìm trang Mục lục trong 20 trang đầu (từ khóa: `Mục lục`, `Table of Contents`, `Contents`...). Ghép tên chương xuống dòng, bỏ mục con thụt lề hoặc có cỡ chữ nhỏ hơn chương.
+  - Không có Mục lục dùng được thì gom các dòng chữ lớn thành đề mục và lấy cỡ chữ của chương: cỡ của nhãn `Chapter N` nếu có, nếu không thì cỡ lớn nhất có từ 2 đề mục khác nhau trở lên.
+  - Chương bắt đầu đúng ở dòng tiêu đề, nên nhiều chương có thể nằm chung một trang. Độ chính xác vẫn phụ thuộc vào cách trình bày của PDF.
 
 ---
 
@@ -204,6 +204,8 @@ Quá trình xử lý sách trong Book Forge được chia thành 7 nhóm module 
   - **Tách từ tiếng Việt dính chùm** (`splitGluedVietnameseWords`): Áp dụng quy tắc ngữ âm tiếng Việt (cặp phụ âm bất khả thi, bán âm cuối / nguyên âm đôi mở kết hợp phụ âm đầu độc lập) để tách chuẩn xác các từ bị dính mà không ảnh hưởng từ tiếng Anh hay từ đơn âm.
   - Recombine dấu rời rạc (`e´ -> é`, `aˆ -> â`).
   - Mở rộng ligatures (`ﬁ -> fi`, `ﬂ -> fl`) và sửa lỗi ký tự `MM`.
+* **`node_version_guard.js`** *(Node.js Version Guard)*:
+  - Nạp đầu tiên trong mọi script đầu vào. Node.js cũ hơn 22.12 thì dừng ngay và báo rõ phiên bản cần cài.
 * **`browser_launcher.js`** *(Robust Puppeteer Edge Launcher)*:
   - Khởi chạy Microsoft Edge có sẵn trên Windows với user-data-dir cô lập, tắt tính năng Startup Boost để tránh xung đột tiến trình và tự giải phóng RAM khi in xong.
 * **`word_segmenter_EN.js`** *(NLP English Vocabulary & De-spacing Engine)*:
@@ -216,4 +218,4 @@ Quá trình xử lý sách trong Book Forge được chia thành 7 nhóm module 
 
 ---
 
-> 💡 **Ghi chú**: Tất cả 39 script trên đều là module độc lập (CommonJS), được đóng gói 100% trong `for_zip/script/` và hoạt động hoàn toàn offline thông qua Node.js runtime.
+> 💡 **Ghi chú**: Tất cả 40 script trên đều là module độc lập (CommonJS), được đóng gói 100% trong `for_zip/script/` và hoạt động hoàn toàn offline thông qua Node.js runtime.

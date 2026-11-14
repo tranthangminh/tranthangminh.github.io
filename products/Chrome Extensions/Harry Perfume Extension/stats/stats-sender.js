@@ -21,24 +21,16 @@ try {
   if (dMode) senderDetailSortMode = JSON.parse(dMode);
 } catch (e) {}
 
-if (typeof StorageHelper !== "undefined") {
-  StorageHelper.get("statsSenderSortMode", senderSortMode).then(val => {
-    if (val) senderSortMode = val;
-  });
-  StorageHelper.get("statsSenderDetailSortMode", senderDetailSortMode).then(val => {
-    if (val) senderDetailSortMode = val;
-  });
-}
+StorageHelper.get("statsSenderSortMode", senderSortMode).then(val => {
+  if (val) senderSortMode = val;
+});
+StorageHelper.get("statsSenderDetailSortMode", senderDetailSortMode).then(val => {
+  if (val) senderDetailSortMode = val;
+});
 
 // Lấy danh sách dòng nhập từ import module (Single Source of Truth)
 function getSenderRawData() {
-  if (typeof window.getImportRawData === "function") {
-    return window.getImportRawData() || [];
-  }
-  if (typeof importRawData !== "undefined" && Array.isArray(importRawData)) {
-    return importRawData;
-  }
-  return [];
+  return window.getImportRawData();
 }
 
 // Xác định lớp CSS cho badge trạng thái
@@ -276,9 +268,7 @@ function setupSenderListEventListeners(container) {
         const sortVal = item.getAttribute("data-sort");
         if (sortVal) {
           senderSortMode = sortVal;
-          if (typeof StorageHelper !== "undefined") {
-            StorageHelper.set("statsSenderSortMode", sortVal);
-          }
+          StorageHelper.set("statsSenderSortMode", sortVal);
           isSortMenuOpen = false;
           renderSenderStatsView();
         }
@@ -495,9 +485,7 @@ function setupSenderDetailEventListeners(container) {
         const sortVal = item.getAttribute("data-sort");
         if (sortVal) {
           senderDetailSortMode = sortVal;
-          if (typeof StorageHelper !== "undefined") {
-            StorageHelper.set("statsSenderDetailSortMode", sortVal);
-          }
+          StorageHelper.set("statsSenderDetailSortMode", sortVal);
           isDetailSortMenuOpen = false;
           renderSenderStatsView();
         }

@@ -103,7 +103,7 @@ Thông thường, khi bóc tách một cuốn sách PDF để dịch thuật ho�
 | **Dung Lượng Đĩa** | 500 MB dung lượng trống | 2 GB dung lượng SSD tốc độ cao |
 | **Màn Hình** | Độ phân giải 1280 x 720 (HD) | Độ phân giải 1920 x 1080 (Full HD) hoặc cao hơn |
 | **Môi Trường .NET** | .NET Framework 4.8 (Windows 10/11 có sẵn) | .NET Framework 4.8 |
-| **Môi Trường Bổ Trợ** | Node.js (v18+ LTS) | Node.js (v20+ LTS) |
+| **Môi Trường Bổ Trợ** | Node.js 22.12 trở lên | Node.js LTS mới nhất |
 | **Trình Duyệt** | Microsoft Edge (Chromium) có sẵn | Microsoft Edge bản mới nhất |
 
 ---
@@ -115,7 +115,7 @@ Thông thường, khi bóc tách một cuốn sách PDF để dịch thuật ho�
 - Giải nén file `.zip` vào bất kỳ thư mục nào trên máy tính của bạn (Ví dụ: `D:\Book Forge by Max\`).
 
 ### Bước 2: Chuẩn bị Node.js
-- Nếu máy tính của bạn chưa có Node.js:
+- Nếu máy tính của bạn chưa có Node.js, hoặc đang dùng bản cũ hơn 22.12:
   - Truy cập trang chủ chính thức: [https://nodejs.org/](https://nodejs.org/)
   - Tải về và cài đặt bản **LTS (Long Term Support)** với các thiết lập mặc định.
 - Các thư viện xử lý sách đã đi kèm trong thư mục `script/`, không cần cài thêm.
@@ -175,11 +175,11 @@ flowchart LR
 
 ### 📌 Mẹo 1: Căn lề gáy (Gutter) chuẩn theo độ dày sách
 - **Sách mỏng (< 120 trang, đóng bấm kim hoặc may chỉ nhẹ)**:
-  - Chọn Binding Mode: `Print`. Lề gáy mặc định $20\text{mm} - 22\text{mm}$ là vừa đẹp.
+  - Chọn Binding Mode: `Print`. Với khổ A5, lề trong 22 mm và lề ngoài 14 mm là vừa đẹp. Các khổ khác có lề riêng, lề trong từ 15 mm (A6) đến 30 mm (A4, US Letter).
 - **Sách dày (> 250 trang, dán keo nhiệt gáy cứng)**:
-  - Gáy sách dán keo sẽ làm mất từ $5\text{mm} - 8\text{mm}$ khoảng cách đọc bên trong. Chế độ `Print` của Book Forge đã được bù trừ lề trong lên tới $24\text{mm}$, giúp người đọc không phải dùng tay bẹt mạnh gáy sách vẫn đọc rõ từng chữ sát mép trong.
+  - Gáy sách dán keo sẽ làm mất từ $5\text{mm} - 8\text{mm}$ khoảng cách đọc bên trong. Chế độ `Print` của Book Forge để lề trong rộng hơn lề ngoài 8 mm ở khổ A5, giúp người đọc không phải dùng tay bẹt mạnh gáy sách vẫn đọc rõ từng chữ sát mép trong.
 - **Sách đọc trên Ipad / Tablet / Laptop**:
-  - Hãy chuyển Binding Mode sang `Digital`. Lề 2 bên sẽ cân đối đều chằn chặn, tối ưu không gian hiển thị trên màn hình.
+  - Hãy chuyển Binding Mode sang `Digital`. Lề 2 bên bằng nhau (16 mm ở khổ A5), tối ưu không gian hiển thị trên màn hình.
 
 ### 📌 Mẹo 2: Lựa chọn Menu Depth (Độ sâu mục lục) phù hợp
 - **Tiểu thuyết / Truyện ngắn**: Hãy luôn chọn `H1`. Người đọc chỉ cần biết Chương 1, Chương 2 ở trang nào; việc đưa H2/H3 vào sẽ làm loãng và dài dòng mục lục.
@@ -201,7 +201,7 @@ flowchart LR
 ### ❓ Câu hỏi 1: Khi bấm bóc tách hoặc xuất PDF, phần mềm báo lỗi thiếu Node.js?
 - **Khắc phục**:
   1. Kiểm tra xem bạn đã cài Node.js chưa bằng cách mở cửa sổ cmd và gõ `node -v`.
-  2. Nếu chưa có, tải bản LTS tại [nodejs.org](https://nodejs.org/), cài xong thì mở lại phần mềm.
+  2. Nếu chưa có, hoặc bản cũ hơn 22.12, tải bản LTS tại [nodejs.org](https://nodejs.org/), cài xong thì mở lại phần mềm. Với bản quá cũ, log sẽ báo `Book Forge needs Node.js 22.12 or later`.
 
 ### ❓ Câu hỏi 2: Xuất PDF xong trang Mục lục có bị đè chữ hoặc thiếu số trang không?
 - **Khắc phục**: Hoàn toàn không! Từ phiên bản **v1.0 (Beta)**, Book Forge đã áp dụng thuật toán `Token Marker Extraction` kết hợp `Pass 1 Draft Injection` và hệ thống Flexbox co giãn (`box-sizing: border-box`), đảm bảo cột tên chương co lại tự động và số trang luôn căn thẳng tắp lề phải bất kể cấp độ thụt lề H1, H2 hay H3.
@@ -228,7 +228,7 @@ flowchart LR
 │   ├── logo.svg
 │   └── 📁 translation_bible/             # Mẫu khung Character, Context, Glossary, Style
 │
-└── 📁 script/                            # 39 Module xử lý sách lõi (Node.js Engine)
+└── 📁 script/                            # 40 Module xử lý sách lõi (Node.js Engine)
     ├── SCRIPTS_DOCUMENTATION.md         # Tài liệu kỹ thuật toàn bộ script
     ├── 01__pdf_geometry.js              # Phân tích hình học và đo tọa độ PDF
     ├── 02__toc_parser.js                # Trích xuất và phân tích mục lục PDF gốc

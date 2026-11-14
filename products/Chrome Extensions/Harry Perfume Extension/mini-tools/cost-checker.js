@@ -13,7 +13,7 @@
  */
 
 (function () {
-  const API_URL = "https://script.google.com/macros/s/AKfycbz5_hZe3O6FrrF21tPhZX0oB9Hm9oelGcwUHXGcDfnraNQTjnr-cYEqnZMwe-4VnLJC/exec";
+  const { showToast } = ToolShell;
 
   // Khóa lưu trữ dữ liệu
   const STORAGE_KEY_INPUT_NAMES = "costCheckerInputNames";
@@ -30,17 +30,15 @@
   const btnToggleTheme = document.getElementById("btnToggleTheme");
   const themeIcon = document.getElementById("themeIcon");
 
-  const rowCountLabel = document.getElementById("rowCountLabel");
-  const matchedCountLabel = document.getElementById("matchedCountLabel");
-  const costSeparator = document.getElementById("costSeparator");
-  const costCountLabel = document.getElementById("costCountLabel");
+  const rowSummary = document.getElementById("rowSummary");
   const btnTogglePreview = document.getElementById("btnTogglePreview");
   const btnClearAll = document.getElementById("btnClearAll");
+  const filterSelect = document.getElementById("filterSelect");
 
   const excelTableBody = document.getElementById("excelTableBody");
+  // Lọc dòng theo màu kết quả (Tất Cả / Đã Đúng / Cần Xem Xét / Cần Sửa), dùng chung ToolShell
+  const applyFilterToRow = ToolShell.initRowFilter(filterSelect, excelTableBody);
   const spreadsheetContainer = document.getElementById("spreadsheetContainer");
-  const cursorImagePreview = document.getElementById("cursorImagePreview");
-  const cursorImageTag = document.getElementById("cursorImageTag");
 
   const btnCopyCol1 = document.getElementById("btnCopyCol1");
   const btnPasteCol2 = document.getElementById("btnPasteCol2");
@@ -50,15 +48,9 @@
   const btnCopyCol4 = document.getElementById("btnCopyCol4");
   const btnCopyMerge = document.getElementById("btnCopyMerge");
 
-  const toastEl = document.getElementById("costCheckerToast");
-  const toastMsg = document.getElementById("costCheckerToastMsg");
-
   // State
   let allProducts = [];
-  let isDbLoading = false;
   let saveStateTimer = null;
-  let toastTimer = null;
-  let showLargeImage = false;
 
   let rowNames = [];    // Cột Input Tên sản phẩm
   let rowCosts = [];    // Cột Giá Recheck
@@ -71,70 +63,21 @@
   document.addEventListener("DOMContentLoaded", initCostChecker);
 
   async function initCostChecker() {
-    restoreTheme();
-    initPreviewToggle();
+    ToolShell.initThemeToggle(btnToggleTheme, themeIcon);
+    ToolShell.initImagePreview(spreadsheetContainer, btnTogglePreview, STORAGE_KEY_LARGE_IMG_PREVIEW);
     bindEvents();
-    setupCursorImagePreview();
 
     // 1. Phục hồi NGAY LẬP TỨC (0ms) dữ liệu đã lưu để hiển thị không cần chờ tải mạng
     restoreSavedInputsSync();
     renderTable();
 
-    // 2. Nạp kho dữ liệu allProducts trong background và tính toán hoàn thiện các cột
+    // 2. Nạp kho dữ liệu allProducts trong background, xong thì chỉ điền lại các ô kết quả
+    //    (không vẽ lại cả bảng để người dùng đang gõ dở không bị mất con trỏ)
     loadProductsDatabase().then(() => {
       processAllRows();
-      renderTable();
+      rowOutputs.forEach((_, i) => paintResultRow(i));
+      updateToolbarSummary();
     });
-  }
-
-  // 1. Quản lý Theme Sáng / Tối
-  function restoreTheme() {
-    try {
-      const saved = localStorage.getItem("theme");
-      const theme = saved ? JSON.parse(saved) : "dark";
-      document.documentElement.setAttribute("data-theme", theme);
-      if (themeIcon) {
-        themeIcon.innerText = (theme === "light") ? "🌙" : "☀️";
-      }
-    } catch (e) {
-      document.documentElement.setAttribute("data-theme", "dark");
-    }
-  }
-
-  function toggleTheme() {
-    const current = document.documentElement.getAttribute("data-theme") || "dark";
-    const next = (current === "light") ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", next);
-    try {
-      localStorage.setItem("theme", JSON.stringify(next));
-    } catch (e) {}
-    if (themeIcon) {
-      themeIcon.innerText = (next === "light") ? "🌙" : "☀️";
-    }
-  }
-
-  // Quản lý nút bật/tắt Hiện ảnh lớn
-  function initPreviewToggle() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_LARGE_IMG_PREVIEW);
-      showLargeImage = saved === "true";
-    } catch (e) {
-      showLargeImage = false;
-    }
-    if (btnTogglePreview) {
-      btnTogglePreview.classList.toggle("active", showLargeImage);
-      btnTogglePreview.addEventListener("click", () => {
-        showLargeImage = !showLargeImage;
-        btnTogglePreview.classList.toggle("active", showLargeImage);
-        try {
-          localStorage.setItem(STORAGE_KEY_LARGE_IMG_PREVIEW, showLargeImage);
-        } catch (e) {}
-        if (!showLargeImage && cursorImagePreview) {
-          cursorImagePreview.style.display = "none";
-        }
-        showToast(showLargeImage ? "🖼️ Đã BẬT xem ảnh lớn 128x128 khi rê chuột vào dòng!" : "🖼️ Đã TẮT xem ảnh lớn!");
-      });
-    }
   }
 
   // 2. State Persistence (Phục hồi tức thì 0ms từ localStorage)
@@ -180,10 +123,8 @@
     const imagesText = lastIdx >= 0 ? rowImages.slice(0, lastIdx + 1).join("\n") : "";
 
     try {
-      if (typeof StorageHelper !== "undefined") {
-        await StorageHelper.set(STORAGE_KEY_INPUT_NAMES, namesText);
-        await StorageHelper.set(STORAGE_KEY_INPUT_COSTS, costsText);
-      }
+      await StorageHelper.set(STORAGE_KEY_INPUT_NAMES, namesText);
+      await StorageHelper.set(STORAGE_KEY_INPUT_COSTS, costsText);
       localStorage.setItem(STORAGE_KEY_INPUT_NAMES, JSON.stringify(namesText));
       localStorage.setItem(STORAGE_KEY_INPUT_COSTS, JSON.stringify(costsText));
       localStorage.setItem(STORAGE_KEY_SAVED_OUTPUTS, JSON.stringify(outputsText));
@@ -204,52 +145,17 @@
     return last;
   }
 
-  // 3. Nạp cơ sở dữ liệu allProducts từ Cache hoặc Google Apps Script
+  // 3. Nạp cơ sở dữ liệu allProducts từ cache của panel hoặc Google Apps Script
   async function loadProductsDatabase() {
-    if (isDbLoading) return;
-    isDbLoading = true;
-
-    if (dbCountText) dbCountText.innerText = "Đang nạp kho...";
-
+    dbCountText.innerText = "Đang nạp kho...";
     try {
-      if (typeof StorageHelper !== "undefined") {
-        const cached = await StorageHelper.get("cachedProducts", []);
-        if (Array.isArray(cached) && cached.length > 0) {
-          allProducts = cached;
-          updateDbStatus(true);
-          return;
-        }
-      }
-
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      const list = Array.isArray(data) ? data : (data.products || data.data || []);
-
-      if (list.length > 0) {
-        allProducts = list;
-        if (typeof StorageHelper !== "undefined") {
-          await StorageHelper.set("cachedProducts", allProducts);
-        }
-        updateDbStatus(true);
-      } else {
-        updateDbStatus(false);
-      }
+      allProducts = await ToolShell.loadProducts();
     } catch (err) {
-      updateDbStatus(false);
-    } finally {
-      isDbLoading = false;
+      allProducts = [];
     }
-  }
-
-  function updateDbStatus(isSuccess) {
-    const dot = dbStatusBadge ? dbStatusBadge.querySelector(".status-dot") : null;
-    if (isSuccess && allProducts.length > 0) {
-      if (dot) dot.classList.add("ready");
-      if (dbCountText) dbCountText.innerText = `${allProducts.length.toLocaleString("vi-VN")} chai trong kho`;
-    } else {
-      if (dot) dot.classList.remove("ready");
-      if (dbCountText) dbCountText.innerText = "Lỗi kết nối kho";
-    }
+    const isReady = allProducts.length > 0;
+    ToolShell.setDbStatus(dbStatusBadge, dbCountText, isReady,
+      isReady ? `${allProducts.length.toLocaleString("vi-VN")} chai trong kho` : "Lỗi kết nối kho");
   }
 
   // 4. Định dạng Giá Vốn Output theo yêu cầu:
@@ -338,14 +244,10 @@
   // 5. Kiểm tra nếu tên nhập khớp 100% với tên sản phẩm
   function isExact100Match(rawInput, matchedProd) {
     if (!rawInput || !matchedProd) return false;
-    let parsed = { cleanName: "" };
-    if (typeof CostCheckerParser !== "undefined") {
-      parsed = CostCheckerParser.extractTypeAndVolume(rawInput);
-    }
+    const parsed = CostCheckerParser.extractTypeAndVolume(rawInput);
     const cleanQ = parsed.cleanName || rawInput;
     const normalize = (str) => {
-      const s = typeof removeAccents === "function" ? removeAccents(str) : String(str).toLowerCase();
-      return s.replace(/[,\.\-_/\\()+=\[\]:;!?"'~`*]/g, " ").replace(/\s+/g, " ").trim();
+      return removeAccents(str).replace(/[,\.\-_/\\()+=\[\]:;!?"'~`*]/g, " ").replace(/\s+/g, " ").trim();
     };
 
     const qNorm = normalize(cleanQ);
@@ -369,8 +271,11 @@
       if (volNum === 20) return formatOutputCost(product.giavon20ml);
     }
 
-    // Nhóm Tester (quét slot 1..5)
-    if (t === "tester" || t === "test") {
+    // Full Nobox / Tester Nobox (không hộp): không có cột giá vốn trên Sheet -> để trống
+    if (t === "full nobox" || t === "tester nobox") return "";
+
+    // Nhóm Tester (có hộp): cột giavontest1..5 (quét slot 1..5)
+    if (t === "tester") {
       for (let i = 1; i <= 5; i++) {
         const slotVol = parseInt(String(product["dungtich" + i] || "").replace(/\D/g, ""), 10);
         if (slotVol && slotVol === volNum) {
@@ -383,7 +288,7 @@
       return "";
     }
 
-    // Nhóm Full, Nobox, Refill, Mini hoặc mặc định (quét slot 1..5)
+    // Nhóm Full (có hộp), Refill, Mini hoặc mặc định: cột giavonfull1..5 (quét slot 1..5)
     for (let i = 1; i <= 5; i++) {
       const slotVol = parseInt(String(product["dungtich" + i] || "").replace(/\D/g, ""), 10);
       if (slotVol && slotVol === volNum) {
@@ -406,15 +311,12 @@
       return { outputName: "", outputCost: "", imgUrl: "", isMatch100: false };
     }
 
-    let parsed = { type: "", volume: "", combo: "", cleanName: "", isGoc: false };
-    if (typeof CostCheckerParser !== "undefined") {
-      parsed = CostCheckerParser.extractTypeAndVolume(line);
-    }
+    const parsed = CostCheckerParser.extractTypeAndVolume(line);
 
     const searchQuery = parsed.cleanName.length > 0 ? parsed.cleanName : line;
     let matchedProd = null;
 
-    if (allProducts.length > 0 && typeof searchProducts === "function") {
+    if (allProducts.length > 0) {
       const results = searchProducts(searchQuery, allProducts, { limit: 1 });
       if (results && results.length > 0) {
         matchedProd = results[0];
@@ -458,8 +360,6 @@
       let imgUrl = "";
       if (matchedProd.img && matchedProd.img !== "-" && String(matchedProd.img).startsWith("http")) {
         imgUrl = matchedProd.img;
-      } else if (typeof getProductImageByName === "function") {
-        imgUrl = getProductImageByName(matchedProd.name);
       }
 
       const isMatch = isExact100Match(rawName, matchedProd);
@@ -510,13 +410,8 @@
       const isMatch = rowMatches[i] || false;
 
       // Xác định trạng thái đối chiếu giá với dung sai +-1
-      let costStatusClass = "";
       const matchResult = isCostMatched(costVal, sysCostVal);
-      if (matchResult !== null) {
-        costStatusClass = matchResult ? "cell-match" : "cell-mismatch";
-      }
-
-      const match100Class = isMatch ? "match-100" : "";
+      const costStatusClass = matchResult === null ? "" : (matchResult ? "cell-match" : "cell-mismatch");
 
       // Xác định giá trị và màu sắc Cột Merge (khớp hoàn toàn với màu của Giá Vốn output; recheck thì màu trắng)
       const mergeData = getMergedCostData(sysCostVal, costVal);
@@ -528,113 +423,69 @@
       }
 
       html += `
-        <tr class="excel-row" data-row="${i}">
+        <tr class="excel-row${matchResult === false ? " row-alert" : ""}" data-row="${i}" data-img="${escAttr(imgVal)}">
           <td class="td-num">${i + 1}</td>
-          <td class="td-output ${match100Class}" id="outputCell_${i}" title="${escAttr(outputVal)}">${escHtml(outputVal)}</td>
           <td class="td-thumb" id="thumbCell_${i}">
-            ${imgVal ? `<img src="${escAttr(imgVal)}" class="excel-thumb-img" alt="" loading="lazy">` : ""}
+            ${ToolShell.thumbHtml(imgVal)}
           </td>
-          <td class="td-input">
-            <div class="cell-flex-wrap">
-              <textarea class="excel-cell-textarea input-name" data-row="${i}" rows="1" spellcheck="false" placeholder="...">${escHtml(nameVal)}</textarea>
-            </div>
-          </td>
-          <td class="td-recheck">
-            <div class="cell-flex-wrap">
-              <textarea class="excel-cell-textarea input-cost" data-row="${i}" rows="1" spellcheck="false" placeholder="...">${escHtml(costVal)}</textarea>
-            </div>
-          </td>
-          <td class="td-cost ${costStatusClass}" id="costCell_${i}">${escHtml(sysCostVal)}</td>
+          ${ToolShell.stackedCellHtml(i, "name", nameVal, {
+            textareaClass: "input-name",
+            placeholder: "...",
+            resultId: `outputCell_${i}`,
+            resultClass: isMatch ? "is-same" : "",
+            resultText: outputVal
+          })}
+          ${ToolShell.stackedCellHtml(i, "cost", costVal, {
+            tdClass: costVal.trim() || sysCostVal ? "td-cost is-filled" : "td-cost",
+            textareaClass: "input-cost",
+            resultId: `costCell_${i}`,
+            resultClass: costResultClass(matchResult),
+            resultText: sysCostVal
+          })}
           <td class="td-merge ${mergeStatusClass}" id="mergeCell_${i}">${escHtml(mergeData.value)}</td>
         </tr>
       `;
     }
 
     excelTableBody.innerHTML = html;
-    adjustAllTextareas();
+    Array.from(excelTableBody.rows).forEach(applyFilterToRow);
     updateToolbarSummary();
   }
 
-  function adjustTextareaHeight(ta) {
-    if (!ta) return;
-    ta.style.height = "auto";
-    ta.style.height = Math.max(28, ta.scrollHeight) + "px";
+  // Điền lại các ô kết quả của 1 dòng (Output Name, Hình, Output Vốn, Merge Vốn), không đụng tới ô đang gõ
+  function paintResultRow(i) {
+    const outCell = document.getElementById(`outputCell_${i}`);
+    if (!outCell) return;
+    const outputVal = rowOutputs[i] || "";
+    const imgVal = rowImages[i] || "";
+    outCell.innerText = outputVal;
+    outCell.title = outputVal;
+    // Tên khớp 100% với Input Name -> xanh lá (.is-same trong tool-base.css)
+    outCell.classList.toggle("is-same", Boolean(rowMatches[i]));
+
+    document.getElementById(`thumbCell_${i}`).innerHTML = ToolShell.thumbHtml(imgVal);
+    const row = outCell.closest("tr");
+    row.dataset.img = imgVal;
+    // Output Vốn lệch giá (chữ đỏ) -> viền đỏ cả dòng
+    row.classList.toggle("row-alert", isCostMatched(rowCosts[i] || "", rowSysCosts[i] || "") === false);
+
+    const costCell = document.getElementById(`costCell_${i}`);
+    costCell.innerText = rowSysCosts[i] || "";
+    costCell.title = rowSysCosts[i] || "";
+    // Có Input Vốn hoặc Output Vốn -> giữ đủ 2 hàng (cost-checker.css)
+    costCell.closest("td").classList.toggle("is-filled", Boolean((rowCosts[i] || "").trim() || rowSysCosts[i]));
+    updateCostCellStatus(costCell, rowCosts[i] || "", rowSysCosts[i] || "");
+    updateMergeCellStatus(document.getElementById(`mergeCell_${i}`), getMergedCostData(rowSysCosts[i] || "", rowCosts[i] || ""), rowCosts[i] || "", rowSysCosts[i] || "");
+    applyFilterToRow(row);
   }
 
-  function adjustAllTextareas() {
-    if (!excelTableBody) return;
-    const tas = excelTableBody.querySelectorAll(".excel-cell-textarea");
-    tas.forEach(adjustTextareaHeight);
-  }
-
-  // 9. Cập nhật thanh Toolbar Thống Kê
+  // 9. Đếm Tất Cả / Đã Đúng / Cần Xem Xét / Cần Sửa trên toolbar (dùng chung ToolShell, khớp bộ lọc)
   function updateToolbarSummary() {
-    let rowCount = 0;
-    let matchedCount = 0;
-    let checkedCosts = 0;
-    let matchedCosts = 0;
-    let mismatchedCosts = 0;
-
-    const maxLen = Math.max(rowNames.length, rowCosts.length);
-    for (let i = 0; i < maxLen; i++) {
-      const n = (rowNames[i] || "").trim();
-      const out = (rowOutputs[i] || "").trim();
-      const cIn = rowCosts[i] || "";
-      const cSys = rowSysCosts[i] || "";
-
-      if (n) rowCount++;
-      if (out) matchedCount++;
-
-      const matchResult = isCostMatched(cIn, cSys);
-      if (matchResult !== null) {
-        checkedCosts++;
-        if (matchResult) {
-          matchedCosts++;
-        } else {
-          mismatchedCosts++;
-        }
-      }
-    }
-
-    if (rowCountLabel) {
-      rowCountLabel.innerText = `${rowCount} dòng`;
-    }
-    if (matchedCountLabel) {
-      matchedCountLabel.innerText = `${matchedCount} khớp tên`;
-    }
-
-    if (!costSeparator || !costCountLabel) return;
-
-    if (checkedCosts === 0) {
-      costSeparator.style.display = "none";
-      costCountLabel.style.display = "none";
-      return;
-    }
-
-    costSeparator.style.display = "inline";
-    costCountLabel.style.display = "inline";
-    costCountLabel.className = "counter-label cost-count";
-
-    if (mismatchedCosts > 0) {
-      costCountLabel.classList.add("mismatch");
-      costCountLabel.innerText = `⚠️ ${mismatchedCosts} lệch giá (${matchedCosts}/${checkedCosts} khớp)`;
-      costCountLabel.title = "Có dòng giá vốn đối chiếu khác với giá vốn trong kho hệ thống";
-    } else if (matchedCosts === checkedCosts) {
-      costCountLabel.classList.add("all-matched");
-      costCountLabel.innerText = `✓ ${matchedCosts}/${checkedCosts} khớp giá`;
-      costCountLabel.title = "Toàn bộ giá vốn đối chiếu trùng khớp 100% với hệ thống";
-    } else {
-      costCountLabel.innerText = `${matchedCosts}/${checkedCosts} khớp giá`;
-      costCountLabel.title = `${checkedCosts - matchedCosts} dòng chưa có giá hệ thống để so khớp`;
-    }
+    ToolShell.renderRowSummary(rowSummary, excelTableBody);
   }
 
   // 10. Gắn sự kiện (Event Delegation)
   function bindEvents() {
-    if (btnToggleTheme) {
-      btnToggleTheme.addEventListener("click", toggleTheme);
-    }
-
     if (btnClearAll) {
       btnClearAll.addEventListener("click", clearAllData);
     }
@@ -670,7 +521,14 @@
     if (excelTableBody) {
       excelTableBody.addEventListener("input", onCellInput);
       excelTableBody.addEventListener("paste", onCellPaste);
-      excelTableBody.addEventListener("keydown", onCellKeydown);
+      // Ở dòng cuối bấm Enter / ↓: thêm 5 dòng trống rồi đi xuống
+      ToolShell.bindColumnNavigation(excelTableBody, (rowIdx) => {
+        const newTotal = rowIdx + 6;
+        while (rowNames.length < newTotal) rowNames.push("");
+        while (rowCosts.length < newTotal) rowCosts.push("");
+        processAllRows();
+        renderTable();
+      });
     }
   }
 
@@ -679,8 +537,6 @@
     const rowIdx = parseInt(target.getAttribute("data-row"), 10);
     if (isNaN(rowIdx)) return;
 
-    adjustTextareaHeight(target);
-
     if (target.classList.contains("input-name")) {
       rowNames[rowIdx] = target.value;
       const res = computeRowResult(target.value);
@@ -688,62 +544,28 @@
       rowSysCosts[rowIdx] = res.outputCost;
       rowImages[rowIdx] = res.imgUrl;
       rowMatches[rowIdx] = res.isMatch100;
-
-      const outCell = document.getElementById(`outputCell_${rowIdx}`);
-      if (outCell) {
-        outCell.innerText = res.outputName;
-        outCell.title = res.outputName;
-        if (res.isMatch100) {
-          outCell.classList.add("match-100");
-        } else {
-          outCell.classList.remove("match-100");
-        }
-      }
-
-      const thumbCell = document.getElementById(`thumbCell_${rowIdx}`);
-      if (thumbCell) {
-        thumbCell.innerHTML = res.imgUrl
-          ? `<img src="${escAttr(res.imgUrl)}" class="excel-thumb-img" alt="" loading="lazy">`
-          : "";
-      }
-
-      const costCell = document.getElementById(`costCell_${rowIdx}`);
-      if (costCell) {
-        costCell.innerText = res.outputCost;
-        updateCostCellStatus(costCell, rowCosts[rowIdx], res.outputCost);
-      }
-
-      const mergeCell = document.getElementById(`mergeCell_${rowIdx}`);
-      if (mergeCell) {
-        const mData = getMergedCostData(res.outputCost, rowCosts[rowIdx]);
-        updateMergeCellStatus(mergeCell, mData, rowCosts[rowIdx], res.outputCost);
-      }
-
-      updateToolbarSummary();
-      scheduleSaveState();
-
     } else if (target.classList.contains("input-cost")) {
       rowCosts[rowIdx] = target.value;
-      const costCell = document.getElementById(`costCell_${rowIdx}`);
-      if (costCell) {
-        updateCostCellStatus(costCell, target.value, rowSysCosts[rowIdx] || "");
-      }
-      const mergeCell = document.getElementById(`mergeCell_${rowIdx}`);
-      if (mergeCell) {
-        const mData = getMergedCostData(rowSysCosts[rowIdx] || "", target.value);
-        updateMergeCellStatus(mergeCell, mData, target.value, rowSysCosts[rowIdx] || "");
-      }
-      updateToolbarSummary();
-      scheduleSaveState();
+    } else {
+      return;
     }
+
+    paintResultRow(rowIdx);
+    updateToolbarSummary();
+    scheduleSaveState();
+  }
+
+  // Hàng dưới Output Vốn (.cell-result, tool-base.css): khớp Input Vốn -> xanh (.is-same), lệch -> đỏ (.is-alert),
+  // chưa nhập Input Vốn -> vàng mặc định
+  function costResultClass(matchResult) {
+    if (matchResult === null) return "";
+    return matchResult ? "is-same" : "is-alert";
   }
 
   function updateCostCellStatus(cellEl, costVal, sysCostVal) {
-    cellEl.classList.remove("cell-match", "cell-mismatch");
-    const matchResult = isCostMatched(costVal, sysCostVal);
-    if (matchResult !== null) {
-      cellEl.classList.add(matchResult ? "cell-match" : "cell-mismatch");
-    }
+    cellEl.classList.remove("is-same", "is-alert");
+    const cls = costResultClass(isCostMatched(costVal, sysCostVal));
+    if (cls) cellEl.classList.add(cls);
   }
 
   function updateMergeCellStatus(mergeCell, mData, costVal, sysCostVal) {
@@ -762,11 +584,8 @@
 
   // Dán nhiều dòng trực tiếp vào ô bất kỳ
   function onCellPaste(e) {
-    const text = (e.clipboardData || window.clipboardData)?.getData("text");
-    if (!text || !text.includes("\n")) return;
-
-    e.preventDefault();
-    const lines = text.split(/\r?\n/);
+    const lines = ToolShell.readMultilinePaste(e);
+    if (!lines) return;
     const target = e.target;
     const startRow = parseInt(target.getAttribute("data-row"), 10) || 0;
     const isNameCol = target.classList.contains("input-name");
@@ -782,111 +601,16 @@
     showToast(`📋 Đã dán ${lines.length} dòng vào bảng!`);
   }
 
-  // Điều hướng phím mũi tên / Enter như Excel
-  function onCellKeydown(e) {
-    const target = e.target;
-    if (!target.classList.contains("excel-cell-textarea")) return;
-
-    const rowIdx = parseInt(target.getAttribute("data-row"), 10);
-    const isName = target.classList.contains("input-name");
-    const colClass = isName ? ".input-name" : ".input-cost";
-
-    if ((e.key === "Enter" && !e.shiftKey) || e.key === "ArrowDown") {
-      e.preventDefault();
-      const nextInput = excelTableBody.querySelector(`tr[data-row="${rowIdx + 1}"] ${colClass}`);
-      if (nextInput) {
-        nextInput.focus();
-        nextInput.select();
-      } else {
-        const newTotal = rowIdx + 6;
-        while (rowNames.length < newTotal) rowNames.push("");
-        while (rowCosts.length < newTotal) rowCosts.push("");
-        processAllRows();
-        renderTable();
-        const createdInput = excelTableBody.querySelector(`tr[data-row="${rowIdx + 1}"] ${colClass}`);
-        if (createdInput) {
-          createdInput.focus();
-          createdInput.select();
-        }
-      }
-    } else if (e.key === "ArrowUp") {
-      if (rowIdx > 0) {
-        e.preventDefault();
-        const prevInput = excelTableBody.querySelector(`tr[data-row="${rowIdx - 1}"] ${colClass}`);
-        if (prevInput) {
-          prevInput.focus();
-          prevInput.select();
-        }
-      }
-    }
-  }
-
-  // 11. Ảnh Lớn 128x128 Cố Định Phía Trên/Dưới Dòng khi Hover
-  function setupCursorImagePreview() {
-    if (!spreadsheetContainer || !cursorImagePreview || !cursorImageTag) return;
-
-    spreadsheetContainer.addEventListener("mousemove", (e) => {
-      // Chỉ hiển thị khi người dùng đã BẬT nút 'Hiện ảnh lớn'
-      if (!showLargeImage) {
-        cursorImagePreview.style.display = "none";
-        return;
-      }
-
-      const row = e.target.closest("tr.excel-row");
-      if (!row) {
-        cursorImagePreview.style.display = "none";
-        return;
-      }
-
-      const rowIdx = parseInt(row.getAttribute("data-row"), 10);
-      const imgUrl = rowImages[rowIdx];
-
-      if (!imgUrl) {
-        cursorImagePreview.style.display = "none";
-        return;
-      }
-
-      if (cursorImageTag.src !== imgUrl) {
-        cursorImageTag.src = imgUrl;
-      }
-
-      const PREVIEW_SIZE = 128;
-      const GAP = 8;
-      const rowRect = row.getBoundingClientRect();
-      const thumbCell = row.querySelector(".td-thumb");
-      const thumbRect = thumbCell ? thumbCell.getBoundingClientRect() : rowRect;
-
-      // Ưu tiên hiển thị ở TRÊN dòng
-      let top = rowRect.top - PREVIEW_SIZE - GAP;
-      if (top < 10) {
-        // Nếu sát mép trên màn hình không đủ khoảng trống -> hiển thị ở DƯỚI dòng
-        top = rowRect.bottom + GAP;
-      }
-
-      // Căn chỉnh ngang theo cột Hình
-      let left = thumbRect.left + (thumbRect.width / 2) - (PREVIEW_SIZE / 2);
-      left = Math.max(10, Math.min(window.innerWidth - PREVIEW_SIZE - 10, left));
-
-      cursorImagePreview.style.top = top + "px";
-      cursorImagePreview.style.left = left + "px";
-      cursorImagePreview.style.display = "flex";
-    });
-
-    spreadsheetContainer.addEventListener("mouseleave", () => {
-      if (cursorImagePreview) cursorImagePreview.style.display = "none";
-    });
-  }
-
-  // 12. Copy / Paste từ Header
+  // 11. Copy / Paste từ Header
   async function copyCol1() {
     const lastIdx = getLastFilledIndex();
     if (lastIdx < 0) {
-      showToast("⚠️ Cột Output chưa có dữ liệu!");
+      showToast("⚠️ Cột Output Name chưa có dữ liệu!");
       return;
     }
     const lines = rowOutputs.slice(0, lastIdx + 1);
-    await copyTextToClipboard(lines.join("\n"));
-    showToast(`📋 Đã copy cột Output (${lines.length} dòng)! Dán trực tiếp vào Google Sheet.`);
+    await ToolShell.copyText(lines.join("\n"));
+    showToast(`📋 Đã copy cột Output Name (${lines.length} dòng)! Dán trực tiếp vào Google Sheet.`);
   }
 
   async function pasteCol2() {
@@ -898,9 +622,9 @@
       processAllRows();
       renderTable();
       scheduleSaveState();
-      showToast(`📋 Đã dán ${lines.length} dòng vào cột Input!`);
+      showToast(`📋 Đã dán ${lines.length} dòng vào cột Input Name!`);
     } catch (e) {
-      showToast("⚠️ Hãy bấm Ctrl + V vào ô Input!");
+      showToast("⚠️ Hãy bấm Ctrl + V vào ô Input Name!");
     }
   }
 
@@ -909,7 +633,7 @@
     processAllRows();
     renderTable();
     scheduleSaveState();
-    showToast("🗑️ Đã xóa sạch cột Input!");
+    showToast("🗑️ Đã xóa sạch cột Input Name!");
   }
 
   async function pasteCol3() {
@@ -920,9 +644,9 @@
       rowCosts = lines;
       renderTable();
       scheduleSaveState();
-      showToast(`📋 Đã dán ${lines.length} dòng vào cột Giá Recheck!`);
+      showToast(`📋 Đã dán ${lines.length} dòng vào cột Input Vốn!`);
     } catch (e) {
-      showToast("⚠️ Hãy bấm Ctrl + V vào ô Giá Recheck!");
+      showToast("⚠️ Hãy bấm Ctrl + V vào ô Input Vốn!");
     }
   }
 
@@ -930,35 +654,35 @@
     rowCosts = [];
     renderTable();
     scheduleSaveState();
-    showToast("🗑️ Đã xóa sạch cột Giá Recheck!");
+    showToast("🗑️ Đã xóa sạch cột Input Vốn!");
   }
 
   async function copyCol4() {
     const lastIdx = getLastFilledIndex();
     if (lastIdx < 0) {
-      showToast("⚠️ Cột Giá Vốn chưa có dữ liệu!");
+      showToast("⚠️ Cột Output Vốn chưa có dữ liệu!");
       return;
     }
     const lines = rowSysCosts.slice(0, lastIdx + 1);
-    await copyTextToClipboard(lines.join("\n"));
-    showToast(`📋 Đã copy cột Giá Vốn (${lines.length} dòng)! Dán trực tiếp vào Google Sheet.`);
+    await ToolShell.copyText(lines.join("\n"));
+    showToast(`📋 Đã copy cột Output Vốn (${lines.length} dòng)! Dán trực tiếp vào Google Sheet.`);
   }
 
   async function copyColMerge() {
     const lastIdx = getLastFilledIndex();
     if (lastIdx < 0) {
-      showToast("⚠️ Cột Merge chưa có dữ liệu!");
+      showToast("⚠️ Cột Merge Vốn chưa có dữ liệu!");
       return;
     }
     const lines = [];
     for (let i = 0; i <= lastIdx; i++) {
       lines.push(computeMergedCost(rowSysCosts[i], rowCosts[i]));
     }
-    await copyTextToClipboard(lines.join("\n"));
-    showToast(`📋 Đã copy cột Merge (${lines.length} dòng)! Dán trực tiếp vào Google Sheet.`);
+    await ToolShell.copyText(lines.join("\n"));
+    showToast(`📋 Đã copy cột Merge Vốn (${lines.length} dòng)! Dán trực tiếp vào Google Sheet.`);
   }
 
-  // 13. Xóa trắng toàn bộ
+  // 12. Xóa trắng toàn bộ
   async function clearAllData() {
     rowNames = [];
     rowCosts = [];
@@ -969,10 +693,8 @@
     renderTable();
 
     try {
-      if (typeof StorageHelper !== "undefined") {
-        await StorageHelper.remove(STORAGE_KEY_INPUT_NAMES);
-        await StorageHelper.remove(STORAGE_KEY_INPUT_COSTS);
-      }
+      await StorageHelper.remove(STORAGE_KEY_INPUT_NAMES);
+      await StorageHelper.remove(STORAGE_KEY_INPUT_COSTS);
       localStorage.removeItem(STORAGE_KEY_INPUT_NAMES);
       localStorage.removeItem(STORAGE_KEY_INPUT_COSTS);
       localStorage.removeItem(STORAGE_KEY_SAVED_OUTPUTS);
@@ -981,29 +703,5 @@
     } catch (e) {}
 
     showToast("🗑️ Đã xóa trắng toàn bộ dữ liệu & bộ nhớ tạm!");
-  }
-
-  // 14. Helpers
-  async function copyTextToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(text);
-    } else {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-    }
-  }
-
-  function showToast(msg) {
-    if (!toastEl || !toastMsg) return;
-    toastMsg.innerText = msg;
-    toastEl.style.display = "block";
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      toastEl.style.display = "none";
-    }, 2200);
   }
 })();

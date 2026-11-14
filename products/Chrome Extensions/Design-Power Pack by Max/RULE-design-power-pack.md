@@ -32,7 +32,7 @@
 > Thuộc tính CSS `-webkit-mask-repeat` và `mask-repeat` mặc định là `repeat`. Khi đặt một SVG có kích thước cố định (ví dụ 16x16px) vào container lớn hơn (ví dụ 25x25px) mà thiếu `no-repeat` và `contain`, icon sẽ bị browser nhân bản lặp lại thành 4 hoặc nhiều hình!
 
 ## 2.1 Bộ 3 Thuộc Tính Bắt Buộc Cho Mọi `.icon-mask`
-Bất kỳ CSS class hoặc inline style nào sử dụng CSS Mask cho SVG icon **BẮT BUỘC** phải có đủ cả tiền tố chuẩn và `-webkit-`:
+Bất kỳ CSS class nào sử dụng CSS Mask cho SVG icon **BẮT BUỘC** phải có đủ cả tiền tố chuẩn và `-webkit-` (không đặt mask bằng inline style, xem [ui-design-system.md §6.6](../../../../Rules%20for%20AI/_shared/ui-design-system.md)). Icon đa sắc dùng `.icon-img` với `background-repeat: no-repeat` và `background-size: contain` theo cùng lý do:
 ```css
 .icon-mask {
   display: inline-block;

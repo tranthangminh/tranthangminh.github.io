@@ -54,6 +54,7 @@ async function mine_ResetAnImageAndMaskIt(runtime) {
       await hostDocument.suspendHistory(async function () {
         for (let i = 0; i < layersToProcess.length; i += 1) {
           const layerInfo = layersToProcess[i];
+          let invertedCopyLayerId = null;
           try {
             // Ensure active document is returned to hostDocument
             if (runtime.app.activeDocument.id !== hostDocument.id) {
@@ -94,6 +95,8 @@ async function mine_ResetAnImageAndMaskIt(runtime) {
             if (runPartThree) {
               const partThreeCommands = buildMinePartThreeCommands();
               await runtime.action.batchPlay([partThreeCommands[0]], {});
+              const copyLayers = getMineIndexedItems(runtime.app.activeDocument && runtime.app.activeDocument.activeLayers);
+              invertedCopyLayerId = copyLayers.length ? copyLayers[0].id : null;
               try {
                 await runtime.action.batchPlay([partThreeCommands[1]], {});
               } catch (error) {}
@@ -105,6 +108,11 @@ async function mine_ResetAnImageAndMaskIt(runtime) {
               const smartObjectDoc = runtime.app.activeDocument;
               if (!smartObjectDoc) {
                 throw new Error("No active document found in UXP environment.");
+              }
+
+              // Delete the inverted copy from Part 3 before cropping
+              if (invertedCopyLayerId !== null) {
+                await runtime.action.batchPlay([buildMineDeleteLayerCommand(invertedCopyLayerId)], {});
               }
 
               // Try to find the layer with the mask and select it first

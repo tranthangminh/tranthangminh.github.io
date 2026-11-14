@@ -157,7 +157,7 @@ async function showDetail(prod) {
   searchResult.style.display = "none";
   detailView.style.display = "block";
   btnBack.style.display = "flex";
-  if (typeof searchCountBar !== "undefined" && searchCountBar) {
+  if (searchCountBar) {
     searchCountBar.style.display = "none";
   }
   scrollToTop();

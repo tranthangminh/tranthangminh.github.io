@@ -176,7 +176,7 @@
         directStudioTitle: 'Auto-Open Image Studio',
         directStudioDesc: 'Automatically open direct image links in MAX Studio',
         floatingToolsTitle: 'Floating Quick Tools',
-        floatingToolsDesc: 'Floating button on page edge for instant capture, recording & color picking',
+        floatingToolsDesc: 'Slim tab on the left page edge for instant capture, recording & color picking',
         supportMax: 'Support MAX Development',
         donateTitle: 'Enjoying MAX?',
         donateDesc: 'If MAX saves you time, consider buying me a coffee ☕ — it helps keep the tool free and updated!',
@@ -500,7 +500,7 @@
         directStudioTitle: 'Tự động mở Image Studio',
         directStudioDesc: 'Tự động mở ảnh xem trực tiếp trong MAX Studio',
         floatingToolsTitle: 'Nút Tiện Ích Nổi',
-        floatingToolsDesc: 'Nút tròn nổi ở mép màn hình giúp chụp ảnh, quay video và lấy màu tức thì',
+        floatingToolsDesc: 'Thanh nhỏ ở mép trái màn hình giúp chụp ảnh, quay video và lấy màu tức thì',
         supportMax: 'Ủng hộ phát triển MAX',
         donateTitle: 'Bạn thích MAX chứ?',
         donateDesc: 'Nếu MAX giúp bạn tiết kiệm thời gian, hãy mời tác giả một ly cà phê ☕ nhé!',
@@ -748,9 +748,8 @@
     if (langBtn) {
       // When current is English -> show VN flag (to switch to Vietnamese); when current is Vietnamese -> show EN flag
       const showEnFlag = currentLang === 'vi';
-      const flagSrc = showEnFlag ? 'svg/lang-EN.svg' : 'svg/lang-VN.svg';
-      const flagAlt = showEnFlag ? 'EN' : 'VI';
-      langBtn.innerHTML = `<img class="lang-flag-icon" src="${flagSrc}" alt="${flagAlt}">`;
+      const flagIcon = showEnFlag ? 'icon-lang-EN' : 'icon-lang-VN';
+      langBtn.innerHTML = `<span class="icon-img ${flagIcon} lang-flag-icon" aria-hidden="true"></span>`;
       langBtn.title = t('header.langToggle');
     }
 
@@ -804,6 +803,9 @@
   }
 
   function init(callback) {
+    // A tab still loading when the extension reloads keeps this old script, and its chrome.storage calls throw
+    if (typeof chrome !== 'undefined' && chrome.storage && !chrome.runtime?.id) return;
+
     function onResolved(lang) {
       currentLang = (lang === 'vi' || lang === 'en') ? lang : DEFAULT_LANG;
       applyTranslations(document);

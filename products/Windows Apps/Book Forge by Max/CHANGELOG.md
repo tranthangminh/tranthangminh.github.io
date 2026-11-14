@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- A clear error when Node.js is older than 22.12, shown before any step starts.
+- Automated tests in `tests/` for chapter detection, margins and the Node.js check. They are not part of the release ZIP.
+
+### Changed
+- The README now requires Node.js 22.12 or later, matching the bundled libraries. It listed v18+.
+- Margin tooltips give the A5 values and say that other paper sizes use their own margins. The Digital tooltip said 18 mm, while A5 uses 16 mm.
+
+### Fixed
+- A chapter on the first page of the PDF is no longer merged into `00-front-matter.md`.
+- Section headings at the top of a page are no longer treated as chapters.
+- Long chapter titles that wrap over several lines keep their full text and are no longer repeated as a heading below the title.
+- Chapters that start in the middle of a page are detected and split at their heading.
+- Long chapters split at their first section, which was previously lost after a repeated title.
+- The first line of each page is no longer dropped from books without running headers. Headings at the top of a page were mistaken for running headers.
+- Contents pages: titles with `:` or accents, page numbers after dot leaders, words such as "Mill" read as Roman numerals, section entries, and the `Mục lục` heading.
+- Text drawn inside a vector figure no longer appears again as a heading or body text. Boxes that hold sentences keep their text in the chapter.
+- English words in chapters with images are no longer split, for example "Soun dings".
+- A PDF with no detectable chapter is saved as one chapter instead of producing no files.
+
 ## v1.0.1 (Beta)
 
 ### Added

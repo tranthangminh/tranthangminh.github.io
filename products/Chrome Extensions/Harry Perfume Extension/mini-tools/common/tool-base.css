@@ -1,0 +1,655 @@
+/* ==========================================================================
+   HARRY PERFUME - GIAO DIỆN CHUẨN DÙNG CHUNG CHO CÁC CỬA SỔ MINI TOOLS
+   Khung cửa sổ, header, toolbar, nút, bảng Excel (header dính, ô tự xuống dòng,
+   sáng dòng khi hover), toast, thanh cuộn. Style riêng của từng tool để ở file CSS của tool đó.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('../../Nunito/Nunito-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('../../Nunito/Nunito-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Nunito", sans-serif !important;
+}
+
+/* Cho trình duyệt biết theme đang dùng để phần tự vẽ (danh sách xổ xuống của select) đổi màu theo */
+:root {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.tool-app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-primary);
+  position: relative;
+}
+
+/* 1. Header */
+.tool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.tool-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tool-logo-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.tool-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  letter-spacing: -0.2px;
+}
+
+.tool-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.db-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--c-orange);
+  transition: background-color 0.25s ease;
+}
+
+.status-dot.ready {
+  background-color: var(--c-green);
+  box-shadow: 0 0 6px var(--c-green);
+}
+
+.btn-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  width: 28px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-topbar:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  background-color: var(--bg-hover);
+}
+
+/* Icon SVG trong nút (.icon-mask ở theme.css tô theo màu chữ của nút; ToolShell.iconHtml tạo thẻ) */
+.tool-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-topbar .tool-icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* Nút toolbar chỉ có icon (Ảnh lớn, Nạp lại, Xóa trắng): vuông 32x32, icon 18px, luôn đứng sát nhau ở ngoài cùng bên phải */
+.btn-action.btn-toolbar-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  justify-content: center;
+}
+
+.btn-toolbar-icon .tool-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-action.btn-toolbar-icon.armed {
+  background-color: var(--c-red-bg);
+}
+
+/* Nút vuông chỉ có icon (Copy cột, Xóa cột) */
+.btn-th-action.btn-icon-square {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+}
+
+.btn-icon-square .tool-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* close.svg nét dày hơn các icon khác nên thu nhỏ cho cân */
+.btn-th-clear .tool-icon {
+  width: 9px;
+  height: 9px;
+}
+
+/* 2. Toolbar */
+.tool-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 16px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Đếm dòng theo 4 mục bộ lọc: chữ thường, lưới 2 dòng × 2 cột, không kẻ khung (ToolShell.renderRowSummary) */
+.row-summary {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 14px;
+  row-gap: 1px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.row-summary-item.is-ok {
+  color: var(--c-green);
+}
+
+.row-summary-item.is-review {
+  color: var(--gold-primary);
+}
+
+.row-summary-item.is-fix {
+  color: var(--c-red);
+}
+
+.btn-action,
+.toolbar-select,
+.toolbar-number {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* Mục trong danh sách xổ xuống: nền + chữ theo theme (mặc định trình duyệt nền trắng, chữ lại sáng -> không đọc được) */
+.toolbar-select option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.toolbar-number {
+  width: 46px;
+  padding: 0 4px;
+  text-align: center;
+  cursor: text;
+}
+
+.toolbar-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.btn-action:hover,
+.toolbar-select:hover,
+.toolbar-number:focus {
+  color: var(--text-primary);
+  border-color: var(--gold-primary);
+  background-color: var(--bg-hover);
+}
+
+.btn-action.active {
+  background-color: var(--c-yellow-bg);
+  color: var(--gold-primary);
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.btn-action.btn-clear:hover,
+.btn-action.armed {
+  border-color: var(--c-red);
+  color: var(--c-red);
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 3. Bảng Excel với thanh cuộn chung */
+.spreadsheet-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: scroll;
+  overflow-x: auto;
+  background-color: var(--bg-primary);
+  position: relative;
+}
+
+.excel-table {
+  width: 100%;
+  /* Viền tách riêng từng ô (separate): tiêu đề sticky mang theo viền của nó khi cuộn,
+     không hở khe như collapse. Mỗi ô vẽ viền phải + dưới; cột đầu thêm viền trái, hàng tiêu đề thêm viền trên */
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 13px;
+}
+
+.excel-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 34px;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  letter-spacing: 0.3px;
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  text-align: left;
+}
+
+.excel-table thead th .th-title {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.th-num {
+  width: 38px;
+  text-align: center !important;
+  color: var(--text-secondary) !important;
+}
+
+.th-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.btn-th-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.btn-th-action:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  background-color: var(--bg-hover);
+}
+
+.btn-th-action.btn-th-clear:hover {
+  border-color: var(--c-red);
+  color: var(--c-red);
+}
+
+.excel-table tbody td {
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 4px 8px;
+  min-height: 38px;
+  vertical-align: middle;
+  background-color: var(--bg-card);
+  transition: background-color 0.12s ease;
+}
+
+.excel-table thead th:first-child,
+.excel-table tbody td:first-child {
+  border-left: 1px solid var(--border-color);
+}
+
+.excel-table tbody td.td-num {
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  user-select: none;
+}
+
+/* Ô chỉ đọc (kết quả) */
+.excel-table tbody td.td-text {
+  font-size: 12.5px;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+  padding: 6px 10px;
+}
+
+/* Ô nhập liệu: textarea tự xuống dòng, luôn căn giữa dòng theo chiều dọc */
+.excel-table tbody td.td-edit {
+  padding: 0;
+}
+
+.cell-flex-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 38px;
+}
+
+.excel-cell-textarea {
+  width: 100%;
+  min-height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 400;
+  outline: none;
+  padding: 4px 8px;
+  resize: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
+  display: block;
+  overflow: hidden;
+  /* Ô tự cao theo nội dung bằng CSS: không đo scrollHeight bằng JS (mỗi lần đo bắt cả bảng tính lại bố cục,
+     bảng vài trăm dòng mất vài giây) */
+  field-sizing: content;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.excel-cell-textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.45;
+}
+
+.excel-cell-textarea:focus {
+  background-color: var(--bg-primary);
+  box-shadow: inset 0 0 0 2px var(--gold-primary);
+  border-radius: 1px;
+}
+
+/* 4. Sáng dòng khi hover */
+.excel-table tbody tr.excel-row:hover td {
+  background-color: rgba(229, 193, 88, 0.22) !important;
+}
+
+.excel-table tbody tr.excel-row:hover td.td-num {
+  color: var(--gold-primary) !important;
+  font-weight: 800;
+  background-color: rgba(229, 193, 88, 0.35) !important;
+}
+
+/* Ô 2 hàng (Input / Output): trên là ô nhập (sửa được, chữ phụ), dưới là kết quả (chỉ xem, vàng).
+   Dùng: <td class="td-edit td-stack"><div class="cell-stack"><textarea class="excel-cell-textarea">..</textarea><div class="cell-result">..</div></div></td> */
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 38px;
+}
+
+.td-stack .excel-cell-textarea {
+  color: var(--text-secondary);
+}
+
+.cell-result {
+  margin: 0 8px;
+  padding: 3px 0 5px;
+  /* Nét đứt giữa 2 hàng: màu viền mờ 50% */
+  border-top: 1px dashed color-mix(in srgb, var(--border-color) 50%, transparent);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--gold-primary);
+  font-weight: 400;
+  word-break: break-word;
+  cursor: default;
+  user-select: text;
+}
+
+/* Dòng trống: không hiện hàng kết quả */
+.cell-result:empty {
+  display: none;
+}
+
+/* Kết quả trùng 100% với đầu vào: xanh lá */
+.cell-result.is-same {
+  color: var(--c-green);
+}
+
+/* Cần xem lại (chưa khớp, thiếu dữ liệu): đỏ, luôn thắng xanh */
+.cell-result.is-alert {
+  color: var(--c-red);
+}
+
+/* Tiêu đề 2 dòng khớp ô 2 hàng: trên Input (chữ phụ) + nút thao tác ô nhập, dưới Output + nút Copy, ngăn nét đứt */
+.th-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.th-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 3px;
+  min-height: 22px;
+}
+
+.th-line-input {
+  color: var(--text-secondary);
+  padding-bottom: 3px;
+}
+
+.th-line-output {
+  border-top: 1px dashed color-mix(in srgb, var(--border-color) 50%, transparent);
+  padding-top: 3px;
+}
+
+/* Dòng cần chú ý (lệch giá, chưa khớp, thiếu dung tích): viền đỏ cả dòng */
+.excel-table tbody tr.excel-row.row-alert td {
+  box-shadow: inset 0 2px 0 var(--c-red), inset 0 -2px 0 var(--c-red);
+}
+
+.excel-table tbody tr.excel-row.row-alert td:first-child {
+  box-shadow: inset 2px 0 0 var(--c-red), inset 0 2px 0 var(--c-red), inset 0 -2px 0 var(--c-red);
+}
+
+.excel-table tbody tr.excel-row.row-alert td:last-child {
+  box-shadow: inset -2px 0 0 var(--c-red), inset 0 2px 0 var(--c-red), inset 0 -2px 0 var(--c-red);
+}
+
+.excel-table tbody td.cell-alert {
+  color: var(--c-red) !important;
+  font-weight: 700;
+}
+
+/* Cột Hình: ảnh nằm trực tiếp trong ô, không khung */
+.th-thumb {
+  width: 52px;
+  text-align: center !important;
+}
+
+.excel-table tbody td.td-thumb {
+  text-align: center;
+  padding: 2px;
+}
+
+.excel-thumb-img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+/* Ảnh lớn 128x128 neo phía trên/dưới dòng đang rê chuột (ToolShell.initImagePreview) */
+.cursor-image-preview {
+  position: fixed;
+  width: 128px;
+  height: 128px;
+  z-index: 99999;
+  pointer-events: none;
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--gold-primary);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  animation: previewFadeIn 0.12s ease-out;
+}
+
+.cursor-image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+@keyframes previewFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 5. Toast */
+.tool-toast {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1e293b;
+  color: #f8fafc;
+  border: 1px solid var(--gold-primary);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  animation: toastFadeIn 0.2s ease-out;
+  pointer-events: none;
+}
+
+@keyframes toastFadeIn {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* 6. Thanh cuộn */
+.spreadsheet-container::-webkit-scrollbar,
+.tool-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.spreadsheet-container::-webkit-scrollbar-track,
+.tool-scroll::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+.spreadsheet-container::-webkit-scrollbar-thumb,
+.tool-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.spreadsheet-container::-webkit-scrollbar-thumb:hover,
+.tool-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}

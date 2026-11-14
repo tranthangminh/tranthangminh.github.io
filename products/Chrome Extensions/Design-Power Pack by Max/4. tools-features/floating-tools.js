@@ -1,6 +1,6 @@
 /**
  * floating-tools.js — Design-Power Pack by Max
- * Floating Speed Dial action button docked on the left screen edge.
+ * Slim tab on the left screen edge that expands into a vertical tool panel on hover.
  * Encapsulated 100% inside Shadow DOM.
  */
 
@@ -13,6 +13,10 @@
 
   const STORAGE_KEY = 'floatingToolsEnabled';
   const POS_KEY = 'floatingToolsPosY';
+  const TAB_HEIGHT = 52;
+  const EDGE_GAP = 8;
+  const OPEN_DELAY = 120;
+  const CLOSE_DELAY = 300;
 
   function isExtensionAlive() {
     try {
@@ -52,13 +56,12 @@
     } catch (e) {}
   }
 
-  function getIconUrl(name) {
-    try {
-      if (isExtensionAlive() && chrome.runtime && chrome.runtime.getURL) {
-        return chrome.runtime.getURL(`svg/${name}`);
-      }
-    } catch (e) {}
-    return `svg/${name}`;
+  // Height kept free below the tab's top: the full panel once measured, so it always opens downward from the tab
+  let bottomReserve = TAB_HEIGHT;
+
+  // Stored position is a percentage of the viewport height, kept inside the screen
+  function dockTopCss(percent) {
+    return `clamp(${EDGE_GAP}px, ${percent}vh, calc(100vh - ${bottomReserve + EDGE_GAP}px))`;
   }
 
   function initFloatingTools() {
@@ -86,9 +89,9 @@
                 ? Math.max(5, Math.min(95, (newPos / (window.innerHeight || 800)) * 100))
                 : Math.max(2, Math.min(98, newPos || 50));
               if (hostEl && hostEl.shadowRoot) {
-                const dockEl = hostEl.shadowRoot.querySelector('.dock-container');
+                const dockEl = hostEl.shadowRoot.querySelector('.dock');
                 if (dockEl) {
-                  dockEl.style.top = `clamp(16px, ${currentPercentY}vh, calc(100vh - 56px))`;
+                  dockEl.style.top = dockTopCss(currentPercentY);
                 }
               }
             }
@@ -137,126 +140,209 @@
       :host {
         all: initial;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        /* Values from theme.css; its variables are not used directly because websites often define the same names */
+        --dock-bg: rgba(25, 25, 25, 0.94);
+        --dock-border: rgba(255, 255, 255, 0.1);
+        --dock-hover: #343434;
+        --dock-text: #bbbbbb;
+        --dock-accent: #8DF2F2;
+        --dock-tip-bg: #222222;
+        --dock-brand: linear-gradient(180deg, #00f2fe 0%, #b19ffb 100%);
       }
-      .dock-container {
+      /* Zero-size anchor: only the visible tab or panel can take the mouse, never the empty space around them */
+      .dock {
         position: fixed;
-        left: 10px;
-        display: flex;
-        align-items: center;
+        left: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
         user-select: none;
         -webkit-user-select: none;
-        pointer-events: auto;
         z-index: 2147483647;
       }
-      .main-btn {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: rgba(15, 23, 42, 0.9);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      .dock-tab {
+        position: absolute;
+        top: 0;
+        left: 0;
+        box-sizing: border-box;
+        width: 14px;
+        height: ${TAB_HEIGHT}px;
+        margin: 0;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
+        background: var(--dock-bg);
+        border: 1px solid var(--dock-border);
+        border-left: none;
+        border-radius: 0 8px 8px 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
         cursor: grab;
-        opacity: 0.45;
-        transition: opacity 0.22s ease, transform 0.22s ease, border-color 0.22s ease;
-        padding: 0;
+        opacity: 0.55;
         outline: none;
-      }
-      .main-btn:hover {
-        opacity: 1 !important;
-        transform: scale(1.06);
-        border-color: rgba(56, 189, 248, 0.5);
-      }
-      .main-btn:active {
-        cursor: grabbing;
-        transform: scale(0.95);
-      }
-      .dock-container.expanded .main-btn {
-        opacity: 1 !important;
-        border-color: #38bdf8;
-        box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
-      }
-      .main-btn-logo {
-        width: 22px;
-        height: 22px;
-        pointer-events: none;
-        display: block;
-      }
-      .actions-menu {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 6px;
-        margin-left: 8px;
-        opacity: 0;
-        pointer-events: none;
-        transform: translateX(-10px) scale(0.92);
-        transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      .dock-container.expanded .actions-menu {
-        opacity: 1;
         pointer-events: auto;
-        transform: translateX(0) scale(1);
+        transition: opacity 0.16s ease, width 0.16s ease;
       }
-      .action-btn {
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        background: rgba(30, 41, 59, 0.94);
+      .dock-tab:hover,
+      .dock-tab:focus-visible {
+        opacity: 1;
+        width: 16px;
+      }
+      .dock-tab:focus-visible {
+        box-shadow: 0 0 0 2px var(--dock-accent);
+      }
+      .dock-tab-bar {
+        width: 3px;
+        height: 24px;
+        border-radius: 2px;
+        background: var(--dock-brand);
+      }
+      .dock.expanded .dock-tab {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .dock-panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        box-sizing: border-box;
+        width: 46px;
+        /* 1px border + 12px + half of the 26px grip = 26px, the tab's centre, so the grip opens under the cursor */
+        padding: 12px 6px 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        background: var(--dock-bg);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--dock-border);
+        border-left: none;
+        border-radius: 0 12px 12px 0;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translate(-8px, var(--panel-shift, 0px));
+        transition: opacity 0.16s ease, transform 0.16s ease, visibility 0s linear 0.16s;
+      }
+      .dock.expanded .dock-panel {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translate(0, var(--panel-shift, 0px));
+        transition-delay: 0s;
+      }
+      .dock-grip {
+        position: relative;
+        width: 34px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        cursor: grab;
+      }
+      .dock-grip:hover {
+        background: var(--dock-hover);
+      }
+      .dock-tab:active,
+      .dock-grip:active {
+        cursor: grabbing;
+      }
+      /* Multicolor logo as a background from icons.css: an <img> would start loading inside this script's call stack */
+      .dock-logo {
+        width: 18px;
+        height: 18px;
+        display: block;
+        background: var(--max-logo) center / contain no-repeat;
+      }
+      .dock-sep {
+        width: 20px;
+        height: 1px;
+        margin: 3px 0;
+        background: var(--dock-border);
+      }
+      .action-btn {
+        position: relative;
+        width: 34px;
+        height: 32px;
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--dock-text);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        padding: 0;
         outline: none;
-        position: relative;
-        color: #f1f5f9;
-        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, color 0.15s ease;
+        transition: background-color 0.12s ease, color 0.12s ease;
       }
       .action-btn:hover {
-        background: #334155;
-        border-color: #38bdf8;
-        color: #38bdf8;
-        transform: translateY(-2px) scale(1.06);
+        background: var(--dock-hover);
+        color: var(--dock-accent);
       }
       .action-btn:active {
-        transform: translateY(0) scale(0.94);
+        transform: scale(0.94);
       }
-      .action-btn .icon-mask {
+      .action-btn:focus-visible {
+        box-shadow: inset 0 0 0 2px var(--dock-accent);
+      }
+      /* Icon files are declared once in icons.css as --max-dock-icon-* (loading icons.css here logs errors on YouTube) */
+      .icon-mask {
+        display: inline-block;
         width: 17px;
         height: 17px;
+        background-color: currentColor;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        pointer-events: none;
       }
-      /* Custom Tooltip */
-      .action-btn[data-title]:hover::after {
+      .icon-brush { -webkit-mask-image: var(--max-dock-icon-brush); mask-image: var(--max-dock-icon-brush); }
+      .icon-camera { -webkit-mask-image: var(--max-dock-icon-camera); mask-image: var(--max-dock-icon-camera); }
+      .icon-colorpicker { -webkit-mask-image: var(--max-dock-icon-colorpicker); mask-image: var(--max-dock-icon-colorpicker); }
+      .icon-crop { -webkit-mask-image: var(--max-dock-icon-crop); mask-image: var(--max-dock-icon-crop); }
+      .icon-fullscreen { -webkit-mask-image: var(--max-dock-icon-fullscreen); mask-image: var(--max-dock-icon-fullscreen); }
+      .icon-videos { -webkit-mask-image: var(--max-dock-icon-videos); mask-image: var(--max-dock-icon-videos); }
+      /* Tooltip on the right, away from the screen edge */
+      .action-btn[data-title]:hover::after,
+      .action-btn[data-title]:focus-visible::after,
+      .dock-grip[data-title]:hover::after {
         content: attr(data-title);
         position: absolute;
-        top: -28px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(15, 23, 42, 0.96);
-        color: #f8fafc;
+        top: 50%;
+        left: calc(100% + 12px);
+        transform: translateY(-50%);
+        background: var(--dock-tip-bg);
+        color: #ffffff;
         border: 1px solid rgba(255, 255, 255, 0.12);
-        padding: 3px 8px;
-        border-radius: 4px;
+        padding: 4px 8px;
+        border-radius: 6px;
         font-size: 11px;
         font-weight: 500;
+        line-height: 1.3;
         white-space: nowrap;
         pointer-events: none;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .dock-tab,
+        .dock-panel,
+        .action-btn {
+          transition: none;
+        }
       }
     `;
 
     const dock = document.createElement('div');
-    dock.className = 'dock-container';
+    dock.className = 'dock';
 
     // Calculate vertical position as percentage (supports legacy pixel values via safe conversion)
     currentPercentY = 50;
@@ -270,106 +356,147 @@
         currentPercentY = Math.max(2, Math.min(98, initialPosY));
       }
     }
-    dock.style.top = `clamp(16px, ${currentPercentY}vh, calc(100vh - 56px))`;
+    dock.style.top = dockTopCss(currentPercentY);
 
     dock.innerHTML = `
-      <button class="main-btn" title="MAX Quick Tools" aria-label="MAX Quick Tools">
-        <img class="main-btn-logo" src="${getIconUrl('logo-MAX.svg')}" alt="MAX" />
+      <button class="dock-tab" type="button" aria-label="MAX Quick Tools" aria-expanded="false">
+        <span class="dock-tab-bar"></span>
       </button>
-      <div class="actions-menu">
-        <button class="action-btn" data-action="color" data-title="Pick Color" title="Pick Color">
+      <div class="dock-panel" role="toolbar" aria-label="MAX Quick Tools" aria-orientation="vertical">
+        <div class="dock-grip" data-title="Drag to move">
+          <span class="dock-logo" aria-hidden="true"></span>
+        </div>
+        <div class="dock-sep"></div>
+        <button class="action-btn" type="button" data-action="color" data-title="Pick Color" aria-label="Pick Color">
           <span class="icon-mask icon-colorpicker" aria-hidden="true"></span>
         </button>
-        <button class="action-btn" data-action="area" data-title="Capture Area" title="Capture Area">
+        <div class="dock-sep"></div>
+        <button class="action-btn" type="button" data-action="area" data-title="Capture Area" aria-label="Capture Area">
           <span class="icon-mask icon-crop" aria-hidden="true"></span>
         </button>
-        <button class="action-btn" data-action="visible" data-title="Capture Screen" title="Capture Screen">
+        <button class="action-btn" type="button" data-action="visible" data-title="Capture Screen" aria-label="Capture Screen">
           <span class="icon-mask icon-camera" aria-hidden="true"></span>
         </button>
-        <button class="action-btn" data-action="full" data-title="Capture Full Page" title="Capture Full Page">
+        <button class="action-btn" type="button" data-action="full" data-title="Capture Full Page" aria-label="Capture Full Page">
           <span class="icon-mask icon-fullscreen" aria-hidden="true"></span>
         </button>
-        <button class="action-btn" data-action="recorder" data-title="Screen Recorder" title="Screen Recorder">
-          <span class="icon-mask icon-rec-screen" aria-hidden="true"></span>
+        <button class="action-btn" type="button" data-action="recorder" data-title="Screen Recorder" aria-label="Screen Recorder">
+          <span class="icon-mask icon-videos" aria-hidden="true"></span>
         </button>
-        <button class="action-btn" data-action="draw" data-title="Draw on Web" title="Draw on Web">
+        <div class="dock-sep"></div>
+        <button class="action-btn" type="button" data-action="draw" data-title="Draw on Web" aria-label="Draw on Web">
           <span class="icon-mask icon-brush" aria-hidden="true"></span>
         </button>
       </div>
     `;
 
-    const iconsLink = document.createElement('link');
-    iconsLink.rel = 'stylesheet';
-    iconsLink.href = chrome.runtime.getURL('icons.css');
-    shadow.appendChild(iconsLink);
     shadow.appendChild(style);
     shadow.appendChild(dock);
 
-    const mainBtn = dock.querySelector('.main-btn');
-    const actionsMenu = dock.querySelector('.actions-menu');
+    const tab = dock.querySelector('.dock-tab');
+    const panel = dock.querySelector('.dock-panel');
+    const grip = dock.querySelector('.dock-grip');
 
-    function setExpanded(expand) {
-      if (expand) {
-        dock.classList.add('expanded');
-      } else {
-        dock.classList.remove('expanded');
-      }
+    let openTimer = 0;
+    let closeTimer = 0;
+    // After a tool is picked the panel stays shut until the pointer leaves, so it does not pop open again under the cursor
+    let holdClosed = false;
+    let isDragging = false;
+    let lastDragEnd = 0;
+
+    // The position clamp keeps the panel on screen; a shift is only needed when the window is shorter than the panel
+    function placePanel() {
+      const top = dock.getBoundingClientRect().top;
+      const overflow = top + panel.offsetHeight - (window.innerHeight - EDGE_GAP);
+      const shift = overflow > 0 ? -Math.min(overflow, Math.max(0, top - EDGE_GAP)) : 0;
+      dock.style.setProperty('--panel-shift', `${shift}px`);
     }
 
-    // Drag along Y-axis handling
-    let isDragging = false;
-    let startY = 0;
-    let startTop = 0;
-    let hasMoved = false;
+    function setExpanded(expand) {
+      clearTimeout(openTimer);
+      clearTimeout(closeTimer);
+      if (expand) placePanel();
+      dock.classList.toggle('expanded', expand);
+      tab.setAttribute('aria-expanded', String(expand));
+    }
 
-    mainBtn.addEventListener('mousedown', (e) => {
-      if (e.button !== 0) return;
-      isDragging = true;
-      hasMoved = false;
-      startY = e.clientY;
-      startTop = dock.getBoundingClientRect().top;
-
-      const onMouseMove = (moveEvent) => {
-        const dy = moveEvent.clientY - startY;
-        if (Math.abs(dy) > 4) {
-          hasMoved = true;
-        }
-        if (hasMoved) {
-          const maxTop = window.innerHeight - 56;
-          const currentPx = Math.max(16, Math.min(maxTop, startTop + dy));
-          dock.style.top = `${currentPx}px`;
-        }
-      };
-
-      const onMouseUp = () => {
-        isDragging = false;
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
-
-        if (hasMoved) {
-          const currentPx = dock.getBoundingClientRect().top;
-          const winH = window.innerHeight || 800;
-          const rawPercent = (currentPx / winH) * 100;
-          currentPercentY = Number(Math.max(2, Math.min(98, rawPercent)).toFixed(2));
-          safeStorageSet({ [POS_KEY]: currentPercentY });
-          dock.style.top = `clamp(16px, ${currentPercentY}vh, calc(100vh - 56px))`;
-        } else {
-          // Pure click without dragging -> toggle expanded state
-          setExpanded(!dock.classList.contains('expanded'));
-        }
-      };
-
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
+    // Hover to open, leave to close
+    dock.addEventListener('pointerenter', () => {
+      clearTimeout(closeTimer);
+      if (holdClosed || isDragging || dock.classList.contains('expanded')) return;
+      openTimer = setTimeout(() => setExpanded(true), OPEN_DELAY);
     });
+    dock.addEventListener('pointerleave', (e) => {
+      clearTimeout(openTimer);
+      holdClosed = false;
+      // Touch fires pointerleave right after every tap, so touch closes by tapping outside instead
+      if (e.pointerType !== 'mouse' || isDragging) return;
+      closeTimer = setTimeout(() => setExpanded(false), CLOSE_DELAY);
+    });
+
+    // Keyboard users open the panel by focusing the tab
+    dock.addEventListener('focusin', (e) => {
+      if (e.target.matches(':focus-visible')) setExpanded(true);
+    });
+    dock.addEventListener('focusout', (e) => {
+      if (!dock.contains(e.relatedTarget)) setExpanded(false);
+    });
+    tab.addEventListener('click', () => {
+      // A drag ends with a click on the tab; only a real click opens the panel
+      if (Date.now() - lastDragEnd > 300) setExpanded(true);
+    });
+
+    // Drag the tab or the grip along the Y-axis
+    function startDrag(e) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      clearTimeout(openTimer);
+      const startY = e.clientY;
+      const startTop = dock.getBoundingClientRect().top;
+      let hasMoved = false;
+
+      const onMove = (moveEvent) => {
+        const dy = moveEvent.clientY - startY;
+        if (!hasMoved && Math.abs(dy) > 4) {
+          hasMoved = true;
+          isDragging = true;
+        }
+        if (hasMoved) {
+          const maxTop = window.innerHeight - bottomReserve - EDGE_GAP;
+          dock.style.top = `${Math.max(EDGE_GAP, Math.min(maxTop, startTop + dy))}px`;
+          if (dock.classList.contains('expanded')) placePanel();
+        }
+      };
+
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onUp);
+        if (!hasMoved) return;
+        isDragging = false;
+        lastDragEnd = Date.now();
+        const rawPercent = (dock.getBoundingClientRect().top / (window.innerHeight || 800)) * 100;
+        currentPercentY = Number(Math.max(2, Math.min(98, rawPercent)).toFixed(2));
+        safeStorageSet({ [POS_KEY]: currentPercentY });
+        dock.style.top = dockTopCss(currentPercentY);
+        if (dock.classList.contains('expanded')) placePanel();
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+    }
+    tab.addEventListener('pointerdown', startDrag);
+    grip.addEventListener('pointerdown', startDrag);
 
     // Window resize / zoom listener to ensure dock stays clamped to viewport percentage across zoom levels
     let resizeTicking = false;
     currentResizeHandler = () => {
       if (!resizeTicking) {
         window.requestAnimationFrame(() => {
-          if (hostEl && hostEl.isConnected && dock && !isDragging) {
-            dock.style.top = `clamp(16px, ${currentPercentY}vh, calc(100vh - 56px))`;
+          if (hostEl && hostEl.isConnected && !isDragging) {
+            dock.style.top = dockTopCss(currentPercentY);
+            if (dock.classList.contains('expanded')) placePanel();
           }
           resizeTicking = false;
         });
@@ -379,12 +506,14 @@
     window.addEventListener('resize', currentResizeHandler, { passive: true });
 
     // Action button triggers (Calling existing extension functions/messages only)
-    actionsMenu.addEventListener('click', (e) => {
+    panel.addEventListener('click', (e) => {
       // The shadow root is open, so page scripts could otherwise trigger captures and downloads with .click()
       if (!e.isTrusted) return;
       const btn = e.target.closest('.action-btn');
       if (!btn) return;
       const action = btn.dataset.action;
+      holdClosed = true;
+      btn.blur();
       setExpanded(false);
 
       if (action === 'color') {
@@ -440,6 +569,13 @@
     window.addEventListener('keydown', currentKeyDownHandler);
 
     (document.body || document.documentElement).appendChild(hostEl);
+
+    // Read the panel height after the browser lays it out; reading offsetHeight here would load the icons inside this
+    // call stack, and YouTube's "Unsafe attempt" logs would then be filed under the extension's Errors
+    new ResizeObserver((entries) => {
+      bottomReserve = Math.max(TAB_HEIGHT, entries[0].borderBoxSize[0].blockSize);
+      dock.style.top = dockTopCss(currentPercentY);
+    }).observe(panel);
   }
 
   if (document.readyState === 'loading') {

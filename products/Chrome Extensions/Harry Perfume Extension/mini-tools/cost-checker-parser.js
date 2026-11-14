@@ -5,12 +5,16 @@
  * - Tầng 1: Gốc (dạng phân số X/Y hoặc từ khóa 'gốc'/'goc')
  * - Tầng 2: Mini (từ khóa 'mini', quét số đi kèm gần nhất)
  * - Tầng 3: Quét dung tích thường ((V >= 5 && V <= 500 && V % 5 == 0) || V == 88)
- * - Tầng 4: Nhận diện Loại đúng các từ có tiền tố "- ": - Refill, - Tester / - Test, - Nobox, - Full
+ * - Tầng 4: Nhận diện Loại đúng các từ có tiền tố "- ": - Refill, - Tester / - Test / - Testerbox / - Tester box,
+ *   - Full / - Fullbox / - Full box, - Nobox / - No box. Chữ nobox đứng sau Tester / Full -> Tester Nobox / Full Nobox
  *   (KHÔNG tìm chữ chiết; dung tích 5, 10, 20ml tự động gán là Chiết; không có từ khóa và >= 30ml tự gán là Full)
+ * Cách gọi loại xuất ra: Full (có hộp) · Full Nobox (không hộp) · Tester (có hộp) · Tester Nobox (không hộp).
  * - Tầng 5: Làm sạch tên cốt lõi (cleanName)
  */
 
 const CostCheckerParser = (function () {
+  const NOBOX_REGEX = /\b(no\s*box|nobox)\b/i;
+
   function findValidVolume(str) {
     if (!str) return null;
     // 1. Ưu tiên bắt số có đuôi ml
@@ -55,18 +59,11 @@ const CostCheckerParser = (function () {
         cleanText = cleanText.replace(gocFractionMatch[0], ' ');
       }
 
-      if (/[-–—]\s*(?:tester|test)\b/i.test(cleanText) || /\b(tester|test)\b/i.test(cleanText)) {
-        detectedType = 'Gốc Tester';
-        cleanText = cleanText.replace(/[-–—]\s*(?:tester|test)\b|\b(tester|test)\b/gi, ' ');
-      } else if (/[-–—]\s*nobox\b/i.test(cleanText) || /\bnobox\b/i.test(cleanText)) {
-        detectedType = 'Gốc Nobox';
-        cleanText = cleanText.replace(/[-–—]\s*nobox\b|\bnobox\b/gi, ' ');
-      } else if (/[-–—]\s*full\b/i.test(cleanText) || /\bfull\b/i.test(cleanText)) {
-        detectedType = 'Gốc Full';
-        cleanText = cleanText.replace(/[-–—]\s*full\b|\bfull\b/gi, ' ');
-      } else {
-        detectedType = 'Gốc Full';
-      }
+      // Gốc Tester Nobox -> Gốc Tester -> Gốc Full Nobox -> Gốc Full (mặc định)
+      const isTester = /\b(tester\s*box|testerbox|tester|test)\b/i.test(cleanText);
+      const isNobox = NOBOX_REGEX.test(cleanText);
+      detectedType = `Gốc ${isTester ? 'Tester' : 'Full'}${isNobox ? ' Nobox' : ''}`;
+      cleanText = cleanText.replace(/(?:[-–—]\s*)?\b(tester\s*box|testerbox|tester|test|full\s*box|fullbox|full|no\s*box|nobox)\b/gi, ' ');
 
       cleanText = cleanText.replace(/\b(gốc|goc)\b/gi, ' ');
     }
@@ -96,22 +93,26 @@ const CostCheckerParser = (function () {
     }
 
     // TẦNG 4: Nhận diện Loại đúng các từ chỉ định có tiền tố "- "
-    // Chỉ: - Refill, - Tester / - Test, - Nobox, - Full (tuyệt đối không thêm biến thể khác)
+    // Chỉ các từ có "- " phía trước (tuyệt đối không thêm biến thể khác). Thứ tự: Refill -> Tester -> Nobox -> Full
+    // Chữ nobox đứng sau "- Tester" / "- Full" (vd "- Tester Nobox", "- Full No box") -> loại Nobox tương ứng
     if (!detectedType) {
-      if (/[-–—]\s*refill\b/i.test(cleanText)) {
-        detectedType = 'Refill';
-        cleanText = cleanText.replace(/[-–—]\s*refill\b/gi, ' ');
-      } else if (/[-–—]\s*(?:tester|test)\b/i.test(cleanText)) {
-        detectedType = 'Tester';
-        cleanText = cleanText.replace(/[-–—]\s*(?:tester|test)\b/gi, ' ');
-      } else if (/[-–—]\s*nobox\b/i.test(cleanText)) {
-        detectedType = 'Nobox';
-        cleanText = cleanText.replace(/[-–—]\s*nobox\b/gi, ' ');
-      } else if (/[-–—]\s*full\b/i.test(cleanText)) {
-        detectedType = 'Full';
-        cleanText = cleanText.replace(/[-–—]\s*full\b/gi, ' ');
+      const TYPE_RULES = [
+        { type: 'Refill', regex: /[-–—]\s*refill\b/gi },
+        { type: 'Tester', regex: /[-–—]\s*(?:tester\s*box|testerbox|tester|test)\b/gi },
+        { type: 'Full Nobox', regex: /[-–—]\s*(?:no\s*box|nobox)\b/gi },
+        { type: 'Full', regex: /[-–—]\s*(?:full\s*box|fullbox|full)\b/gi }
+      ];
+      const rule = TYPE_RULES.find(r => r.regex.test(cleanText));
+      if (rule) {
+        detectedType = rule.type;
+        rule.regex.lastIndex = 0;
+        cleanText = cleanText.replace(rule.regex, ' ');
+        if ((detectedType === 'Tester' || detectedType === 'Full') && NOBOX_REGEX.test(cleanText)) {
+          detectedType += ' Nobox';
+        }
+        if (detectedType.endsWith('Nobox')) cleanText = cleanText.replace(new RegExp(NOBOX_REGEX.source, 'gi'), ' ');
       } else if (detectedVolume) {
-        // Tự gán theo dung tích: 5, 10, 20ml -> Chiết (không tìm chữ chiết)
+        // Tự gán theo dung tích: 5, 10, 20ml -> Chiết (không tìm chữ chiết); >= 30ml -> Full
         const num = parseInt(detectedVolume.replace(/\D/g, ''), 10);
         if (num === 5 || num === 10 || num === 20) {
           detectedType = 'Chiết';
@@ -123,7 +124,7 @@ const CostCheckerParser = (function () {
 
     // TẦNG 5: Làm sạch tên cốt lõi (Clean Name)
     cleanText = cleanText
-      .replace(/[-–—]\s*(refill|tester|test|nobox|full|mini|gốc|goc)\b/gi, ' ')
+      .replace(/[-–—]\s*(refill|tester\s*box|testerbox|tester|test|full\s*box|fullbox|no\s*box|nobox|full|mini|gốc|goc)\b/gi, ' ')
       .replace(/[,\.\-_/\\()+=\[\]:;!?"'~`*]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();

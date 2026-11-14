@@ -152,22 +152,21 @@ btnBrowseImg.addEventListener("click", () => {
 
 // Xử lý khi người dùng chọn nhiều file ảnh
 inputCardFile.addEventListener("change", (e) => {
-  const files = Array.from(e.target.files);
+  // Giới hạn dung lượng từng file (max 20MB); lọc trước để bộ đếm loadedCount khớp số ảnh thực sự đọc
+  const files = Array.from(e.target.files).filter((file) => {
+    if (file.size <= 20 * 1024 * 1024) return true;
+    showWarningToast(`Ảnh "${file.name}" quá lớn (> 20MB)! Vui lòng chọn ảnh nhỏ hơn.`, 4000);
+    return false;
+  });
   if (files.length === 0) return;
 
   let localImages = [];
   let loadedCount = 0;
-  
+
   // Xóa preview cũ
   imgUploadPreviewsList.innerHTML = "";
 
   files.forEach((file) => {
-    // Giới hạn dung lượng từng file (max 20MB)
-    if (file.size > 20 * 1024 * 1024) {
-      alert(`⚠️ Ảnh "${file.name}" quá lớn (> 20MB)! Vui lòng chọn ảnh nhỏ hơn.`);
-      return;
-    }
-
     const reader = new FileReader();
     reader.onload = function(evt) {
       const base64Data = evt.target.result;
@@ -229,12 +228,12 @@ btnModalSave.addEventListener("click", async () => {
   const content = inputCardContent.value.trim();
   
   if (!title) {
-    alert("Vui lòng nhập tiêu đề thẻ!");
+    showWarningToast("Vui lòng nhập tiêu đề thẻ!");
     inputCardTitle.focus();
     return;
   }
   if (!content) {
-    alert("Vui lòng nhập nội dung copy!");
+    showWarningToast("Vui lòng nhập nội dung copy!");
     inputCardContent.focus();
     return;
   }

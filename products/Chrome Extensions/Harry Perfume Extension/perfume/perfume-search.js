@@ -54,17 +54,15 @@ btnBack.addEventListener("click", () => {
   searchResult.style.display = "block";
   btnBack.style.display = "none";
   
-  if (typeof updateProductCount === "function") {
-    const visibleCount = searchResult.querySelectorAll(".search-item").length;
-    updateProductCount(visibleCount, allProducts.length);
-  }
+  const visibleCount = searchResult.querySelectorAll(".search-item").length;
+  updateProductCount(visibleCount, allProducts.length);
   
   scrollToTop();
 });
 
 // Xử lý ẩn/hiện giá (Single Source of Truth qua StorageHelper & DEFAULT_SETTINGS)
 (async function initHidePrices() {
-  const defaultVal = typeof DEFAULT_SETTINGS !== "undefined" ? DEFAULT_SETTINGS.hidePrices : false;
+  const defaultVal = DEFAULT_SETTINGS.hidePrices;
   const hidePrices = await StorageHelper.get("hidePrices", defaultVal);
   if (hidePrices) {
     searchResult.classList.add("prices-hidden");
@@ -99,9 +97,7 @@ if (btnToggleCostPrice) {
       showToast("✨ Đã quay lại GIÁ BÁN niêm yết");
     }
 
-    if (typeof window.refreshPerfumeView === "function") {
-      window.refreshPerfumeView();
-    }
+    window.refreshPerfumeView();
   });
 }
 

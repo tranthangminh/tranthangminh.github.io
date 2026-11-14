@@ -114,7 +114,7 @@ const OrderCanvasEngine = {
     const loadedItemImages = await Promise.all(
       items.map((item) => {
         let imgUrl = item.img;
-        if (!imgUrl && typeof allProducts !== "undefined" && Array.isArray(allProducts)) {
+        if (!imgUrl) {
           const p = allProducts.find((x) => x.name === item.name || (x.tenrutgon && x.tenrutgon === item.name));
           if (p && p.img && p.img !== "-" && p.img.startsWith("http")) {
             imgUrl = p.img;

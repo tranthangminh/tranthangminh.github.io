@@ -1,0 +1,61 @@
+/* ==========================================================================
+   (M) KIỂM TRA DUNG TÍCH - STYLE RIÊNG
+   Khung cửa sổ, toolbar, bảng Excel, ô 2 hàng (.cell-result), tiêu đề 2 dòng, toast dùng chung: common/tool-base.css
+   ========================================================================== */
+
+/* Cột Tên không đặt width để nhận phần còn lại; 5 cột dung tích cố định */
+.th-vol {
+  width: 64px;
+  text-align: right !important;
+}
+
+/* Ghi chú số dòng Chiết / Gốc bị bỏ qua */
+.vc-skip-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-left: 12px;
+}
+
+/* Bảng chỉ xem: ô 2 hàng, hàng trên là dữ liệu gốc (tab Nước Hoa) */
+.excel-table tbody td.vc-cell {
+  padding: 0;
+}
+
+.vc-top {
+  padding: 4px 8px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  word-break: break-word;
+  user-select: text;
+}
+
+/* Ô dung tích luôn đủ 2 hàng, hàng thiếu giá trị để trống (giữ cao 1 dòng chữ) */
+.vc-vol .vc-top,
+.vc-vol .cell-result {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.vc-cell .vc-top:empty::before,
+.vc-vol .cell-result:empty::before {
+  content: "\200b";
+}
+
+.vc-vol .cell-result:empty {
+  display: block;
+}
+
+/* Dung tích dư (hết cột trống): thêm 1 dòng đỏ dưới tên, không có nét đứt */
+.vc-cell .cell-result.vc-extra {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* Chưa có dữ liệu */
+.excel-table tbody td.vc-empty {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  padding: 24px 10px;
+}

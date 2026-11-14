@@ -17,6 +17,8 @@
  *   - Markdown holding far fewer words than the source PDF.
  */
 
+require('./node_version_guard');
+
 const fs = require('fs');
 const path = require('path');
 const { listChapterFiles, lintMarkdown, buildMasterContent } = require('./06_master_builder');

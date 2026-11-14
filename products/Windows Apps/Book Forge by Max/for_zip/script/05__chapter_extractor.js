@@ -12,6 +12,8 @@
  * - Saves extracted chapters directly into "chapters_original/".
  */
 
+require('./node_version_guard');
+
 const fs = require('fs');
 const path = require('path');
 const { analyzeGeometry } = require('./01__pdf_geometry');

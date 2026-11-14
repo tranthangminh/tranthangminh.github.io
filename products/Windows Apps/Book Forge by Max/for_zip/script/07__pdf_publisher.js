@@ -10,6 +10,8 @@
  * - script/07_image_layout_engine.js: Proportional image layout & smart pagination
  */
 
+require('./node_version_guard');
+
 const fs = require('fs');
 const path = require('path');
 

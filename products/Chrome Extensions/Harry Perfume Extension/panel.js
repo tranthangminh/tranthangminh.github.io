@@ -1,17 +1,3 @@
-// Khôi phục theme ngay lập tức từ localStorage để tránh chớp giật giao diện (0ms latency)
-try {
-  const savedTheme = localStorage.getItem("theme");
-  if (savedTheme) {
-    const t = JSON.parse(savedTheme);
-    if (t === "light" || t === "dark") {
-      document.documentElement.setAttribute("data-theme", t);
-    }
-  }
-} catch (e) {}
-
-// DÁN LINK URL WEB APP BẠN NHẬN ĐƯỢC Ở BƯỚC 1 VÀO ĐÂY
-const API_URL = "https://script.google.com/macros/s/AKfycbz5_hZe3O6FrrF21tPhZX0oB9Hm9oelGcwUHXGcDfnraNQTjnr-cYEqnZMwe-4VnLJC/exec";
-
 let allProducts = [];
 let currentProduct = null;
 
@@ -60,8 +46,6 @@ function getProductTotalStock(prod) {
 }
 
 let refreshAbortController = null;
-let toastTimer = null;
-let smoothProgressInterval = null;
 let headerProgressTimer = null;
 
 // Cập nhật thông báo tiến trình 2 dòng ở góc trên bên phải (bên trái nút Refresh)
@@ -116,36 +100,23 @@ function resetRefreshButtonUI(isFailed = false) {
   }
 }
 
-// Dừng timer làm mịn tiến trình
-function stopSmoothProgress() {
-  if (smoothProgressInterval) {
-    clearInterval(smoothProgressInterval);
-    smoothProgressInterval = null;
-  }
-}
-
 // Xử lý sự kiện click nút Refresh (Thực hiện làm mới hoặc Hủy làm mới dở dang)
 async function handleRefreshButtonClick() {
   if (refreshAbortController) {
     // Nếu đang trong quá trình Refresh -> Hủy làm mới dở dang
     refreshAbortController.abort();
     refreshAbortController = null;
-    stopSmoothProgress();
     resetRefreshButtonUI(false);
     updateHeaderProgress("Đã hủy", "Cập nhật", "normal", 3000);
     showToast("🚫 Đã hủy cập nhật dữ liệu!");
-    if (typeof window.hideImportLoadingIndicator === "function") {
-      window.hideImportLoadingIndicator();
-    }
+    window.hideImportLoadingIndicator();
     return;
   }
 
-  let isAdmin = false;
-  if (typeof StorageHelper !== "undefined") {
-    isAdmin = await StorageHelper.get("isAdminLoggedIn", false);
-  }
+  const isAdmin = await StorageHelper.get("isAdminLoggedIn", false);
 
   refreshAbortController = new AbortController();
+  const controller = refreshAbortController;
   if (btnRefresh) {
     btnRefresh.classList.remove("refresh-failed");
     btnRefresh.classList.add("is-refreshing");
@@ -154,22 +125,21 @@ async function handleRefreshButtonClick() {
 
   try {
     // 1. NẾU LÀ ADMIN: Tải danh sách Nhập ĐẦU TIÊN
-    if (isAdmin && typeof window.fetchImportData === "function") {
+    if (isAdmin) {
       updateHeaderProgress("Đang kết nối...", "Google Sheet Nhập", "normal");
-      if (typeof window.showImportLoadingIndicator === "function") {
-        window.showImportLoadingIndicator();
-      }
+      window.showImportLoadingIndicator();
       try {
         await window.fetchImportData(false);
         updateHeaderProgress("Đã tải xong", "Nhập Hàng", "normal", 1200);
       } catch (err) {
         console.warn("Lỗi tải Import trong refresh:", err);
       } finally {
-        if (typeof window.hideImportLoadingIndicator === "function") {
-          window.hideImportLoadingIndicator();
-        }
+        window.hideImportLoadingIndicator();
       }
     }
+
+    // Người dùng bấm Hủy trong lúc tải Nhập -> không tải tiếp Nước Hoa
+    if (refreshAbortController !== controller) return;
 
     // 2. TIẾP THEO: Tải danh sách Nước Hoa
     updateHeaderProgress("Đang kết nối...", "Google WebApp", "normal");
@@ -187,6 +157,7 @@ async function fetchSheetData() {
   if (!refreshAbortController) {
     refreshAbortController = new AbortController();
   }
+  const controller = refreshAbortController;
   if (btnRefresh) {
     btnRefresh.classList.remove("refresh-failed");
     btnRefresh.classList.add("is-refreshing");
@@ -203,8 +174,7 @@ async function fetchSheetData() {
   }
   
   try {
-    const signal = refreshAbortController ? refreshAbortController.signal : undefined;
-    const response = await fetch(`${API_URL}?t=${Date.now()}`, { signal });
+    const response = await fetch(`${PRODUCTS_API_URL}?t=${Date.now()}`, { signal: controller.signal });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -282,7 +252,6 @@ async function fetchSheetData() {
     }
 
     if (!hasValidPrice5ml) {
-      refreshAbortController = null;
       resetRefreshButtonUI(true); // Thất bại -> Nút chuyển sang màu đỏ
       updateHeaderProgress("Cột 5ml rỗng", "Giữ data cũ ⚠️", "error", 5000);
       showToast("⚠️ Cột Price 5ml bị rỗng. Đã giữ dữ liệu hiện tại.", true, 4000);
@@ -292,17 +261,14 @@ async function fetchSheetData() {
     // Tải thành công 100% & Dữ liệu hợp lệ -> Tiến hành ghi đè dữ liệu
     allProducts = data;
     await StorageHelper.set("cachedProducts", data);
-    if (typeof syncPromotionsFromProducts === "function") {
-      syncPromotionsFromProducts(allProducts);
-    }
+    syncPromotionsFromProducts(allProducts);
+
+    resetRefreshButtonUI(false);
+    updateHeaderProgress("Đã cập nhật", `${totalRows} sản phẩm ✨`, "success", 4000);
 
     if (isSilent) {
-      refreshAbortController = null;
-      resetRefreshButtonUI(false); // Thành công -> Nút bình thường
-      updateHeaderProgress("Đã cập nhật", `${totalRows} sản phẩm ✨`, "success", 4000);
-
-      const isAdminUser = typeof StorageHelper !== "undefined" ? await StorageHelper.get("isAdminLoggedIn", false) : false;
-      const toastMsgText = isAdminUser && typeof window.hasImportData === "function" && window.hasImportData()
+      const isAdminUser = await StorageHelper.get("isAdminLoggedIn", false);
+      const toastMsgText = isAdminUser && window.hasImportData()
         ? `✨ Đã làm mới toàn bộ dữ liệu Nhập và ${totalRows} sản phẩm!`
         : `✨ Đã cập nhật thành công ${totalRows} sản phẩm!`;
       showToast(toastMsgText);
@@ -312,44 +278,39 @@ async function fetchSheetData() {
         const updated = allProducts.find(p => p.name === currentProduct.name);
         if (updated) {
           currentProduct = updated;
-          if (typeof showDetail === "function") showDetail(currentProduct);
+          showDetail(currentProduct);
         }
       }
-      if (typeof refreshStockDisplay === "function") {
-        refreshStockDisplay();
-      }
+      refreshStockDisplay();
       if (searchResult.style.display !== "none") {
         performSearch(searchBox.value);
-      }
-      if (typeof renderNewsTab === "function") {
-        renderNewsTab();
       }
     } else {
       loadingView.style.display = "none";
       searchResult.style.display = "block";
       performSearch(searchBox.value);
-      if (typeof renderNewsTab === "function") {
-        renderNewsTab();
-      }
     }
+    renderNewsTab();
   } catch (error) {
     if (error.name === "AbortError") {
-      refreshAbortController = null;
       resetRefreshButtonUI(false);
       updateHeaderProgress("Đã hủy", "Cập nhật", "normal", 3000);
       return;
     }
 
+    resetRefreshButtonUI(true);
     if (isSilent) {
-      refreshAbortController = null;
-      resetRefreshButtonUI(true); // Thất bại -> Nút chuyển sang màu đỏ
       updateHeaderProgress("Cập nhật lỗi", "Giữ data cũ ⚠️", "error", 5000);
       showToast("⚠️ Không thể làm mới. Đang giữ dữ liệu hiện tại.");
     } else {
+      updateHeaderProgress("Tải lỗi", "Kiểm tra mạng ⚠️", "error", 5000);
       loadingView.style.display = "none";
       errorText.innerText = "Không thể kết nối tới Google Sheet. Vui lòng kiểm tra cấu hình Web App hoặc kết nối mạng.";
       errorView.style.display = "flex";
     }
+  } finally {
+    // Lần tải cũ (đã bị hủy) không được xóa controller của lần tải mới
+    if (refreshAbortController === controller) refreshAbortController = null;
   }
 }
 
@@ -520,12 +481,15 @@ if (loginForm) {
     const user = loginUsername ? loginUsername.value.trim() : "";
     const pass = loginPassword ? loginPassword.value.trim() : "";
 
-    const cleanUser = user.toLowerCase();
-    const unaccentedUser = removeAccents(cleanUser);
-    const validUsers = ["dương", "duong", "quân", "quan", "minh"];
-    const isValidUser = validUsers.includes(cleanUser) || validUsers.includes(unaccentedUser);
+    // Mật khẩu theo từng tài khoản (tên không phân biệt hoa/thường, có dấu hay không dấu đều được)
+    const ADMIN_PASSWORDS = {
+      duong: "Skilllioned88@",
+      quan: "Skilllioned88@",
+      minh: "9002M@xx6991"
+    };
+    const expectedPass = ADMIN_PASSWORDS[removeAccents(user)];
 
-    if (isValidUser && pass === "Skilllioned88@") {
+    if (expectedPass && pass === expectedPass) {
       await setAdminLoginSession(user);
       closeModal(loginModal);
       const btnToggleCostPrice = document.getElementById("btnToggleCostPrice");
@@ -541,9 +505,7 @@ if (loginForm) {
       if (tabMiniTools) {
         tabMiniTools.style.display = "block";
       }
-      if (typeof window.fetchImportData === "function") {
-        window.fetchImportData(false);
-      }
+      window.fetchImportData(false);
       showToast(`✨ Chào mừng ${user} đăng nhập Quản trị!`);
     } else {
       if (loginErrorMsg) loginErrorMsg.style.display = "block";
@@ -581,26 +543,16 @@ if (btnConfirmLogout) {
     }
     if (window.isCostPriceMode) {
       window.isCostPriceMode = false;
-      if (typeof window.refreshPerfumeView === "function") {
-        window.refreshPerfumeView();
-      }
+      window.refreshPerfumeView();
     }
-    if (typeof window.clearImportData === "function") {
-      window.clearImportData();
-    }
-    if (typeof window.clearStatsData === "function") {
-      window.clearStatsData();
-    }
-    if (typeof StorageHelper !== "undefined") {
-      await StorageHelper.remove("cachedImportData");
-    }
+    window.clearImportData(); // Đã gọi luôn clearStatsData()
+    await StorageHelper.remove("cachedImportData");
+    await StorageHelper.remove("cachedImportLists");
     const isSubTabActive = (tabImport && tabImport.classList.contains("active")) || (tabStats && tabStats.classList.contains("active")) || (tabMiniTools && tabMiniTools.classList.contains("active"));
     if (tabPerfume && isSubTabActive) {
       tabPerfume.click();
     }
-    if (typeof StorageHelper !== "undefined") {
-      await StorageHelper.set("lastActiveTabId", "tabPerfume");
-    }
+    await StorageHelper.set("lastActiveTabId", "tabPerfume");
     showToast("✨ Đã đăng xuất khỏi quyền Quản trị!");
   });
 }
@@ -615,7 +567,7 @@ function switchTab(activeTab, activePane) {
   });
   if (activeTab) activeTab.classList.add("active");
   if (activePane) activePane.style.display = "flex";
-  if (activeTab && activeTab.id && typeof StorageHelper !== "undefined") {
+  if (activeTab && activeTab.id) {
     StorageHelper.set("lastActiveTabId", activeTab.id);
   }
 }
@@ -623,10 +575,8 @@ function switchTab(activeTab, activePane) {
 if (tabImport) {
   tabImport.addEventListener("click", () => {
     switchTab(tabImport, paneImport);
-    if (typeof window.refreshImportView === "function") {
-      window.refreshImportView();
-    }
-    if (typeof window.fetchImportData === "function" && typeof window.hasImportData === "function" && window.hasImportData() === 0) {
+    window.refreshImportView();
+    if (window.hasImportData() === 0) {
       window.fetchImportData(false);
     }
   });
@@ -635,10 +585,8 @@ if (tabImport) {
 if (tabStats) {
   tabStats.addEventListener("click", () => {
     switchTab(tabStats, paneStats);
-    if (typeof window.refreshStatsView === "function") {
-      window.refreshStatsView();
-    }
-    if (typeof window.fetchImportData === "function" && typeof window.hasImportData === "function" && window.hasImportData() === 0) {
+    window.refreshStatsView();
+    if (window.hasImportData() === 0) {
       window.fetchImportData(false);
     }
   });
@@ -647,9 +595,7 @@ if (tabStats) {
 if (tabMiniTools) {
   tabMiniTools.addEventListener("click", () => {
     switchTab(tabMiniTools, paneMiniTools);
-    if (typeof window.refreshMiniToolsView === "function") {
-      window.refreshMiniToolsView();
-    }
+    window.refreshMiniToolsView();
   });
 }
 
@@ -664,7 +610,7 @@ if (tabPerfume) {
 if (tabNews) {
   tabNews.addEventListener("click", () => {
     switchTab(tabNews, paneNews);
-    if (typeof renderNewsTab === "function") renderNewsTab();
+    renderNewsTab();
     const el = document.querySelector(".news-tags-scroll-wrapper");
     if (el) el.scrollTop = 0;
   });
@@ -687,50 +633,13 @@ async function loadCachedProducts() {
     const cached = await StorageHelper.get("cachedProducts");
     if (cached && Array.isArray(cached)) {
       allProducts = cached;
-      if (typeof syncPromotionsFromProducts === "function") {
-        syncPromotionsFromProducts(allProducts);
-      }
+      syncPromotionsFromProducts(allProducts);
       return true;
     }
   } catch (e) {
     // Cache lỗi hoặc chưa có dữ liệu
   }
   return false;
-}
-
-// Hàm tự động cập nhật tồn kho định kỳ — không ảnh hưởng nút Refresh thủ công
-async function fetchStockOnly() {
-  if (allProducts.length === 0) return; // Chưa có dữ liệu thì bỏ qua
-  try {
-    const response = await fetch(`${API_URL}?t=${Date.now()}`);
-    if (!response.ok) return;
-    const freshData = await response.json();
-    if (!Array.isArray(freshData)) return;
-    
-    // Cập nhật tồn kho cho từng sản phẩm
-    let changed = false;
-    freshData.forEach(item => {
-      const prod = allProducts.find(p => p.name === item.name);
-      if (prod) {
-        for (let i = 1; i <= 5; i++) {
-          const key = 'tonkhofull' + i;
-          if (prod[key] !== item[key]) {
-            prod[key] = item[key];
-            changed = true;
-          }
-        }
-      }
-    });
-    
-    if (changed) {
-      // Lưu lại cache với tonkho mới
-      await StorageHelper.set("cachedProducts", allProducts);
-      // Cập nhật UI hiện tại mà không reload toàn bộ
-      if (typeof refreshStockDisplay === "function") refreshStockDisplay();
-    }
-  } catch(e) {
-    // Lỗi polling ngầm không ảnh hưởng UI
-  }
 }
 
 // ============================================================================
@@ -744,6 +653,10 @@ function applyThemeUI(theme) {
   if (document.body) {
     document.body.setAttribute("data-theme", theme);
   }
+  // Bản sao đồng bộ cho theme-init.js đọc trước khi trang vẽ (chrome.storage là bất đồng bộ)
+  try {
+    localStorage.setItem("theme", JSON.stringify(theme));
+  } catch (e) {}
 
   const btnTheme = document.getElementById("btnThemeToggle");
   if (!btnTheme) return;
@@ -768,28 +681,13 @@ async function initTheme() {
   const btnTheme = document.getElementById("btnThemeToggle");
   if (!btnTheme) return;
 
-  if (typeof StorageHelper !== "undefined") {
-    currentTheme = await StorageHelper.get("theme", "dark");
-  } else {
-    try {
-      const saved = localStorage.getItem("theme");
-      if (saved) currentTheme = JSON.parse(saved);
-    } catch (e) {}
-  }
-
+  currentTheme = await StorageHelper.get("theme", "dark");
   applyThemeUI(currentTheme);
 
   btnTheme.addEventListener("click", async () => {
     const nextTheme = currentTheme === "light" ? "dark" : "light";
     applyThemeUI(nextTheme);
-
-    if (typeof StorageHelper !== "undefined") {
-      await StorageHelper.set("theme", nextTheme);
-    } else {
-      try {
-        localStorage.setItem("theme", JSON.stringify(nextTheme));
-      } catch (e) {}
-    }
+    await StorageHelper.set("theme", nextTheme);
     showToast(nextTheme === "light" ? "☀️ Đã bật giao diện Sáng" : "🌙 Đã bật giao diện Tối");
   });
 }
@@ -808,17 +706,15 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Khôi phục tab mở cuối cùng (Remember Last Active Tab)
   try {
-    if (typeof StorageHelper !== "undefined") {
-      const lastTabId = await StorageHelper.get("lastActiveTabId", "tabPerfume");
-      const isAdmin = await StorageHelper.get("isAdminLoggedIn", false);
-      let targetTabId = lastTabId;
-      if ((targetTabId === "tabImport" || targetTabId === "tabStats" || targetTabId === "tabMiniTools") && !isAdmin) {
-        targetTabId = "tabPerfume";
-      }
-      const tabEl = document.getElementById(targetTabId);
-      if (tabEl) {
-        tabEl.click();
-      }
+    const lastTabId = await StorageHelper.get("lastActiveTabId", "tabPerfume");
+    const isAdmin = await StorageHelper.get("isAdminLoggedIn", false);
+    let targetTabId = lastTabId;
+    if ((targetTabId === "tabImport" || targetTabId === "tabStats" || targetTabId === "tabMiniTools") && !isAdmin) {
+      targetTabId = "tabPerfume";
+    }
+    const tabEl = document.getElementById(targetTabId);
+    if (tabEl) {
+      tabEl.click();
     }
   } catch (e) {
     // Bỏ qua lỗi khôi phục tab
@@ -828,5 +724,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   fetchSheetData();
 
   // Tự động làm mới dữ liệu ngầm mỗi 10 phút/lần
-  setInterval(fetchSheetData, 10 * 60 * 1000);
+  setInterval(() => {
+    if (!refreshAbortController) fetchSheetData();
+  }, 10 * 60 * 1000);
 });

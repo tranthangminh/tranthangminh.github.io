@@ -268,12 +268,42 @@ function doPost(e) {
     }
 
     var updatedCount = 0;
+    var conflicts = [];
+
+    // So khớp mềm: bỏ khoảng trắng thừa, không phân biệt hoa/thường; Ngày so theo giá trị ngày (Sheet có thể đổi định dạng hiển thị)
+    function normText(v) {
+      return String(v === undefined || v === null ? "" : v).trim().toLowerCase().normalize("NFC");
+    }
+    function isSameCell(field, sheetVal, expectVal) {
+      if (field === "ngay") {
+        var a = parseDateStr(sheetVal), b = parseDateStr(expectVal);
+        if (a || b) return a === b;
+      }
+      return normText(sheetVal) === normText(expectVal);
+    }
 
     for (var k = 0; k < rowsToUpdate.length; k++) {
       var item = rowsToUpdate[k];
       var rowNum = parseInt(item._row, 10);
 
       if (rowNum >= 2 && rowNum <= maxRow) {
+        // Dòng trên Sheet không còn là dòng client đã tải (bị chèn/xóa/sort) -> bỏ qua, báo conflict
+        if (item._expect) {
+          var rowDisplay = sheet.getRange(rowNum, 1, 1, lastCol).getDisplayValues()[0];
+          var mismatch = false;
+          for (var expectKey in item._expect) {
+            var expectCol = colMap[FIELD_MAP[expectKey]];
+            if (expectCol && !isSameCell(expectKey, rowDisplay[expectCol - 1], item._expect[expectKey])) {
+              mismatch = true;
+              break;
+            }
+          }
+          if (mismatch) {
+            conflicts.push({ _row: rowNum });
+            continue;
+          }
+        }
+
         for (var fieldKey in FIELD_MAP) {
           if (item.hasOwnProperty(fieldKey)) {
             var headerName = FIELD_MAP[fieldKey];
@@ -291,7 +321,8 @@ function doPost(e) {
 
     return ContentService.createTextOutput(JSON.stringify({
       success: true,
-      updatedCount: updatedCount
+      updatedCount: updatedCount,
+      conflicts: conflicts
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (err) {

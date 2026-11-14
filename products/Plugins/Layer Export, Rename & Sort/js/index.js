@@ -1186,7 +1186,7 @@ async function handleExportMenuInfoClick() {
     "Notes:",
     "- File names use Prefix + Layer Name + Suffix.",
     "- Export Location uses the current document folder unless you change it.",
-    "- The PSD must be saved locally before exporting files next to it.",
+    "- Unsaved documents need an Export Location before exporting.",
     "- Layers that are not selected are not hidden automatically, so visible unselected layers can still appear in the export."
     ].join("\n");
   }
@@ -1220,14 +1220,9 @@ function ensureExportableState(runtime, doc, selectedLayers, settings) {
     throw new Error(MESSAGE_SELECT_FILE_TYPE);
   }
 
-  const defaultFolder = getDocumentOutputFolderPath(doc);
   const outputFolderPath = getEffectiveOutputFolderPath(doc, settings);
-  if (!defaultFolder || doc.cloudDocument) {
-    throw new Error("Save the PSD locally before exporting files next to it.");
-  }
-
   if (!outputFolderPath) {
-    throw new Error("Choose an export location first.");
+    throw new Error("Save the PSD locally or choose an export location first.");
   }
 
   return outputFolderPath;

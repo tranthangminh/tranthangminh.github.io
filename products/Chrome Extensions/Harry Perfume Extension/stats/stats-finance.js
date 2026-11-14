@@ -22,14 +22,12 @@ try {
   if (savedSort) financeSortMode = JSON.parse(savedSort);
 } catch (e) {}
 
-if (typeof StorageHelper !== "undefined") {
-  StorageHelper.get("statsFinanceDetailMode", isFinanceDetailMode).then(val => {
-    if (typeof val === "boolean") isFinanceDetailMode = val;
-  });
-  StorageHelper.get("statsFinanceSortMode", financeSortMode).then(val => {
-    if (val) financeSortMode = val;
-  });
-}
+StorageHelper.get("statsFinanceDetailMode", isFinanceDetailMode).then(val => {
+  if (typeof val === "boolean") isFinanceDetailMode = val;
+});
+StorageHelper.get("statsFinanceSortMode", financeSortMode).then(val => {
+  if (val) financeSortMode = val;
+});
 
 // Kiểm tra trạng thái đơn không phát sinh chi phí thực tế (chỉ Hỏi Giá và Hoàn Hàng)
 function isFinanceInactiveItem(status) {
@@ -74,13 +72,7 @@ function getFinanceItemAmount(item) {
 
 // Lấy danh sách dòng nhập từ import module (Single Source of Truth)
 function getFinanceRawData() {
-  if (typeof window.getImportRawData === "function") {
-    return window.getImportRawData() || [];
-  }
-  if (typeof importRawData !== "undefined" && Array.isArray(importRawData)) {
-    return importRawData;
-  }
-  return [];
+  return window.getImportRawData();
 }
 
 // Khởi tạo và render giao diện Thống Kê Tổng Thành Tiền
@@ -356,9 +348,7 @@ function setupFinanceEventListeners(container) {
   if (btnDetailToggle) {
     btnDetailToggle.addEventListener("click", () => {
       isFinanceDetailMode = !isFinanceDetailMode;
-      if (typeof StorageHelper !== "undefined") {
-        StorageHelper.set("statsFinanceDetailMode", isFinanceDetailMode);
-      }
+      StorageHelper.set("statsFinanceDetailMode", isFinanceDetailMode);
       renderFinanceStatsView();
     });
   }
@@ -383,9 +373,7 @@ function setupFinanceEventListeners(container) {
         const sortVal = item.getAttribute("data-sort");
         if (sortVal) {
           financeSortMode = sortVal;
-          if (typeof StorageHelper !== "undefined") {
-            StorageHelper.set("statsFinanceSortMode", sortVal);
-          }
+          StorageHelper.set("statsFinanceSortMode", sortVal);
           isFinanceSortMenuOpen = false;
           renderFinanceStatsView();
         }

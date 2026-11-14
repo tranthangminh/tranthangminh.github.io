@@ -10,6 +10,8 @@
  * 5. Copies the source Markdown book file into the project folder.
  */
 
+require('./node_version_guard');
+
 const fs = require('fs');
 const path = require('path');
 const { cleanTitle, writeChapterFiles } = require('./05_chunk_writer');

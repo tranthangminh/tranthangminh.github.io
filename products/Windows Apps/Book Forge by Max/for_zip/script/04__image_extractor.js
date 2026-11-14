@@ -14,6 +14,8 @@
  * - metadata_manager.js: Numbering, cleanup, metadata.json
  */
 
+require('./node_version_guard');
+
 const fs = require('fs');
 const path = require('path');
 

@@ -61,7 +61,7 @@ body.sidepanel-mode #open-popup-btn {
   gap: 8px;
 }
 
-.logo-icon {
+.logo-area .logo-icon {
   width: 18px;
   height: 18px;
   animation: pulseGlowMini 3s infinite alternate ease-in-out;
@@ -125,13 +125,10 @@ body.sidepanel-mode #open-popup-btn {
   outline: none !important;
 }
 
-.lang-flag-icon,
-.lang-toggle-btn img,
-.lang-toggle-btn:hover .lang-flag-icon,
-.lang-toggle-btn:hover img {
+.lang-toggle-btn .lang-flag-icon {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background-size: cover;
   display: block;
   pointer-events: none;
   filter: none !important;

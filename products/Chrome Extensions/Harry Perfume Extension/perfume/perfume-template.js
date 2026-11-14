@@ -34,26 +34,20 @@ const DEFAULT_TANG5ML_TEXT = "Shop còn tặng cho mình 1 chiết 5ml khi mua c
 
 // Các hàm tìm mẫu template chung từ Google Sheet (lấy từ bất kỳ sản phẩm nào có điền mẫu)
 function getGlobalSheetTemplate() {
-  if (typeof allProducts !== "undefined" && Array.isArray(allProducts)) {
-    const item = allProducts.find(p => cleanString(p.text_mau_tu_van) !== "");
-    if (item) return cleanString(item.text_mau_tu_van);
-  }
+  const item = allProducts.find(p => cleanString(p.text_mau_tu_van) !== "");
+  if (item) return cleanString(item.text_mau_tu_van);
   return DEFAULT_CONSULTATION_TEMPLATE;
 }
 
 function getGlobalSheetFreeship() {
-  if (typeof allProducts !== "undefined" && Array.isArray(allProducts)) {
-    const item = allProducts.find(p => cleanString(p.text_freeship) !== "");
-    if (item) return cleanString(item.text_freeship);
-  }
+  const item = allProducts.find(p => cleanString(p.text_freeship) !== "");
+  if (item) return cleanString(item.text_freeship);
   return DEFAULT_FREESHIP_TEXT;
 }
 
 function getGlobalSheetTang5ml() {
-  if (typeof allProducts !== "undefined" && Array.isArray(allProducts)) {
-    const item = allProducts.find(p => cleanString(p.text_tang5ml) !== "");
-    if (item) return cleanString(item.text_tang5ml);
-  }
+  const item = allProducts.find(p => cleanString(p.text_tang5ml) !== "");
+  if (item) return cleanString(item.text_tang5ml);
   return DEFAULT_TANG5ML_TEXT;
 }
 

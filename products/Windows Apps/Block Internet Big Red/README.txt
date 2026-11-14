@@ -7,6 +7,8 @@
 =====================================================
 
 STEP 1: BLOCK INTERNET & CLEAR CACHE
+- Extract the whole .zip first. Do not run the .bat files
+  directly inside the .zip (the "scripts" folder is required).
 - Double-click: "1. Big-Red_Block_Internet.bat"
 - Type [1] and press Enter (Ultimate Block mode).
 - Wait for the script to automatically clear cached licenses
@@ -28,6 +30,9 @@ STEP 2: ACTIVATE (PATCH)
   the latest GenP version whenever Adobe releases new updates.
 - Restore Network Access: If you ever want to unblock everything,
   simply run "3. Big-Red_UnBlock_Internet.bat" (select option 1).
+- Creative Cloud stuck at "Waiting..." when installing an app:
+  run "3. Big-Red_UnBlock_Internet.bat" and select option 1
+  (it also restores the original Creative Cloud files).
 
 
 =====================================================
@@ -35,6 +40,8 @@ STEP 2: ACTIVATE (PATCH)
 =====================================================
 
 BƯỚC 1: CHẶN MẠNG & DỌN CACHE
+- Giải nén toàn bộ file .zip trước. Không chạy file .bat
+  ngay bên trong file .zip (cần có thư mục "scripts").
 - Nhấp đúp vào file: "1. Big-Red_Block_Internet.bat"
 - Nhập phím [1] rồi nhấn Enter (Chế độ Chặn triệt để).
 - Chờ script tự động dọn cache và chặn Firewall/Hosts.
@@ -56,4 +63,7 @@ BƯỚC 2: KÍCH HOẠT BẢN QUYỀN (PATCH)
 - Mở lại mạng: Nếu muốn khôi phục lại kết nối mạng như
   ban đầu, hãy chạy file "3. Big-Red_UnBlock_Internet.bat"
   (chọn phím 1).
+- Creative Cloud cài app bị treo "Waiting...": chạy file
+  "3. Big-Red_UnBlock_Internet.bat" và chọn phím 1
+  (bước này khôi phục luôn file gốc của Creative Cloud).
 =====================================================

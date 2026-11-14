@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>(M) Chuẩn hóa Tên file Nhập - Harry Perfume</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="common/tool-base.css">
+  <link rel="stylesheet" href="name-normalizer.css">
+  <script src="../theme-init.js"></script>
+</head>
+<body>
+  <div class="tool-app">
+    <!-- Header -->
+    <header class="tool-header">
+      <div class="tool-brand">
+        <span class="tool-logo-icon">🧹</span>
+        <h1 class="tool-title">(M) Chuẩn hóa Tên file Nhập</h1>
+      </div>
+      <div class="tool-header-actions">
+        <div class="db-status-badge" id="dbStatusBadge" title="Dữ liệu lấy từ tab Nước Hoa và tab Nhập">
+          <span class="status-dot"></span>
+          <span id="dbCountText">Đang nạp dữ liệu...</span>
+        </div>
+        <button type="button" class="btn-topbar" id="btnToggleTheme" title="Chuyển đổi giao diện Sáng / Tối">
+          <span id="themeIcon" class="icon-mask tool-icon"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Toolbar -->
+    <section class="tool-toolbar">
+      <div class="toolbar-left">
+        <div class="row-summary" id="rowSummary"></div>
+      </div>
+      <div class="toolbar-right">
+        <label class="toolbar-field" title="Số từ trùng tối thiểu để nhận là khớp (ít hơn sẽ để trống để tránh bắt nhầm hãng/mẫu)">
+          Từ trùng ≥
+          <input type="number" id="minWordsInput" class="toolbar-number" min="1" max="10" value="2">
+        </label>
+        <select id="filterSelect" class="toolbar-select" title="Lọc dòng hiển thị">
+          <option value="all">Tất Cả</option>
+          <option value="ok">Đã Đúng</option>
+          <option value="review">Cần Xem Xét</option>
+          <option value="fix">Cần Sửa</option>
+        </select>
+        <button type="button" class="btn-action" id="btnToggleMaster" title="Ẩn/Hiện danh mục tên chuẩn (lấy từ tab Nước Hoa)">Danh mục chuẩn</button>
+        <button type="button" class="btn-action btn-toolbar-icon" id="btnTogglePreview" title="Ảnh lớn: Bật (bấm để tắt)" aria-label="Ảnh lớn"><span class="icon-mask tool-icon" style="mask-image:url('../svg/images.svg');-webkit-mask-image:url('../svg/images.svg')"></span></button>
+        <button type="button" class="btn-action btn-toolbar-icon" id="btnReload" title="Nạp lại dữ liệu từ tab Nước Hoa và tab Nhập (ghi đè phần đã sửa) - bấm 2 lần" aria-label="Nạp lại"><span class="icon-mask tool-icon" style="mask-image:url('../svg/refresh.svg');-webkit-mask-image:url('../svg/refresh.svg')"></span></button>
+        <button type="button" class="btn-action btn-clear btn-toolbar-icon" id="btnClearAll" title="Xóa trắng toàn bộ nội dung - bấm 2 lần" aria-label="Xóa trắng"><span class="icon-mask tool-icon" style="mask-image:url('../svg/delete.svg');-webkit-mask-image:url('../svg/delete.svg')"></span></button>
+      </div>
+    </section>
+
+    <div class="nn-body">
+      <!-- Danh mục chuẩn: cột name + dungtich1 của tab Nước Hoa (sửa được) -->
+      <aside class="nn-master-pane tool-scroll" id="masterPane" style="display: none;">
+        <table class="excel-table">
+          <thead>
+            <tr>
+              <th class="th-num">#</th>
+              <th class="th-master-name">Tên chuẩn</th>
+              <th class="th-master-vol">ml</th>
+            </tr>
+          </thead>
+          <tbody id="masterTableBody"></tbody>
+        </table>
+      </aside>
+
+      <!-- Bảng chính: mỗi ô tên / dung tích có 2 hàng - trên: dữ liệu tab Nhập (sửa được), dưới: kết quả chuẩn hóa (chỉ xem) -->
+      <main class="spreadsheet-container" id="spreadsheetContainer">
+        <table class="excel-table">
+          <thead>
+            <tr>
+              <th class="th-num">#</th>
+              <th class="th-date">Ngày</th>
+              <th class="th-thumb">Hình</th>
+              <!-- Tiêu đề 2 dòng khớp với ô 2 hàng: trên Input (sửa được), dưới Output (kết quả, có nút Copy) -->
+              <th class="th-name">
+                <div class="th-stack">
+                  <div class="th-line th-line-input">Input Sản phẩm</div>
+                  <div class="th-line th-line-output">
+                    <span class="th-title">Output Sản phẩm</span>
+                    <button type="button" class="btn-th-action btn-icon-square" id="btnCopyNames" title="Copy Output Sản phẩm (dòng chưa khớp giữ nguyên tên gốc), dán vào dòng 2 cột Sản phẩm trên Sheet Nhập" aria-label="Copy"><span class="icon-mask tool-icon" style="mask-image:url('../svg/copy.svg');-webkit-mask-image:url('../svg/copy.svg')"></span></button>
+                  </div>
+                </div>
+              </th>
+              <th class="th-capacity">
+                <div class="th-stack">
+                  <div class="th-line th-line-input">Input Dung Tích</div>
+                  <div class="th-line th-line-output">
+                    <span class="th-title">Output Dung Tích</span>
+                    <button type="button" class="btn-th-action btn-icon-square" id="btnCopyCombos" title="Copy Output Dung Tích, dán vào dòng 2 cột Dung tích trên Sheet Nhập" aria-label="Copy"><span class="icon-mask tool-icon" style="mask-image:url('../svg/copy.svg');-webkit-mask-image:url('../svg/copy.svg')"></span></button>
+                  </div>
+                </div>
+              </th>
+              <th class="th-price">Giá</th>
+              <th class="th-match">Khớp</th>
+            </tr>
+          </thead>
+          <tbody id="rowsTableBody"></tbody>
+        </table>
+      </main>
+    </div>
+
+    <div id="toolToast" class="tool-toast" style="display: none;">
+      <span id="toolToastMsg"></span>
+    </div>
+
+    <!-- Ảnh lớn 128x128 khi rê chuột vào dòng -->
+    <div id="cursorImagePreview" class="cursor-image-preview" style="display: none;">
+      <img id="cursorImageTag" alt="">
+    </div>
+  </div>
+
+  <script src="../common/formatters.js"></script>
+  <script src="../storage-helper.js"></script>
+  <script src="../common/api-config.js"></script>
+  <script src="common/tool-shell.js"></script>
+  <script src="name-normalizer-parser.js"></script>
+  <script src="name-normalizer.js"></script>
+</body>
+</html>

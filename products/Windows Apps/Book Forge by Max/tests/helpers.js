@@ -1,6 +1,8 @@
 /**
  * Shared test helpers: builds sample books as real PDFs with Chromium, runs the engine
  * scripts the way the app does, and measures text positions in a PDF.
+ *
+ * Run from the Book Forge folder: node --test "tests/*.test.js"
  */
 
 const fs = require('fs');
@@ -74,6 +76,16 @@ const VARIANTS = {
     noFrontMatter: () => `${CHAPTERS.one}${pageBreakBefore(CHAPTERS.two)}${pageBreakBefore(CHAPTERS.three)}`,
     // A title page, then chapters, no contents page.
     noToc: () => `${TITLE_PAGE}${CHAPTERS.one}${pageBreakBefore(CHAPTERS.two)}${pageBreakBefore(CHAPTERS.three)}`,
+    noTocLines: () => VARIANTS.noToc(),
+    noTocMarks: () => VARIANTS.noToc(),
+    noTocFigure: () => VARIANTS.noToc(),
+    noTocWords: () => VARIANTS.noToc(),
+    // Accented titles and an apostrophe, which the old matching stripped or rejected.
+    vietnamese: () => `<h1>Chương 1: Mở đầu</h1><h2>Bến cảng</h2>${prose(1500, 0)}${pageBreakBefore(`<h1>Chương 2: The Sailor's Log</h1><h2>Sổ ghi chép</h2>${prose(1500, 1)}`)}`,
+    // No heading of any kind.
+    plainText: () => prose(3000, 0),
+    // A grey box of sentences is drawn as a vector cluster, but it is text, not a figure.
+    callout: () => `<h1>Chapter 1: The Harbor</h1>${prose(800, 0)}${pageBreakBefore(`<h1>Chapter 2: The Survey</h1>${prose(800, 2)}<div style="background: #dddddd; padding: 4mm; margin: 6mm 0;">This boxed note explains how the harbor master recorded every arrival during the long winter months.</div>${prose(800, 1)}`)}`,
     // Chapters follow each other on the same page, nothing forces a new page.
     flowing: () => `<h1>Chapter 1: The Harbor</h1><h2>Morning Tide</h2>${prose(1500, 0)}<h2>An Unexpected Boat</h2>${prose(1500, 1)}<h1>Chapter 2: The Survey</h1><h2>Deep Water</h2>${prose(1500, 2)}<h1>Chapter 3: A Very Long Record</h1><h2>The First Ledger</h2>${prose(1500, 3)}`,
     // A contents page lists chapters only. The numbers are filled in by buildBookPdf.
@@ -106,27 +118,34 @@ function findBrowser() {
     return found;
 }
 
-async function htmlToPdf(browser, bodyHtml, outPath) {
+async function htmlToPdf(browser, bodyHtml, outPath, runningMarks = false) {
     const page = await browser.newPage();
     await page.setContent(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
         @page { size: 148mm 210mm; margin: 18mm 16mm; }
         body { font-family: Georgia, serif; font-size: 11pt; line-height: 1.5; margin: 0; }
         h1 { font-size: 24pt; } h2 { font-size: 16pt; }
     </style></head><body>${bodyHtml}</body></html>`, { waitUntil: 'load' });
-    await page.pdf({ path: outPath, preferCSSPageSize: true, printBackground: true });
+    await page.pdf({
+        path: outPath,
+        preferCSSPageSize: true,
+        printBackground: true,
+        displayHeaderFooter: runningMarks,
+        headerTemplate: '<div style="font-size: 9pt; width: 100%; text-align: center;">Running Book Title</div>',
+        footerTemplate: '<div style="font-size: 9pt; width: 100%; text-align: center;"><span class="pageNumber"></span></div>'
+    });
     await page.close();
 }
 
 /** Builds one sample book. A contents page needs real page numbers, so that variant renders twice. */
-async function buildBookPdf(variant, outPath) {
+async function buildBookPdf(variant, outPath, { runningMarks = false } = {}) {
     const puppeteer = req('puppeteer-core');
     const browser = await puppeteer.launch({ headless: true, executablePath: findBrowser(), args: ['--no-sandbox'] });
     try {
         const build = VARIANTS[variant];
-        await htmlToPdf(browser, build({ ch1: 1, ch2: 2, ch3: 3 }), outPath);
+        await htmlToPdf(browser, build({ ch1: 1, ch2: 2, ch3: 3 }), outPath, runningMarks);
         if (variant.startsWith('toc')) {
             const pages = await findPages(outPath, ['Chapter 1: The Harbor', 'Chapter 2: The Survey', 'Chapter 3: A Very Long']);
-            await htmlToPdf(browser, build({ ch1: pages[0], ch2: pages[1], ch3: pages[2] }), outPath);
+            await htmlToPdf(browser, build({ ch1: pages[0], ch2: pages[1], ch3: pages[2] }), outPath, runningMarks);
         }
     } finally {
         await browser.close();

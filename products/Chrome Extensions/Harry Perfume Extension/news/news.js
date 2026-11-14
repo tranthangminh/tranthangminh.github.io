@@ -15,7 +15,7 @@ let defaultNewsData = [];
 // Hàm nạp dữ liệu Tin Nhanh từ dữ liệu Google Sheet (allProducts / cachedProducts)
 async function loadDefaultNewsFromSheet() {
   try {
-    let rawSheetData = typeof allProducts !== "undefined" ? allProducts : [];
+    let rawSheetData = allProducts;
     if (!Array.isArray(rawSheetData) || rawSheetData.length === 0) {
       rawSheetData = (await StorageHelper.get("cachedProducts", [])) || [];
     }

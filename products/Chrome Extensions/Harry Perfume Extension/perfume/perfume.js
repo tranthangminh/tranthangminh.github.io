@@ -256,9 +256,9 @@ function refreshStockDisplay() {
 
 // Hàm làm mới lại hiển thị Tab Nước hoa khi chuyển đổi trạng thái (Giá Vốn / Giá Bán)
 window.refreshPerfumeView = function() {
-  if (typeof detailView !== "undefined" && detailView && detailView.style.display !== "none" && typeof currentProduct !== "undefined" && currentProduct && typeof showDetail === "function") {
+  if (detailView.style.display !== "none" && currentProduct) {
     showDetail(currentProduct);
-  } else if (typeof searchResult !== "undefined" && searchResult && searchResult.style.display !== "none") {
+  } else if (searchResult.style.display !== "none") {
     const listToRender = (window.currentPerfumeList && window.currentPerfumeList.length > 0) ? window.currentPerfumeList : allProducts;
     renderList(listToRender);
   }

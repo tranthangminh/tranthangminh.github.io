@@ -272,29 +272,7 @@
   flex-direction: column;
 }
 
-.add-import-card.theme-pay-paid {
-  border: 2px solid var(--c-green) !important;
-}
-
-.add-import-card.theme-pay-unpaid {
-  border: 2px solid var(--c-red) !important;
-}
-
-.add-import-card.theme-pay-none {
-  border: 2px solid transparent !important;
-}
-
-.add-import-card.theme-status-empty .import-card-row-top {
-  background: var(--text-secondary);
-  color: #ffffff;
-}
-
-/* Header trong Add Modal */
-.add-import-card .import-card-row-top {
-  border-radius: 6px 6px 0 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-  padding: 6px 8px;
-}
+/* Viền theo thanh toán, màu trạng thái, đầu thẻ: dùng chung quy tắc .import-card */
 
 /* Vùng bao bọc Danh sách sản phẩm và Nút thêm bên dưới */
 .add-import-products-wrap {
@@ -574,24 +552,54 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Trạng thái chế độ chỉnh sửa (Edit Mode Active) */
-.import-card.card-editable [data-field]:not([data-field="thanh_tien"]) {
-  outline: 1px dashed rgba(229, 193, 88, 0.35);
-  outline-offset: 1px;
+/* Chế độ sửa: mỗi ô chỉ có nền mờ, không viền; rê chuột / đang gõ mới hiện viền vàng.
+   Badge (select) và ô Dung tích bỏ viền + nền riêng để chỉ còn đúng 1 kiểu ô */
+.import-card.card-editable [data-field]:not([data-field="thanh_tien"]),
+.import-card.card-editable .import-size-editor {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: transparent !important;
+  outline: none;
   border-radius: 3px;
   cursor: text;
   box-sizing: border-box;
-  transition: background 0.15s, outline 0.15s;
+  transition: background 0.15s, box-shadow 0.15s;
 }
 
-.import-card.card-editable [data-field]:not([data-field="thanh_tien"]):hover {
-  outline: 1px solid var(--gold-primary);
-  background: rgba(229, 193, 88, 0.08);
+.import-card.card-editable [data-field]:not([data-field="thanh_tien"]):hover,
+.import-card.card-editable [data-field]:not([data-field="thanh_tien"]):focus,
+.import-card.card-editable .import-size-editor:hover,
+.import-card.card-editable .import-size-editor:focus-within {
+  background: rgba(229, 193, 88, 0.12) !important;
+  box-shadow: inset 0 0 0 1px var(--gold-primary);
 }
 
-.import-card.card-editable [data-field]:not([data-field="thanh_tien"]):focus {
-  outline: 1.5px solid var(--gold-primary);
-  background: rgba(229, 193, 88, 0.15);
+/* Ô Số ml nằm trong ô Dung tích: không tạo ô lồng thứ 2 */
+.import-card.card-editable .import-size-editor [data-field] {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.import-card.card-editable select[data-field] {
+  cursor: pointer;
+}
+
+/* Ô trống: chữ gợi ý lấy từ data-ph, chỉ hiển thị (nội dung ô vẫn trống) */
+.import-card.card-editable [data-ph]:empty::before {
+  content: attr(data-ph);
+  color: var(--text-secondary);
+  font-style: italic;
+  font-weight: 500;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* Select đang chọn "(Trống)": ẩn chữ để ô hiện trống; danh sách xổ xuống vẫn đọc được */
+select.is-empty {
+  color: transparent !important;
+}
+
+select.is-empty option {
+  color: var(--text-primary);
 }
 
 /* Trường bị khóa không cho sửa (Tổng tiền, hoặc SL/Thanh toán/Nguồn khi Hỏi giá/Hoàn hàng) */
@@ -692,104 +700,68 @@
   box-shadow: 0 0 10px rgba(229, 193, 88, 0.25);
 }
 
-/* Placeholder trong chế độ sửa cho các trường đang rỗng */
-.import-card.card-editable .is-placeholder {
-  font-style: italic;
-  font-weight: normal;
-}
-
-.import-card.card-editable .is-placeholder:not(.import-card-note) {
-  opacity: 0.65;
-}
-
-.import-card.card-editable .import-card-note.is-placeholder {
-  color: rgba(255, 255, 255, 0.45);
-}
-
 .import-card:hover {
   border-color: var(--gold-primary);
   box-shadow: var(--shadow-elevation);
 }
 
-/* Tô màu tiêu đề bằng màu text của ô trạng thái */
-.import-card.theme-status-done .import-card-row-top {
-  background: var(--c-green);
-  color: #121214;
-}
-.import-card.theme-status-pending .import-card-row-top {
-  background: var(--c-yellow);
-  color: #121214;
-}
-.import-card.theme-status-cancel .import-card-row-top {
-  background: var(--c-red);
-  color: #ffffff;
-}
-.import-card.theme-status-cancel .import-card-row-top .import-top-val {
-  color: #ffffff;
-}
-.import-card.theme-status-default .import-card-row-top {
-  background: var(--c-blue);
-  color: #121214;
-}
-.import-card.theme-status-empty .import-card-row-top {
-  background: var(--text-secondary);
-  color: #ffffff;
-}
-.import-card.theme-status-empty .import-card-row-top .import-top-val {
-  color: #ffffff;
+/* Màu trạng thái (--st): vạch dọc 4px chạy hết mép trái thẻ + nền đầu thẻ pha nhạt 13% */
+.import-card.theme-status-done { --st: var(--c-green); }
+.import-card.theme-status-pending { --st: var(--c-yellow); }
+.import-card.theme-status-cancel { --st: var(--c-red); }
+.import-card.theme-status-default { --st: var(--c-blue); }
+.import-card.theme-status-empty { --st: var(--text-secondary); }
+
+.import-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--st, var(--border-color));
+  border-radius: 6px 0 0 6px;
+  pointer-events: none;
 }
 
-/* Border thẻ theo trạng thái thanh toán (2px, thanh toán rỗng thì trong suốt) */
+/* Viền thẻ theo thanh toán (1.5px, màu mờ 75%; thanh toán rỗng thì viền thường) */
 .import-card.theme-pay-paid {
-  border: 2px solid var(--c-green) !important;
+  border: 1.5px solid color-mix(in srgb, var(--c-green) 75%, transparent) !important;
 }
 .import-card.theme-pay-unpaid {
-  border: 2px solid var(--c-red) !important;
+  border: 1.5px solid color-mix(in srgb, var(--c-red) 75%, transparent) !important;
 }
 .import-card.theme-pay-none {
-  border: 2px solid transparent !important;
+  border: 1.5px solid var(--border-color) !important;
 }
 
-/* Hàng 1: Tiêu đề 3 cột x 2 hàng (Dùng chung) */
+/* Hàng 1: Đầu thẻ (dùng chung). Hẹp: 2 hàng (Ngày + Người gửi / 4 badge căn phải). Rộng: 1 hàng (xem cuối file).
+   Cột 2, 3 dùng display: contents để 4 badge (Trạng thái, Thanh toán, Người nhập, Nguồn tiền) xếp thẳng 1 hàng */
 .import-card-row-top {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 68px 68px;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 4px 6px;
-  padding: 6px 10px;
-  background: var(--gold-primary);
-  color: var(--gold-text, #ffffff);
+  justify-content: flex-end;
+  gap: 5px;
+  padding: 7px 10px 7px 12px;
+  background: color-mix(in srgb, var(--st, var(--gold-primary)) 13%, var(--bg-card));
+  color: var(--text-primary);
   border-radius: 6px 6px 0 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid var(--border-color);
   font-size: 11px;
 }
 
-.import-top-col {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
 .import-top-col-1 {
-  align-items: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 100%;
   min-width: 0;
 }
 
-.import-top-col-2 {
-  align-items: flex-start;
-  width: 68px;
-  max-width: 68px;
-  min-width: 68px;
-  box-sizing: border-box;
-}
-
+.import-top-col-2,
 .import-top-col-3 {
-  align-items: flex-start;
-  width: 68px;
-  max-width: 68px;
-  min-width: 68px;
-  box-sizing: border-box;
+  display: contents;
 }
 
 .import-top-cell {
@@ -797,18 +769,12 @@
   align-items: center;
   gap: 3px;
   min-width: 0;
-  max-width: 100%;
-  width: 100%;
 }
 
-.import-top-col-1 .import-top-cell { justify-content: flex-start; }
-.import-top-col-2 .import-top-cell { justify-content: flex-start; }
-.import-top-col-3 .import-top-cell { justify-content: flex-start; }
-
 .import-top-val {
-  color: var(--gold-text, #ffffff);
+  color: var(--text-primary);
   font-weight: 700;
-  font-size: 11px;
+  font-size: 11.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -817,57 +783,41 @@
   min-width: 20px;
 }
 
+/* Ngày: chữ phụ */
 .import-top-col-1 .import-top-cell:first-child .import-top-val {
+  color: var(--text-secondary);
   font-weight: 600;
-  opacity: 0.9;
 }
 
-.import-top-col-3 .import-top-val {
-  max-width: 68px;
+/* Người gửi chiếm phần còn lại, dài thì "…" */
+.import-top-col-1 .import-top-cell:last-child {
+  flex: 1;
+}
+
+/* 4 badge cố định cùng kích thước để kéo thẳng xuống các thẻ dễ dò; nền đen bg-primary (cả khi xem lẫn khi sửa) */
+.import-card .import-card-row-top .import-badge,
+.import-card.card-editable .import-card-row-top .import-badge[data-field]:not(:hover):not(:focus) {
+  background: var(--bg-primary) !important;
 }
 
 .import-card-row-top .import-badge {
-  background: var(--bg-card) !important;
-  padding: 2px 5px;
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+  justify-content: center;
+  text-align: center;
+  padding: 2px 4px;
   font-size: 10px;
   font-weight: 700;
   border-radius: 4px;
   line-height: 1.25;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   box-sizing: border-box;
-  justify-content: flex-start;
-  text-align: left;
 }
-
-.import-top-col-2 .import-badge {
-  width: 68px;
-  min-width: 68px;
-  max-width: 68px;
-  justify-content: flex-start;
-  text-align: left;
-  padding: 2px 6px;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-}
-
-.import-top-col-3 .import-badge {
-  width: 68px;
-  min-width: 68px;
-  max-width: 68px;
-  justify-content: flex-start;
-  text-align: left;
-  padding: 2px 5px;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-}
-
 .import-card > .import-products-list:last-child {
-  padding-bottom: 10px;
+  padding-bottom: 4px;
 }
 
 /* Select dropdown mặc định tối ưu gọn gàng cho Ngày, Trạng thái, Thanh toán, Người nhập, Nguồn tiền */
@@ -889,22 +839,10 @@ select.import-badge {
   font-weight: 700;
   border-radius: 4px;
   line-height: 1.25;
-  text-align: left;
-  text-align-last: left;
+  text-align: center;
+  text-align-last: center;
   padding: 2px 4px;
   display: block;
-}
-
-.import-top-col-2 select.import-badge {
-  width: 68px;
-  min-width: 68px;
-  max-width: 68px;
-}
-
-.import-top-col-3 select.import-badge {
-  width: 68px;
-  min-width: 68px;
-  max-width: 68px;
 }
 
 select.import-badge:focus {
@@ -925,12 +863,12 @@ select.import-top-val {
 }
 
 select.import-top-val:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(229, 193, 88, 0.08);
 }
 
 select.import-top-val:focus {
-  background: rgba(0, 0, 0, 0.15);
-  border-color: rgba(0, 0, 0, 0.25);
+  background: rgba(229, 193, 88, 0.15);
+  border-color: var(--gold-primary);
 }
 
 select.import-badge option,
@@ -942,10 +880,8 @@ select.import-top-val option {
   padding: 4px 6px;
 }
 
-/* Tùy chỉnh chế độ sửa riêng cho hàng tiêu đề nền sáng */
+/* Chế độ sửa ở đầu thẻ (nền tối pha màu trạng thái): viền nét đứt vàng như phần còn lại của thẻ */
 .import-card.card-editable .import-card-row-top .import-top-val[data-field] {
-  outline-color: rgba(0, 0, 0, 0.25);
-  color: var(--gold-text, #ffffff);
   display: inline-flex;
   align-items: center;
   min-width: 52px;
@@ -954,60 +890,31 @@ select.import-top-val option {
   box-sizing: border-box;
 }
 
-.import-card.card-editable .import-top-col-3 .import-top-val[data-field] {
-  min-width: 25px;
-  max-width: 68px;
-}
-
 .import-card.card-editable .import-top-col-1 .import-top-cell:first-child .import-top-val[data-field] {
   min-width: 68px;
 }
 
-.import-card.card-editable .import-card-row-top .import-top-val[data-field]:hover {
-  outline-color: rgba(0, 0, 0, 0.6);
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.import-card.card-editable .import-card-row-top [data-field]:focus {
-  outline-color: var(--bg-primary);
-  background: rgba(0, 0, 0, 0.12);
-}
-
-.import-card.card-editable .import-card-row-top .import-badge:hover,
-.import-card.card-editable .import-card-row-top .import-badge:focus {
-  background: var(--bg-primary) !important;
-  outline-color: rgba(0, 0, 0, 0.45);
-}
-
-.import-card.card-editable .import-card-row-top .is-placeholder {
-  color: rgba(0, 0, 0, 0.55);
-  font-style: italic;
-  font-weight: 500;
-}
-
-.import-card.card-editable .import-card-row-top .import-badge.is-placeholder {
-  color: rgba(255, 255, 255, 0.65) !important;
-  font-style: italic;
-}
 
 /* Danh sách sản phẩm bên trong thẻ kiện hàng */
 .import-products-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 10px 6px 10px;
+  padding: 2px 10px 2px 12px;
 }
 
+/* Mỗi chai: ngăn bằng nét đứt mờ, chai cuối không có nét (hẹp và rộng như nhau) */
 .import-product-item {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
   position: relative;
+}
+
+.import-product-item:last-child {
+  border-bottom: none;
 }
 
 .import-prod-col-thumb {
@@ -1121,6 +1028,42 @@ select.import-top-val option {
   flex-shrink: 0;
 }
 
+/* Ô Dung tích 2 phần khi sửa: [Loại ▾] [Số] ml */
+.import-size-editor {
+  gap: 3px;
+  padding: 1px 6px;
+}
+
+.import-size-type {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 0 4px 0 0;
+  cursor: pointer;
+  outline: none;
+  max-width: 80px;
+}
+
+.import-size-type option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.import-size-num {
+  min-width: 18px;
+  min-height: 14px;
+  outline: none;
+  text-align: right;
+}
+
+.import-size-unit {
+  opacity: 0.8;
+  user-select: none;
+}
+
 .import-card.card-editable .import-val-price {
   min-width: 45px;
   min-height: 18px;
@@ -1165,17 +1108,18 @@ select.import-top-val option {
   padding: 0;
 }
 
-/* Tóm tắt tổng kiện hàng (khi có nhiều hơn 1 sản phẩm) */
+/* Tóm tắt tổng kiện hàng (khi có nhiều hơn 1 sản phẩm): nằm bên phải chân thẻ, không khung */
 .import-card-group-summary {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 5px 8px;
-  background: rgba(229, 193, 88, 0.08);
-  border: 1px solid rgba(229, 193, 88, 0.2);
-  border-radius: 6px;
+  gap: 8px;
+  margin-left: auto;
   font-size: 11px;
   color: var(--text-secondary);
+}
+
+.import-card-group-summary strong {
+  color: var(--text-primary);
 }
 
 .import-card-group-summary .import-group-total {
@@ -1231,12 +1175,14 @@ select.import-top-val option {
   white-space: nowrap;
 }
 
-/* Hàng 4: Trạng thái & Thanh toán & Ghi chú */
+/* Chân thẻ: Ghi chú bên trái + Tổng đơn bên phải, chung 1 hàng (hẹp quá thì tự xuống hàng) */
 .import-card-footer {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 0 12px 10px 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 6px 10px 7px 12px;
+  border-top: 1px solid var(--border-color);
 }
 
 .import-footer-badges {
@@ -1348,33 +1294,26 @@ select.import-top-val option {
 }
 
 /* Ghi chú */
+/* Ghi chú riêng của từng chai: nằm dưới dòng Giá / SL (không có thì không hiện) */
 .import-card-note {
   font-size: 11px;
   font-style: italic;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.025);
-  border-left: 2px solid var(--gold-primary);
-  padding: 3px 8px;
-  border-radius: 2px 4px 4px 2px;
-  align-self: flex-start;
-  width: fit-content;
+  padding: 0;
+  margin-top: 2px;
   max-width: 100%;
   box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
+  word-break: break-word;
 }
 
+/* Đang sửa: ô ghi chú trải hết bề ngang dòng sản phẩm */
 .import-card.card-editable .import-card-note {
-  align-self: flex-start;
-  width: fit-content;
-  max-width: 100%;
+  min-height: 20px;
   padding: 2px 6px;
-  outline: 1px dashed rgba(229, 193, 88, 0.35);
-  outline-offset: 1px;
-  border-radius: 4px;
 }
 
-.import-card-note::before {
+/* Icon 📝 chỉ khi xem thường; đang sửa thì ô thuần chữ */
+.import-card:not(.card-editable) .import-card-note::before {
   content: "📝 ";
   font-style: normal;
   font-size: 13px;
@@ -1489,320 +1428,36 @@ select.import-top-val option {
 }
 
 /* ==========================================================================
-   BỐ CỤC 2 CỘT (CỘT TRÁI CỐ ĐỊNH ~261PX - CỘT PHẢI 1FR) KHI BỀ NGANG >= 550PX (100% SSOT)
+   BỀ NGANG >= 550PX: đầu thẻ 1 hàng, mỗi chai 1 dòng (thẻ vẫn 1 cột, không chia cột trái/phải).
+   Chỉ dùng @container importPane: cửa sổ riêng cũng mở panel.html nên luôn có .import-container.
    ========================================================================== */
 @container importPane (min-width: 550px) {
-  /* 1. Khung thẻ chuyển sang Grid 2 Cột: Cột Trái Cố định | Cột Phải (Danh sách SP) */
-  .import-card {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: stretch;
+  /* Đầu thẻ 1 hàng: Ngày + Người gửi bên trái, 4 badge bên phải */
+  .import-top-col-1 {
+    flex: 1 1 auto;
   }
 
-  /* 2. Cột Trái: Giữ nguyên thứ tự 3 Cột × 2 Hàng (Cột 1: 110px | Cột 2: 65px | Cột 3: 60px) */
-  .import-card-row-top {
-    grid-column: 1;
-    height: 100%;
-    box-sizing: border-box;
-    border-radius: 6px 0 0 6px;
-    border-bottom: none;
-    border-right: 1px solid rgba(0, 0, 0, 0.15);
-    padding: 6px 8px;
+  /* Mỗi chai 1 dòng: tên bên trái (dài thì xuống dòng), Giá / SL / Thành tiền dồn phải */
+  .import-prod-col-main {
     display: grid;
-    grid-template-columns: 110px 65px 60px;
-    align-content: center;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 4px 5px;
-    font-size: 10.5px;
+    column-gap: 16px;
   }
 
-  .import-card-row-top .import-top-col {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-  }
-
-  /* Cột 1 (trái): Ngày (hàng 1) & Người gửi (hàng 2) - Cố định max 110px */
-  .import-card-row-top .import-top-col-1 {
-    align-items: flex-start;
-    width: 110px;
-    max-width: 110px;
-  }
-
-  /* Cột 2 (giữa): Trạng thái (hàng 1) & Đã thanh toán (hàng 2) - Cố định 65px */
-  .import-card-row-top .import-top-col-2 {
-    align-items: flex-start;
-    width: 65px;
-    min-width: 65px;
-    max-width: 65px;
-    box-sizing: border-box;
-  }
-
-  /* Cột 3 (phải): Người nhập (hàng 1) & Nguồn tiền (hàng 2) - Cố định 60px */
-  .import-card-row-top .import-top-col-3 {
-    align-items: flex-start;
-    width: 60px;
-    min-width: 60px;
-    max-width: 60px;
-    box-sizing: border-box;
-  }
-
-  .import-card-row-top .import-top-cell {
+  .import-card-pricing {
     display: flex;
     align-items: center;
-    gap: 2px;
-    min-width: 0;
-    max-width: 100%;
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .import-card-row-top .import-top-val {
-    font-size: 10.5px;
+    gap: 16px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
-  .import-card-row-top .import-badge {
-    padding: 2px 4px !important;
-    font-size: 9.5px !important;
-    justify-content: flex-start !important;
-    text-align: left !important;
-    white-space: nowrap !important;
-    text-overflow: ellipsis !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-    line-height: 1.25 !important;
+  .import-col-total {
+    min-width: 92px;
   }
 
-  .import-card-row-top .import-top-col-2 .import-badge {
-    width: 65px !important;
-    min-width: 65px !important;
-    max-width: 65px !important;
-    justify-content: flex-start !important;
-    text-align: left !important;
-    padding: 2px 6px !important;
-  }
-
-  .import-card-row-top .import-top-col-3 .import-badge {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-    justify-content: flex-start !important;
-    text-align: left !important;
-    padding: 2px 5px !important;
-  }
-
-  .import-card.card-editable .import-card-row-top .import-top-val[data-field] {
-    min-width: 30px;
-    min-height: 18px;
-    padding: 0 2px;
-  }
-
-  /* 3. Cột Phải (60%): Danh sách sản phẩm (.import-products-list / .add-import-products-wrap) */
-  .import-card .import-products-list,
-  .import-card .add-import-products-wrap {
-    grid-column: 2;
-    padding: 6px 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-  }
-
-  .import-card .import-product-item {
-    padding: 4px 6px;
-    gap: 8px;
-    background: transparent;
-    border: none;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
-    border-radius: 0;
-  }
-
-  .import-card .import-product-item:last-child {
-    border-bottom: none;
-  }
-
-  .import-card .import-card-row-title {
-    gap: 6px;
-  }
-
-  .import-card .import-card-name {
-    font-size: 12.5px;
-  }
-
-  .import-card .import-badge-size {
-    font-size: 9.5px;
-    padding: 1px 5px;
-    min-width: 40px;
-  }
-
-  .import-card .import-card-pricing {
-    gap: 6px;
-    font-size: 11px;
-  }
-
-  /* 4. Footer (Ghi chú & Tóm tắt tổng kiện): Trải ngang đáy thẻ */
-  .import-card .import-card-footer {
+  /* Ghi chú của chai trải hết bề ngang dòng (dưới tên + giá) */
+  .import-prod-col-main > .import-card-note {
     grid-column: 1 / -1;
-    border-top: 1px solid var(--border-color);
-  }
-}
-
-/* Hỗ trợ thêm @media cho môi trường viewport cửa sổ độc lập */
-@media screen and (min-width: 550px) {
-  .import-card {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: stretch;
-  }
-
-  .import-card-row-top {
-    grid-column: 1;
-    height: 100%;
-    box-sizing: border-box;
-    border-radius: 6px 0 0 6px;
-    border-bottom: none;
-    border-right: 1px solid rgba(0, 0, 0, 0.15);
-    padding: 6px 8px;
-    display: grid;
-    grid-template-columns: 110px 65px 60px;
-    align-content: center;
-    align-items: center;
-    gap: 4px 5px;
-    font-size: 10.5px;
-  }
-
-  .import-card-row-top .import-top-col {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-  }
-
-  .import-card-row-top .import-top-col-1 {
-    align-items: flex-start;
-    width: 110px;
-    max-width: 110px;
-  }
-
-  /* Cột 2 (giữa): Trạng thái (hàng 1) & Đã thanh toán (hàng 2) - Cố định 65px */
-  .import-card-row-top .import-top-col-2 {
-    align-items: flex-start;
-    width: 65px;
-    min-width: 65px;
-    max-width: 65px;
-    box-sizing: border-box;
-  }
-
-  /* Cột 3 (phải): Người nhập (hàng 1) & Nguồn tiền (hàng 2) - Cố định 60px */
-  .import-card-row-top .import-top-col-3 {
-    align-items: flex-start;
-    width: 60px;
-    min-width: 60px;
-    max-width: 60px;
-    box-sizing: border-box;
-  }
-
-  .import-card-row-top .import-top-cell {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    min-width: 0;
-    max-width: 100%;
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .import-card-row-top .import-top-val {
-    font-size: 10.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .import-card-row-top .import-badge {
-    padding: 2px 4px !important;
-    font-size: 9.5px !important;
-    justify-content: flex-start !important;
-    text-align: left !important;
-    white-space: nowrap !important;
-    text-overflow: ellipsis !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-    line-height: 1.25 !important;
-  }
-
-  .import-card-row-top .import-top-col-2 .import-badge {
-    width: 65px !important;
-    min-width: 65px !important;
-    max-width: 65px !important;
-    justify-content: flex-start !important;
-    text-align: left !important;
-    padding: 2px 6px !important;
-  }
-
-  .import-card-row-top .import-top-col-3 .import-badge {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-    justify-content: flex-start !important;
-    text-align: left !important;
-    padding: 2px 5px !important;
-  }
-
-  .import-card.card-editable .import-card-row-top .import-top-val[data-field] {
-    min-width: 30px;
-    min-height: 18px;
-    padding: 0 2px;
-  }
-
-  .import-card .import-products-list,
-  .import-card .add-import-products-wrap {
-    grid-column: 2;
-    padding: 6px 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-  }
-
-  .import-card .import-product-item {
-    padding: 4px 6px;
-    gap: 8px;
-    background: transparent;
-    border: none;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
-    border-radius: 0;
-  }
-
-  .import-card .import-product-item:last-child {
-    border-bottom: none;
-  }
-
-  .import-card .import-card-row-title {
-    gap: 6px;
-  }
-
-  .import-card .import-card-name {
-    font-size: 12.5px;
-  }
-
-  .import-card .import-badge-size {
-    font-size: 9.5px;
-    padding: 1px 5px;
-    min-width: 40px;
-  }
-
-  .import-card .import-card-pricing {
-    gap: 6px;
-    font-size: 11px;
-  }
-
-  .import-card .import-card-footer {
-    grid-column: 1 / -1;
-    border-top: 1px solid var(--border-color);
   }
 }

@@ -7,14 +7,9 @@
 // Tách chuỗi thành mảng các từ khóa sạch (hỗ trợ cả tiếng Việt có dấu và không dấu)
 function tokenizeSearchText(text) {
   if (!text) return [];
-  const norm = typeof removeAccents === "function" 
-    ? removeAccents(text) 
-    : String(text).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
-  
-  const cleaned = norm
+  const cleaned = removeAccents(text)
     .replace(/[,\.\-_/\\()+=\[\]:;!?"'~`*]/g, " ")
     .trim();
-    
   return cleaned.split(/\s+/).filter(w => w.length > 0);
 }
 
@@ -31,12 +26,13 @@ function getProductSearchTokens(prod) {
 
   const name = String(prod.name || "");
   const short = String(prod.tenrutgon || "");
+  // getProductDisplayName (perfume.js) không được nạp trong cửa sổ Cost Checker
   const disp = (typeof getProductDisplayName === "function") ? getProductDisplayName(prod) : "";
   const combined = `${name} ${short} ${disp}`.trim();
 
   const tokensList = tokenizeSearchText(combined);
   const tokensSet = new Set(tokensList);
-  const rawNorm = typeof removeAccents === "function" ? removeAccents(name).trim() : name.toLowerCase().trim();
+  const rawNorm = removeAccents(name).trim();
 
   prod._searchTokensList = tokensList;
   prod._searchTokensSet = tokensSet;
@@ -55,7 +51,7 @@ function searchProducts(query, productList = [], options = {}) {
 
   const cleanQuery = String(query).trim();
   const queryTokens = tokenizeSearchText(cleanQuery);
-  const queryNorm = typeof removeAccents === "function" ? removeAccents(cleanQuery).trim() : cleanQuery.toLowerCase().trim();
+  const queryNorm = removeAccents(cleanQuery).trim();
 
   if (queryTokens.length === 0 || list.length === 0) {
     return [];
@@ -67,7 +63,7 @@ function searchProducts(query, productList = [], options = {}) {
   for (let i = 0; i < list.length; i++) {
     const prod = list[i];
     const { tokensList, tokensSet, rawNorm } = getProductSearchTokens(prod);
-    const shortNorm = typeof removeAccents === "function" ? removeAccents(prod.tenrutgon || "").trim() : String(prod.tenrutgon || "").toLowerCase().trim();
+    const shortNorm = removeAccents(prod.tenrutgon || "").trim();
 
     // 1. TIER 1: Khớp chính xác tuyệt đối 100% từng chữ cái
     if (queryNorm === rawNorm || (shortNorm && queryNorm === shortNorm)) {
@@ -146,35 +142,40 @@ function searchProducts(query, productList = [], options = {}) {
 
 // Tìm ảnh chai nước hoa tương ứng từ allProducts
 // QUY TẮC BẮT BUỘC: Tên phải khớp chính xác 100% từng chữ cái, TUYỆT ĐỐI không dùng tìm gần đúng/includes
+// Bảng tra tên -> sản phẩm, dựng lại khi allProducts được thay mảng mới (refresh / nạp cache).
+// Giữ đúng thứ tự ưu tiên của list.find(): sản phẩm đứng trước trong danh mục thắng khi trùng tên.
+let productNameIndex = { source: null, size: 0, exact: new Map(), norm: new Map() };
+
+function getProductNameIndex(list) {
+  if (productNameIndex.source === list && productNameIndex.size === list.length) return productNameIndex;
+  const exact = new Map();
+  const norm = new Map();
+  const addKey = (map, key, prod) => {
+    if (key && !map.has(key)) map.set(key, prod);
+  };
+  list.forEach(p => {
+    addKey(exact, String(p.name || "").trim().toLowerCase(), p);
+    addKey(exact, String(p.tenrutgon || "").trim().toLowerCase(), p);
+    addKey(norm, removeAccents(p.name || ""), p);
+    addKey(norm, removeAccents(p.tenrutgon || ""), p);
+  });
+  productNameIndex = { source: list, size: list.length, exact, norm };
+  return productNameIndex;
+}
+
 function getProductImageByName(prodName) {
   if (!prodName) return "";
   const clean = String(prodName).trim().toLowerCase();
-  if (!clean || clean === "+ tên sản phẩm" || clean === "chưa có tên") return "";
+  if (!clean) return "";
 
-  const list = (typeof allProducts !== "undefined" && Array.isArray(allProducts) && allProducts.length > 0)
-    ? allProducts
-    : [];
-
+  // allProducts là biến toàn cục của panel.js; cửa sổ Cost Checker giữ allProducts riêng trong IIFE
+  const list = (typeof allProducts !== "undefined" && Array.isArray(allProducts)) ? allProducts : [];
   if (list.length === 0) return "";
 
-  // 1. Tìm chính xác tuyệt đối từng chữ cái theo tên sản phẩm hoặc tên rút gọn
-  let found = list.find(p => {
-    const pName = String(p.name || "").trim().toLowerCase();
-    const pShort = String(p.tenrutgon || "").trim().toLowerCase();
-    return pName === clean || (pShort && pShort === clean);
-  });
-
-  // 2. Nếu chưa thấy, tìm khớp chính xác không dấu (Toàn bộ chuỗi phải khớp 100% từng chữ cái)
-  if (!found) {
-    const cleanNorm = typeof removeAccents === "function" ? removeAccents(clean) : clean;
-    if (cleanNorm) {
-      found = list.find(p => {
-        const pNameNorm = typeof removeAccents === "function" ? removeAccents(p.name || "") : String(p.name || "").toLowerCase();
-        const pShortNorm = typeof removeAccents === "function" ? removeAccents(p.tenrutgon || "") : String(p.tenrutgon || "").toLowerCase();
-        return pNameNorm === cleanNorm || (pShortNorm && pShortNorm === cleanNorm);
-      });
-    }
-  }
+  // 1. Khớp chính xác tuyệt đối từng chữ cái theo tên sản phẩm hoặc tên rút gọn
+  // 2. Nếu chưa thấy, khớp chính xác không dấu (toàn bộ chuỗi phải khớp 100%)
+  const index = getProductNameIndex(list);
+  const found = index.exact.get(clean) || index.norm.get(removeAccents(clean));
 
   // TUYỆT ĐỐI KHÔNG tìm gần đúng (includes/substring). Nếu tên sai, thiếu chữ cái hoặc dở dang -> Trả về rỗng (hình phải mất)
   if (found && found.img && found.img !== "-" && String(found.img).startsWith("http")) {

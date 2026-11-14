@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Harry Perfume",
-  "version": "1.0.1",
+  "version": "1.0.13",
   "description": "Tiện ích tìm kiếm và copy nội dung tư vấn sản phẩm siêu nhanh.",
   "permissions": [
     "sidePanel",

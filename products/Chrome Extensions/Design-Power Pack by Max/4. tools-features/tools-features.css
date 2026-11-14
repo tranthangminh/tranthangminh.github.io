@@ -59,6 +59,11 @@
   background-color: var(--text-primary);
 }
 
+.context-tool-icon-wrapper .icon-img {
+  width: 20px;
+  height: 20px;
+}
+
 .context-tool-info {
   flex: 1;
   display: flex;

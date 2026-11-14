@@ -72,10 +72,11 @@ btnCopyNews.addEventListener("click", () => {
 });
 
 // Sự kiện Xóa thẻ tự tạo
-btnDeleteNews.addEventListener("click", () => {
+btnDeleteNews.addEventListener("click", async () => {
   if (selectedNews && selectedNews.isCustom) {
-    if (confirm(`Bạn có chắc chắn muốn xóa thẻ "${selectedNews.title}" không?`)) {
-      deleteCustomNews(selectedNews.id);
+    const target = selectedNews;
+    if (await confirmAction(`Bạn có chắc chắn muốn xóa thẻ "${target.title}" không?`, "Xóa")) {
+      deleteCustomNews(target.id);
     }
   }
 });

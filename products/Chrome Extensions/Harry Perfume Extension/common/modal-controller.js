@@ -27,6 +27,29 @@ function closeModal(target) {
   const modal = getModalElement(target);
   if (!modal) return;
   modal.style.display = "none";
+  if (modal.id === "confirmModal") settleConfirm(false);
+}
+
+// Hộp xác nhận dùng chung thay window.confirm (#confirmModal trong panel.html), trả về Promise<boolean>.
+// Đóng bằng Hủy, ✕, click nền mờ hay phím Escape đều tính là Hủy.
+let pendingConfirmResolve = null;
+
+function confirmAction(message, okLabel = "Đồng ý") {
+  settleConfirm(false);
+  document.getElementById("confirmModalMsg").innerText = message;
+  document.getElementById("btnOkConfirmModal").innerText = okLabel;
+  openModal("confirmModal");
+  return new Promise((resolve) => {
+    pendingConfirmResolve = resolve;
+  });
+}
+
+function settleConfirm(result) {
+  if (!pendingConfirmResolve) return;
+  const resolve = pendingConfirmResolve;
+  pendingConfirmResolve = null;
+  document.getElementById("confirmModal").style.display = "none";
+  resolve(result);
 }
 
 // Kiểm tra có modal nào đang mở không
@@ -39,10 +62,7 @@ function getOpenModals() {
 
 // Đóng tất cả các modal đang mở
 function closeAllModals() {
-  const openModals = getOpenModals();
-  openModals.forEach(modal => {
-    modal.style.display = "none";
-  });
+  getOpenModals().forEach(closeModal);
 }
 
 // Khởi tạo các bộ lắng nghe sự kiện dùng chung cho toàn bộ modal
@@ -51,7 +71,10 @@ function initGlobalModalListeners() {
   document.addEventListener("click", (e) => {
     if (e.target && e.target.classList && e.target.classList.contains("modal-overlay")) {
       closeModal(e.target);
+      return;
     }
+    if (e.target.closest("#btnOkConfirmModal")) settleConfirm(true);
+    else if (e.target.closest("#btnCancelConfirmModal, #btnCloseConfirmModal")) settleConfirm(false);
   });
 
   // 2. Nhấn phím Escape -> Tự động đóng modal trên cùng đang mở
@@ -81,4 +104,5 @@ if (typeof window !== "undefined") {
   window.closeModal = closeModal;
   window.getOpenModals = getOpenModals;
   window.closeAllModals = closeAllModals;
+  window.confirmAction = confirmAction;
 }

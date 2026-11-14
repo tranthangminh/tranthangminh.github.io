@@ -475,13 +475,13 @@ namespace BookForge
             this.rbGutterPrint.Location = new Point(150, 130);
             this.rbGutterPrint.Size = new Size(150, 22);
             this.rbGutterPrint.ForeColor = t.TextPrimary;
-            this.fastTip.SetToolTip(this.rbGutterPrint, "Print book (Gutter):\nAlternating inside (22mm) and outside (14mm) gutter margins for book binding.");
+            this.fastTip.SetToolTip(this.rbGutterPrint, "Print book (Gutter):\nThe inside margin is wider and flips between odd and even pages for binding.\nA5: 22 mm inside, 14 mm outside. Other paper sizes use their own margins.");
 
             this.rbGutterDigital.Text = "Digital screen (Even)";
             this.rbGutterDigital.Location = new Point(310, 130);
             this.rbGutterDigital.Size = new Size(160, 22);
             this.rbGutterDigital.ForeColor = t.TextPrimary;
-            this.fastTip.SetToolTip(this.rbGutterDigital, "Digital screen (Even):\nSymmetrical 18mm margins optimized for tablets, phones, and desktop screens.");
+            this.fastTip.SetToolTip(this.rbGutterDigital, "Digital screen (Even):\nEqual left and right margins for tablets, phones and desktop screens.\nA5: 16 mm on each side. Other paper sizes use their own margins.");
 
             // Row 5: Translator Note (Checkbox & Header/Note editor button)
             this.chkTranslatorNote.Text = "Include translator note";

@@ -181,6 +181,19 @@ function buildMinePartThreeCommands() {
   ];
 }
 
+function buildMineDeleteLayerCommand(layerId) {
+  return {
+    _obj: "delete",
+    _target: [
+      {
+        _ref: "layer",
+        _id: layerId
+      }
+    ],
+    layerID: [layerId]
+  };
+}
+
 async function checkLayerHasMask(runtime, layerId) {
   try {
     const result = await runtime.action.batchPlay([
