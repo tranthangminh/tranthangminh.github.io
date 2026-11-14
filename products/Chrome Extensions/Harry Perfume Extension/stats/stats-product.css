@@ -183,7 +183,7 @@
   padding-bottom: 10px;
 }
 
-.product-card {
+.stats-product-card {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -197,13 +197,13 @@
   transition: all var(--transition, 0.2s) ease;
 }
 
-.product-card:hover {
+.stats-product-card:hover {
   border-color: var(--gold-primary);
   background-color: rgba(229, 193, 88, 0.05);
   transform: translateY(-1px);
 }
 
-.product-card-thumb {
+.stats-product-card-thumb {
   width: 38px;
   height: 38px;
   border-radius: 6px;
@@ -215,7 +215,7 @@
   flex-shrink: 0;
 }
 
-.product-card-avatar-fallback {
+.stats-product-card-avatar-fallback {
   width: 38px;
   height: 38px;
   border-radius: 6px;
@@ -228,7 +228,7 @@
   flex-shrink: 0;
 }
 
-.product-card-info {
+.stats-product-card-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -236,7 +236,7 @@
   min-width: 0;
 }
 
-.product-card-name {
+.stats-product-card-name {
   font-size: 12.5px;
   font-weight: 800;
   color: var(--text-primary);
@@ -245,7 +245,7 @@
   text-overflow: ellipsis;
 }
 
-.product-card-sub {
+.stats-product-card-sub {
   font-size: 10.5px;
   color: var(--text-secondary);
   display: flex;
@@ -253,7 +253,7 @@
   gap: 6px;
 }
 
-.product-card-sub .badge-count {
+.stats-product-card-sub .badge-count {
   display: inline-flex;
   align-items: center;
   padding: 0 5px;
@@ -264,7 +264,7 @@
   font-size: 9.5px;
 }
 
-.product-card-right {
+.stats-product-card-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -272,20 +272,20 @@
   flex-shrink: 0;
 }
 
-.product-card-price-row {
+.stats-product-card-price-row {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.product-card-price {
+.stats-product-card-price {
   font-size: 12.5px;
   font-weight: 800;
   color: var(--gold-primary);
   letter-spacing: -0.2px;
 }
 
-.product-card-arrow {
+.stats-product-card-arrow {
   font-size: 15px;
   font-weight: 800;
   color: var(--text-secondary);
@@ -293,12 +293,12 @@
   transition: transform 0.2s ease;
 }
 
-.product-card:hover .product-card-arrow {
+.stats-product-card:hover .stats-product-card-arrow {
   color: var(--gold-primary);
   transform: translateX(2px);
 }
 
-.product-card-date {
+.stats-product-card-date {
   font-size: 9.5px;
   color: var(--text-secondary);
 }
