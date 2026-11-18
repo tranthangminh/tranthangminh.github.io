@@ -11,6 +11,7 @@ namespace ModernAutoClicker.Advanced
     public class MacroRunner
     {
         private volatile bool _isRunning = false;
+        private volatile bool _freeMouseMode = false;
         private Thread _workerThread = null;
         private bool _hasRun = false;
         private volatile int _totalCyclesCompleted = 0;
@@ -23,6 +24,10 @@ namespace ModernAutoClicker.Advanced
         // The run clock stops with the run, so the numbers of the last run stay on screen after it ends
         public TimeSpan Elapsed { get { return _runClock.Elapsed; } }
         public bool HasRun { get { return _hasRun; } }
+
+        // Another tab started while this one moves the real mouse: from the next step on this run clicks in the background too,
+        // or the two runs would fight over the cursor and the front window
+        public void SwitchToFreeMouse() { _freeMouseMode = true; }
 
         // Every enabled step the run has gone through, including the steps of scripts called via RunScript and steps repeated by a jump
         public long StepsExecuted { get { return Interlocked.Read(ref _stepsExecuted); } }
@@ -94,6 +99,7 @@ namespace ModernAutoClicker.Advanced
             }
 
             _isRunning = true;
+            _freeMouseMode = freeMouseMode;
             _totalCyclesCompleted = 0;
             _stepsExecuted = 0;
             _targetLoops = profile.LoopCount;
@@ -116,7 +122,7 @@ namespace ModernAutoClicker.Advanced
                 Exception failure = null;
                 try
                 {
-                    RunLoops(stepsToRun, subProfilesMap, freeMouseMode, smoothMouseMove, targetLoops, randIntervalMs, randJitterPx);
+                    RunLoops(stepsToRun, subProfilesMap, smoothMouseMove, targetLoops, randIntervalMs, randJitterPx);
                 }
                 catch (Exception ex)
                 {
@@ -153,12 +159,12 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
-        private void RunLoops(List<MacroStep> stepsToRun, Dictionary<string, List<MacroStep>> subProfilesMap, bool freeMouseMode, bool smoothMouseMove, int targetLoops, int randIntervalMs, int randJitterPx)
+        private void RunLoops(List<MacroStep> stepsToRun, Dictionary<string, List<MacroStep>> subProfilesMap, bool smoothMouseMove, int targetLoops, int randIntervalMs, int randJitterPx)
         {
         Thread.Sleep(60);
 
         // Initial settle and focus for first step (prevents missed first click)
-        if (!freeMouseMode && stepsToRun.Count > 0)
+        if (!_freeMouseMode && stepsToRun.Count > 0)
         {
             MacroStep firstStep = stepsToRun.Find(s => s.Enabled && (s.StartPoint != Point.Empty || s.RelativeToWindow));
             if (firstStep != null && EnsureStepTarget(firstStep, stepsToRun.IndexOf(firstStep)))
@@ -261,7 +267,7 @@ namespace ModernAutoClicker.Advanced
                     OnStepExecuting(i, stepDesc);
                 }
 
-                ExecuteSingleStep(step, stepsToRun, ref i, subProfilesMap, freeMouseMode, randIntervalMs, randJitterPx, smoothMouseMove);
+                ExecuteSingleStep(step, stepsToRun, ref i, subProfilesMap, randIntervalMs, randJitterPx, smoothMouseMove);
             }
 
             _totalCyclesCompleted = currentLoop;
@@ -273,7 +279,7 @@ namespace ModernAutoClicker.Advanced
         }
         }
 
-        private void ExecuteStepList(List<MacroStep> steps, Dictionary<string, List<MacroStep>> subProfilesMap, bool freeMouseMode, int randIntervalMs, int randJitterPx, bool smoothMouseMove)
+        private void ExecuteStepList(List<MacroStep> steps, Dictionary<string, List<MacroStep>> subProfilesMap, int randIntervalMs, int randJitterPx, bool smoothMouseMove)
         {
             for (int i = 0; i < steps.Count; i++)
             {
@@ -281,7 +287,7 @@ namespace ModernAutoClicker.Advanced
                 MacroStep step = steps[i];
                 if (!step.Enabled) continue;
 
-                ExecuteSingleStep(step, steps, ref i, subProfilesMap, freeMouseMode, randIntervalMs, randJitterPx, smoothMouseMove);
+                ExecuteSingleStep(step, steps, ref i, subProfilesMap, randIntervalMs, randJitterPx, smoothMouseMove);
             }
         }
 
@@ -349,7 +355,7 @@ namespace ModernAutoClicker.Advanced
             i = (targetIdx >= 0 && targetIdx < stepCount) ? targetIdx - 1 : stepCount;
         }
 
-        private void ClickFoundSpot(MacroStep step, Point startPoint, int i, bool freeMouseMode, int randIntervalMs, int randJitterPx)
+        private void ClickFoundSpot(MacroStep step, Point startPoint, int i, int randIntervalMs, int randJitterPx)
         {
             MacroStep clickStep = step.Clone();
             clickStep.ActionType = MacroActionType.LeftClick;
@@ -361,7 +367,7 @@ namespace ModernAutoClicker.Advanced
             for (int cr = 0; cr < clickReps; cr++)
             {
                 if (!_isRunning || !EnsureStepTarget(step, i)) break;
-                ActionExecutor.Execute(clickStep, freeMouseMode, randIntervalMs, randJitterPx);
+                ActionExecutor.Execute(clickStep, _freeMouseMode, randIntervalMs, randJitterPx);
                 if (cr < clickReps - 1 && step.DelayMs > 0)
                 {
                     SleepWhileRunning(ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs));
@@ -382,7 +388,7 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
-        private void ExecuteSingleStep(MacroStep step, List<MacroStep> stepList, ref int i, Dictionary<string, List<MacroStep>> subProfilesMap, bool freeMouseMode, int randIntervalMs, int randJitterPx, bool smoothMouseMove)
+        private void ExecuteSingleStep(MacroStep step, List<MacroStep> stepList, ref int i, Dictionary<string, List<MacroStep>> subProfilesMap, int randIntervalMs, int randJitterPx, bool smoothMouseMove)
         {
             if (++_stepsSinceRest >= StepsBetweenRests)
             {
@@ -410,7 +416,7 @@ namespace ModernAutoClicker.Advanced
                         for (int sr = 0; sr < scriptReps; sr++)
                         {
                             if (!_isRunning) break;
-                            ExecuteStepList(subSteps, subProfilesMap, freeMouseMode, randIntervalMs, randJitterPx, smoothMouseMove);
+                            ExecuteStepList(subSteps, subProfilesMap, randIntervalMs, randJitterPx, smoothMouseMove);
                         }
                     }
                     finally
@@ -565,7 +571,7 @@ namespace ModernAutoClicker.Advanced
                 if (jumpAction == -2 && matched && samplePt != Point.Empty)
                 {
                     // Click Target: only an area search found a spot of its own
-                    ClickFoundSpot(step, isArea ? ActionExecutor.ResolveScreenPointToRelative(step, samplePt) : step.StartPoint, i, freeMouseMode, randIntervalMs, randJitterPx);
+                    ClickFoundSpot(step, isArea ? ActionExecutor.ResolveScreenPointToRelative(step, samplePt) : step.StartPoint, i, randIntervalMs, randJitterPx);
                 }
 
                 int targetIdx = GetJumpTarget(jumpAction, i);
@@ -575,7 +581,7 @@ namespace ModernAutoClicker.Advanced
                     int actualDelay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
                     if (actualDelay > 0 && _isRunning)
                     {
-                        if (smoothMouseMove && !freeMouseMode && actualDelay > 20)
+                        if (smoothMouseMove && !_freeMouseMode && actualDelay > 20)
                         {
                             Point nextTarget = Point.Empty;
                             int previewIdx = (targetIdx >= stepList.Count) ? 0 : targetIdx;
@@ -645,7 +651,7 @@ namespace ModernAutoClicker.Advanced
                 if (jumpAction == -2 && matched && foundCenter != Point.Empty)
                 {
                     // Click Center of the matched template image
-                    ClickFoundSpot(step, ActionExecutor.ResolveScreenPointToRelative(step, foundCenter), i, freeMouseMode, randIntervalMs, randJitterPx);
+                    ClickFoundSpot(step, ActionExecutor.ResolveScreenPointToRelative(step, foundCenter), i, randIntervalMs, randJitterPx);
                 }
 
                 int targetIdx = GetJumpTarget(jumpAction, i);
@@ -765,12 +771,12 @@ namespace ModernAutoClicker.Advanced
             {
                 if (!_isRunning || !EnsureStepTarget(step, i)) break;
 
-                ActionExecutor.Execute(step, freeMouseMode, randIntervalMs, randJitterPx);
+                ActionExecutor.Execute(step, _freeMouseMode, randIntervalMs, randJitterPx);
 
                 int actualDelay = ActionExecutor.ApplyDelayInterval(step.DelayMs, randIntervalMs);
                 if (actualDelay > 0 && _isRunning)
                 {
-                    if (smoothMouseMove && !freeMouseMode && actualDelay > 20)
+                    if (smoothMouseMove && !_freeMouseMode && actualDelay > 20)
                     {
                         Point nextTarget = Point.Empty;
                         if (r < repeats - 1)

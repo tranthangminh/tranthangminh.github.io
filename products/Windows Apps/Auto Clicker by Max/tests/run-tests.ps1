@@ -5,7 +5,7 @@ Runs the Auto Clicker tests. See README.md.
   .\run-tests.ps1 -Group ui,popup      several groups
   .\run-tests.ps1 -Changed             the groups for the files changed in git
   .\run-tests.ps1 -All                 everything (before a commit or a release)
-  .\run-tests.ps1 -Tool PageShot       a tool: PageShot, RepeatClick, Speed
+  .\run-tests.ps1 -Tool PageShot       a tool: PageShot, RepeatClick, Speed, BrowserFocus
   -NoMouse                             skip the suites that move the real mouse
 #>
 param(
@@ -253,7 +253,7 @@ function Groups-ForChanges {
         if ($n -match '/(MainForm|UI_|Localization/|Simple/UI_|Advanced/UI_|Feature_MapOverlay|Feature_MoveAndScale)') { [void]$set.Add('ui'); continue }
         if ($n -match '/(Simple/Engine_|Advanced/Engine_|Advanced/Core_|Feature_ActionRecorder|Core_RecordedTextBuffer|Core_CancellableSleep|Core_SmoothMouseMove|Core_PixelSampler)') { [void]$set.Add('engine'); continue }
         if ($n -match '/(Storage_|Advanced/Storage_|Advanced/Model_)') { [void]$set.Add('storage'); [void]$set.Add('engine'); continue }
-        if ($n -match '/(Core_NativeMethods|Core_Target|Feature_CoordinatePicker|SpecialApps/)') { [void]$set.Add('target'); [void]$set.Add('engine'); continue }
+        if ($n -match '/(Core_NativeMethods|Core_Target|Core_FocusGuard|Feature_CoordinatePicker|SpecialApps/)') { [void]$set.Add('target'); [void]$set.Add('engine'); continue }
         return $allGroups
     }
     if ($set.Count -eq 0) { Say "No app or test file changed." Yellow }
@@ -281,7 +281,12 @@ function Run-Tool($name) {
             Compile (Join-Path $tests "tools\SpeedTest.cs") $bin 'exe' @((Join-Path $dir "Auto Clicker by Max.exe"))
             & $bin $shared; Stop-Leftovers
         }
-        default { Say "Unknown tool '$name'. Tools: PageShot, RepeatClick, Speed" Red }
+        'BrowserFocus' {
+            $dir = Prepare-Dir 'BrowserFocus'; $bin = Join-Path $dir "BrowserFocus.exe"
+            Compile (Join-Path $tests "tools\BrowserFocus.cs") $bin 'exe' @((Join-Path $dir "Auto Clicker by Max.exe"))
+            & $bin $dir
+        }
+        default { Say "Unknown tool '$name'. Tools: PageShot, RepeatClick, Speed, BrowserFocus" Red }
     }
 }
 

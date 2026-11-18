@@ -267,27 +267,19 @@ function setTransformModeValue(nextValue) {
 
 
 function collectMineTabPersistedSettings() {
-  const mineResetMenuSection = getElement("mineResetMenuSection");
-  const mineTransformSection = getElement("mineTransformSection");
-  const settings = {};
+  const settings = {
+    minePart1Enabled: getMinePartEnabled("minePart1Enabled"),
+    minePart2Enabled: getMinePartEnabled("minePart2Enabled"),
+    minePart3Enabled: getMinePartEnabled("minePart3Enabled"),
+    minePart4Enabled: getMinePartEnabled("minePart4Enabled"),
+    mineTransformMode: getTransformMode(),
+    mineTransformCenterEnabled: getMinePartEnabled("mineTransformCenterEnabled")
+  };
 
-  if (mineResetMenuSection) {
-    settings.mineResetMenuCollapsed = mineResetMenuSection.classList.contains("is-collapsed");
-    settings.minePart1Enabled = getMinePartEnabled("minePart1Enabled");
-    settings.minePart2Enabled = getMinePartEnabled("minePart2Enabled");
-    settings.minePart3Enabled = getMinePartEnabled("minePart3Enabled");
-    settings.minePart4Enabled = getMinePartEnabled("minePart4Enabled");
-  }
-
-  if (mineTransformSection) {
-    settings.mineTransformCollapsed = mineTransformSection.classList.contains("is-collapsed");
-    settings.mineTransformMode = getTransformMode();
-    const widthInput = getElement("mineTransformWidth");
-    const heightInput = getElement("mineTransformHeight");
-    if (widthInput) settings.mineTransformWidth = widthInput.value;
-    if (heightInput) settings.mineTransformHeight = heightInput.value;
-    settings.mineTransformCenterEnabled = !!(getElement("mineTransformCenterEnabled") && getElement("mineTransformCenterEnabled").checked);
-  }
+  const widthInput = getElement("mineTransformWidth");
+  const heightInput = getElement("mineTransformHeight");
+  if (widthInput) settings.mineTransformWidth = widthInput.value;
+  if (heightInput) settings.mineTransformHeight = heightInput.value;
 
   return settings;
 }
@@ -295,10 +287,6 @@ function collectMineTabPersistedSettings() {
 function applyMineTabSavedSettings(savedSettings) {
   if (!savedSettings) {
     return;
-  }
-
-  if (typeof savedSettings.mineResetMenuCollapsed === "boolean" && getElement("mineResetMenuSection")) {
-    syncCollapsibleSectionState("mineResetMenuSection", "mineResetMenuToggleBtn", "mineResetMenuToggleIcon", savedSettings.mineResetMenuCollapsed);
   }
 
   if (typeof savedSettings.minePart1Enabled === "boolean" && getElement("minePart1Enabled")) {
@@ -315,10 +303,6 @@ function applyMineTabSavedSettings(savedSettings) {
 
   if (typeof savedSettings.minePart4Enabled === "boolean" && getElement("minePart4Enabled")) {
     getElement("minePart4Enabled").checked = savedSettings.minePart4Enabled;
-  }
-
-  if (typeof savedSettings.mineTransformCollapsed === "boolean" && getElement("mineTransformSection")) {
-    syncCollapsibleSectionState("mineTransformSection", "mineTransformToggleBtn", "mineTransformToggleIcon", savedSettings.mineTransformCollapsed);
   }
 
   if (typeof savedSettings.mineTransformMode === "string" && getElement("mineTransformModeBoth")) {
@@ -409,14 +393,9 @@ function bindMineTabHandlers(saveHandler) {
 
     toggle.setAttribute("data-mine-bound", "true");
     toggle.addEventListener("click", function () {
-      const isCollapsed = steps.classList.contains("is-collapsed");
-      if (isCollapsed) {
-        steps.classList.remove("is-collapsed");
-        icon.textContent = "[-]";
-      } else {
-        steps.classList.add("is-collapsed");
-        icon.textContent = "[+]";
-      }
+      const willCollapse = !steps.classList.contains("is-collapsed");
+      steps.classList.toggle("is-collapsed", willCollapse);
+      setSharedIcon(icon, willCollapse ? "plus" : "minus");
     });
   };
 
@@ -442,40 +421,8 @@ function bindMineTabHandlers(saveHandler) {
   bindInput("mineTransformWidth");
   bindInput("mineTransformHeight");
 
-  if (getElement("mineResetMenuToggleBtn") && getElement("mineResetMenuToggleBtn").getAttribute("data-mine-bound") !== "true") {
-    getElement("mineResetMenuToggleBtn").setAttribute("data-mine-bound", "true");
-    bindCollapsibleToggle("mineResetMenuToggleBtn", "mineResetMenuSection", "mineResetMenuToggleIcon", saveHandler);
-  }
-
-  if (getElement("mineTransformToggleBtn") && getElement("mineTransformToggleBtn").getAttribute("data-mine-bound") !== "true") {
-    getElement("mineTransformToggleBtn").setAttribute("data-mine-bound", "true");
-    bindCollapsibleToggle("mineTransformToggleBtn", "mineTransformSection", "mineTransformToggleIcon", saveHandler);
-  }
-
   // Ensure input disabled states match the active radio button on binding
   setTransformModeValue(getTransformMode());
-}
-
-function syncMineTabRuntimeState() {
-  const mineResetMenuSection = getElement("mineResetMenuSection");
-  if (mineResetMenuSection) {
-    syncCollapsibleSectionState(
-      "mineResetMenuSection",
-      "mineResetMenuToggleBtn",
-      "mineResetMenuToggleIcon",
-      mineResetMenuSection.classList.contains("is-collapsed")
-    );
-  }
-
-  const mineTransformSection = getElement("mineTransformSection");
-  if (mineTransformSection) {
-    syncCollapsibleSectionState(
-      "mineTransformSection",
-      "mineTransformToggleBtn",
-      "mineTransformToggleIcon",
-      mineTransformSection.classList.contains("is-collapsed")
-    );
-  }
 }
 
 function bootstrapStandaloneMineTab() {
@@ -484,7 +431,6 @@ function bootstrapStandaloneMineTab() {
   }
 
   bindMineTabHandlers(function () {});
-  syncMineTabRuntimeState();
 }
 
 if (document.readyState === "loading") {

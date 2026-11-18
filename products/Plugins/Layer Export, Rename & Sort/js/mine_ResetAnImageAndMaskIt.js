@@ -207,14 +207,14 @@ async function mine_ResetAnImageAndMaskIt(runtime) {
             } catch (e) {}
           }
         }
-      }, "Reset an Image & Mask it");
+      }, "Reset an Image & Mask Subject");
 
       // If all selected layers failed, throw a general error to enter the catch block
       if (successCount === 0 && totalCount > 0) {
         throw new Error("All selected layers failed to process.");
       }
     }, {
-      commandName: "Reset an Image & Mask it"
+      commandName: "Reset an Image & Mask Subject"
     });
 
     // Outside the modal, show success / failure details
@@ -230,9 +230,9 @@ async function mine_ResetAnImageAndMaskIt(runtime) {
     }
   } catch (error) {
     if (totalCount <= 1 && errors.length === 1) {
-      await showMineMessage("Reset an Image & Mask it failed for '" + errors[0].name + "': " + errors[0].message);
+      await showMineMessage("Reset an Image & Mask Subject failed for '" + errors[0].name + "': " + errors[0].message);
     } else {
-      await showMineMessage("Reset an Image & Mask it failed: " + formatMineError(error));
+      await showMineMessage("Reset an Image & Mask Subject failed: " + formatMineError(error));
     }
   }
 }

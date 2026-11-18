@@ -1,0 +1,449 @@
+/* ==========================================================================
+   (M) ĐỒNG BỘ DSKH - STYLE RIÊNG
+   Khung cửa sổ, toolbar, bảng Excel, toast dùng chung: common/tool-base.css
+   ========================================================================== */
+
+/* Thanh tab nguồn dưới header; tab Đồng bộ đứng riêng bên phải */
+.dskh-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 6px 16px 0;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.dskh-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  margin-bottom: -1px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px 6px 0 0;
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dskh-tab:hover {
+  color: var(--text-primary);
+  border-color: var(--gold-primary);
+}
+
+.dskh-tab.active {
+  background-color: var(--bg-primary);
+  border-color: var(--gold-primary);
+  border-bottom-color: var(--bg-primary);
+  color: var(--gold-primary);
+}
+
+.dskh-tab-sync {
+  margin-left: auto;
+}
+
+/* Nút + thêm tab chi nhánh */
+.dskh-tab.dskh-tab-add {
+  padding: 0 12px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* Ô nhập tên chi nhánh mới: "DSKH-" cố định + ô gõ tên + dòng xem trước tiền tố / lý do lỗi */
+.dskh-new-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 10px;
+  margin-bottom: -1px;
+  border: 1px solid var(--gold-primary);
+  border-radius: 6px 6px 0 0;
+  background-color: var(--bg-primary);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.dskh-new-tab-prefix {
+  color: var(--gold-primary);
+}
+
+.dskh-new-tab-input {
+  width: 100px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+}
+
+.dskh-new-tab-input:focus {
+  border-color: var(--gold-primary);
+}
+
+.dskh-new-tab-hint {
+  margin-left: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dskh-new-tab-hint.is-alert {
+  color: var(--c-red);
+}
+
+/* Giữ nguyên chiều cao toolbar khi tab Đồng bộ ẩn nút Dán / Xóa trắng (cao bằng nút icon 32px + padding + viền) */
+.dskh-toolbar {
+  min-height: 45px;
+}
+
+/* Số khách hàng trên tab */
+.dskh-tab-count {
+  padding: 0 6px;
+  border-radius: 10px;
+  background-color: var(--c-yellow-bg);
+  color: var(--gold-primary);
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dòng tổng số khách: bề ngang cố định (vừa "Đang hiện 99.999 / 99.999 KH") để bộ lọc bên cạnh không nhảy chỗ khi tick */
+#tabSummary {
+  display: inline-block;
+  width: 175px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Báo cột thiếu trong dữ liệu dán (rê chuột xem tên cột) */
+.dskh-missing {
+  color: var(--c-red);
+  font-weight: 600;
+  cursor: help;
+}
+
+/* Bảng nhiều cột: rộng theo tổng độ rộng cột (COL_WIDTHS trong JS), cuộn ngang; ô 1 dòng, dài thì "..." (rê chuột xem đủ).
+   Tiêu đề khít: xuống tối đa 2 dòng ở khoảng trắng, dài hơn thì "..." */
+.excel-table.dskh-table {
+  width: auto;
+}
+
+.excel-table.dskh-table thead th {
+  padding: 4px 6px;
+  line-height: 1.25;
+  vertical-align: middle;
+}
+
+.dskh-th-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.excel-table.dskh-table tbody td.td-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 4px 6px;
+}
+
+/* Cố định cột: cột # luôn đứng yên; N cột đầu đứng yên theo nút "Cố định" (JS đặt left từng cột).
+   Cột cố định cuối có vạch ranh giới (.dskh-freeze-edge) giống vạch xám của Google Sheet */
+.dskh-table .dskh-sticky {
+  position: sticky;
+  z-index: 2;
+}
+
+.dskh-table thead th.dskh-sticky {
+  z-index: 12;
+}
+
+.dskh-table .dskh-sticky-num {
+  left: 0;
+}
+
+.dskh-table .dskh-freeze-edge,
+.dskh-table thead th.dskh-freeze-edge {
+  box-shadow: inset -2px 0 0 color-mix(in srgb, var(--text-secondary) 55%, transparent), 3px 0 4px rgba(0, 0, 0, 0.18);
+}
+
+/* Cột Mã khách hàng chữ đậm */
+.dskh-table tbody td.dskh-code {
+  font-weight: 700;
+}
+
+/* Nút + menu Cố định trên toolbar */
+.dskh-freeze {
+  position: relative;
+}
+
+.dskh-freeze-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 50;
+  min-width: 230px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 4px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.dskh-freeze-menu[hidden] {
+  display: none;
+}
+
+.dskh-freeze-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dskh-freeze-item:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+}
+
+.dskh-freeze-item.is-current {
+  color: var(--gold-primary);
+}
+
+.dskh-freeze-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dskh-freeze-mark {
+  width: 12px;
+  flex-shrink: 0;
+  color: var(--c-green);
+  font-weight: 800;
+}
+
+/* Màu sáng dòng (tool-base.css) trong suốt: ô dính phải giữ nền đặc để chữ cuộn ngang không lộ ra dưới */
+.dskh-table.excel-table tbody tr.excel-row:hover td.dskh-sticky {
+  background-color: var(--bg-card) !important;
+  background-image: linear-gradient(rgba(229, 193, 88, 0.22), rgba(229, 193, 88, 0.22));
+}
+
+.dskh-table.excel-table tbody tr.excel-row:hover td.td-num.dskh-sticky {
+  background-color: var(--bg-secondary) !important;
+  background-image: linear-gradient(rgba(229, 193, 88, 0.35), rgba(229, 193, 88, 0.35));
+}
+
+/* Tab Đồng bộ - ô mã ở từng tab: tìm thấy = chữ vàng gạch chân, bấm để nhảy tới dòng; không thấy = chữ mờ */
+.excel-table.dskh-table tbody td.dskh-ref.is-found {
+  color: var(--gold-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.excel-table.dskh-table tbody td.dskh-ref.is-found:hover {
+  color: var(--gold-light);
+}
+
+/* Chỉ làm mờ màu chữ, không dùng opacity cho cả ô (ô cố định trong suốt sẽ lộ chữ cột cuộn phía sau) */
+.excel-table.dskh-table tbody td.dskh-ref.is-missing {
+  color: color-mix(in srgb, var(--text-secondary) 55%, transparent);
+}
+
+/* Tab Đồng bộ - ô gộp 💎 (khách mới, chỉ 1 giá trị): chữ xanh dương */
+.excel-table.dskh-table tbody td.dskh-merge.is-new {
+  color: var(--c-blue);
+}
+
+/* Ô gộp ⁉️ (giá trị khác nhau): chữ vàng, mỗi giá trị 1 dòng "✓ nguồn giá trị", bấm dòng để chọn */
+.excel-table.dskh-table tbody td.dskh-merge.is-changed {
+  padding: 2px;
+  color: var(--gold-primary);
+}
+
+/* Đã chọn tay (khác lựa chọn của công thức): viền vàng đứt nét */
+.excel-table.dskh-table tbody td.dskh-merge.is-manual {
+  outline: 1px dashed var(--gold-primary);
+  outline-offset: -3px;
+}
+
+.dskh-opt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.dskh-opt:hover {
+  background-color: var(--c-yellow-bg);
+  opacity: 1;
+}
+
+.dskh-opt.is-picked {
+  font-weight: 700;
+  opacity: 1;
+}
+
+.dskh-opt-mark {
+  width: 11px;
+  flex-shrink: 0;
+  color: var(--c-green);
+  font-weight: 800;
+}
+
+.dskh-opt-src {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.dskh-opt-val {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ô số (Điểm, SL đơn hàng, Tổng chi tiêu, Tổng SL mua / hoàn trả): căn phải, số đều cột.
+   Điểm ⚠️ (nâng theo Tổng chi tiêu): chữ cam; Điểm ➕ (khác 🛑DSKH): chữ xanh lá */
+.excel-table.dskh-table tbody td.dskh-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.excel-table.dskh-table tbody td.dskh-num.is-raised {
+  color: var(--c-orange);
+  font-weight: 700;
+}
+
+.excel-table.dskh-table tbody td.dskh-num.is-plus {
+  color: var(--c-green);
+  font-weight: 700;
+}
+
+/* Ô Điện thoại trùng khách khác: viền đỏ (rê chuột xem mã trùng) */
+.excel-table.dskh-table tbody td.dskh-dup {
+  box-shadow: inset 0 0 0 1.5px var(--c-red);
+}
+
+/* Bộ lọc tab Đồng bộ: ô tick + số dòng */
+.dskh-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-left: 6px;
+}
+
+.dskh-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dskh-filter input {
+  accent-color: var(--gold-primary);
+  cursor: pointer;
+}
+
+.dskh-filter.is-on {
+  color: var(--text-primary);
+}
+
+.dskh-filter-count {
+  color: var(--gold-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Nút Nhập vào 🛑DSKH */
+.btn-action.dskh-btn-import {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+}
+
+/* Thanh Hoàn tác sau khi nhập (10 giây) */
+.dskh-undo-bar {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 6px 16px;
+  background-color: #1e293b;
+  color: #f8fafc;
+  border: 1px solid var(--gold-primary);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dskh-undo-bar[hidden] {
+  display: none;
+}
+
+/* Dòng vừa nhảy tới từ tab Đồng bộ: nháy sáng rồi tắt dần */
+.excel-table.dskh-table tbody tr.dskh-row-flash td {
+  animation: dskhRowFlash 1.8s ease-out;
+}
+
+@keyframes dskhRowFlash {
+  0%, 30% { background-color: rgba(229, 193, 88, 0.45); }
+  100% { background-color: var(--bg-card); }
+}
+
+/* Chưa có dữ liệu */
+.dskh-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.5;
+}

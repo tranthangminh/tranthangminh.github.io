@@ -2,380 +2,331 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/shared.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/mine-tab.css">
   </head>
   <body>
     <div class="panel-shell">
-      <!-- Top Tabs -->
-      <div class="shared-tabs" role="tablist" aria-label="Main sections">
-        <button id="toolsTabBtn" class="shared-tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="toolsTabPanel" aria-label="Tools" title="Tools" data-shared-tab-group="mainPanelTabs" data-shared-tab-value="tools" data-shared-tab-panel="toolsTabPanel">
+      <!-- Top Tabs: one tool per tab -->
+      <div class="shared-tabs" role="tablist" aria-label="Tools">
+        <div id="exportTabBtn" class="shared-tab-button is-active" role="tab" tabindex="0" aria-selected="true" aria-controls="exportTabPanel" title="Export Selected Layers" data-shared-tab-group="mainPanelTabs" data-shared-tab-value="export" data-shared-tab-panel="exportTabPanel">
           <div class="shared-tab-surface" aria-hidden="true"></div>
-          <img class="shared-tab-image" src="icons/Layer.png" alt="Tools">
-        </button>
-        <button id="mineTabBtn" class="shared-tab-button" type="button" role="tab" aria-selected="false" aria-controls="mineTabPanel" aria-label="Mine" title="Mine" data-shared-tab-group="mainPanelTabs" data-shared-tab-value="mine" data-shared-tab-panel="mineTabPanel">
+          <div class="shared-tab-label">Export</div>
+        </div>
+        <div id="renameTabBtn" class="shared-tab-button" role="tab" tabindex="-1" aria-selected="false" aria-controls="renameTabPanel" title="Rename Selected Layers" data-shared-tab-group="mainPanelTabs" data-shared-tab-value="rename" data-shared-tab-panel="renameTabPanel">
+          <div class="shared-tab-surface" aria-hidden="true"></div>
+          <div class="shared-tab-label">Rename</div>
+        </div>
+        <div id="sortTabBtn" class="shared-tab-button" role="tab" tabindex="-1" aria-selected="false" aria-controls="sortTabPanel" title="Sort Layers" data-shared-tab-group="mainPanelTabs" data-shared-tab-value="sort" data-shared-tab-panel="sortTabPanel">
+          <div class="shared-tab-surface" aria-hidden="true"></div>
+          <div class="shared-tab-label">Sort</div>
+        </div>
+        <div id="mineTabBtn" class="shared-tab-button" role="tab" tabindex="-1" aria-selected="false" aria-controls="mineTabPanel" title="Mine" data-shared-tab-group="mainPanelTabs" data-shared-tab-value="mine" data-shared-tab-panel="mineTabPanel">
           <div class="shared-tab-surface" aria-hidden="true"></div>
           <div class="shared-tab-label">Mine</div>
-        </button>
-        <button id="aboutTabBtn" class="shared-tab-button" type="button" role="tab" aria-selected="false" aria-controls="aboutTabPanel" aria-label="About Me" title="About Me" data-shared-tab-group="mainPanelTabs" data-shared-tab-value="about" data-shared-tab-panel="aboutTabPanel">
+        </div>
+        <div id="aboutTabBtn" class="shared-tab-button shared-tab-button-icon" role="tab" tabindex="-1" aria-selected="false" aria-controls="aboutTabPanel" aria-label="About Me" title="About Me" data-shared-tab-group="mainPanelTabs" data-shared-tab-value="about" data-shared-tab-panel="aboutTabPanel">
           <div class="shared-tab-surface" aria-hidden="true"></div>
-          <img class="shared-tab-image" src="icons/About Me.png" alt="About Me">
-        </button>
+          <span class="shared-icon shared-tab-icon" data-icon="info" aria-hidden="true"></span>
+        </div>
       </div>
 
-      <!-- Layer Tab -->
-      <div id="toolsTabPanel" class="shared-tab-panel" role="tabpanel" aria-labelledby="toolsTabBtn">
-        <!-- Export as Layer Name -->
-        <div class="controls section-collapsible is-collapsed" id="exportMenuSection">
-          <div class="section-header-row">
-            <div id="exportMenuToggleBtn" class="section-toggle section-toggle-primary" role="button" tabindex="0" aria-expanded="true">
-              <div class="section-toggle-text section-toggle-text-main">Export as Layer Name</div>
-              <div class="section-toggle-icon section-toggle-icon-main" id="exportMenuToggleIcon">-</div>
+      <!-- Export Selected Layers -->
+      <div id="exportTabPanel" class="shared-tab-panel" role="tabpanel" aria-labelledby="exportTabBtn">
+        <div class="tool-title">Export Selected Layers</div>
+        <div class="tool-body">
+          <div class="tool-label">File Type</div>
+          <div class="tool-section">
+            <div class="filetype-grid">
+              <div class="format-row shared-choice" id="jpgRow" data-input-id="jpgEnabled" role="checkbox" tabindex="0" aria-checked="false">
+                <input id="jpgEnabled" class="shared-choice-input" type="checkbox">
+                <div class="format-name">JPG</div>
+                <div class="format-main">
+                  <div class="metric-line">
+                    <div class="metric-label" id="jpgQualityValue">Quality: 10</div>
+                  </div>
+                  <div id="jpgQualitySlider" class="shared-slider" data-input-id="jpgQuality" role="slider" tabindex="0" aria-label="JPG Quality">
+                    <div class="shared-slider-track">
+                      <div class="shared-slider-fill"></div>
+                      <div class="shared-slider-thumb"></div>
+                    </div>
+                  </div>
+                  <input id="jpgQuality" class="shared-slider-input" type="range" min="1" max="12" step="1" value="10">
+                </div>
+              </div>
+
+              <div class="format-row shared-choice" id="pngRow" data-input-id="pngEnabled" role="checkbox" tabindex="0" aria-checked="true">
+                <input id="pngEnabled" class="shared-choice-input" type="checkbox" checked>
+                <div class="format-name">PNG</div>
+                <div class="format-main">
+                  <div class="metric-line">
+                    <div class="metric-label" id="pngCompressionValue">Compression: 9</div>
+                  </div>
+                  <div id="pngCompressionSlider" class="shared-slider" data-input-id="pngCompression" role="slider" tabindex="0" aria-label="PNG Compression">
+                    <div class="shared-slider-track">
+                      <div class="shared-slider-fill"></div>
+                      <div class="shared-slider-thumb"></div>
+                    </div>
+                  </div>
+                  <input id="pngCompression" class="shared-slider-input" type="range" min="0" max="9" step="1" value="9">
+                </div>
+              </div>
+
+              <div class="format-row shared-choice" id="webpRow" data-input-id="webpEnabled" role="checkbox" tabindex="0" aria-checked="false">
+                <input id="webpEnabled" class="shared-choice-input" type="checkbox">
+                <div class="format-name">WebP</div>
+                <div class="format-main">
+                  <div class="mode-line">
+                    <div id="webpMode" class="shared-segment" role="radiogroup" aria-label="WebP Mode" data-value="lossy">
+                      <div class="shared-segment-option" role="radio" tabindex="0" data-value="lossy">Lossy</div>
+                      <div class="shared-segment-option" role="radio" tabindex="0" data-value="lossless">Lossless</div>
+                    </div>
+                  </div>
+                  <div class="metric-line">
+                    <div class="metric-label" id="webpQualityValue">Quality: 80</div>
+                  </div>
+                  <div id="webpQualitySlider" class="shared-slider" data-input-id="webpQuality" role="slider" tabindex="0" aria-label="WebP Quality">
+                    <div class="shared-slider-track">
+                      <div class="shared-slider-fill"></div>
+                      <div class="shared-slider-thumb"></div>
+                    </div>
+                  </div>
+                  <input id="webpQuality" class="shared-slider-input" type="range" min="0" max="100" step="5" value="80">
+                </div>
+              </div>
+
+              <div class="format-row shared-choice" id="psdRow" data-input-id="psdEnabled" role="checkbox" tabindex="0" aria-checked="false">
+                <input id="psdEnabled" class="shared-choice-input" type="checkbox">
+                <div class="format-name">PSD</div>
+                <div class="format-main">
+                  <div class="mode-line">
+                    <div id="psdMode" class="shared-segment" role="radiogroup" aria-label="PSD Mode" data-value="flattened">
+                      <div class="shared-segment-option" role="radio" tabindex="0" data-value="flattened">Flat</div>
+                      <div class="shared-segment-option" role="radio" tabindex="0" data-value="layers">Layers</div>
+                    </div>
+                  </div>
+                  <div class="option-line shared-choice shared-check shared-check-small" data-input-id="psdMaxCompatibility" role="checkbox" tabindex="0" aria-checked="true">
+                    <input id="psdMaxCompatibility" class="shared-choice-input" type="checkbox" checked>
+                    <div class="shared-check-box"><div class="shared-check-mark"></div></div>
+                    <div class="option-label">Max Compatibility</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="format-row shared-choice" id="tiffRow" data-input-id="tiffEnabled" role="checkbox" tabindex="0" aria-checked="false">
+                <input id="tiffEnabled" class="shared-choice-input" type="checkbox">
+                <div class="format-name">TIFF</div>
+                <div class="format-main">
+                  <div class="mode-line">
+                    <div id="tiffCompression" class="shared-segment" role="radiogroup" aria-label="TIFF Compression" data-value="lzw">
+                      <div class="shared-segment-option" role="radio" tabindex="0" data-value="lzw">LZW</div>
+                      <div class="shared-segment-option" role="radio" tabindex="0" data-value="none">None</div>
+                    </div>
+                  </div>
+                  <div class="option-line shared-choice shared-check shared-check-small" data-input-id="tiffTransparency" role="checkbox" tabindex="0" aria-checked="true">
+                    <input id="tiffTransparency" class="shared-choice-input" type="checkbox" checked>
+                    <div class="shared-check-box"><div class="shared-check-mark"></div></div>
+                    <div class="option-label">Save Transparency</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="format-row shared-choice" id="bmpRow" data-input-id="bmpEnabled" role="checkbox" tabindex="0" aria-checked="false">
+                <input id="bmpEnabled" class="shared-choice-input" type="checkbox">
+                <div class="format-name">BMP</div>
+                <div class="format-main">
+                  <div class="mode-line">
+                    <div id="bmpDepth" class="shared-segment" role="radiogroup" aria-label="BMP Depth" data-value="24">
+                      <div class="shared-segment-option" role="radio" tabindex="0" data-value="24">24-bit</div>
+                      <div class="shared-segment-option" role="radio" tabindex="0" data-value="32">32-bit</div>
+                    </div>
+                  </div>
+                  <div class="option-line shared-choice shared-check shared-check-small" data-input-id="bmpAlphaChannels" role="checkbox" tabindex="0" aria-checked="false">
+                    <input id="bmpAlphaChannels" class="shared-choice-input" type="checkbox">
+                    <div class="shared-check-box"><div class="shared-check-mark"></div></div>
+                    <div class="option-label">Alpha Channels</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <button id="exportMenuInfoBtn" class="section-info-button" type="button" aria-label="About Export as Layer Name" title="About Export as Layer Name">i</button>
           </div>
-          <div class="controls-body">
-            <div class="section section-block section-collapsible" id="fileTypeSection">
-              <div id="fileTypeToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
-                <div class="section-toggle-text">File Type</div>
-                <div class="section-toggle-icon" id="fileTypeToggleIcon">-</div>
-              </div>
-              <div class="section-body filetype-grid">
-                <div class="format-row" id="jpgRow">
-                  <div class="format-toggle">
-                    <input id="jpgEnabled" class="format-checkbox" type="checkbox">
-                    <label class="format-name" for="jpgEnabled">JPG</label>
-                  </div>
-                  <div class="format-main">
-                    <div class="metric-line">
-                      <div class="metric-label" id="jpgQualityValue">Quality: 10</div>
-                    </div>
-                    <div id="jpgQualitySlider" class="shared-slider" data-input-id="jpgQuality" role="slider" tabindex="0" aria-label="JPG Quality">
-                      <div class="shared-slider-track">
-                        <div class="shared-slider-fill"></div>
-                        <div class="shared-slider-thumb"></div>
-                      </div>
-                    </div>
-                    <input id="jpgQuality" class="shared-slider-input" type="range" min="1" max="12" step="1" value="10">
-                  </div>
-                </div>
 
-                <div class="format-row" id="pngRow">
-                  <div class="format-toggle">
-                    <input id="pngEnabled" class="format-checkbox" type="checkbox" checked>
-                    <label class="format-name" for="pngEnabled">PNG</label>
-                  </div>
-                  <div class="format-main">
-                    <div class="metric-line">
-                      <div class="metric-label" id="pngCompressionValue">Compression: 9</div>
-                    </div>
-                    <div id="pngCompressionSlider" class="shared-slider" data-input-id="pngCompression" role="slider" tabindex="0" aria-label="PNG Compression">
-                      <div class="shared-slider-track">
-                        <div class="shared-slider-fill"></div>
-                        <div class="shared-slider-thumb"></div>
-                      </div>
-                    </div>
-                    <input id="pngCompression" class="shared-slider-input" type="range" min="0" max="9" step="1" value="9">
-                  </div>
-                </div>
+          <div class="tool-label">File Name</div>
+          <div class="tool-section field-row">
+            <div class="field">
+              <div class="shared-field" data-input-id="prefixInput"><input id="prefixInput" class="shared-field-input" type="text" placeholder="Prefix"><div class="shared-field-view"></div></div>
+            </div>
+            <div class="field">
+              <div class="shared-field" data-input-id="suffixInput"><input id="suffixInput" class="shared-field-input" type="text" placeholder="Suffix"><div class="shared-field-view"></div></div>
+            </div>
+          </div>
 
-                <div class="format-row" id="webpRow">
-                  <div class="format-toggle">
-                    <input id="webpEnabled" class="format-checkbox" type="checkbox">
-                    <label class="format-name" for="webpEnabled">WebP</label>
-                  </div>
-                  <div class="format-main">
-                    <div class="mode-line">
-                      <button id="webpMode" class="mode-button" type="button" data-value="lossy">Lossy</button>
-                    </div>
-                    <div class="metric-line">
-                      <div class="metric-label" id="webpQualityValue">Quality: 80</div>
-                    </div>
-                    <div id="webpQualitySlider" class="shared-slider" data-input-id="webpQuality" role="slider" tabindex="0" aria-label="WebP Quality">
-                      <div class="shared-slider-track">
-                        <div class="shared-slider-fill"></div>
-                        <div class="shared-slider-thumb"></div>
-                      </div>
-                    </div>
-                    <input id="webpQuality" class="shared-slider-input" type="range" min="0" max="100" step="5" value="80">
-                  </div>
-                </div>
+          <div class="tool-label">Location</div>
+          <div class="tool-section">
+            <div class="shared-field" data-input-id="locationInput"><input id="locationInput" class="shared-field-input" type="text" placeholder="Using Current Document Folder"><div class="shared-field-view"></div></div>
+            <div class="button-row">
+              <div id="changeLocationBtn" class="app-button shared-button" role="button" tabindex="0" title="Choose an export folder">Change</div>
+              <div id="defaultLocationBtn" class="app-button shared-button" role="button" tabindex="0" title="Reset the export location to the current document folder">Default</div>
+            </div>
+          </div>
 
-                <div class="format-row" id="psdRow">
-                  <div class="format-toggle">
-                    <input id="psdEnabled" class="format-checkbox" type="checkbox">
-                    <label class="format-name" for="psdEnabled">PSD</label>
-                  </div>
-                  <div class="format-main">
-                    <div class="mode-line">
-                      <button id="psdMode" class="mode-button" type="button" data-value="flattened">Flattened</button>
-                    </div>
-                    <label class="option-line" for="psdMaxCompatibility">
-                      <input id="psdMaxCompatibility" class="option-checkbox" type="checkbox" checked>
-                      <div class="option-label">Max Compatibility</div>
-                    </label>
-                  </div>
-                </div>
+          <div class="tool-label">Preview</div>
+          <div class="shared-preview-shell">
+            <pre id="selectionPreview" class="shared-preview-content" tabindex="0">No preview yet.</pre>
+          </div>
+        </div>
+        <div class="tool-actions">
+          <div id="exportMenuInfoBtn" class="app-button app-button-square shared-button" role="button" tabindex="0" aria-label="About Export Selected Layers" title="About Export Selected Layers"><span class="shared-icon" data-icon="info" aria-hidden="true"></span></div>
+          <div id="exportBtn" class="app-button app-button-primary shared-button" role="button" tabindex="0">Export</div>
+        </div>
+      </div>
 
-                <div class="format-row" id="tiffRow">
-                  <div class="format-toggle">
-                    <input id="tiffEnabled" class="format-checkbox" type="checkbox">
-                    <label class="format-name" for="tiffEnabled">TIFF</label>
-                  </div>
-                  <div class="format-main">
-                    <div class="mode-line">
-                      <button id="tiffCompression" class="mode-button" type="button" data-value="lzw">LZW</button>
-                    </div>
-                    <label class="option-line" for="tiffTransparency">
-                      <input id="tiffTransparency" class="option-checkbox" type="checkbox" checked>
-                      <div class="option-label">Save Transparency</div>
-                    </label>
-                  </div>
-                </div>
+      <!-- Rename Selected Layers -->
+      <div id="renameTabPanel" class="shared-tab-panel is-hidden" role="tabpanel" aria-labelledby="renameTabBtn">
+        <div class="tool-body">
+          <div class="option-line-large shared-choice shared-check" data-input-id="renameAllLayersCheckbox" role="checkbox" tabindex="0" aria-checked="false">
+            <input id="renameAllLayersCheckbox" class="shared-choice-input" type="checkbox">
+            <div class="shared-check-box"><div class="shared-check-mark"></div></div>
+            <div class="option-label">Rename all layers in the document</div>
+          </div>
 
-                <div class="format-row" id="bmpRow">
-                  <div class="format-toggle">
-                    <input id="bmpEnabled" class="format-checkbox" type="checkbox">
-                    <label class="format-name" for="bmpEnabled">BMP</label>
-                  </div>
-                  <div class="format-main">
-                    <div class="mode-line">
-                      <button id="bmpDepth" class="mode-button" type="button" data-value="24">24-bit</button>
-                    </div>
-                    <label class="option-line" for="bmpAlphaChannels">
-                      <input id="bmpAlphaChannels" class="option-checkbox" type="checkbox">
-                      <div class="option-label">Alpha Channels</div>
-                    </label>
-                  </div>
-                </div>
+          <div class="tool-section">
+            <div id="renameMode" class="shared-segment shared-segment-large" role="radiogroup" aria-label="Rename Mode" data-value="sequence">
+              <div class="shared-segment-option" role="radio" tabindex="0" data-value="sequence">Sequence</div>
+              <div class="shared-segment-option" role="radio" tabindex="0" data-value="affix">Prefix / Suffix</div>
+              <div class="shared-segment-option" role="radio" tabindex="0" data-value="replace">Replace</div>
+            </div>
+          </div>
+
+          <div class="rename-mode-panel" data-rename-mode="sequence">
+            <div class="tool-section">
+              <div class="field">
+                <div class="field-label">Base Name</div>
+                <div class="shared-field" data-input-id="renameBaseNameInput"><input id="renameBaseNameInput" class="shared-field-input" type="text" placeholder="Base Name" value=""><div class="shared-field-view"></div></div>
               </div>
             </div>
-
-            <div class="section section-block section-collapsible is-collapsed" id="renameSection">
-              <div id="renameToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
-                <div class="section-toggle-text">Rename</div>
-                <div class="section-toggle-icon" id="renameToggleIcon">-</div>
+            <div class="tool-section field-row">
+              <div class="field">
+                <div class="field-label">Start At</div>
+                <div class="shared-field" data-input-id="renameStartInput"><input id="renameStartInput" class="shared-field-input" type="text" value="1"><div class="shared-field-view"></div></div>
               </div>
-              <div class="section-body rename-row">
-                <div class="field">
-                  <input id="prefixInput" class="text-input" type="text" placeholder="Prefix">
-                </div>
-                <div class="field">
-                  <input id="suffixInput" class="text-input" type="text" placeholder="Suffix">
-                </div>
+              <div class="field">
+                <div class="field-label">Step</div>
+                <div class="shared-field" data-input-id="renameStepInput"><input id="renameStepInput" class="shared-field-input" type="text" value="1"><div class="shared-field-view"></div></div>
               </div>
-            </div>
-
-            <div class="section section-block section-collapsible is-collapsed" id="exportLocationSection">
-              <div id="exportLocationToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
-                <div class="section-toggle-text">Export Location</div>
-                <div class="section-toggle-icon" id="exportLocationToggleIcon">-</div>
-              </div>
-              <div class="section-body">
-                <div class="location-field">
-                  <input id="locationInput" class="text-input" type="text" placeholder="Using Current Document Folder">
-                </div>
-                <div class="location-actions">
-                  <button id="changeLocationBtn" class="app-button app-button-secondary" type="button">Change Location</button>
-                  <button id="defaultLocationBtn" class="app-button app-button-secondary" type="button">Default</button>
-                </div>
-                <div class="note-text">Default resets the export location to the current document folder.</div>
+              <div class="field">
+                <div class="field-label">Digits</div>
+                <div class="shared-field" data-input-id="renameDigitsInput"><input id="renameDigitsInput" class="shared-field-input" type="text" value="2"><div class="shared-field-view"></div></div>
               </div>
             </div>
-
-            <div class="section toolbar">
-              <button id="exportBtn" class="app-button app-button-primary" type="button">Export</button>
+            <div class="tool-label">Preview</div>
+            <div class="shared-preview-shell">
+              <pre id="renameLayersPreview" class="shared-preview-content" tabindex="0">1. Layer_1</pre>
             </div>
+          </div>
 
-            <div class="section section-block section-collapsible is-collapsed" id="exportPreviewSection">
-              <div id="exportPreviewToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
-                <div class="section-toggle-text">Preview</div>
-                <div class="section-toggle-icon" id="exportPreviewToggleIcon">-</div>
+          <div class="rename-mode-panel is-hidden" data-rename-mode="affix">
+            <div class="tool-section field-row">
+              <div class="field">
+                <div class="field-label">Prefix</div>
+                <div class="shared-field" data-input-id="renameLayerPrefixInput"><input id="renameLayerPrefixInput" class="shared-field-input" type="text" placeholder="Prefix" value=""><div class="shared-field-view"></div></div>
               </div>
-              <div class="section-body">
-                <div class="shared-preview-shell">
-                  <pre id="selectionPreview" class="shared-preview-content" tabindex="0" contenteditable="true" spellcheck="false">No preview yet.</pre>
-                </div>
+              <div class="field">
+                <div class="field-label">Suffix</div>
+                <div class="shared-field" data-input-id="renameLayerSuffixInput"><input id="renameLayerSuffixInput" class="shared-field-input" type="text" placeholder="Suffix" value=""><div class="shared-field-view"></div></div>
               </div>
+            </div>
+            <div class="tool-label">Preview</div>
+            <div class="shared-preview-shell">
+              <pre id="prefixSuffixPreview" class="shared-preview-content" tabindex="0">1. PrefixLayerSuffix</pre>
+            </div>
+          </div>
+
+          <div class="rename-mode-panel is-hidden" data-rename-mode="replace">
+            <div class="tool-section field-row">
+              <div class="field">
+                <div class="field-label">Find</div>
+                <div class="shared-field" data-input-id="removeTargetInput"><input id="removeTargetInput" class="shared-field-input" type="text" placeholder="Target" value=""><div class="shared-field-view"></div></div>
+              </div>
+              <div class="field">
+                <div class="field-label">Replace With</div>
+                <div class="shared-field" data-input-id="replaceWithInput"><input id="replaceWithInput" class="shared-field-input" type="text" placeholder="Replace With" value=""><div class="shared-field-view"></div></div>
+              </div>
+            </div>
+            <div class="tool-label">Preview</div>
+            <div class="shared-preview-shell">
+              <pre id="removeReplacePreview" class="shared-preview-content" tabindex="0">1. Layer name</pre>
             </div>
           </div>
         </div>
-
-        <!-- Rename Selected Layers -->
-        <div class="controls section-collapsible is-collapsed" id="renameLayersMenuSection">
-          <div id="renameLayersMenuToggleBtn" class="section-toggle section-toggle-primary" role="button" tabindex="0" aria-expanded="true">
-            <div class="section-toggle-text section-toggle-text-main">Rename Selected Layers</div>
-            <div class="section-toggle-icon section-toggle-icon-main" id="renameLayersMenuToggleIcon">-</div>
+        <div class="tool-actions">
+          <div class="rename-mode-actions" data-rename-mode="sequence">
+            <div id="renameLayersBtn" class="app-button app-button-primary shared-button" role="button" tabindex="0">Rename</div>
           </div>
-          <div class="controls-body">
-            <label class="rename-target-scope" for="renameAllLayersCheckbox">
-              <input id="renameAllLayersCheckbox" class="option-checkbox" type="checkbox">
-              <div class="option-label">Rename all layers in the document</div>
-            </label>
-
-            <div class="section section-block section-collapsible" id="renameLayersActionSection">
-              <div id="renameLayersActionToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
-                <div class="section-toggle-text">Rename Layers</div>
-                <div class="section-toggle-icon" id="renameLayersActionToggleIcon">-</div>
-              </div>
-              <div class="section-body">
-                <div class="field rename-base-field">
-                  <div class="field-label">Base Name</div>
-                  <input id="renameBaseNameInput" class="text-input" type="text" placeholder="Base Name" value="">
-                </div>
-                <div class="rename-number-row">
-                  <div class="field rename-number-field">
-                    <div class="field-label">Start At</div>
-                    <input id="renameStartInput" class="text-input" type="text" value="1">
-                  </div>
-                  <div class="field rename-number-field">
-                    <div class="field-label">Step</div>
-                    <input id="renameStepInput" class="text-input" type="text" value="1">
-                  </div>
-                  <div class="field rename-number-field">
-                    <div class="field-label">Digits</div>
-                    <input id="renameDigitsInput" class="text-input" type="text" value="2">
-                  </div>
-                </div>
-                <div class="shared-preview-shell shared-preview-shell-compact">
-                  <pre id="renameLayersPreview" class="shared-preview-content shared-preview-content-compact" tabindex="0" contenteditable="true" spellcheck="false">1. Layer_1</pre>
-                </div>
-                <button id="renameLayersBtn" class="app-button app-button-primary" type="button">Rename</button>
-              </div>
-            </div>
-
-            <div class="section section-block section-collapsible is-collapsed" id="renamePrefixSuffixSection">
-              <div id="renamePrefixSuffixToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
-                <div class="section-toggle-text">Prefix / Suffix</div>
-                <div class="section-toggle-icon" id="renamePrefixSuffixToggleIcon">-</div>
-              </div>
-              <div class="section-body">
-                <div class="rename-row">
-                  <div class="field">
-                    <input id="renameLayerPrefixInput" class="text-input" type="text" placeholder="Prefix" value="">
-                  </div>
-                  <div class="field">
-                    <input id="renameLayerSuffixInput" class="text-input" type="text" placeholder="Suffix" value="">
-                  </div>
-                </div>
-                <div class="shared-preview-shell shared-preview-shell-compact">
-                  <pre id="prefixSuffixPreview" class="shared-preview-content shared-preview-content-compact" tabindex="0" contenteditable="true" spellcheck="false">1. PrefixLayerSuffix</pre>
-                </div>
-                <button id="applyPrefixSuffixBtn" class="app-button app-button-primary" type="button">Add Prefix / Suffix</button>
-              </div>
-            </div>
-
-            <div class="section section-block section-collapsible is-collapsed" id="removeReplaceSection">
-              <div id="removeReplaceToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
-                <div class="section-toggle-text">Remove / Replace</div>
-                <div class="section-toggle-icon" id="removeReplaceToggleIcon">-</div>
-              </div>
-              <div class="section-body">
-                <div class="rename-row">
-                  <div class="field">
-                    <input id="removeTargetInput" class="text-input" type="text" placeholder="Target" value="">
-                  </div>
-                  <div class="field">
-                    <input id="replaceWithInput" class="text-input" type="text" placeholder="Replace With" value="">
-                  </div>
-                </div>
-                <div class="shared-preview-shell shared-preview-shell-compact">
-                  <pre id="removeReplacePreview" class="shared-preview-content shared-preview-content-compact" tabindex="0" contenteditable="true" spellcheck="false">1. Layer name</pre>
-                </div>
-                <div class="action-row">
-                  <button id="removeTextBtn" class="app-button app-button-secondary action-button-half" type="button">Remove</button>
-                  <button id="replaceTextBtn" class="app-button app-button-secondary action-button-half" type="button">Replace</button>
-                </div>
-              </div>
-            </div>
+          <div class="rename-mode-actions is-hidden" data-rename-mode="affix">
+            <div id="applyPrefixSuffixBtn" class="app-button app-button-primary shared-button" role="button" tabindex="0">Add Prefix / Suffix</div>
           </div>
-        </div>
-
-        <!-- Sort Layers -->
-        <div class="controls section-collapsible is-collapsed" id="sortLayersMenuSection">
-          <div id="sortLayersMenuToggleBtn" class="section-toggle section-toggle-primary" role="button" tabindex="0" aria-expanded="true">
-            <div class="section-toggle-text section-toggle-text-main">Sort Layers</div>
-            <div class="section-toggle-icon section-toggle-icon-main" id="sortLayersMenuToggleIcon">-</div>
-          </div>
-          <div class="controls-body">
-            <div class="section section-block section-collapsible" id="sortScopeSection">
-              <div id="sortScopeToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
-                <div class="section-toggle-text">Scope</div>
-                <div class="section-toggle-icon" id="sortScopeToggleIcon">-</div>
-              </div>
-              <div class="section-body">
-                <label class="radio-option-line" for="sortScopeTopLevel">
-                  <input id="sortScopeTopLevel" class="radio-option-input" type="radio" name="sortScope" value="top-level" checked>
-                  <div class="radio-option-mark">
-                    <div class="radio-option-dot"></div>
-                  </div>
-                  <div class="radio-option-label">Top-level layers only</div>
-                </label>
-                <label class="radio-option-line" for="sortScopeRecursive">
-                  <input id="sortScopeRecursive" class="radio-option-input" type="radio" name="sortScope" value="recursive">
-                  <div class="radio-option-mark">
-                    <div class="radio-option-dot"></div>
-                  </div>
-                  <div class="radio-option-label">All layers (recursive)</div>
-                </label>
-                <label class="radio-option-line" for="sortScopeWithinGroup">
-                  <input id="sortScopeWithinGroup" class="radio-option-input" type="radio" name="sortScope" value="within-group">
-                  <div class="radio-option-mark">
-                    <div class="radio-option-dot"></div>
-                  </div>
-                  <div class="radio-option-label">Sort within one selected group only</div>
-                </label>
-              </div>
-            </div>
-
-            <div class="section section-block section-collapsible" id="sortOrderSection">
-              <div id="sortOrderToggleBtn" class="section-toggle" role="button" tabindex="0" aria-expanded="true">
-                <div class="section-toggle-text">Sorting Order</div>
-                <div class="section-toggle-icon" id="sortOrderToggleIcon">-</div>
-              </div>
-              <div class="section-body">
-                <label class="radio-option-line radio-option-line-strong" for="sortOrderAz">
-                  <input id="sortOrderAz" class="radio-option-input" type="radio" name="sortOrder" value="az" checked>
-                  <div class="radio-option-mark">
-                    <div class="radio-option-dot"></div>
-                  </div>
-                  <div class="radio-option-label">A â†’ Z</div>
-                </label>
-                <label class="radio-option-line radio-option-line-strong" for="sortOrderZa">
-                  <input id="sortOrderZa" class="radio-option-input" type="radio" name="sortOrder" value="za">
-                  <div class="radio-option-mark">
-                    <div class="radio-option-dot"></div>
-                  </div>
-                  <div class="radio-option-label">Z â†’ A</div>
-                </label>
-              </div>
-            </div>
-
-            <div class="section toolbar">
-              <button id="sortLayersBtn" class="app-button app-button-primary" type="button">Sort</button>
-            </div>
+          <div class="rename-mode-actions is-hidden" data-rename-mode="replace">
+            <div id="removeTextBtn" class="app-button shared-button" role="button" tabindex="0">Remove</div>
+            <div id="replaceTextBtn" class="app-button app-button-primary shared-button" role="button" tabindex="0">Replace</div>
           </div>
         </div>
       </div>
 
-      <!-- Mine Tab -->
+      <!-- Sort Layers -->
+      <div id="sortTabPanel" class="shared-tab-panel is-hidden" role="tabpanel" aria-labelledby="sortTabBtn">
+        <div class="tool-body">
+          <div class="tool-label">Scope</div>
+          <div class="tool-section">
+            <div class="radio-option-line shared-choice shared-radio" data-input-id="sortScopeTopLevel" role="radio" tabindex="0" aria-checked="true">
+              <input id="sortScopeTopLevel" class="shared-choice-input" type="radio" name="sortScope" value="top-level" checked>
+              <div class="radio-option-mark"><div class="radio-option-dot"></div></div>
+              <div class="radio-option-label">Top-level layers only</div>
+            </div>
+            <div class="radio-option-line shared-choice shared-radio" data-input-id="sortScopeRecursive" role="radio" tabindex="0" aria-checked="false">
+              <input id="sortScopeRecursive" class="shared-choice-input" type="radio" name="sortScope" value="recursive">
+              <div class="radio-option-mark"><div class="radio-option-dot"></div></div>
+              <div class="radio-option-label">All layers (recursive)</div>
+            </div>
+            <div class="radio-option-line shared-choice shared-radio" data-input-id="sortScopeWithinGroup" role="radio" tabindex="0" aria-checked="false">
+              <input id="sortScopeWithinGroup" class="shared-choice-input" type="radio" name="sortScope" value="within-group">
+              <div class="radio-option-mark"><div class="radio-option-dot"></div></div>
+              <div class="radio-option-label">Sort within one selected group only</div>
+            </div>
+          </div>
+
+          <div class="tool-label">Order</div>
+          <div class="tool-section">
+            <div id="sortOrder" class="shared-segment shared-segment-large" role="radiogroup" aria-label="Sorting Order" data-value="az">
+              <div class="shared-segment-option" role="radio" tabindex="0" data-value="az">A -&gt; Z</div>
+              <div class="shared-segment-option" role="radio" tabindex="0" data-value="za">Z -&gt; A</div>
+            </div>
+          </div>
+        </div>
+        <div class="tool-actions">
+          <div id="sortLayersBtn" class="app-button app-button-primary shared-button" role="button" tabindex="0">Sort</div>
+        </div>
+      </div>
+
+      <!-- Mine -->
       <div id="mineTabPanel" class="shared-tab-panel is-hidden" role="tabpanel" aria-labelledby="mineTabBtn">
-        <div class="controls section-collapsible" id="mineResetMenuSection">
-          <div class="section-header-row">
-            <div id="mineResetMenuToggleBtn" class="section-toggle section-toggle-primary" role="button" tabindex="0" aria-expanded="true">
-              <div class="section-toggle-text section-toggle-text-main">Reset an Image &amp; Mask it</div>
-              <div class="section-toggle-icon section-toggle-icon-main" id="mineResetMenuToggleIcon">-</div>
+        <div class="tool-body">
+          <div class="tool-card">
+            <div class="tool-card-header">
+              <div class="tool-card-title">Reset an Image &amp; Mask Subject</div>
+              <div id="mineResetRunBtn" class="app-button app-button-primary app-button-square shared-button" role="button" tabindex="0" aria-label="Run Reset an Image &amp; Mask Subject" title="Run Reset an Image &amp; Mask Subject"><span class="shared-icon" data-icon="play" aria-hidden="true"></span></div>
             </div>
-            <button id="mineResetRunBtn" class="section-info-button mine-run-button" type="button" aria-label="Run Reset an Image &amp; Mask it" title="Run Reset an Image &amp; Mask it">&#9654;</button>
-          </div>
-          <div class="controls-body">
             <div class="mine-part-group">
-              <div class="mine-part-header" style="display: flex; align-items: center; margin: 0 0 6px 0;">
-                <input id="minePart1Enabled" class="option-checkbox" type="checkbox" checked>
+              <div class="mine-part-header">
+                <div class="shared-choice shared-check" data-input-id="minePart1Enabled" role="checkbox" tabindex="0" aria-checked="true" aria-label="Enable Part 1">
+                  <input id="minePart1Enabled" class="shared-choice-input" type="checkbox" checked>
+                  <div class="shared-check-box"><div class="shared-check-mark"></div></div>
+                </div>
                 <div class="mine-part-title-wrapper" id="minePart1Toggle">
                   <div class="mine-part-title">Part 1: Reset Transform</div>
-                  <div class="mine-part-icon" id="minePart1Icon">[+]</div>
+                  <span class="mine-part-icon shared-icon" id="minePart1Icon" data-icon="plus" aria-hidden="true"></span>
                 </div>
               </div>
               <div class="mine-step-list is-collapsed" id="minePart1Steps">
@@ -387,11 +338,14 @@
             </div>
 
             <div class="mine-part-group">
-              <div class="mine-part-header" style="display: flex; align-items: center; margin: 0 0 6px 0;">
-                <input id="minePart2Enabled" class="option-checkbox" type="checkbox" checked>
+              <div class="mine-part-header">
+                <div class="shared-choice shared-check" data-input-id="minePart2Enabled" role="checkbox" tabindex="0" aria-checked="true" aria-label="Enable Part 2">
+                  <input id="minePart2Enabled" class="shared-choice-input" type="checkbox" checked>
+                  <div class="shared-check-box"><div class="shared-check-mark"></div></div>
+                </div>
                 <div class="mine-part-title-wrapper" id="minePart2Toggle">
                   <div class="mine-part-title">Part 2: Mask Subject</div>
-                  <div class="mine-part-icon" id="minePart2Icon">[+]</div>
+                  <span class="mine-part-icon shared-icon" id="minePart2Icon" data-icon="plus" aria-hidden="true"></span>
                 </div>
               </div>
               <div class="mine-step-list is-collapsed" id="minePart2Steps">
@@ -402,11 +356,14 @@
             </div>
 
             <div class="mine-part-group">
-              <div class="mine-part-header" style="display: flex; align-items: center; margin: 0 0 6px 0;">
-                <input id="minePart3Enabled" class="option-checkbox" type="checkbox" checked>
+              <div class="mine-part-header">
+                <div class="shared-choice shared-check" data-input-id="minePart3Enabled" role="checkbox" tabindex="0" aria-checked="true" aria-label="Enable Part 3">
+                  <input id="minePart3Enabled" class="shared-choice-input" type="checkbox" checked>
+                  <div class="shared-check-box"><div class="shared-check-mark"></div></div>
+                </div>
                 <div class="mine-part-title-wrapper" id="minePart3Toggle">
                   <div class="mine-part-title">Part 3: Create Inverted Background</div>
-                  <div class="mine-part-icon" id="minePart3Icon">[+]</div>
+                  <span class="mine-part-icon shared-icon" id="minePart3Icon" data-icon="plus" aria-hidden="true"></span>
                 </div>
               </div>
               <div class="mine-step-list is-collapsed" id="minePart3Steps">
@@ -418,11 +375,14 @@
             </div>
 
             <div class="mine-part-group">
-              <div class="mine-part-header" style="display: flex; align-items: center; margin: 0 0 6px 0;">
-                <input id="minePart4Enabled" class="option-checkbox" type="checkbox" checked>
+              <div class="mine-part-header">
+                <div class="shared-choice shared-check" data-input-id="minePart4Enabled" role="checkbox" tabindex="0" aria-checked="true" aria-label="Enable Part 4">
+                  <input id="minePart4Enabled" class="shared-choice-input" type="checkbox" checked>
+                  <div class="shared-check-box"><div class="shared-check-mark"></div></div>
+                </div>
                 <div class="mine-part-title-wrapper" id="minePart4Toggle">
                   <div class="mine-part-title">Part 4: Crop, Save &amp; Close</div>
-                  <div class="mine-part-icon" id="minePart4Icon">[+]</div>
+                  <span class="mine-part-icon shared-icon" id="minePart4Icon" data-icon="plus" aria-hidden="true"></span>
                 </div>
               </div>
               <div class="mine-step-list is-collapsed" id="minePart4Steps">
@@ -434,85 +394,74 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Transform Layer Size -->
-        <div class="controls section-collapsible is-collapsed" id="mineTransformSection">
-          <div class="section-header-row">
-            <div id="mineTransformToggleBtn" class="section-toggle section-toggle-primary" role="button" tabindex="0" aria-expanded="false">
-              <div class="section-toggle-text section-toggle-text-main">Transform Layer Size</div>
-              <div class="section-toggle-icon section-toggle-icon-main" id="mineTransformToggleIcon">+</div>
+          <div class="tool-card">
+            <div class="tool-card-header">
+              <div class="tool-card-title">Transform Layer Size</div>
+              <div id="mineTransformRunBtn" class="app-button app-button-primary app-button-square shared-button" role="button" tabindex="0" aria-label="Run Transform Layer Size" title="Run Transform Layer Size"><span class="shared-icon" data-icon="play" aria-hidden="true"></span></div>
             </div>
-            <button id="mineTransformRunBtn" class="section-info-button mine-run-button" type="button" aria-label="Run Transform Layer Size" title="Run Transform Layer Size">&#9654;</button>
-          </div>
-          <div class="controls-body">
-            <div class="section-body" style="margin-bottom: 10px;">
-              <label class="radio-option-line" for="mineTransformModeFit">
-                <input id="mineTransformModeFit" class="radio-option-input" type="radio" name="mineTransformMode" value="fit" checked>
-                <div class="radio-option-mark">
-                  <div class="radio-option-dot"></div>
-                </div>
+            <div class="tool-section">
+              <div class="radio-option-line shared-choice shared-radio" data-input-id="mineTransformModeFit" role="radio" tabindex="0" aria-checked="true">
+                <input id="mineTransformModeFit" class="shared-choice-input" type="radio" name="mineTransformMode" value="fit" checked>
+                <div class="radio-option-mark"><div class="radio-option-dot"></div></div>
                 <div class="radio-option-label">Fit (Contain)</div>
-              </label>
-              <label class="radio-option-line" for="mineTransformModeFill">
-                <input id="mineTransformModeFill" class="radio-option-input" type="radio" name="mineTransformMode" value="fill">
-                <div class="radio-option-mark">
-                  <div class="radio-option-dot"></div>
-                </div>
+              </div>
+              <div class="radio-option-line shared-choice shared-radio" data-input-id="mineTransformModeFill" role="radio" tabindex="0" aria-checked="false">
+                <input id="mineTransformModeFill" class="shared-choice-input" type="radio" name="mineTransformMode" value="fill">
+                <div class="radio-option-mark"><div class="radio-option-dot"></div></div>
                 <div class="radio-option-label">Fill (Cover)</div>
-              </label>
-              <label class="radio-option-line" for="mineTransformModeBoth">
-                <input id="mineTransformModeBoth" class="radio-option-input" type="radio" name="mineTransformMode" value="both">
-                <div class="radio-option-mark">
-                  <div class="radio-option-dot"></div>
-                </div>
+              </div>
+              <div class="radio-option-line shared-choice shared-radio" data-input-id="mineTransformModeBoth" role="radio" tabindex="0" aria-checked="false">
+                <input id="mineTransformModeBoth" class="shared-choice-input" type="radio" name="mineTransformMode" value="both">
+                <div class="radio-option-mark"><div class="radio-option-dot"></div></div>
                 <div class="radio-option-label">Stretch (Skew)</div>
-              </label>
+              </div>
             </div>
-            <div class="rename-row">
+            <div class="tool-section field-row">
               <div class="field">
                 <div class="field-label">Width (px)</div>
-                <input id="mineTransformWidth" class="text-input" type="text" placeholder="Width" value="1920">
+                <div class="shared-field" data-input-id="mineTransformWidth"><input id="mineTransformWidth" class="shared-field-input" type="text" placeholder="Width" value="1920"><div class="shared-field-view"></div></div>
               </div>
               <div class="field">
                 <div class="field-label">Height (px)</div>
-                <input id="mineTransformHeight" class="text-input" type="text" placeholder="Height" value="1080">
+                <div class="shared-field" data-input-id="mineTransformHeight"><input id="mineTransformHeight" class="shared-field-input" type="text" placeholder="Height" value="1080"><div class="shared-field-view"></div></div>
               </div>
             </div>
-            <label class="rename-target-scope" for="mineTransformCenterEnabled" style="margin-top: 2px; margin-bottom: 8px;">
-              <input id="mineTransformCenterEnabled" class="option-checkbox" type="checkbox">
-              <div class="option-label">Center to Artboard / Canvas</div>
-            </label>
+            <div class="shared-choice shared-check" data-input-id="mineTransformCenterEnabled" role="checkbox" tabindex="0" aria-checked="false">
+              <input id="mineTransformCenterEnabled" class="shared-choice-input" type="checkbox">
+              <div class="shared-check-box"><div class="shared-check-mark"></div></div>
+              <div class="option-label option-label-medium">Center to Artboard / Canvas</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- About Me Tab -->
+      <!-- About Me -->
       <div id="aboutTabPanel" class="shared-tab-panel is-hidden" role="tabpanel" aria-labelledby="aboutTabBtn">
-        <div class="controls-body">
-          <div class="about-text">My name is Tr&#7847;n Th&#7855;ng Minh,
+        <div class="tool-body">
+          <div class="tool-card">
+            <div class="about-text">My name is Tr&#7847;n Th&#7855;ng Minh,
 but you can call me Max Chen.
 
 Thank you for using this tool.
 For more information, you can visit my website below.</div>
-          <div class="about-link-row">
-            <div class="about-link-label">Website:</div>
-            <button id="aboutWebsiteBtn" class="about-link-button" type="button">tranthangminh.github.io</button>
+            <div class="about-link-row">
+              <div class="about-link-label">Website:</div>
+              <div id="aboutWebsiteBtn" class="about-link-button shared-button" role="button" tabindex="0">tranthangminh.github.io</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Export Info Dialog -->
-    <dialog id="exportInfoDialog">
-      <form method="dialog" class="info-dialog-form">
-        <div class="info-dialog-title">About Export as Layer Name</div>
-        <pre id="exportInfoDialogMessage" class="info-dialog-message"></pre>
-        <footer>
-          <button class="app-button app-button-primary info-dialog-button" type="submit">OK</button>
-        </footer>
-      </form>
-    </dialog>
+      <!-- Export Info Dialog -->
+      <div id="exportInfoDialog" class="shared-dialog is-hidden" role="dialog" aria-modal="true" aria-labelledby="exportInfoDialogTitle">
+        <div class="shared-dialog-box">
+          <div id="exportInfoDialogTitle" class="info-dialog-title">About Export Selected Layers</div>
+          <pre id="exportInfoDialogMessage" class="info-dialog-message"></pre>
+          <div class="app-button app-button-primary info-dialog-button shared-button" role="button" tabindex="0" data-dialog-close="true">OK</div>
+        </div>
+      </div>
+    </div>
 
     <script src="js/shared.js"></script>
     <script src="js/mine_ResetAnImageAndMaskIt.js"></script>

@@ -396,7 +396,7 @@ namespace ModernAutoClicker.Advanced
                     break;
 
                 case MacroActionType.MiddleClick:
-                    PerformMiddleScroll(clickPt, step.ScrollStep, hold, freeMouseMode);
+                    PerformMiddleScroll(clickPt, rawClickPt, directHwnd, step.ScrollStep, hold, freeMouseMode);
                     break;
 
                 case MacroActionType.DoubleClick:
@@ -425,19 +425,29 @@ namespace ModernAutoClicker.Advanced
                     break;
 
                 case MacroActionType.DragDrop:
-                    PerformDrag(startPt, endPt, hold, step.DragButton);
+                    if (freeMouseMode)
+                        NativeMethods.PostDrag(directHwnd, startPt, endPt, hold, step.DragButton, 0);
+                    else
+                        PerformDrag(startPt, endPt, hold, step.DragButton);
                     break;
 
                 case MacroActionType.PressAndClick:
                     ExecutePressAndClick(step, clickPt, startPt, endPt, rawClickPt, directHwnd, hold, freeMouseMode);
                     break;
 
+                // Keys reach a window in the background only when the step names one; with All Screens they go to the window in front
                 case MacroActionType.KeyPress:
-                    KeyboardSimulator.ExecuteKeyPress(step.KeyData, hold);
+                    if (directHwnd != IntPtr.Zero)
+                        KeyboardSimulator.PostKeyPress(KeyboardSimulator.KeyTarget(directHwnd), step.KeyData, hold);
+                    else
+                        KeyboardSimulator.ExecuteKeyPress(step.KeyData, hold);
                     break;
 
                 case MacroActionType.TypeText:
-                    KeyboardSimulator.ExecuteTypeText(step.KeyData, hold);
+                    if (directHwnd != IntPtr.Zero)
+                        KeyboardSimulator.PostTypeText(KeyboardSimulator.KeyTarget(directHwnd), step.KeyData, hold);
+                    else
+                        KeyboardSimulator.ExecuteTypeText(step.KeyData, hold);
                     break;
 
                 case MacroActionType.Delay:
@@ -468,6 +478,12 @@ namespace ModernAutoClicker.Advanced
             int mode = step.PressClickMode; // 0: Left, 1: Right, 2: Middle, 3: DragDrop
             int order = step.PressClickOrder; // 0: PressFirst (Phím ➔ Click), 1: ClickFirst (Click ➔ Phím)
 
+            if (freeMouseMode)
+            {
+                ExecutePressAndClickInBackground(keyCombo, mode, order, step.DragButton, clickPt, rawClickPt, startPt, endPt, directHwnd, hold);
+                return;
+            }
+
             if (order == 0) // Key First: Press Key -> Click/Drag -> Release Key
             {
                 try
@@ -482,13 +498,7 @@ namespace ModernAutoClicker.Advanced
                     else // Click
                     {
                         int mouseBtn = (mode == 1) ? 1 : (mode == 2 ? 2 : 0);
-                        int keyFlags = GetMouseKeyFlags(keyCombo);
-                        if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
-                            NativeMethods.PerformClickDirectToWindow(directHwnd, rawClickPt.X, rawClickPt.Y, mouseBtn, hold, keyFlags);
-                        else if (freeMouseMode && clickPt != Point.Empty)
-                            NativeMethods.SendBackgroundClick(clickPt.X, clickPt.Y, mouseBtn, hold, keyFlags);
-                        else
-                            PerformClick(clickPt, mouseBtn, hold, false);
+                        PerformClick(clickPt, mouseBtn, hold, false);
                     }
                 }
                 finally
@@ -566,6 +576,50 @@ namespace ModernAutoClicker.Advanced
             }
         }
 
+        // Free Mouse: everything goes as messages to the target (or to the window under the point with All Screens).
+        // Ctrl / Shift also ride on the mouse messages as MK_* flags, which is what most apps read for Ctrl+Click / Shift+Click.
+        private static void ExecutePressAndClickInBackground(string keyCombo, int mode, int order, int dragButton, Point clickPt, Point rawClickPt, Point startPt, Point endPt, IntPtr directHwnd, int hold)
+        {
+            Point anchor = mode == 3 ? startPt : clickPt;
+            if (anchor == Point.Empty) return;
+            IntPtr window = directHwnd != IntPtr.Zero ? directHwnd : NativeMethods.WindowFromPoint(new NativeMethods.POINT { X = anchor.X, Y = anchor.Y });
+            IntPtr keyTarget = KeyboardSimulator.KeyTarget(window);
+            int keyFlags = GetMouseKeyFlags(keyCombo);
+            int mouseBtn = (mode == 1) ? 1 : (mode == 2 ? 2 : 0);
+
+            if (order == 0 || mode == 3) // Key down, click or drag, key up
+            {
+                KeyboardSimulator.PostKeyDown(keyTarget, keyCombo);
+                try
+                {
+                    if (mode == 3)
+                        NativeMethods.PostDrag(directHwnd, startPt, endPt, hold, dragButton, keyFlags);
+                    else if (directHwnd != IntPtr.Zero && rawClickPt != Point.Empty)
+                        NativeMethods.PerformClickDirectToWindow(directHwnd, rawClickPt.X, rawClickPt.Y, mouseBtn, hold, keyFlags);
+                    else
+                        NativeMethods.SendBackgroundClick(clickPt.X, clickPt.Y, mouseBtn, hold, keyFlags);
+                }
+                finally
+                {
+                    KeyboardSimulator.PostKeyUp(keyTarget, keyCombo);
+                }
+                return;
+            }
+
+            // Click first: button down, key press, button up
+            NativeMethods.PostButton(directHwnd, clickPt, mouseBtn, true, 0);
+            try
+            {
+                Thread.Sleep(10);
+                KeyboardSimulator.PostKeyPress(keyTarget, keyCombo, hold);
+                Thread.Sleep(10);
+            }
+            finally
+            {
+                NativeMethods.PostButton(directHwnd, clickPt, mouseBtn, false, 0);
+            }
+        }
+
         // Ctrl / Shift of a Press & Click key combination, as MK_* flags for clicks posted to a window (Alt and other keys have no flag)
         private static int GetMouseKeyFlags(string keyCombo)
         {
@@ -600,12 +654,15 @@ namespace ModernAutoClicker.Advanced
             NativeMethods.SendPhysicalClick(button, holdMs);
         }
 
-        private static void PerformMiddleScroll(Point pt, int scrollStep, int holdMs, bool freeMouseMode)
+        private static void PerformMiddleScroll(Point pt, Point rawPt, IntPtr directHwnd, int scrollStep, int holdMs, bool freeMouseMode)
         {
             // 1. If scrollStep == 0 -> Perform Middle Click
             if (scrollStep == 0)
             {
-                PerformClick(pt, 2, holdMs, freeMouseMode);
+                if (directHwnd != IntPtr.Zero && rawPt != Point.Empty)
+                    PerformClickDirectToWindow(directHwnd, rawPt, 2, holdMs);
+                else
+                    PerformClick(pt, 2, holdMs, freeMouseMode);
                 return;
             }
 
@@ -621,27 +678,9 @@ namespace ModernAutoClicker.Advanced
             {
                 if (freeMouseMode)
                 {
-                    NativeMethods.POINT screenPt = new NativeMethods.POINT { X = pt.X, Y = pt.Y };
-                    IntPtr topHwnd = NativeMethods.WindowFromPoint(screenPt);
-                    if (topHwnd != IntPtr.Zero)
-                    {
-                        IntPtr targetHwnd = NativeMethods.FindDeepestChild(topHwnd, screenPt);
-                        if (targetHwnd == IntPtr.Zero) targetHwnd = topHwnd;
-
-                        short deltaShort = (short)singleDelta;
-                        IntPtr wParam = (IntPtr)((int)((uint)(ushort)deltaShort << 16));
-                        IntPtr lParam = (IntPtr)(((ushort)screenPt.Y << 16) | (ushort)screenPt.X);
-
-                        for (int i = 0; i < totalNotches; i++)
-                        {
-                            NativeMethods.PostMessage(targetHwnd, 0x020A /* WM_MOUSEWHEEL */, wParam, lParam);
-                            if (delayPerNotch > 0)
-                            {
-                                Thread.Sleep(delayPerNotch);
-                            }
-                        }
-                        return;
-                    }
+                    // To the step's window when it has one, so a window behind others still scrolls
+                    NativeMethods.PostWheel(directHwnd, pt, totalNotches, singleDelta, delayPerNotch);
+                    return;
                 }
 
                 NativeMethods.SetCursorPos(pt.X, pt.Y);

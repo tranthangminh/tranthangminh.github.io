@@ -157,6 +157,64 @@ async function loadSharedHtmlFragmentInto(containerId, relativePath) {
   return container;
 }
 
+// Shared Icons: the only place that names UI icons. HTML uses <span class="shared-icon" data-icon="name">.
+// UXP ignores CSS mask-image and <img src=".svg">, so each SVG file is inlined as-is; its colors come
+// from the file itself (drawn in --text-primary).
+const SHARED_ICONS = {
+  "info": "icons/info.svg",
+  "minus": "icons/minus.svg",
+  "play": "icons/play.svg",
+  "plus": "icons/plus.svg"
+};
+const sharedIconMarkupCache = {};
+
+async function getSharedIconMarkup(name) {
+  if (!Object.prototype.hasOwnProperty.call(sharedIconMarkupCache, name)) {
+    const path = SHARED_ICONS[name];
+    if (!path) {
+      throw new Error("Unknown icon: " + name);
+    }
+
+    const markup = await readSharedPluginTextFile(path);
+    sharedIconMarkupCache[name] = String(markup)
+      .replace(/<\?xml[\s\S]*?\?>/g, "")
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .trim();
+  }
+
+  return sharedIconMarkupCache[name];
+}
+
+async function renderSharedIcon(holder) {
+  try {
+    holder.innerHTML = await getSharedIconMarkup(holder.getAttribute("data-icon"));
+    const svg = holder.querySelector("svg");
+    if (svg) {
+      svg.setAttribute("width", "100%");
+      svg.setAttribute("height", "100%");
+    }
+  } catch (error) {}
+}
+
+function setSharedIcon(holder, name) {
+  if (!holder || holder.getAttribute("data-icon") === name) {
+    return;
+  }
+
+  holder.setAttribute("data-icon", name);
+  renderSharedIcon(holder);
+}
+
+async function loadSharedIcons() {
+  if (typeof document.querySelectorAll !== "function") {
+    return;
+  }
+
+  const holders = Array.prototype.slice.call(document.querySelectorAll(".shared-icon[data-icon]") || []);
+  for (let index = 0; index < holders.length; index += 1) {
+    await renderSharedIcon(holders[index]);
+  }
+}
 // Shared Tabs Helpers
 function getSharedTabButtons(groupName) {
   if (!groupName || typeof document.querySelectorAll !== "function") {
@@ -329,20 +387,20 @@ function getSharedSliderElementByInputId(inputId) {
   return document.querySelector('.shared-slider[data-input-id="' + inputId + '"]');
 }
 
-function dispatchSharedSliderEvent(input, type) {
-  if (!input) {
+function dispatchSharedEvent(target, type) {
+  if (!target) {
     return;
   }
 
   try {
-    input.dispatchEvent(new Event(type, { bubbles: true }));
+    target.dispatchEvent(new Event(type, { bubbles: true }));
     return;
   } catch (error) {}
 
   if (typeof document.createEvent === "function") {
     const legacyEvent = document.createEvent("Event");
     legacyEvent.initEvent(type, true, true);
-    input.dispatchEvent(legacyEvent);
+    target.dispatchEvent(legacyEvent);
   }
 }
 
@@ -418,7 +476,7 @@ function setSharedSliderInputValue(sliderElement, nextValue, eventType) {
   syncSharedSlider(sliderElement);
 
   if (eventType && (String(roundedValue) !== previousValue || eventType === "change")) {
-    dispatchSharedSliderEvent(input, eventType);
+    dispatchSharedEvent(input, eventType);
   }
 }
 
@@ -497,42 +555,370 @@ function bindSharedSlider(sliderId) {
   syncSharedSlider(sliderElement);
 }
 
-// Shared Collapsible Helpers
-function syncCollapsibleSectionState(sectionId, buttonId, iconId, isCollapsed) {
-  const section = getElement(sectionId);
-  const button = getElement(buttonId);
-  const icon = getElement(iconId);
-  if (!section || !button || !icon) {
-    return;
-  }
-
-  section.classList.toggle("is-collapsed", !!isCollapsed);
-  button.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
-  icon.textContent = isCollapsed ? "+" : "-";
+// Change handlers can be slow (they query Photoshop and rebuild previews), so let the panel repaint first
+function notifySharedChangeAfterPaint(target) {
+  setTimeout(function () {
+    dispatchSharedEvent(target, "change");
+  }, 0);
 }
 
-function bindCollapsibleToggle(toggleId, sectionId, iconId, afterToggle) {
-  const toggle = getElement(toggleId);
-  if (!toggle) {
+// Shared Choice Helpers (self-drawn checkbox / radio, state kept in a hidden input)
+function getSharedChoiceControls() {
+  if (typeof document.querySelectorAll !== "function") {
+    return [];
+  }
+
+  return Array.prototype.slice.call(document.querySelectorAll(".shared-choice") || []);
+}
+
+function getSharedChoiceInput(control) {
+  const inputId = control && typeof control.getAttribute === "function" ? control.getAttribute("data-input-id") : "";
+  return inputId ? getElement(inputId) : null;
+}
+
+function syncSharedChoiceControls() {
+  const controls = getSharedChoiceControls();
+  for (let index = 0; index < controls.length; index += 1) {
+    const control = controls[index];
+    const input = getSharedChoiceInput(control);
+    if (!input) {
+      continue;
+    }
+
+    control.classList.toggle("is-checked", !!input.checked);
+    control.classList.toggle("is-disabled", !!input.disabled);
+    control.setAttribute("aria-checked", input.checked ? "true" : "false");
+    control.setAttribute("aria-disabled", input.disabled ? "true" : "false");
+  }
+}
+
+function activateSharedChoice(control) {
+  const input = getSharedChoiceInput(control);
+  if (!input || input.disabled) {
     return;
   }
 
-  const handleToggle = function () {
-    const section = getElement(sectionId);
-    const nextCollapsed = !section.classList.contains("is-collapsed");
-    syncCollapsibleSectionState(sectionId, toggleId, iconId, nextCollapsed);
-    if (typeof afterToggle === "function") {
-      afterToggle(nextCollapsed);
+  if (input.getAttribute("type") === "radio") {
+    if (input.checked) {
+      return;
     }
-  };
 
-  toggle.addEventListener("click", handleToggle);
-  toggle.addEventListener("keydown", function (event) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      handleToggle();
+    const groupName = input.getAttribute("name");
+    const groupInputs = groupName
+      ? Array.prototype.slice.call(document.querySelectorAll('input[name="' + groupName + '"]') || [])
+      : [input];
+    for (let index = 0; index < groupInputs.length; index += 1) {
+      groupInputs[index].checked = groupInputs[index] === input;
     }
-  });
+  } else {
+    input.checked = !input.checked;
+  }
+
+  syncSharedChoiceControls();
+  notifySharedChangeAfterPaint(input);
+}
+
+// A choice card can contain its own controls (slider, segment, small checkbox); events from those must not toggle the card
+function isEventFromNestedControl(event, control) {
+  let element = event && event.target;
+  while (element && element !== control) {
+    if (element.classList && (
+      element.classList.contains("shared-choice") ||
+      element.classList.contains("shared-slider") ||
+      element.classList.contains("shared-segment")
+    )) {
+      return true;
+    }
+    element = element.parentElement;
+  }
+
+  return false;
+}
+
+function bindSharedChoiceControls() {
+  const controls = getSharedChoiceControls();
+  for (let index = 0; index < controls.length; index += 1) {
+    const control = controls[index];
+    if (control.getAttribute("data-bound") === "true") {
+      continue;
+    }
+
+    control.setAttribute("data-bound", "true");
+    control.addEventListener("click", function (event) {
+      if (!isEventFromNestedControl(event, control)) {
+        activateSharedChoice(control);
+      }
+    });
+    control.addEventListener("keydown", function (event) {
+      if ((event.key === "Enter" || event.key === " ") && !isEventFromNestedControl(event, control)) {
+        event.preventDefault();
+        activateSharedChoice(control);
+      }
+    });
+  }
+
+  syncSharedChoiceControls();
+}
+
+// Shared Segment Helpers (two-way switch, value kept in data-value, fires "change" on the segment)
+function getSharedSegmentOptions(segment) {
+  if (!segment || typeof segment.querySelectorAll !== "function") {
+    return [];
+  }
+
+  return Array.prototype.slice.call(segment.querySelectorAll(".shared-segment-option") || []);
+}
+
+function syncSharedSegment(segment) {
+  const value = segment ? segment.getAttribute("data-value") : "";
+  const options = getSharedSegmentOptions(segment);
+  for (let index = 0; index < options.length; index += 1) {
+    const isSelected = options[index].getAttribute("data-value") === value;
+    options[index].classList.toggle("is-selected", isSelected);
+    options[index].setAttribute("aria-checked", isSelected ? "true" : "false");
+  }
+}
+
+function setSharedSegmentValue(segment, nextValue, shouldNotify) {
+  if (!segment) {
+    return;
+  }
+
+  const previousValue = segment.getAttribute("data-value");
+  segment.setAttribute("data-value", nextValue);
+  syncSharedSegment(segment);
+
+  if (shouldNotify && previousValue !== nextValue) {
+    notifySharedChangeAfterPaint(segment);
+  }
+}
+
+function bindSharedSegments() {
+  if (typeof document.querySelectorAll !== "function") {
+    return;
+  }
+
+  const segments = Array.prototype.slice.call(document.querySelectorAll(".shared-segment") || []);
+  for (let index = 0; index < segments.length; index += 1) {
+    const segment = segments[index];
+    if (segment.getAttribute("data-bound") === "true") {
+      continue;
+    }
+
+    segment.setAttribute("data-bound", "true");
+    const options = getSharedSegmentOptions(segment);
+    for (let optionIndex = 0; optionIndex < options.length; optionIndex += 1) {
+      const option = options[optionIndex];
+      const selectOption = function () {
+        setSharedSegmentValue(segment, option.getAttribute("data-value"), true);
+      };
+
+      option.addEventListener("click", selectOption);
+      option.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectOption();
+        }
+      });
+    }
+
+    syncSharedSegment(segment);
+  }
+}
+
+// Shared Button Helpers (self-drawn, div with role="button")
+function isSharedButtonDisabled(button) {
+  return !!(button && button.classList.contains("is-disabled"));
+}
+
+function setSharedButtonDisabled(button, isDisabled) {
+  if (!button) {
+    return;
+  }
+
+  button.classList.toggle("is-disabled", !!isDisabled);
+  button.setAttribute("aria-disabled", isDisabled ? "true" : "false");
+}
+
+function bindSharedButtons() {
+  if (typeof document.querySelectorAll !== "function") {
+    return;
+  }
+
+  const buttons = Array.prototype.slice.call(document.querySelectorAll(".shared-button") || []);
+  for (let index = 0; index < buttons.length; index += 1) {
+    const button = buttons[index];
+    if (button.getAttribute("data-key-bound") === "true") {
+      continue;
+    }
+
+    button.setAttribute("data-key-bound", "true");
+    button.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        if (!isSharedButtonDisabled(button)) {
+          dispatchSharedEvent(button, "click");
+        }
+      }
+    });
+  }
+}
+
+// Shared Text Field Helpers (self-drawn; the off-screen native input keeps value, keyboard, IME and clipboard)
+const SHARED_CARET_BLINK_MS = 530;
+let sharedCaretTimer = null;
+
+function getSharedFieldInput(field) {
+  const inputId = field ? field.getAttribute("data-input-id") : "";
+  return inputId ? getElement(inputId) : null;
+}
+
+function appendSharedFieldText(view, text, className) {
+  if (!text) {
+    return null;
+  }
+
+  const span = document.createElement("span");
+  if (className) {
+    span.className = className;
+  }
+  span.textContent = text;
+  view.appendChild(span);
+  return span;
+}
+
+function keepSharedFieldMarkVisible(view, mark) {
+  if (!mark) {
+    view.scrollLeft = 0;
+    return;
+  }
+
+  const markLeft = mark.offsetLeft - view.offsetLeft;
+  const markRight = markLeft + mark.offsetWidth;
+  if (markRight > view.scrollLeft + view.clientWidth) {
+    view.scrollLeft = markRight - view.clientWidth + 2;
+  } else if (markLeft < view.scrollLeft) {
+    view.scrollLeft = markLeft;
+  }
+}
+
+function renderSharedField(field) {
+  const input = getSharedFieldInput(field);
+  const view = field ? field.querySelector(".shared-field-view") : null;
+  if (!input || !view) {
+    return;
+  }
+
+  const value = String(input.value || "");
+  const isFocused = field.classList.contains("is-focused");
+  const start = typeof input.selectionStart === "number" ? Math.min(input.selectionStart, value.length) : value.length;
+  const end = typeof input.selectionEnd === "number" ? Math.min(Math.max(input.selectionEnd, start), value.length) : start;
+  const renderKey = [value, start, end, isFocused].join("|");
+  if (field.getAttribute("data-render-key") === renderKey) {
+    return;
+  }
+
+  field.setAttribute("data-render-key", renderKey);
+  field.classList.remove("is-caret-hidden");
+  while (view.firstChild) {
+    view.removeChild(view.firstChild);
+  }
+
+  let mark = null;
+  appendSharedFieldText(view, value.slice(0, start), "");
+  if (isFocused && start === end) {
+    mark = document.createElement("span");
+    mark.className = "shared-field-caret";
+    view.appendChild(mark);
+  } else if (isFocused) {
+    mark = appendSharedFieldText(view, value.slice(start, end), "shared-field-selection");
+  } else {
+    appendSharedFieldText(view, value.slice(start, end), "");
+  }
+  appendSharedFieldText(view, value.slice(end), "");
+  if (!value) {
+    appendSharedFieldText(view, input.getAttribute("placeholder") || "", "shared-field-placeholder");
+  }
+
+  keepSharedFieldMarkVisible(view, mark);
+}
+
+function stopSharedCaretBlink() {
+  if (sharedCaretTimer) {
+    clearInterval(sharedCaretTimer);
+    sharedCaretTimer = null;
+  }
+}
+
+function startSharedCaretBlink(field) {
+  stopSharedCaretBlink();
+  sharedCaretTimer = setInterval(function () {
+    field.classList.toggle("is-caret-hidden");
+  }, SHARED_CARET_BLINK_MS);
+}
+
+function syncSharedFields() {
+  if (typeof document.querySelectorAll !== "function") {
+    return;
+  }
+
+  const fields = Array.prototype.slice.call(document.querySelectorAll(".shared-field") || []);
+  for (let index = 0; index < fields.length; index += 1) {
+    renderSharedField(fields[index]);
+  }
+}
+
+function bindSharedFields() {
+  if (typeof document.querySelectorAll !== "function") {
+    return;
+  }
+
+  const fields = Array.prototype.slice.call(document.querySelectorAll(".shared-field") || []);
+  for (let index = 0; index < fields.length; index += 1) {
+    const field = fields[index];
+    const input = getSharedFieldInput(field);
+    if (!input || field.getAttribute("data-bound") === "true") {
+      continue;
+    }
+
+    field.setAttribute("data-bound", "true");
+    const render = function () {
+      renderSharedField(field);
+    };
+    const renderAfterKey = function () {
+      setTimeout(render, 0);
+    };
+
+    field.addEventListener("mousedown", function (event) {
+      event.preventDefault();
+      if (document.activeElement === input) {
+        return;
+      }
+
+      input.focus();
+      if (typeof input.setSelectionRange === "function") {
+        const length = String(input.value || "").length;
+        input.setSelectionRange(length, length);
+      }
+      render();
+    });
+
+    input.addEventListener("focus", function () {
+      field.classList.add("is-focused");
+      startSharedCaretBlink(field);
+      render();
+    });
+    input.addEventListener("blur", function () {
+      field.classList.remove("is-focused");
+      stopSharedCaretBlink();
+      render();
+    });
+    input.addEventListener("input", render);
+    input.addEventListener("select", render);
+    input.addEventListener("keydown", renderAfterKey);
+    input.addEventListener("keyup", render);
+    render();
+  }
 }
 
 // Shared Preview Helpers
@@ -550,28 +936,43 @@ function renderSharedPreview(previewId, nextText, nextSignature, previousSignatu
   return previousSignature;
 }
 
-function setSharedPreviewVisibility(previewId, shouldShow) {
-  const previewElement = getElement(previewId);
-  if (!previewElement || !previewElement.parentElement) {
-    return;
+// Shared Dialog Helper (in-panel overlay, closed by any [data-dialog-close] element)
+const sharedDialogResolvers = {};
+
+function closeSharedModalDialog(dialogId) {
+  const dialog = getElement(dialogId);
+  if (dialog) {
+    dialog.classList.add("is-hidden");
   }
 
-  previewElement.parentElement.classList.toggle("is-hidden", !shouldShow);
+  const resolve = sharedDialogResolvers[dialogId];
+  delete sharedDialogResolvers[dialogId];
+  if (typeof resolve === "function") {
+    resolve();
+  }
 }
 
-// Shared Dialog Helper
-async function showSharedModalDialog(dialogId, options) {
+function showSharedModalDialog(dialogId) {
   const dialog = getElement(dialogId);
   if (!dialog) {
-    return;
+    return Promise.resolve();
   }
 
-  if (typeof dialog.uxpShowModal === "function") {
-    await dialog.uxpShowModal(options || {});
-    return;
+  const closeButtons = Array.prototype.slice.call(dialog.querySelectorAll("[data-dialog-close]") || []);
+  for (let index = 0; index < closeButtons.length; index += 1) {
+    const closeButton = closeButtons[index];
+    if (closeButton.getAttribute("data-bound") === "true") {
+      continue;
+    }
+
+    closeButton.setAttribute("data-bound", "true");
+    closeButton.addEventListener("click", function () {
+      closeSharedModalDialog(dialogId);
+    });
   }
 
-  if (typeof dialog.showModal === "function") {
-    dialog.showModal();
-  }
+  dialog.classList.remove("is-hidden");
+  return new Promise(function (resolve) {
+    sharedDialogResolvers[dialogId] = resolve;
+  });
 }

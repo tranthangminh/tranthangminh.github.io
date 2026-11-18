@@ -16,24 +16,6 @@ let lastRemoveReplacePreviewSignature = "";
 let isExporting = false;
 let runtimeCache = null;
 let locationInputDirty = false;
-const MODE_BUTTON_OPTIONS = {
-  webpMode: [
-    { value: "lossless", label: "Lossless" },
-    { value: "lossy", label: "Lossy" }
-  ],
-  psdMode: [
-    { value: "flattened", label: "Flattened" },
-    { value: "layers", label: "Layers" }
-  ],
-  tiffCompression: [
-    { value: "lzw", label: "LZW" },
-    { value: "none", label: "Uncompressed" }
-  ],
-  bmpDepth: [
-    { value: "24", label: "24-bit" },
-    { value: "32", label: "32-bit" }
-  ]
-};
 
 // Slider + Format Helpers
 function roundToStep(value, min, max, step) {
@@ -152,7 +134,20 @@ function getSortScopeValue() {
 }
 
 function getSortOrderValue() {
-  return getElement("sortOrderZa").checked ? "za" : "az";
+  return getSelectValue("sortOrder", ["az", "za"], "az");
+}
+
+function getRenameModeValue() {
+  return getSelectValue("renameMode", ["sequence", "affix", "replace"], "sequence");
+}
+
+// Rename shows one mode at a time: its fields, its preview and its action buttons
+function syncRenameModePanels() {
+  const mode = getRenameModeValue();
+  const parts = Array.prototype.slice.call(document.querySelectorAll("[data-rename-mode]") || []);
+  for (let index = 0; index < parts.length; index += 1) {
+    parts[index].classList.toggle("is-hidden", parts[index].getAttribute("data-rename-mode") !== mode);
+  }
 }
 
 function isSortDescending() {
@@ -286,42 +281,7 @@ function getSelectValue(id, allowedValues, fallbackValue) {
 }
 
 function setModeButtonValue(id, nextValue) {
-  const control = getElement(id);
-  const options = MODE_BUTTON_OPTIONS[id] || [];
-  if (!control || !options.length) {
-    return;
-  }
-
-  let matchedOption = options[0];
-  for (let index = 0; index < options.length; index += 1) {
-    if (options[index].value === nextValue) {
-      matchedOption = options[index];
-      break;
-    }
-  }
-
-  control.setAttribute("data-value", matchedOption.value);
-  control.textContent = matchedOption.label;
-}
-
-function cycleModeButtonValue(id) {
-  const control = getElement(id);
-  const options = MODE_BUTTON_OPTIONS[id] || [];
-  if (!control || !options.length) {
-    return;
-  }
-
-  const currentValue = String(control.getAttribute("data-value") || "");
-  let currentIndex = 0;
-  for (let index = 0; index < options.length; index += 1) {
-    if (options[index].value === currentValue) {
-      currentIndex = index;
-      break;
-    }
-  }
-
-  const nextOption = options[(currentIndex + 1) % options.length];
-  setModeButtonValue(id, nextOption.value);
+  setSharedSegmentValue(getElement(id), nextValue, false);
 }
 
 function getWebPMode() {
@@ -368,48 +328,27 @@ function updateBmpDepth() {
   alphaCheckbox.disabled = !allowAlpha;
 }
 
-function syncFormatRowState(rowId, checkboxId) {
-  const row = getElement(rowId);
-  const checkbox = getElement(checkboxId);
-  if (!row || !checkbox) {
+// 6 cards: 2x3 when narrow, 3x2 when there is room, 1x6 when every card fits its minimum width
+const FORMAT_CARD_MIN_WIDTH = 103;
+
+function syncFileTypeGridColumns() {
+  const grid = document.querySelector(".filetype-grid");
+  const width = grid ? grid.clientWidth : 0;
+  if (!width) {
     return;
   }
 
-  row.classList.toggle("is-active", !!checkbox.checked);
+  const columns = width >= FORMAT_CARD_MIN_WIDTH * 6 ? 6 : (width >= FORMAT_CARD_MIN_WIDTH * 3 ? 3 : 2);
+  grid.classList.toggle("is-cols-3", columns === 3);
+  grid.classList.toggle("is-cols-6", columns === 6);
 }
 
-function syncAllFormatRowStates() {
-  syncFormatRowState("jpgRow", "jpgEnabled");
-  syncFormatRowState("pngRow", "pngEnabled");
-  syncFormatRowState("webpRow", "webpEnabled");
-  syncFormatRowState("psdRow", "psdEnabled");
-  syncFormatRowState("tiffRow", "tiffEnabled");
-  syncFormatRowState("bmpRow", "bmpEnabled");
-}
-
-function handleFormatEnabledChange(rowId, checkboxId) {
-  syncFormatRowState(rowId, checkboxId);
+function handleFormatEnabledChange(checkboxId) {
   if (checkboxId === "webpEnabled") {
     updateWebPMode();
   }
   savePanelSettings();
   renderPreview();
-}
-
-function bindFormatNameToggle(rowId, checkboxId) {
-  const checkbox = getElement(checkboxId);
-  const toggle = checkbox && checkbox.parentElement;
-  const label = toggle && toggle.querySelector ? toggle.querySelector(".format-name") : null;
-  if (!checkbox || !toggle || !label || label.getAttribute("data-bound") === "true") {
-    return;
-  }
-
-  label.setAttribute("data-bound", "true");
-  label.addEventListener("click", function (event) {
-    event.preventDefault();
-    checkbox.checked = !checkbox.checked;
-    handleFormatEnabledChange(rowId, checkboxId);
-  });
 }
 
 // Settings Persistence
@@ -441,19 +380,8 @@ function collectPersistedPanelSettings() {
     bmpEnabled: !!getElement("bmpEnabled").checked,
     bmpDepth: getBmpDepth(),
     bmpAlphaChannels: !!getElement("bmpAlphaChannels").checked,
-    exportMenuCollapsed: getElement("exportMenuSection").classList.contains("is-collapsed"),
-    fileTypeCollapsed: getElement("fileTypeSection").classList.contains("is-collapsed"),
-    renameCollapsed: getElement("renameSection").classList.contains("is-collapsed"),
-    exportLocationCollapsed: getElement("exportLocationSection").classList.contains("is-collapsed"),
-    exportPreviewCollapsed: getElement("exportPreviewSection").classList.contains("is-collapsed"),
-    renameLayersMenuCollapsed: getElement("renameLayersMenuSection").classList.contains("is-collapsed"),
-    renameLayersActionCollapsed: getElement("renameLayersActionSection").classList.contains("is-collapsed"),
-    renamePrefixSuffixCollapsed: getElement("renamePrefixSuffixSection").classList.contains("is-collapsed"),
-    removeReplaceCollapsed: getElement("removeReplaceSection").classList.contains("is-collapsed"),
-    sortLayersMenuCollapsed: getElement("sortLayersMenuSection").classList.contains("is-collapsed"),
-    sortScopeCollapsed: getElement("sortScopeSection").classList.contains("is-collapsed"),
-    sortOrderCollapsed: getElement("sortOrderSection").classList.contains("is-collapsed"),
-    activeMainTab: typeof getActiveSharedTabValue === "function" ? getActiveSharedTabValue("mainPanelTabs") : "tools",
+    activeMainTab: getActiveSharedTabValue("mainPanelTabs"),
+    renameMode: getRenameModeValue(),
     prefix: getElement("prefixInput").value || "",
     suffix: getElement("suffixInput").value || "",
     sortScope: getSortScopeValue(),
@@ -567,47 +495,13 @@ function applySavedPanelSettings() {
   if (typeof savedSettings.bmpAlphaChannels === "boolean") {
     getElement("bmpAlphaChannels").checked = savedSettings.bmpAlphaChannels;
   }
-  if (typeof savedSettings.exportMenuCollapsed === "boolean") {
-    syncCollapsibleSectionState("exportMenuSection", "exportMenuToggleBtn", "exportMenuToggleIcon", savedSettings.exportMenuCollapsed);
-  }
-  if (typeof savedSettings.fileTypeCollapsed === "boolean") {
-    syncCollapsibleSectionState("fileTypeSection", "fileTypeToggleBtn", "fileTypeToggleIcon", savedSettings.fileTypeCollapsed);
-  }
-  if (typeof savedSettings.renameCollapsed === "boolean") {
-    syncCollapsibleSectionState("renameSection", "renameToggleBtn", "renameToggleIcon", savedSettings.renameCollapsed);
-  }
-  if (typeof savedSettings.exportLocationCollapsed === "boolean") {
-    syncCollapsibleSectionState("exportLocationSection", "exportLocationToggleBtn", "exportLocationToggleIcon", savedSettings.exportLocationCollapsed);
-  }
-  if (typeof savedSettings.exportPreviewCollapsed === "boolean") {
-    syncCollapsibleSectionState("exportPreviewSection", "exportPreviewToggleBtn", "exportPreviewToggleIcon", savedSettings.exportPreviewCollapsed);
-  }
-  if (typeof savedSettings.renameLayersMenuCollapsed === "boolean") {
-    syncCollapsibleSectionState("renameLayersMenuSection", "renameLayersMenuToggleBtn", "renameLayersMenuToggleIcon", savedSettings.renameLayersMenuCollapsed);
-  }
-  if (typeof savedSettings.renameLayersActionCollapsed === "boolean") {
-    syncCollapsibleSectionState("renameLayersActionSection", "renameLayersActionToggleBtn", "renameLayersActionToggleIcon", savedSettings.renameLayersActionCollapsed);
-  }
-  if (typeof savedSettings.renamePrefixSuffixCollapsed === "boolean") {
-    syncCollapsibleSectionState("renamePrefixSuffixSection", "renamePrefixSuffixToggleBtn", "renamePrefixSuffixToggleIcon", savedSettings.renamePrefixSuffixCollapsed);
-  }
-  if (typeof savedSettings.removeReplaceCollapsed === "boolean") {
-    syncCollapsibleSectionState("removeReplaceSection", "removeReplaceToggleBtn", "removeReplaceToggleIcon", savedSettings.removeReplaceCollapsed);
-  }
-  if (typeof savedSettings.sortLayersMenuCollapsed === "boolean") {
-    syncCollapsibleSectionState("sortLayersMenuSection", "sortLayersMenuToggleBtn", "sortLayersMenuToggleIcon", savedSettings.sortLayersMenuCollapsed);
-  }
-  if (typeof savedSettings.sortScopeCollapsed === "boolean") {
-    syncCollapsibleSectionState("sortScopeSection", "sortScopeToggleBtn", "sortScopeToggleIcon", savedSettings.sortScopeCollapsed);
-  }
-  if (typeof savedSettings.sortOrderCollapsed === "boolean") {
-    syncCollapsibleSectionState("sortOrderSection", "sortOrderToggleBtn", "sortOrderToggleIcon", savedSettings.sortOrderCollapsed);
-  }
   if (typeof applyMineTabSavedSettings === "function") {
     applyMineTabSavedSettings(savedSettings);
   }
-  if (typeof syncSharedTabGroup === "function") {
-    syncSharedTabGroup("mainPanelTabs", savedSettings.activeMainTab || "tools");
+  // Settings saved before the tab layout use "tools"; syncSharedTabGroup falls back to the first tab
+  syncSharedTabGroup("mainPanelTabs", savedSettings.activeMainTab || "export");
+  if (savedSettings.renameMode === "sequence" || savedSettings.renameMode === "affix" || savedSettings.renameMode === "replace") {
+    setModeButtonValue("renameMode", savedSettings.renameMode);
   }
   if (typeof savedSettings.prefix === "string") {
     getElement("prefixInput").value = savedSettings.prefix;
@@ -615,18 +509,10 @@ function applySavedPanelSettings() {
   if (typeof savedSettings.suffix === "string") {
     getElement("suffixInput").value = savedSettings.suffix;
   }
-  if (savedSettings.sortScope === "recursive") {
-    getElement("sortScopeRecursive").checked = true;
-  } else if (savedSettings.sortScope === "within-group") {
-    getElement("sortScopeWithinGroup").checked = true;
-  } else {
-    getElement("sortScopeTopLevel").checked = true;
-  }
-  if (savedSettings.sortOrder === "za") {
-    getElement("sortOrderZa").checked = true;
-  } else {
-    getElement("sortOrderAz").checked = true;
-  }
+  getElement("sortScopeRecursive").checked = savedSettings.sortScope === "recursive";
+  getElement("sortScopeWithinGroup").checked = savedSettings.sortScope === "within-group";
+  getElement("sortScopeTopLevel").checked = savedSettings.sortScope !== "recursive" && savedSettings.sortScope !== "within-group";
+  setModeButtonValue("sortOrder", savedSettings.sortOrder === "za" ? "za" : "az");
   if (typeof savedSettings.renameAllLayers === "boolean") {
     getElement("renameAllLayersCheckbox").checked = savedSettings.renameAllLayers;
   }
@@ -1019,17 +905,11 @@ function renderRenamePreviews() {
   const renameLayersData = collectRenameLayersPreviewData();
   lastRenameLayersPreviewSignature = renderSharedPreview("renameLayersPreview", renameLayersData.preview, renameLayersData.signature, lastRenameLayersPreviewSignature);
 
-  const renameSettings = collectRenameSettings();
-  const showPrefixSuffixPreview = !!(renameSettings.prefix || renameSettings.suffix);
-  const showRemoveReplacePreview = !!renameSettings.target;
-
   const prefixSuffixData = collectPrefixSuffixPreviewData();
   lastPrefixSuffixPreviewSignature = renderSharedPreview("prefixSuffixPreview", prefixSuffixData.preview, prefixSuffixData.signature, lastPrefixSuffixPreviewSignature);
-  setSharedPreviewVisibility("prefixSuffixPreview", showPrefixSuffixPreview);
 
   const removeReplaceData = collectRemoveReplacePreviewData();
   lastRemoveReplacePreviewSignature = renderSharedPreview("removeReplacePreview", removeReplaceData.preview, removeReplaceData.signature, lastRemoveReplacePreviewSignature);
-  setSharedPreviewVisibility("removeReplacePreview", showRemoveReplacePreview);
 }
 
 function collectPreviewData() {
@@ -1087,6 +967,9 @@ function collectPreviewData() {
 }
 
 function renderPreview() {
+  syncSharedChoiceControls();
+  syncSharedFields();
+  syncFileTypeGridColumns();
   if (isExporting) {
     return;
   }
@@ -1140,7 +1023,7 @@ function startAutoRefresh() {
 // Shared Popup / Info
 function updateButtonState() {
   const button = getElement("exportBtn");
-  button.disabled = isExporting;
+  setSharedButtonDisabled(button, isExporting);
   button.textContent = isExporting ? "Exporting..." : "Export";
 }
 
@@ -1191,14 +1074,7 @@ async function handleExportMenuInfoClick() {
     ].join("\n");
   }
 
-  await showSharedModalDialog("exportInfoDialog", {
-    title: "About Export as Layer Name",
-    resize: "none",
-    size: {
-      width: 420,
-      height: 360
-    }
-  });
+  await showSharedModalDialog("exportInfoDialog");
 }
 
 // Export Helpers
@@ -1724,6 +1600,10 @@ async function handleSortLayersClick() {
 }
 
 async function handleExportClick() {
+  if (isExporting) {
+    return;
+  }
+
   const runtime = getRuntime();
   const settings = collectSettings();
 
@@ -1756,7 +1636,7 @@ async function handleExportClick() {
     await runtime.core.executeAsModal(async function () {
       await exportSelectedLayers(runtime, doc, outputFolderPath, orderedLayers, settings);
     }, {
-      commandName: "Save as Layer Name"
+      commandName: "Export Selected Layers"
     });
   } catch (error) {
     await showPopupMessage(runtime, "Export failed: " + formatError(error));
@@ -1819,18 +1699,6 @@ async function handleAboutWebsiteClick() {
 }
 
 // App Bootstrap
-function setSortOrderLabelText(inputId, labelText) {
-  const input = getElement(inputId);
-  if (!input || !input.parentElement) {
-    return;
-  }
-
-  const label = input.parentElement.querySelector(".radio-option-label");
-  if (label) {
-    label.textContent = labelText;
-  }
-}
-
 let hasBootstrappedApp = false;
 
 async function bootstrapApp() {
@@ -1859,39 +1727,37 @@ async function bootstrapApp() {
   bindSlider("jpgQuality", "jpgQualityValue", "Quality");
   bindSlider("pngCompression", "pngCompressionValue", "Compression");
   bindSlider("webpQuality", "webpQualityValue", "Quality");
-  bindFormatNameToggle("jpgRow", "jpgEnabled");
-  bindFormatNameToggle("pngRow", "pngEnabled");
-  bindFormatNameToggle("webpRow", "webpEnabled");
-  bindFormatNameToggle("psdRow", "psdEnabled");
-  bindFormatNameToggle("tiffRow", "tiffEnabled");
-  bindFormatNameToggle("bmpRow", "bmpEnabled");
+  bindSharedChoiceControls();
+  bindSharedButtons();
+  bindSharedSegments();
+  bindSharedFields();
+  loadSharedIcons();
+  window.addEventListener("resize", syncFileTypeGridColumns);
 
   getElement("jpgEnabled").addEventListener("change", function () {
-    handleFormatEnabledChange("jpgRow", "jpgEnabled");
+    handleFormatEnabledChange("jpgEnabled");
   });
   getElement("pngEnabled").addEventListener("change", function () {
-    handleFormatEnabledChange("pngRow", "pngEnabled");
+    handleFormatEnabledChange("pngEnabled");
   });
   getElement("webpEnabled").addEventListener("change", function () {
-    handleFormatEnabledChange("webpRow", "webpEnabled");
+    handleFormatEnabledChange("webpEnabled");
   });
   getElement("psdEnabled").addEventListener("change", function () {
-    handleFormatEnabledChange("psdRow", "psdEnabled");
+    handleFormatEnabledChange("psdEnabled");
   });
   getElement("tiffEnabled").addEventListener("change", function () {
-    handleFormatEnabledChange("tiffRow", "tiffEnabled");
+    handleFormatEnabledChange("tiffEnabled");
   });
   getElement("bmpEnabled").addEventListener("change", function () {
-    handleFormatEnabledChange("bmpRow", "bmpEnabled");
+    handleFormatEnabledChange("bmpEnabled");
   });
-  getElement("webpMode").addEventListener("click", function () {
-    cycleModeButtonValue("webpMode");
+  getElement("webpMode").addEventListener("change", function () {
     updateWebPMode();
     savePanelSettings();
     renderPreview();
   });
-  getElement("psdMode").addEventListener("click", function () {
-    cycleModeButtonValue("psdMode");
+  getElement("psdMode").addEventListener("change", function () {
     savePanelSettings();
     renderPreview();
   });
@@ -1899,8 +1765,7 @@ async function bootstrapApp() {
     savePanelSettings();
     renderPreview();
   });
-  getElement("tiffCompression").addEventListener("click", function () {
-    cycleModeButtonValue("tiffCompression");
+  getElement("tiffCompression").addEventListener("change", function () {
     savePanelSettings();
     renderPreview();
   });
@@ -1908,8 +1773,7 @@ async function bootstrapApp() {
     savePanelSettings();
     renderPreview();
   });
-  getElement("bmpDepth").addEventListener("click", function () {
-    cycleModeButtonValue("bmpDepth");
+  getElement("bmpDepth").addEventListener("change", function () {
     updateBmpDepth();
     savePanelSettings();
     renderPreview();
@@ -1965,8 +1829,11 @@ async function bootstrapApp() {
   getElement("sortScopeTopLevel").addEventListener("change", savePanelSettings);
   getElement("sortScopeRecursive").addEventListener("change", savePanelSettings);
   getElement("sortScopeWithinGroup").addEventListener("change", savePanelSettings);
-  getElement("sortOrderAz").addEventListener("change", savePanelSettings);
-  getElement("sortOrderZa").addEventListener("change", savePanelSettings);
+  getElement("sortOrder").addEventListener("change", savePanelSettings);
+  getElement("renameMode").addEventListener("change", function () {
+    syncRenameModePanels();
+    savePanelSettings();
+  });
   getElement("locationInput").addEventListener("input", function () {
     locationInputDirty = true;
     renderPreview();
@@ -1981,56 +1848,27 @@ async function bootstrapApp() {
   getElement("exportMenuInfoBtn").addEventListener("click", handleExportMenuInfoClick);
   getElement("aboutWebsiteBtn").addEventListener("click", handleAboutWebsiteClick);
   getElement("exportBtn").addEventListener("click", handleExportClick);
-  if (typeof bindSharedTabGroup === "function") {
-    bindSharedTabGroup("mainPanelTabs", savePanelSettings);
-  }
-  bindCollapsibleToggle("exportMenuToggleBtn", "exportMenuSection", "exportMenuToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("fileTypeToggleBtn", "fileTypeSection", "fileTypeToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("renameToggleBtn", "renameSection", "renameToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("exportLocationToggleBtn", "exportLocationSection", "exportLocationToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("exportPreviewToggleBtn", "exportPreviewSection", "exportPreviewToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("renameLayersMenuToggleBtn", "renameLayersMenuSection", "renameLayersMenuToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("renameLayersActionToggleBtn", "renameLayersActionSection", "renameLayersActionToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("renamePrefixSuffixToggleBtn", "renamePrefixSuffixSection", "renamePrefixSuffixToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("removeReplaceToggleBtn", "removeReplaceSection", "removeReplaceToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("sortLayersMenuToggleBtn", "sortLayersMenuSection", "sortLayersMenuToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("sortScopeToggleBtn", "sortScopeSection", "sortScopeToggleIcon", savePanelSettings);
-  bindCollapsibleToggle("sortOrderToggleBtn", "sortOrderSection", "sortOrderToggleIcon", savePanelSettings);
-  if (typeof bindMineTabHandlers === "function") {
-    bindMineTabHandlers(savePanelSettings);
-  }
+  bindSharedTabGroup("mainPanelTabs", function () {
+    syncFileTypeGridColumns();
+    savePanelSettings();
+  });
+  bindMineTabHandlers(savePanelSettings);
 
   applySavedPanelSettings();
-  setSortOrderLabelText("sortOrderAz", "A -> Z");
-  setSortOrderLabelText("sortOrderZa", "Z -> A");
   setModeButtonValue("webpMode", getWebPMode());
   setModeButtonValue("psdMode", getPsdMode());
   setModeButtonValue("tiffCompression", getTiffCompression());
   setModeButtonValue("bmpDepth", getBmpDepth());
-  if (typeof syncSharedTabGroup === "function") {
-    syncSharedTabGroup("mainPanelTabs", typeof getActiveSharedTabValue === "function" ? getActiveSharedTabValue("mainPanelTabs") : "tools");
-  }
-  syncCollapsibleSectionState("exportMenuSection", "exportMenuToggleBtn", "exportMenuToggleIcon", getElement("exportMenuSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("fileTypeSection", "fileTypeToggleBtn", "fileTypeToggleIcon", getElement("fileTypeSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("renameSection", "renameToggleBtn", "renameToggleIcon", getElement("renameSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("exportLocationSection", "exportLocationToggleBtn", "exportLocationToggleIcon", getElement("exportLocationSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("exportPreviewSection", "exportPreviewToggleBtn", "exportPreviewToggleIcon", getElement("exportPreviewSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("renameLayersMenuSection", "renameLayersMenuToggleBtn", "renameLayersMenuToggleIcon", getElement("renameLayersMenuSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("renameLayersActionSection", "renameLayersActionToggleBtn", "renameLayersActionToggleIcon", getElement("renameLayersActionSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("renamePrefixSuffixSection", "renamePrefixSuffixToggleBtn", "renamePrefixSuffixToggleIcon", getElement("renamePrefixSuffixSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("removeReplaceSection", "removeReplaceToggleBtn", "removeReplaceToggleIcon", getElement("removeReplaceSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("sortLayersMenuSection", "sortLayersMenuToggleBtn", "sortLayersMenuToggleIcon", getElement("sortLayersMenuSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("sortScopeSection", "sortScopeToggleBtn", "sortScopeToggleIcon", getElement("sortScopeSection").classList.contains("is-collapsed"));
-  syncCollapsibleSectionState("sortOrderSection", "sortOrderToggleBtn", "sortOrderToggleIcon", getElement("sortOrderSection").classList.contains("is-collapsed"));
-  if (typeof syncMineTabRuntimeState === "function") {
-    syncMineTabRuntimeState();
-  }
+  setModeButtonValue("sortOrder", getSortOrderValue());
+  setModeButtonValue("renameMode", getRenameModeValue());
+  syncRenameModePanels();
+  syncSharedTabGroup("mainPanelTabs", getActiveSharedTabValue("mainPanelTabs"));
   normalizeSlider("jpgQuality", "jpgQualityValue", "Quality");
   normalizeSlider("pngCompression", "pngCompressionValue", "Compression");
   normalizeSlider("webpQuality", "webpQualityValue", "Quality");
   updateWebPMode();
   updateBmpDepth();
-  syncAllFormatRowStates();
+  syncSharedChoiceControls();
   syncLocationInputFromDocument(true);
   updateButtonState();
   renderPreview();

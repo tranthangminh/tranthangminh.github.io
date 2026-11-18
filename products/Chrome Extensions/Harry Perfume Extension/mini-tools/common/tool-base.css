@@ -631,7 +631,91 @@ html, body {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* 6. Thanh cuộn */
+/* 6. Popup xác nhận (#confirmModal, mở bằng confirmAction trong ../common/modal-controller.js;
+   lớp .modal-overlay là để modal-controller bắt click nền mờ / phím Esc) */
+.tool-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.tool-modal {
+  width: 90%;
+  max-width: 360px;
+  padding: 16px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+}
+
+.tool-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tool-modal-header h4 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--gold-primary);
+}
+
+.tool-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tool-modal-close:hover {
+  color: var(--text-primary);
+}
+
+.tool-modal-msg {
+  margin-bottom: 16px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.tool-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.tool-modal-footer .btn-action {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+/* Nút đồng ý cho thao tác xóa: đỏ */
+.btn-action.tool-modal-danger {
+  background-color: var(--c-red);
+  border-color: var(--c-red);
+  color: #ffffff;
+}
+
+.btn-action.tool-modal-danger:hover {
+  background-color: var(--c-red);
+  color: #ffffff;
+  filter: brightness(1.1);
+}
+
+/* 7. Thanh cuộn */
 .spreadsheet-container::-webkit-scrollbar,
 .tool-scroll::-webkit-scrollbar {
   width: 8px;

@@ -450,127 +450,164 @@ namespace ModernAutoClicker
             IntPtr topHwnd = WindowFromPoint(screenPt);
             if (topHwnd == IntPtr.Zero) return;
 
-            IntPtr targetHwnd = FindDeepestChild(topHwnd, screenPt);
-            if (targetHwnd == IntPtr.Zero) targetHwnd = topHwnd;
-
-            POINT clientPt = screenPt;
-            ScreenToClient(targetHwnd, ref clientPt);
-
-            // Check if special adapter handles this target's background click
-            if (ModernAutoClicker.SpecialApps.SpecialAppRegistry.TryBackgroundClick(targetHwnd, new Point(clientPt.X, clientPt.Y), mouseBtn, holdMs))
-            {
-                return;
-            }
-
-            IntPtr lParam = (IntPtr)(((clientPt.Y & 0xFFFF) << 16) | (clientPt.X & 0xFFFF));
-
-            uint msgDown, msgUp;
-            IntPtr wParam;
-
-            if (mouseBtn == 1) // Right
-            {
-                msgDown = 0x0204; // WM_RBUTTONDOWN
-                msgUp = 0x0205;   // WM_RBUTTONUP
-                wParam = (IntPtr)0x0002; // MK_RBUTTON
-            }
-            else if (mouseBtn == 2) // Middle
-            {
-                msgDown = 0x0207; // WM_MBUTTONDOWN
-                msgUp = 0x0208;   // WM_MBUTTONUP
-                wParam = (IntPtr)0x0010; // MK_MBUTTON
-            }
-            else if (mouseBtn == 3) // Double Click (Generic fallback)
-            {
-                PostMessage(targetHwnd, 0x0201 /* WM_LBUTTONDOWN */, (IntPtr)0x0001, lParam);
-                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
-                PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
-                System.Threading.Thread.Sleep(30);
-                PostMessage(targetHwnd, 0x0203 /* WM_LBUTTONDBLCLK */, (IntPtr)0x0001, lParam);
-                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
-                PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
-                return;
-            }
-            else // Left
-            {
-                msgDown = 0x0201; // WM_LBUTTONDOWN
-                msgUp = 0x0202;   // WM_LBUTTONUP
-                wParam = (IntPtr)0x0001; // MK_LBUTTON
-            }
-
-            // 1. Send Button Down (Omit WM_MOUSEMOVE to prevent WM_SETCURSOR cursor fluttering)
-            PostMessage(targetHwnd, msgDown, (IntPtr)(wParam.ToInt32() | keyFlags), lParam);
-
-            // 2. Hold duration (default 10ms or <= interval)
-            if (holdMs > 0)
-            {
-                System.Threading.Thread.Sleep(holdMs);
-            }
-
-            // 3. Send Button Up
-            PostMessage(targetHwnd, msgUp, (IntPtr)keyFlags, lParam);
+            PostClickAt(topHwnd, screenPt, mouseBtn, holdMs, keyFlags);
         }
 
         public static void PerformClickDirectToWindow(IntPtr hWnd, int clientX, int clientY, int mouseBtn, int holdMs, int keyFlags = 0)
         {
             if (hWnd == IntPtr.Zero) return;
-
-            // Convert client coordinate of hWnd to screen coordinates
             POINT screenPt = new POINT { X = clientX, Y = clientY };
             ClientToScreen(hWnd, ref screenPt);
+            PostClickAt(hWnd, screenPt, mouseBtn, holdMs, keyFlags);
+        }
 
-            // Drill down to the deepest leaf child window at this position
-            IntPtr targetHwnd = FindDeepestChild(hWnd, screenPt);
-            if (targetHwnd == IntPtr.Zero) targetHwnd = hWnd;
+        // Posts a click to the deepest child of parent under screenPt; the real cursor and the foreground window stay where they are
+        private static void PostClickAt(IntPtr parent, POINT screenPt, int mouseBtn, int holdMs, int keyFlags)
+        {
+            IntPtr targetHwnd = FindDeepestChild(parent, screenPt);
+            if (targetHwnd == IntPtr.Zero) targetHwnd = parent;
 
-            POINT targetClientPt = screenPt;
-            ScreenToClient(targetHwnd, ref targetClientPt);
+            POINT clientPt = screenPt;
+            ScreenToClient(targetHwnd, ref clientPt);
+            FocusGuard.NoteBackgroundInput(targetHwnd);
 
-            // Check if special adapter handles this target's background click
-            if (ModernAutoClicker.SpecialApps.SpecialAppRegistry.TryBackgroundClick(targetHwnd, new Point(targetClientPt.X, targetClientPt.Y), mouseBtn, holdMs))
+            if (ModernAutoClicker.SpecialApps.SpecialAppRegistry.TryBackgroundClick(targetHwnd, new Point(clientPt.X, clientPt.Y), mouseBtn, holdMs))
             {
                 return;
             }
 
-            IntPtr lParam = (IntPtr)(((targetClientPt.Y & 0xFFFF) << 16) | (targetClientPt.X & 0xFFFF));
-            uint msgDown, msgUp;
-            IntPtr wParam;
+            IntPtr lParam = MakeLParam(clientPt.X, clientPt.Y);
+            PrepareBackgroundTarget(targetHwnd, lParam, keyFlags);
 
-            if (mouseBtn == 1) // Right
-            {
-                msgDown = 0x0204; // WM_RBUTTONDOWN
-                msgUp = 0x0205;   // WM_RBUTTONUP
-                wParam = (IntPtr)0x0002;
-            }
-            else if (mouseBtn == 2) // Middle
-            {
-                msgDown = 0x0207; // WM_MBUTTONDOWN
-                msgUp = 0x0208;   // WM_MBUTTONUP
-                wParam = (IntPtr)0x0010;
-            }
-            else if (mouseBtn == 3) // Double Click (Generic fallback)
-            {
-                PostMessage(targetHwnd, 0x0201 /* WM_LBUTTONDOWN */, (IntPtr)0x0001, lParam);
-                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
-                PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
-                System.Threading.Thread.Sleep(30);
-                PostMessage(targetHwnd, 0x0203 /* WM_LBUTTONDBLCLK */, (IntPtr)0x0001, lParam);
-                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
-                PostMessage(targetHwnd, 0x0202 /* WM_LBUTTONUP */, IntPtr.Zero, lParam);
-                return;
-            }
-            else // Left
-            {
-                msgDown = 0x0201; // WM_LBUTTONDOWN
-                msgUp = 0x0202;   // WM_LBUTTONUP
-                wParam = (IntPtr)0x0001;
-            }
+            uint msgDown = WM_LBUTTONDOWN, msgUp = WM_LBUTTONUP;
+            int button = MK_LBUTTON;
+            if (mouseBtn == 1) { msgDown = WM_RBUTTONDOWN; msgUp = WM_RBUTTONUP; button = MK_RBUTTON; }
+            else if (mouseBtn == 2) { msgDown = WM_MBUTTONDOWN; msgUp = WM_MBUTTONUP; button = MK_MBUTTON; }
 
-            PostMessage(targetHwnd, msgDown, (IntPtr)(wParam.ToInt32() | keyFlags), lParam);
-            if (holdMs > 0)
-            {
-                System.Threading.Thread.Sleep(holdMs);
-            }
+            PostMessage(targetHwnd, msgDown, (IntPtr)(button | keyFlags), lParam);
+            if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
             PostMessage(targetHwnd, msgUp, (IntPtr)keyFlags, lParam);
+
+            if (mouseBtn == 3) // Double click: the second press arrives as WM_LBUTTONDBLCLK, as Windows sends it for a real one
+            {
+                System.Threading.Thread.Sleep(30);
+                PostMessage(targetHwnd, WM_LBUTTONDBLCLK, (IntPtr)(MK_LBUTTON | keyFlags), lParam);
+                if (holdMs > 0) System.Threading.Thread.Sleep(holdMs);
+                PostMessage(targetHwnd, WM_LBUTTONUP, (IntPtr)keyFlags, lParam);
+            }
+        }
+
+        public const uint WM_ACTIVATE = 0x0006, WM_ACTIVATEAPP = 0x001C, WM_MOUSEMOVE = 0x0200;
+        public const uint WM_LBUTTONDOWN = 0x0201, WM_LBUTTONUP = 0x0202, WM_LBUTTONDBLCLK = 0x0203;
+        public const uint WM_RBUTTONDOWN = 0x0204, WM_RBUTTONUP = 0x0205, WM_MBUTTONDOWN = 0x0207, WM_MBUTTONUP = 0x0208;
+        public const int MK_LBUTTON = 0x0001, MK_RBUTTON = 0x0002, MK_MBUTTON = 0x0010;
+
+        public static IntPtr MakeLParam(int x, int y)
+        {
+            return (IntPtr)(((y & 0xFFFF) << 16) | (x & 0xFFFF));
+        }
+
+        // A window behind others often drops posted mouse input: many games only read the mouse while they believe they are the
+        // active app, and many buttons only react to a press the pointer has hovered first. So the window is told it is active
+        // (a message in its own queue: the real foreground window does not change) and the pointer is moved there before the press.
+        // The window in front gets nothing extra, as before.
+        public static void PrepareBackgroundTarget(IntPtr targetHwnd, IntPtr lParam, int keyFlags)
+        {
+            if (PostActivation(targetHwnd)) PostMessage(targetHwnd, WM_MOUSEMOVE, (IntPtr)keyFlags, lParam);
+        }
+
+        // False for the window in front, which needs nothing
+        public static bool PostActivation(IntPtr hwnd)
+        {
+            IntPtr top = GetTopLevelWindow(hwnd);
+            if (top == IntPtr.Zero || GetForegroundWindow() == top) return false;
+            PostMessage(top, WM_ACTIVATEAPP, (IntPtr)1, IntPtr.Zero);
+            PostMessage(top, WM_ACTIVATE, (IntPtr)1 /* WA_ACTIVE */, IntPtr.Zero);
+            return true;
+        }
+
+        // The child under a screen point of parent, or of whatever window is on top there when parent is zero (All Screens)
+        private static IntPtr ChildAt(IntPtr parent, POINT screenPt)
+        {
+            if (parent == IntPtr.Zero) parent = WindowFromPoint(screenPt);
+            if (parent == IntPtr.Zero) return IntPtr.Zero;
+            IntPtr child = FindDeepestChild(parent, screenPt);
+            return child != IntPtr.Zero ? child : parent;
+        }
+
+        // A drag sent as messages to the window under the start point: press, moves with the button held, release
+        public static void PostDrag(IntPtr parent, Point start, Point end, int durationMs, int dragButton, int keyFlags)
+        {
+            IntPtr target = ChildAt(parent, new POINT { X = start.X, Y = start.Y });
+            if (target == IntPtr.Zero) return;
+            FocusGuard.NoteBackgroundInput(target);
+
+            uint msgDown = WM_LBUTTONDOWN, msgUp = WM_LBUTTONUP;
+            int button = MK_LBUTTON;
+            if (dragButton == 1) { msgDown = WM_RBUTTONDOWN; msgUp = WM_RBUTTONUP; button = MK_RBUTTON; }
+            else if (dragButton == 2) { msgDown = WM_MBUTTONDOWN; msgUp = WM_MBUTTONUP; button = MK_MBUTTON; }
+
+            Func<int, int, IntPtr> clientLParam = (x, y) =>
+            {
+                POINT c = new POINT { X = x, Y = y };
+                ScreenToClient(target, ref c);
+                return MakeLParam(c.X, c.Y);
+            };
+
+            PostActivation(target);
+            PostMessage(target, WM_MOUSEMOVE, (IntPtr)keyFlags, clientLParam(start.X, start.Y));
+            PostMessage(target, msgDown, (IntPtr)(button | keyFlags), clientLParam(start.X, start.Y));
+
+            int duration = Math.Max(20, durationMs);
+            int steps = Math.Max(2, duration / 10);
+            for (int i = 1; i <= steps; i++)
+            {
+                System.Threading.Thread.Sleep(duration / steps);
+                int x = start.X + (end.X - start.X) * i / steps;
+                int y = start.Y + (end.Y - start.Y) * i / steps;
+                PostMessage(target, WM_MOUSEMOVE, (IntPtr)(button | keyFlags), clientLParam(x, y));
+            }
+            PostMessage(target, msgUp, (IntPtr)keyFlags, clientLParam(end.X, end.Y));
+        }
+
+        // One press or release on its own, for Press & Click with the click first: the key goes between the two
+        public static void PostButton(IntPtr parent, Point screenPt, int mouseBtn, bool down, int keyFlags)
+        {
+            POINT sp = new POINT { X = screenPt.X, Y = screenPt.Y };
+            IntPtr target = ChildAt(parent, sp);
+            if (target == IntPtr.Zero) return;
+            POINT c = sp;
+            ScreenToClient(target, ref c);
+            IntPtr lParam = MakeLParam(c.X, c.Y);
+
+            int button = mouseBtn == 1 ? MK_RBUTTON : (mouseBtn == 2 ? MK_MBUTTON : MK_LBUTTON);
+            if (down)
+            {
+                FocusGuard.NoteBackgroundInput(target);
+                PrepareBackgroundTarget(target, lParam, keyFlags);
+                PostMessage(target, mouseBtn == 1 ? WM_RBUTTONDOWN : (mouseBtn == 2 ? WM_MBUTTONDOWN : WM_LBUTTONDOWN), (IntPtr)(button | keyFlags), lParam);
+            }
+            else
+            {
+                PostMessage(target, mouseBtn == 1 ? WM_RBUTTONUP : (mouseBtn == 2 ? WM_MBUTTONUP : WM_LBUTTONUP), (IntPtr)keyFlags, lParam);
+            }
+        }
+
+        // Wheel notches sent to the window under the point; WM_MOUSEWHEEL carries screen coordinates
+        public static void PostWheel(IntPtr parent, Point screenPt, int notches, int singleDelta, int delayPerNotch)
+        {
+            IntPtr target = ChildAt(parent, new POINT { X = screenPt.X, Y = screenPt.Y });
+            if (target == IntPtr.Zero) return;
+            FocusGuard.NoteBackgroundInput(target);
+            PostActivation(target);
+
+            IntPtr wParam = (IntPtr)((int)((uint)(ushort)(short)singleDelta << 16));
+            IntPtr lParam = MakeLParam(screenPt.X, screenPt.Y);
+            for (int i = 0; i < notches; i++)
+            {
+                PostMessage(target, 0x020A /* WM_MOUSEWHEEL */, wParam, lParam);
+                if (delayPerNotch > 0) System.Threading.Thread.Sleep(delayPerNotch);
+            }
         }
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]

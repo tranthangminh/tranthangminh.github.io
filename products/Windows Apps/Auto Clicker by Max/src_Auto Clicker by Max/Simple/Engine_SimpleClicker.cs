@@ -55,6 +55,15 @@ namespace ModernAutoClicker
         public TimeSpan Elapsed { get { return _runClock.Elapsed; } }
         public bool HasRun { get { return _hasRun; } }
 
+        private volatile ClickConfig _config;
+
+        // Another tab started while this one moves the real mouse: from the next click on this run clicks in the background too
+        public void SwitchToFreeMouse()
+        {
+            ClickConfig config = _config;
+            if (config != null) config.FreeMouseMode = true;
+        }
+
         // The engine is reused across runs: after Stop + Start, an old worker still waiting out its interval sees a newer thread here and exits instead of clicking alongside the new run
         private bool IsCurrentRunActive { get { return _isRunning && _workerThread == Thread.CurrentThread; } }
 
@@ -136,6 +145,7 @@ namespace ModernAutoClicker
             if (_isRunning) return;
 
             _isRunning = true;
+            _config = config;
             _totalClicks = 0;
             _completedLoops = 0;
             _targetLoops = config.Loops;

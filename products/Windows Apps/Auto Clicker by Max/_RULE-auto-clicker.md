@@ -189,6 +189,10 @@
 - Hỗ trợ đầy đủ cả 2 chế độ:
   - `FreeMouseMode = false`: Di chuột phần cứng thật bằng `SendInput`.
   - `FreeMouseMode = true`: Gửi message ngầm trực tiếp qua `PostMessage` (`WM_LBUTTONDOWN`, `WM_LBUTTONUP`, `WM_MOUSEMOVE`) mà không chiếm chuột của người dùng.
+- **Free Mouse phủ MỌI action, không chỉ click:** Kéo thả (`PostDrag`), Cuộn (`PostWheel`), Press & Click (`PostButton` + MK_CONTROL/MK_SHIFT), KeyPress/TypeText (`KeyboardSimulator.PostKeyPress`/`PostTypeText` vào control đang giữ bàn phím của cửa sổ, tìm qua `GetGUIThreadInfo`). Cấm dùng `SendInput`/`SetCursorPos` trong nhánh Free Mouse: chuột thật bấm lên cửa sổ nền sẽ kéo cửa sổ đó lên trước, phím thật sẽ gõ vào cửa sổ người dùng đang làm việc. Ngoại lệ duy nhất: KeyPress/TypeText để All Screens không có cửa sổ để gửi nên vẫn vào cửa sổ đang focus.
+- **Cửa sổ không ở trước (`PrepareBackgroundTarget`):** trước khi click ngầm vào cửa sổ không phải foreground, post `WM_ACTIVATEAPP(TRUE)` + `WM_ACTIVATE(WA_ACTIVE)` và `WM_MOUSEMOVE` tới đúng điểm. Nhiều game chỉ đọc chuột khi tưởng mình đang active, nhiều nút chỉ nhận click đã hover. Không gửi `WM_NCACTIVATE` (thanh tiêu đề sẽ sáng như đang active). Cửa sổ đang ở trước không nhận gì thêm. Game đọc chuột bằng Raw Input/DirectInput hoặc tự gọi `GetForegroundWindow()` thì không cứu được bằng message.
+- **Focus Guard (`Core_FocusGuard.cs`):** Chrome/Edge tự nhảy lên trước khi nhận click post, kể cả khi cửa sổ đang dùng thuộc app khác (đã kiểm với Chrome thật; `WS_EX_NOACTIVATE` hay gửi vào cửa sổ ngoài đều không chặn được). Guard trả cửa sổ người dùng về khi foreground đổi sang cửa sổ vừa nhận input ngầm trong 1 giây, trừ khi người dùng vừa bấm Alt/Win hoặc click vào cửa sổ khác. Guard chỉ chạy khi đang gửi input ngầm, tự tắt sau 5 giây; Raw Input chỉ dùng để biết Alt/Win và click, không ghi phím. Trả foreground cần một `SendInput` di chuột 0 pixel rồi thử lại vài lần, vì Windows chỉ cho đổi foreground khi process đưa ra input cuối cùng.
+- **Hai tab chạy cùng lúc đều chạy ngầm:** Start tab thứ hai thì gọi `SwitchToFreeMouse()` trên mọi engine đang chạy, không chỉ tab mới.
 
 ---
 

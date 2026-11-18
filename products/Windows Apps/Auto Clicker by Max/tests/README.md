@@ -13,6 +13,7 @@ Mỗi file `.cs` là một chương trình nhỏ, được biên dịch kèm `Au
 .\run-tests.ps1 -All                 # tất cả: trước khi commit hoặc phát hành
 .\run-tests.ps1 -All -NoMouse        # bỏ các bộ dùng chuột thật
 .\run-tests.ps1 -Tool PageShot       # chụp ảnh Simple/Asian cho trang web
+.\run-tests.ps1 -Tool BrowserFocus   # Focus Guard với Chrome/Edge thật
 ```
 
 Lệnh tự build app nếu source mới hơn exe, chỉ biên dịch lại test nào đã đổi, và in bảng số `PASS` / `FAIL` cùng thời gian của từng bộ. Mỗi bộ chạy trong thư mục riêng với cấu hình mẫu, không đụng tới cấu hình thật của người dùng.
@@ -32,7 +33,7 @@ Lệnh tự build app nếu source mới hơn exe, chỉ biên dịch lại test
 | `engine` | `engine/JumpTest.cs` | Nhảy bước của IfColor, IfColorArea, IfImage, so với `shared/jump-expected.txt` | 30s |
 | `engine` | `audit/FixTest.cs` (engine) | Script lỗi không làm văng app, giới hạn giá trị, F7 dừng được script quá nhanh | 36s |
 | `storage` | `audit/FixTest.cs` (storage) | Cấu hình hỏng hoặc cụt, khôi phục `.bak`, không ghi đè khi đọc lỗi | 3s |
-| `target` | `target/TargetTest.cs` | Tìm cửa sổ, khóa PID, mất target, click thật lên cửa sổ đích | 71s |
+| `target` | `target/TargetTest.cs` | Tìm cửa sổ, khóa PID, mất target, click thật lên cửa sổ đích; Free Mouse vào cửa sổ không ở trước (game chỉ nhận khi active, hai script cùng lúc, All Screens), kéo/cuộn/phím ngầm, Focus Guard trả cửa sổ người dùng về, tab đang chạy chuyển sang chạy ngầm | 85s |
 | `target` | `target/TargetUi.cs` | Popup mất target, đổi target, mở lại app | 50s |
 | `common` | `common/*.cs` | Link cập nhật, tên icon của `Common`, khung popup trong Book Forge | 5s |
 
@@ -46,13 +47,13 @@ Chạy hết (`-All`) mất khoảng 5 phút.
 | File có `Dialog`, `Popup`, `MessageBox` | `popup`, `ui` |
 | `Simple/Engine_*`, `Advanced/Engine_*`, recorder | `engine` |
 | `Storage_*`, `Advanced/Model_*` | `storage`, `engine` |
-| `Core_NativeMethods`, `Feature_CoordinatePicker*`, `SpecialApps/` | `target`, `engine` |
+| `Core_NativeMethods`, `Core_FocusGuard`, `Feature_CoordinatePicker*`, `SpecialApps/` | `target`, `engine` |
 | `Common/`, `tests/shared/`, hoặc file không có trong bảng | tất cả |
 
 ## Thư mục khác
 
-- `shared/`: cửa sổ đích `WinTarget.cs` (mỗi lần bị click ghi một dòng vào `<tên>.clicks`), cấu hình mẫu, kết quả nhảy bước chuẩn.
-- `tools/`: không phải test. `PageShot` chụp ảnh cho trang web, `RepeatClick` lặp 60 lần một ca click bằng chuột thật, `Speed` đo số bước mỗi giây, `IcoBuild` dựng `app.ico` từ các ảnh PNG.
+- `shared/`: cửa sổ đích `WinTarget.cs`, cấu hình mẫu, kết quả nhảy bước chuẩn. `WinTarget` ghi mỗi lần bị click vào `<tên>.clicks` (`xc` khi có Ctrl), chữ gõ vào `.keys`, mỗi lần kéo vào `.drags`, mỗi nấc cuộn vào `.wheel`. Chế độ (tham số thứ 6): `normal`, `topmost`, `game` (chỉ nhận click khi tưởng mình đang active và chuột đã hover đúng chỗ), `grabby` (tự nhảy lên trước khi bị click, như Chrome).
+- `tools/`: không phải test. `PageShot` chụp ảnh cho trang web, `RepeatClick` lặp 60 lần một ca click bằng chuột thật, `Speed` đo số bước mỗi giây, `IcoBuild` dựng `app.ico` từ các ảnh PNG, `BrowserFocus` click ngầm một cửa sổ Chrome/Edge thật (profile tạm, không đụng trình duyệt của người dùng) và đo xem cửa sổ kia có giữ được focus không.
 
 ## Khi thêm hoặc sửa test
 

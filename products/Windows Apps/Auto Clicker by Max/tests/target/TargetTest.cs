@@ -50,10 +50,10 @@ class TargetTest
         Check(name, Equals(actual, expected), "got " + actual + (Equals(actual, expected) ? "" : ", want " + expected));
     }
 
-    static Win Open(string label, string title, int slot, bool topmost = false, string second = null)
+    static Win Open(string label, string title, int slot, bool topmost = false, string second = null, string mode = null)
     {
         int x = 5 + slot * 250, y = Screen.PrimaryScreen.Bounds.Height - 190;
-        string args = string.Format("\"{0}\" \"{1}\" \"{2}\" {3} {4} {5}", dir, label, title, x, y, topmost ? "topmost" : "normal");
+        string args = string.Format("\"{0}\" \"{1}\" \"{2}\" {3} {4} {5}", dir, label, title, x, y, mode ?? (topmost ? "topmost" : "normal"));
         if (second != null) args += " \"" + second + "\"";
         Process p = Process.Start(new ProcessStartInfo(Path.Combine(dir, "WinTarget.exe"), args) { UseShellExecute = false });
         Stopwatch sw = Stopwatch.StartNew();
@@ -79,19 +79,35 @@ class TargetTest
     {
         foreach (Win w in open) { try { if (!w.P.HasExited) w.P.Kill(); w.P.WaitForExit(2000); } catch { } }
         open.Clear();
-        foreach (string f in Directory.GetFiles(dir, "*.clicks")) File.Delete(f);
+        foreach (string ext in new[] { "*.clicks", "*.keys", "*.drags", "*.wheel" })
+            foreach (string f in Directory.GetFiles(dir, ext)) File.Delete(f);
         Thread.Sleep(1100); // Let the 1-second resolve cache expire so cases stay independent
     }
 
-    static int Clicks(string label)
+    static int Clicks(string label, string ext = ".clicks")
     {
-        string f = Path.Combine(dir, label + ".clicks");
+        return Logged(label, ext).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).Length;
+    }
+
+    static string Logged(string label, string ext)
+    {
+        string f = Path.Combine(dir, label + ext);
         for (int attempt = 0; attempt < 50; attempt++)
         {
-            try { return File.Exists(f) ? File.ReadAllLines(f).Length : 0; }
+            try { return File.Exists(f) ? File.ReadAllText(f) : ""; }
             catch (IOException) { Thread.Sleep(5); }
         }
         throw new IOException("Cannot read " + f);
+    }
+
+    [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
+
+    // The test window that stands for the window the user works in. False when Windows would not let it come to the front.
+    static bool PutInFront(Win w)
+    {
+        NativeMethods.ForceSetForegroundWindow(w.H);
+        WaitFor(() => GetForegroundWindow() == w.H, 1500);
+        return GetForegroundWindow() == w.H;
     }
 
     static TargetWindowState State(IntPtr hwnd, uint pid, string title, int index, out IntPtr resolved, string proc = Proc)
@@ -126,6 +142,10 @@ class TargetTest
             AsianSubScript();
             AsianWaitStep();
             AsianMinimizedAndUnusedTarget();
+            BackgroundGameWindows();
+            BackgroundDragWheelKeys();
+            FocusGuardPutsUserWindowBack();
+            SwitchToFreeMouseWhileRunning();
             StressKillDuringRun();
         }
         catch (Exception ex)
@@ -634,6 +654,157 @@ class TargetTest
         Eq("UsesTargetWindow: delay no", ActionExecutor.UsesTargetWindow(delayWithTarget), false);
         MacroStep noTarget = new MacroStep { ActionType = MacroActionType.LeftClick };
         Eq("UsesTargetWindow: All Screens no", ActionExecutor.UsesTargetWindow(noTarget), false);
+        CleanUp();
+    }
+
+    static MacroRunner RunScript(params MacroStep[] steps)
+    {
+        MacroProfile p = new MacroProfile { Name = "S" + Environment.TickCount, LoopCount = 0, Steps = new List<MacroStep>(steps) };
+        MacroRunner r = new MacroRunner();
+        r.Start(p, new List<MacroProfile> { p }, true);
+        return r;
+    }
+
+    // Two windows of a game that only takes a click while it believes it is active, and another window in front:
+    // two scripts at once, like the reported case, and the All Screens target the reported script used
+    static void BackgroundGameWindows()
+    {
+        Win g1 = Open("g1", "Game", 0, false, null, "game"), g2 = Open("g2", "Game", 1, false, null, "game"), front = Open("front", "Front", 2);
+        if (!PutInFront(front))
+        {
+            Console.WriteLine("SKIP background game: the front test window could not come to the front");
+            CleanUp();
+            return;
+        }
+
+        MacroRunner r1 = RunScript(ClickOn(g1, "Game"), Wait()), r2 = RunScript(ClickOn(g2, "Game"), Wait());
+        Thread.Sleep(700);
+        r1.Stop(); r2.Stop();
+        Thread.Sleep(150);
+        Check("background game: window 1 takes clicks", Clicks("g1") > 0, "g1=" + Clicks("g1"));
+        Check("background game: window 2 takes clicks", Clicks("g2") > 0, "g2=" + Clicks("g2"));
+        Eq("background game: the front window stays in front", GetForegroundWindow(), front.H);
+
+        ClickEngine simple = new ClickEngine();
+        int before = Clicks("g2");
+        simple.Start(SimpleConfig(g2, true));
+        Thread.Sleep(400);
+        simple.Stop();
+        Thread.Sleep(150);
+        Check("background game: Simple tab clicks it too", Clicks("g2") > before, "g2 " + before + " -> " + Clicks("g2"));
+
+        Point screen = new Point(g1.Corner.X + 60, g1.Corner.Y + 60);
+        if (WindowFromPoint(screen) == g1.H)
+        {
+            before = Clicks("g1");
+            MacroRunner all = RunScript(new MacroStep { ActionType = MacroActionType.LeftClick, StartPoint = screen, HoldMs = 1, DelayMs = 20 });
+            Thread.Sleep(400);
+            all.Stop();
+            Thread.Sleep(150);
+            Check("background game: All Screens step clicks it", Clicks("g1") > before, "g1 " + before + " -> " + Clicks("g1"));
+        }
+        else Console.WriteLine("SKIP background game, All Screens: the game window is not on top at the point");
+        Eq("background game: the front window is still in front", GetForegroundWindow(), front.H);
+        CleanUp();
+    }
+
+    // Free Mouse sends drag, wheel, keys and text to the step's window as messages, while another window stays in front
+    static void BackgroundDragWheelKeys()
+    {
+        Win t = Open("t", "Same", 0), front = Open("front", "Front", 1);
+        if (!PutInFront(front))
+        {
+            Console.WriteLine("SKIP background drag/wheel/keys: the front test window could not come to the front");
+            CleanUp();
+            return;
+        }
+
+        MacroStep drag = ClickOn(t); drag.ActionType = MacroActionType.DragDrop; drag.EndPoint = new Point(120, 50); drag.HoldMs = 60;
+        MacroStep wheel = ClickOn(t); wheel.ActionType = MacroActionType.MiddleClick; wheel.ScrollStep = -3; wheel.HoldMs = 30;
+        MacroStep key = ClickOn(t); key.ActionType = MacroActionType.KeyPress; key.KeyData = "a"; key.HoldMs = 10;
+        MacroStep text = ClickOn(t); text.ActionType = MacroActionType.TypeText; text.KeyData = "Hi"; text.HoldMs = 10;
+        MacroStep ctrlClick = ClickOn(t); ctrlClick.ActionType = MacroActionType.PressAndClick; ctrlClick.KeyData = "Ctrl"; ctrlClick.PressClickMode = 0; ctrlClick.PressClickOrder = 0; ctrlClick.HoldMs = 10;
+
+        Point cursorBefore;
+        GetCursorPos(out cursorBefore);
+        MacroProfile p = new MacroProfile { Name = "Bg", LoopCount = 1, Steps = new List<MacroStep> { drag, wheel, key, text, ctrlClick } };
+        MacroRunner r = new MacroRunner();
+        r.Start(p, new List<MacroProfile> { p }, true);
+        WaitFor(() => !r.IsRunning, 5000);
+        Thread.Sleep(200);
+        Point cursorAfter;
+        GetCursorPos(out cursorAfter);
+
+        Eq("background drag: one drag arrived", Clicks("t", ".drags"), 1);
+        Eq("background wheel: 3 notches arrived", Clicks("t", ".wheel"), 3);
+        Eq("background keys: key then text arrived", Logged("t", ".keys"), "aHi");
+        Check("background Press & Click: the click carries Ctrl", Logged("t", ".clicks").Contains("xc"), Logged("t", ".clicks").Replace("\n", " "));
+        Eq("background: the front window stays in front", GetForegroundWindow(), front.H);
+        Eq("background: the real cursor did not move", cursorAfter, cursorBefore);
+        CleanUp();
+    }
+
+    // A window that brings itself to the front when it gets a click (as Chrome does): the guard puts the user's window back
+    static void FocusGuardPutsUserWindowBack()
+    {
+        Win grab = Open("grab", "Grab", 0, false, null, "grabby"), front = Open("front", "Front", 1);
+        if (!PutInFront(front))
+        {
+            Console.WriteLine("SKIP focus guard: the front test window could not come to the front");
+            CleanUp();
+            return;
+        }
+
+        ClickConfig cfg = SimpleConfig(grab, true);
+        cfg.TargetWindowTitle = "Grab";
+        cfg.IntervalMs = 200;
+        cfg.Loops = 6;
+        ClickEngine engine = new ClickEngine();
+        engine.Start(cfg);
+
+        int samples = 0, grabInFront = 0, steals = 0;
+        IntPtr last = front.H;
+        Stopwatch sw = Stopwatch.StartNew();
+        while ((engine.IsRunning || sw.ElapsedMilliseconds < 300) && sw.ElapsedMilliseconds < 5000)
+        {
+            IntPtr fg = GetForegroundWindow();
+            samples++;
+            if (fg == grab.H) { grabInFront++; if (last != grab.H) steals++; }
+            last = fg;
+            Thread.Sleep(5);
+        }
+        Thread.Sleep(400);
+
+        Eq("focus guard: all clicks arrived", Clicks("grab"), 6);
+        if (steals == 0) Console.WriteLine("SKIP focus guard: the test window never took the front, nothing to put back");
+        else
+        {
+            Check("focus guard: the grabbing window was in front only briefly", grabInFront * 4 < samples, grabInFront + " of " + samples + " samples, " + steals + " steals");
+            Eq("focus guard: the user's window is in front after the run", GetForegroundWindow(), front.H);
+        }
+        CleanUp();
+    }
+
+    // A run that started with the real mouse clicks in the background once another tab starts
+    static void SwitchToFreeMouseWhileRunning()
+    {
+        Win t = Open("t", "Same", 0);
+        MacroStep click = ClickOn(t);
+        click.DelayMs = 30;
+        MacroProfile p = new MacroProfile { Name = "Real", LoopCount = 0, Steps = new List<MacroStep> { click } };
+        MacroRunner r = new MacroRunner();
+        Point cursorBefore;
+        GetCursorPos(out cursorBefore);
+        // A real-mouse run here would move the cursor; switching right after Start keeps this case from touching the mouse
+        r.Start(p, new List<MacroProfile> { p }, false);
+        r.SwitchToFreeMouse();
+        Thread.Sleep(500);
+        r.Stop();
+        Thread.Sleep(150);
+        Point cursorAfter;
+        GetCursorPos(out cursorAfter);
+        Check("switch to free mouse: clicks arrive in the background", Clicks("t") > 0, "t=" + Clicks("t"));
+        Eq("switch to free mouse: the real cursor did not move", cursorAfter, cursorBefore);
         CleanUp();
     }
 }

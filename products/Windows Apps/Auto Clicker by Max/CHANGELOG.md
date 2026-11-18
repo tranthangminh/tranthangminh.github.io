@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- With Free Mouse, a game window behind other windows did not react to clicks. The window is now told it is active and the pointer hovers the spot before the press, without changing the window in front.
+- With Free Mouse, Chrome and Edge brought the clicked window to the front on every click. The window you work in is put back, unless you switched on purpose (Alt, Win, or a click elsewhere).
+- With Free Mouse, Drag, Scroll, Key Press, Type Text and Press & Click still used the real mouse and keyboard. They now go to the step's window in the background. Keys need a step bound to a window; with All Screens they still go to the window in front.
+- A tab started with the real mouse kept using it after a second tab started. Both now click in the background.
+
 ## 1.1.4
 
 ### Added

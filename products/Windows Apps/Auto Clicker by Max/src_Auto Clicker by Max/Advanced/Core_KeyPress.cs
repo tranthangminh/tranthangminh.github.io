@@ -161,6 +161,113 @@ namespace ModernAutoClicker
             }
         }
 
+        // ---- Free Mouse: keys sent as messages to a window, so they reach it while another window is in front ----
+        // A posted key does not change the keyboard state the app reads with GetKeyState: plain keys and text work in most apps,
+        // Ctrl / Alt combinations only where the app reads the key messages themselves.
+
+        // The control that has the keyboard inside the window's thread, even while the window is not in front
+        public static IntPtr KeyTarget(IntPtr window)
+        {
+            IntPtr top = NativeMethods.GetTopLevelWindow(window);
+            if (top == IntPtr.Zero) return IntPtr.Zero;
+            uint pid;
+            uint thread = NativeMethods.GetWindowThreadProcessId(top, out pid);
+            GUITHREADINFO info = new GUITHREADINFO { cbSize = Marshal.SizeOf(typeof(GUITHREADINFO)) };
+            if (GetGUIThreadInfo(thread, ref info) && info.hwndFocus != IntPtr.Zero && (info.hwndFocus == top || NativeMethods.IsChild(top, info.hwndFocus)))
+            {
+                return info.hwndFocus;
+            }
+            IntPtr special = SpecialApps.SpecialAppRegistry.ResolveTargetHandle(top, System.Drawing.Point.Empty);
+            return special != IntPtr.Zero ? special : top;
+        }
+
+        public static void PostKeyDown(IntPtr target, string combo)
+        {
+            if (target == IntPtr.Zero) return;
+            List<byte> modifiers;
+            byte mainVk;
+            ParseKeyCombo(combo, out modifiers, out mainVk);
+            bool alt = modifiers.Contains(0x12);
+            foreach (byte mod in modifiers) PostKey(target, mod, false, alt);
+            if (mainVk != 0) PostKey(target, mainVk, false, alt);
+        }
+
+        public static void PostKeyUp(IntPtr target, string combo)
+        {
+            if (target == IntPtr.Zero) return;
+            List<byte> modifiers;
+            byte mainVk;
+            ParseKeyCombo(combo, out modifiers, out mainVk);
+            bool alt = modifiers.Contains(0x12);
+            if (mainVk != 0) PostKey(target, mainVk, true, alt);
+            for (int i = modifiers.Count - 1; i >= 0; i--) PostKey(target, modifiers[i], true, alt);
+        }
+
+        public static void PostKeyPress(IntPtr target, string combo, int holdMs)
+        {
+            if (string.IsNullOrWhiteSpace(combo) || target == IntPtr.Zero) return;
+            FocusGuard.NoteBackgroundInput(target);
+            NativeMethods.PostActivation(target);
+            PostKeyDown(target, combo);
+            Thread.Sleep(Math.Max(5, holdMs));
+            PostKeyUp(target, combo);
+        }
+
+        // Each character goes as WM_CHAR, which is what a text box types; a line break is a real Enter key
+        public static void PostTypeText(IntPtr target, string text, int totalDurationMs)
+        {
+            if (string.IsNullOrEmpty(text) || target == IntPtr.Zero) return;
+            text = text.Replace("\r", "");
+            if (text.Length == 0) return;
+            FocusGuard.NoteBackgroundInput(target);
+            NativeMethods.PostActivation(target);
+
+            int delayPerChar = totalDurationMs <= 20 ? 0 : Math.Max(1, totalDurationMs / text.Length);
+            foreach (char ch in text)
+            {
+                if (ch == '\n')
+                {
+                    PostKey(target, 0x0D, false, false);
+                    PostKey(target, 0x0D, true, false);
+                }
+                else
+                {
+                    NativeMethods.PostMessage(target, 0x0102 /* WM_CHAR */, (IntPtr)ch, (IntPtr)1);
+                }
+                if (delayPerChar > 0) Thread.Sleep(delayPerChar);
+            }
+        }
+
+        private static void PostKey(IntPtr target, byte vk, bool keyUp, bool altHeld)
+        {
+            uint scan = NativeMethods.MapVirtualKey(vk, 0);
+            long lParam = 1 | (scan << 16);
+            if (IsExtendedKey(vk)) lParam |= 1L << 24;
+            if (altHeld) lParam |= 1L << 29;
+            if (keyUp) lParam |= (1L << 30) | (1L << 31);
+
+            // With Alt held Windows sends the SYS variants, which is what menus and Alt shortcuts listen to
+            uint msg = altHeld ? (keyUp ? 0x0105u /* WM_SYSKEYUP */ : 0x0104u /* WM_SYSKEYDOWN */) : (keyUp ? 0x0101u /* WM_KEYUP */ : 0x0100u /* WM_KEYDOWN */);
+            NativeMethods.PostMessage(target, msg, (IntPtr)vk, (IntPtr)unchecked((int)lParam));
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct GUITHREADINFO
+        {
+            public int cbSize;
+            public uint flags;
+            public IntPtr hwndActive;
+            public IntPtr hwndFocus;
+            public IntPtr hwndCapture;
+            public IntPtr hwndMenuOwner;
+            public IntPtr hwndMoveSize;
+            public IntPtr hwndCaret;
+            public NativeMethods.RECT rcCaret;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO info);
+
         private static void AddCharInputs(List<NativeMethods.INPUT> inputs, char ch)
         {
             if (ch == '\n')

@@ -1630,9 +1630,14 @@ namespace ModernAutoClicker
             if (!CanStartAutoClick()) return;
             if (!CheckTargetsBeforeStart()) return;
 
-            // Auto-force FreeMouseMode if there will be >= 2 tasks running simultaneously
+            // Two runs at once both click in the background, the one already running included: two real-mouse runs would fight over the cursor and the front window
             int runningCount = GetTotalRunningCount();
             bool forceFreeMouse = (chkFreeMouse != null && chkFreeMouse.Checked) || runningCount >= 1;
+            if (runningCount >= 1)
+            {
+                foreach (ClickEngine e in _simpleEngines) if (e != null && e.IsRunning) e.SwitchToFreeMouse();
+                foreach (var r in _asianRunners.Values) if (r != null && r.IsRunning) r.SwitchToFreeMouse();
+            }
 
             if (_currentTabIndex == 1)
             {

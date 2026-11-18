@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>(M) Đồng bộ DSKH - Harry Perfume</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="common/tool-base.css">
+  <link rel="stylesheet" href="dskh-sync.css">
+  <script src="../theme-init.js"></script>
+</head>
+<body>
+  <div class="tool-app">
+    <!-- Header -->
+    <header class="tool-header">
+      <div class="tool-brand">
+        <span class="tool-logo-icon">👥</span>
+        <h1 class="tool-title">(M) Đồng bộ DSKH</h1>
+      </div>
+      <div class="tool-header-actions">
+        <button type="button" class="btn-topbar" id="btnToggleTheme" title="Chuyển đổi giao diện Sáng / Tối">
+          <span id="themeIcon" class="icon-mask tool-icon"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Tab nguồn (DskhParser.SOURCES) + tab Đồng bộ, vẽ bằng JS -->
+    <nav class="dskh-tabs" id="sourceTabs"></nav>
+
+    <!-- Toolbar của tab nhập đang chọn -->
+    <section class="tool-toolbar dskh-toolbar">
+      <div class="toolbar-left">
+        <span id="tabSummary"></span>
+        <span class="dskh-missing" id="missingNote"></span>
+        <!-- Bộ lọc tab Đồng bộ (ô tick, vẽ bằng JS) -->
+        <div class="dskh-filters" id="syncFilters"></div>
+      </div>
+      <div class="toolbar-right">
+        <div class="dskh-freeze">
+          <button type="button" class="btn-action" id="btnFreeze" aria-haspopup="menu" aria-expanded="false">Cố định</button>
+          <div class="dskh-freeze-menu" id="freezeMenu" role="menu" hidden></div>
+        </div>
+        <button type="button" class="btn-action" id="btnRestoreMaster" title="Đưa 🛑DSKH về bản trước lần Nhập vào 🛑DSKH gần nhất">Khôi phục bản trước</button>
+        <button type="button" class="btn-action dskh-btn-import" id="btnImportMaster" title="Xóa sạch 🛑DSKH rồi ghi toàn bộ tab Đồng bộ vào (giá trị đang ✓, mã cột 🛑DSKH)">Nhập vào 🛑DSKH</button>
+        <button type="button" class="btn-action" id="btnPaste" title="Dán bảng khách hàng (copy kèm dòng tiêu đề có cột Mã khách hàng), thay toàn bộ dữ liệu cũ của tab này. Cũng có thể bấm Ctrl + V">Dán</button>
+        <button type="button" class="btn-action btn-clear btn-toolbar-icon" id="btnClearTab" title="Xóa trắng dữ liệu tab này - bấm 2 lần" aria-label="Xóa trắng"><span class="icon-mask tool-icon" style="mask-image:url('../svg/delete.svg');-webkit-mask-image:url('../svg/delete.svg')"></span></button>
+        <button type="button" class="btn-action btn-clear btn-toolbar-icon dskh-btn-remove-tab" id="btnRemoveBranch" title="Xóa tab chi nhánh" aria-label="Xóa tab chi nhánh"><span class="icon-mask tool-icon" style="mask-image:url('../svg/close.svg');-webkit-mask-image:url('../svg/close.svg')"></span></button>
+      </div>
+    </section>
+
+    <!-- Bảng chỉ xem của tab đang chọn: tab nhập # + 42 cột, tab Đồng bộ # + Mã + Nguồn + 41 cột (vẽ bằng JS) -->
+    <main class="spreadsheet-container" id="spreadsheetContainer">
+      <div class="dskh-empty" id="emptyState"></div>
+      <table class="excel-table dskh-table" id="sourceTable">
+        <thead><tr id="tableHeadRow"></tr></thead>
+        <tbody id="rowsTableBody"></tbody>
+      </table>
+    </main>
+
+    <div id="toolToast" class="tool-toast" style="display: none;">
+      <span id="toolToastMsg"></span>
+    </div>
+
+    <!-- Thanh Hoàn tác sau khi Nhập vào 🛑DSKH (hiện 10 giây) -->
+    <div class="dskh-undo-bar" id="undoBar" hidden>
+      <span id="undoBarMsg"></span>
+      <button type="button" class="btn-action" id="btnUndoImport">Hoàn tác</button>
+    </div>
+  </div>
+
+  <!-- Popup xác nhận dùng chung (confirmAction trong ../common/modal-controller.js, style .tool-modal trong common/tool-base.css) -->
+  <div id="confirmModal" class="modal-overlay tool-modal-overlay" style="display: none;">
+    <div class="tool-modal">
+      <div class="tool-modal-header">
+        <h4>Xác nhận</h4>
+        <button type="button" id="btnCloseConfirmModal" class="tool-modal-close" aria-label="Đóng">&times;</button>
+      </div>
+      <p id="confirmModalMsg" class="tool-modal-msg"></p>
+      <div class="tool-modal-footer">
+        <button type="button" id="btnCancelConfirmModal" class="btn-action">Hủy</button>
+        <button type="button" id="btnOkConfirmModal" class="btn-action tool-modal-danger">Đồng ý</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../common/formatters.js"></script>
+  <script src="../common/modal-controller.js"></script>
+  <script src="../storage-helper.js"></script>
+  <script src="../common/api-config.js"></script>
+  <script src="common/tool-shell.js"></script>
+  <script src="dskh-sync-parser.js"></script>
+  <script src="dskh-sync.js"></script>
+</body>
+</html>

@@ -1,29 +1,25 @@
+/* Plugin tokens on top of theme.css: the accent stays blue to match the plugin icons */
 :root {
-  --background-color-black: #1a1a1a;
-  --background-color-dark: #252525;
-  --background-color: #2c2c2c;
-  --background-color-grey: #424242;
-  --background-color-light-grey: #8e8e8e;
-  --background-color-blue: #273e5e;
-  --border-color-black: #1e1e1e;
-  --border-color-blue: #3f6da8;
-  --text-color: #dbe4f1;
-  --text-color-label: #a8a8a8;
-  --text-size-note: 10px;
-  --margin-bottom-default: 0 0 10px 0;
-  --section-toggle-icon-color: var(--text-color-label);
-  --panel-divider-color: var(--background-color-light-grey);
+  --accent-primary: #3f6da8;
+  --accent-primary-hover: #8fb4e8;
+  --accent-subtle-solid: #273e5e;
+  --font-family: Arial, sans-serif;
+  --preview-min-height: 90px;
 }
 
-/* Shared Layout */
+/* Shared Layout: tab bar on top, one tool page per tab */
 html,
 body {
   height: 100%;
   margin: 0;
 }
-button{
-  margin: var(--margin-bottom-default);
-  color: var(--text-color);
+
+.panel-shell {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
 }
 
 .shared-tabs {
@@ -31,6 +27,7 @@ button{
   flex: 0 0 auto;
   align-items: stretch;
   width: 100%;
+  margin: 0 0 10px 0;
 }
 
 .shared-tab-button {
@@ -40,50 +37,54 @@ button{
   min-width: 0;
   align-items: center;
   justify-content: center;
-  height: 40px;
+  height: var(--btn-height-md);
   padding: 0;
   box-sizing: border-box;
-  border: 2px solid var(--border-color-black, #1e1e1e);
-  border-radius: 5px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
   background: transparent;
-  background-image: none;
-  color: var(--text-color-label, #a8a8a8);
-  appearance: none;
-  -webkit-appearance: none;
-  box-shadow: none;
-  outline: none;
-  font: 700 12px Arial, sans-serif;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-md);
+  font-weight: 700;
   cursor: pointer;
 }
 
 .shared-tab-button + .shared-tab-button {
-  margin-left: 8px;
+  margin-left: 4px;
+}
+
+.shared-tab-button-icon {
+  flex: 0 0 32px;
 }
 
 .shared-tab-surface {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   border-radius: 3px;
-  background: var(--shared-tab-surface-background, var(--background-color-dark, #252525));
-  pointer-events: none;
+  background: var(--bg-secondary);
   z-index: 0;
 }
 
-.shared-tab-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  object-position: center center;
-  pointer-events: none;
+/* Icon holder: the inlined SVG fills it, colors come from the .svg file (see SHARED_ICONS in shared.js) */
+.shared-icon {
+  display: flex;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.shared-tab-icon {
   position: relative;
+  width: 18px;
+  height: 18px;
   z-index: 1;
 }
 
 .shared-tab-label {
-  pointer-events: none;
   position: relative;
   z-index: 1;
   display: flex;
@@ -94,12 +95,12 @@ button{
 }
 
 .shared-tab-button.is-active {
-  border-color: var(--border-color-blue, #3f6da8);
-  color: var(--text-color, #dbe4f1);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
 }
 
 .shared-tab-button.is-active .shared-tab-surface {
-  background: var(--shared-tab-surface-active-background, var(--background-color-dark, #252525));
+  background: var(--accent-subtle-solid);
 }
 
 .shared-tab-panel {
@@ -108,182 +109,130 @@ button{
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-gutter: stable;
-}
-
-.shared-tab-frame {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  border: 0;
-  background: transparent;
+  overflow: hidden;
 }
 
 .shared-tab-panel.is-hidden {
   display: none;
 }
 
-.panel-shell {
+/* Tool page: options and preview scroll together, the action bar stays at the bottom */
+.tool-body {
   display: flex;
-  flex-direction: column;
-  position: relative;
-  height: 100%;
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.controls {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.section-header-row {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  margin: 0;
-}
-
-.section-header-row .section-toggle-primary {
   flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* UXP does not apply the min-height: auto flex rule, so blocks shrink and overlap instead of
+   scrolling; every block keeps its real height and the tool body scrolls instead */
+.tool-body > *,
+.rename-mode-panel > * {
+  flex-shrink: 0;
+}
+
+.tool-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+  padding: 10px 0 0 0;
+}
+
+.tool-actions .app-button {
+  flex: 1 1 0;
   margin: 0;
 }
 
-.controls-body {
-  display: flex;
-  flex-direction: column;
+.tool-actions .app-button + .app-button {
+  margin-left: 8px;
+}
+
+.tool-actions .app-button-square {
+  flex: 0 0 var(--btn-height-sm);
+  width: var(--btn-height-sm);
+  padding: 0;
+}
+
+/* Tool title stays above the scrolling body so the tab always says what it does */
+.tool-title {
+  flex: 0 0 auto;
+  margin: 0 0 10px 0;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-xl);
+  font-weight: 700;
+}
+
+.tool-label {
+  margin: 0 0 6px 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-md);
+  font-weight: 700;
+}
+
+.tool-section {
+  margin: 0 0 12px 0;
+}
+
+.tool-card {
+  margin: 0 0 10px 0;
   padding: 10px;
-  margin: 0 0 10px 0;
   box-sizing: border-box;
-  border-radius: 5px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-secondary);
 }
 
-.section {
-  display: flex;
-  flex-direction: column;
-  margin: var(--margin-bottom-default);
-}
-
-.section-block {
-  gap: 0;
-}
-
-.section-collapsible.is-collapsed .section-body {
-  display: none;
-}
-
-.section-toggle {
+.tool-card-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 28px;
-  padding: 6px 8px;
-  margin: 0;
-  border: 1px solid var(--section-toggle-border-color, transparent);
-  border-radius: 5px;
-  background: var(--section-toggle-background, transparent);
-  color: var(--section-toggle-color, inherit);
-  font-family: Arial, sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.2;
-  cursor: pointer;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.section-toggle-text {
-  color: var(--text-color);
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-}
-
-.section-toggle-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  color: var(--section-toggle-icon-color, inherit);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.section-toggle-primary {
-  min-height: 40px;
-  padding: 9px 11px;
-  font-size: 18px;
-  margin: var(--margin-bottom-default, 0 0 10px 0);
-}
-
-.section-toggle-text-main {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.section-toggle-icon-main {
-  font-size: 16px;
-  color: inherit;
-}
-
-.section-body {
-  display: flex;
-  flex-direction: column;
-}
-
-.controls.is-collapsed .controls-body {
-  display: none;
-}
-
-.panel-divider {
-  width: 100%;
   margin: 0 0 10px 0;
-  border-top: 2px dashed var(--panel-divider-color, #8e8e8e);
+}
+
+.tool-card-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-lg);
+  font-weight: 700;
+}
+
+.tool-card-header .app-button {
+  flex: 0 0 auto;
+  margin: 0 0 0 8px;
 }
 
 /* Shared Preview */
 .shared-preview-shell {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  flex: 1 0 auto;
   min-width: 0;
-  min-height: var(--preview-min-height, 120px);
-}
-
-.shared-preview-shell-compact {
-  min-height: 50px;
-  max-height: 50px;
-  margin: 0 0 10px 0;
-}
-
-.shared-preview-shell.is-hidden {
-  display: none;
+  min-height: var(--preview-min-height);
 }
 
 .shared-preview-content {
   flex: 1 1 auto;
-  min-height: var(--preview-min-height, 120px);
+  min-height: var(--preview-min-height);
   margin: 0;
+  padding: 5px;
   box-sizing: border-box;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-sm);
+  line-height: 1.35;
   user-select: text;
-  -webkit-user-select: text;
   cursor: text;
-  outline: none;
   white-space: pre-wrap;
   overflow-y: auto;
   overflow-x: hidden;
-  overflow-wrap: anywhere;
-}
-
-.shared-preview-content-compact {
-  min-height: 50px;
-  max-height: 50px;
 }
 
 /* Shared Slider */
@@ -303,7 +252,7 @@ button{
   width: 100%;
   height: 6px;
   border-radius: 2px;
-  background: var(--background-color-black);
+  background: var(--bg-primary);
 }
 
 .shared-slider-fill {
@@ -312,7 +261,7 @@ button{
   left: 0;
   height: 8px;
   border-radius: 2px;
-  background: var(--background-color-grey);
+  background: var(--bg-elevated);
 }
 
 .shared-slider-thumb {
@@ -321,9 +270,9 @@ button{
   left: 0;
   width: 10px;
   height: 15px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   box-sizing: border-box;
-  background: var(--background-color-light-grey);
+  background: var(--border-hover);
   transform: translate(-50%, -50%);
 }
 
@@ -336,27 +285,70 @@ button{
   display: none;
 }
 
-/* Shared Radio */
-.radio-option-line {
+/* Shared Choice: hidden input keeps the state, the box is drawn here */
+.shared-choice {
   display: flex;
   align-items: center;
-  position: relative;
-  margin: 0 0 8px 0;
-  color: var(--text-color-label);
   cursor: pointer;
+  user-select: none;
+}
+
+.shared-choice-input {
+  display: none;
+}
+
+.shared-choice.is-disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.shared-check-box {
+  display: flex;
+  flex: 0 0 14px;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 2px solid var(--text-secondary);
+  border-radius: 3px;
+  background: transparent;
+}
+
+.shared-check-mark {
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--text-primary);
+  opacity: 0;
+}
+
+.shared-check.is-checked .shared-check-box {
+  border-color: var(--text-primary);
+}
+
+.shared-check.is-checked .shared-check-mark {
+  opacity: 1;
+}
+
+.shared-check-small .shared-check-box {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+}
+
+.shared-check-small .shared-check-mark {
+  width: 4px;
+  height: 4px;
+}
+
+.radio-option-line {
+  margin: 0 0 8px 0;
+  color: var(--text-secondary);
 }
 
 .radio-option-line:last-child {
   margin-bottom: 0;
-}
-
-.radio-option-input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  width: 0;
-  height: 0;
-  margin: 0;
 }
 
 .radio-option-mark {
@@ -367,36 +359,171 @@ button{
   width: 14px;
   height: 14px;
   box-sizing: border-box;
-  border: 2px solid var(--text-color-label);
-  border-radius: 50%;
+  border: 2px solid var(--text-secondary);
+  border-radius: 7px;
   background: transparent;
 }
 
 .radio-option-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
-  background: var(--text-color);
+  border-radius: 3px;
+  background: var(--text-primary);
   opacity: 0;
 }
 
-.radio-option-input:checked + .radio-option-mark {
-  border-color: var(--text-color);
+.shared-radio.is-checked .radio-option-mark {
+  border-color: var(--text-primary);
 }
 
-.radio-option-input:checked + .radio-option-mark .radio-option-dot {
+.shared-radio.is-checked .radio-option-dot {
   opacity: 1;
 }
 
 .radio-option-label {
   margin-left: 6px;
   color: inherit;
-  font-size: 12px;
+  font-size: var(--font-md);
   line-height: 1.2;
 }
 
-.radio-option-line-strong .radio-option-label {
-  color: var(--text-color);
-  font-size: 18px;
-  font-weight: 700;
+/* Shared Segment: two-way switch, the selected half lights up */
+.shared-segment {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  height: 22px;
+  padding: 1px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-primary);
+}
+
+.shared-segment-option {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  border-radius: var(--border-radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  cursor: pointer;
+  user-select: none;
+}
+
+.shared-segment-option.is-selected {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.shared-segment-large {
+  height: var(--btn-height-sm);
+  border-radius: var(--border-radius-md);
+}
+
+.shared-segment-large .shared-segment-option {
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-md);
+}
+
+.shared-segment-large .shared-segment-option.is-selected {
+  background: var(--accent-subtle-solid);
+}
+
+/* Shared Text Field: fully self-drawn. The native input sits off-screen and only receives
+   keyboard, IME and clipboard input; text, caret and selection are drawn from its value. */
+.shared-field {
+  display: flex;
+  position: relative;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 24px;
+  padding: 0 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-primary);
+  cursor: text;
+}
+
+.shared-field.is-focused {
+  border-color: var(--accent-primary);
+}
+
+.shared-field-input {
+  position: absolute;
+  top: 0;
+  left: -10000px;
+  width: 100px;
+  height: 20px;
+}
+
+.shared-field-view {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: pre;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-md);
+  line-height: 20px;
+}
+
+.shared-field-placeholder {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.shared-field-selection {
+  background: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.shared-field-caret {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  margin: 0 -1px 0 0;
+  vertical-align: middle;
+  background: var(--text-primary);
+}
+
+.shared-field.is-caret-hidden .shared-field-caret {
+  visibility: hidden;
+}
+
+/* Shared Dialog (in-panel overlay) */
+.shared-dialog {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
+  background: var(--bg-overlay);
+}
+
+.shared-dialog.is-hidden {
+  display: none;
+}
+
+.shared-dialog-box {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 2px solid var(--accent-primary);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-secondary);
 }
